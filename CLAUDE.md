@@ -66,6 +66,7 @@
 | `/playwright-crm` | `playwright-crm.md` | בדיקות E2E + CI |
 | `/figma-crm-ui` | `figma-crm-ui.md` | עיצוב Figma + Canva, RTL |
 | `/supabase-security` | `supabase-security.md` | RLS, auth, secrets, audit |
+| `/security-agent` | `security-agent.md` | ⭐ סוכן AI אקטיבי — סריקה, ניטור, התראות אבטחה |
 | `/crm-agents` | `crm-agents.md` | AI: booking, reminders, insights |
 | `/competitor-research` | `competitor-research.md` | מחקר שוק + בידולים |
 | `/security-guardian` | `security-guardian.md` | data protection, incident response |
