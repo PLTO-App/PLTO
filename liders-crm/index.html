@@ -930,6 +930,26 @@
     .plan-features { font-size: 12px; color: var(--gray-600); display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; text-align: right; }
 
     /* ═══════════════════════════════════════
+       LOGIN TRIAL BADGE
+    ═══════════════════════════════════════ */
+    .login-trial-badge {
+      text-align: center; font-size: 12px; font-weight: 600;
+      color: var(--green-600); background: var(--green-100);
+      padding: 8px 12px; border-radius: var(--radius-md);
+      margin-top: 8px;
+    }
+
+    /* ═══════════════════════════════════════
+       PAYWALL TRIAL NOTE
+    ═══════════════════════════════════════ */
+    .paywall-trial-note {
+      font-size: 12px; color: var(--green-600); font-weight: 600;
+      background: var(--green-100); padding: 8px 14px;
+      border-radius: var(--radius-md); margin-bottom: 20px;
+    }
+    .plan-desc { font-size: 12px; color: var(--gray-500); margin-bottom: 8px; }
+
+    /* ═══════════════════════════════════════
        BILLING CTA BOX (Settings)
     ═══════════════════════════════════════ */
     .billing-cta-box {
@@ -976,6 +996,9 @@
       <button class="btn btn-primary w-full" onclick="App.loginWithEmail()" style="padding:13px; font-size:15px;">
         כניסה למערכת
       </button>
+      <div class="login-trial-badge">
+        🎁 30 יום ניסיון חינמי · כולל כל תכונות Basic · ללא כרטיס אשראי
+      </div>
       <div class="login-divider">או</div>
       <button class="login-demo-btn" onclick="App.loginDemo()">
         ⚡ כניסת דמו — ראה את המערכת מיד
@@ -1172,35 +1195,16 @@
 <div id="screen-paywall" class="hidden">
   <div class="paywall-card">
     <div class="paywall-logo">Liders<span>.</span></div>
-    <div class="paywall-icon">🔒</div>
-    <div class="paywall-title">תקופת הניסיון הסתיימה</div>
-    <div class="paywall-sub">בחר תוכנית כדי להמשיך לנהל את הלידים שלך</div>
-    <div class="paywall-plans">
-      <div class="paywall-plan">
-        <div class="plan-name">Basic</div>
-        <div class="plan-price">₪149<span>/חודש</span></div>
-        <div class="plan-features">
-          <div>✓ עד 3 סוכנים</div>
-          <div>✓ לידים ללא הגבלה</div>
-          <div>✓ WhatsApp reminders</div>
-          <div>✓ Pipeline Kanban</div>
-        </div>
-        <button class="btn btn-ghost w-full" onclick="Billing.openCheckout('basic')">בחר Basic</button>
-      </div>
-      <div class="paywall-plan paywall-plan--featured">
-        <div class="plan-badge">⭐ מומלץ</div>
-        <div class="plan-name">Pro</div>
-        <div class="plan-price">₪299<span>/חודש</span></div>
-        <div class="plan-features">
-          <div>✓ סוכנים ללא הגבלה</div>
-          <div>✓ AI Lead Score</div>
-          <div>✓ Follow-up אוטומטי</div>
-          <div>✓ Analytics מתקדם</div>
-          <div>✓ API + Integrations</div>
-        </div>
-        <button class="btn btn-primary w-full" onclick="Billing.openCheckout('pro')">בחר Pro</button>
-      </div>
+    <div class="paywall-icon">🔓</div>
+    <div class="paywall-title">30 יום ניסיון חינמי — כולל Basic</div>
+    <div class="paywall-sub">
+      ניסית את המערכת עם <strong>כל תכונות Basic</strong> — ללא תשלום.<br>
+      בחר תוכנית להמשיך, או שדרג ל-Pro לתכונות AI מתקדמות.
     </div>
+    <div class="paywall-trial-note">
+      ✅ ניסיון חינמי · אין צורך בכרטיס אשראי מראש · ביטול בכל עת
+    </div>
+    <div class="paywall-plans" id="paywall-plans-container"></div>
     <button class="btn btn-ghost btn-sm mt-4" onclick="App.logout()" style="opacity:.6;">← חזור להתחברות</button>
   </div>
 </div>
@@ -1683,12 +1687,42 @@ const State = {
    BILLING MODULE
 ═══════════════════════════════════════════ */
 const Billing = {
-  // Replace with your Stripe Checkout links after creating products
+  PLANS: [
+    {
+      id: 'starter',
+      name: 'Starter',
+      price: 199,
+      priceLabel: '₪199',
+      desc: 'לסוכן עצמאי',
+      features: ['סוכן אחד', 'לידים ללא הגבלה', 'Pipeline Kanban', 'WhatsApp reminders', 'אפליקציה מובייל'],
+      featured: false,
+    },
+    {
+      id: 'basic',
+      name: 'Basic',
+      price: 349,
+      priceLabel: '₪349',
+      desc: 'לצוות קטן',
+      features: ['עד 5 סוכנים', 'כל מה ב-Starter +', 'AI Lead Score', 'Analytics בסיסי', 'חיבור Google Calendar'],
+      featured: false,
+    },
+    {
+      id: 'pro',
+      name: 'Pro',
+      price: 549,
+      priceLabel: '₪549',
+      desc: 'לסוכנות מלאה',
+      features: ['סוכנים ללא הגבלה', 'כל מה ב-Basic +', 'AI Follow-up אוטומטי', 'Analytics מתקדם', 'API + Integrations', 'תמיכה עדיפות'],
+      featured: true,
+    },
+  ],
+
+  // החלף בקישורי Stripe אמיתיים אחרי יצירת המוצרים
   CHECKOUT_URLS: {
-    basic: 'https://buy.stripe.com/REPLACE_WITH_BASIC_LINK',
-    pro:   'https://buy.stripe.com/REPLACE_WITH_PRO_LINK',
+    starter: 'https://buy.stripe.com/REPLACE_WITH_STARTER_LINK',
+    basic:   'https://buy.stripe.com/REPLACE_WITH_BASIC_LINK',
+    pro:     'https://buy.stripe.com/REPLACE_WITH_PRO_LINK',
   },
-  // Replace with your Stripe Customer Portal link
   PORTAL_URL: 'https://billing.stripe.com/p/login/REPLACE_WITH_PORTAL_LINK',
 
   daysLeft() {
@@ -1697,7 +1731,7 @@ const Billing = {
     return Math.max(0, Math.ceil((new Date(t) - new Date()) / 864e5));
   },
   isPaid() {
-    return ['pro','basic'].includes(State.tenant?.plan);
+    return ['starter','basic','pro'].includes(State.tenant?.plan);
   },
   isExpired() {
     const plan = State.tenant?.plan;
@@ -1709,7 +1743,11 @@ const Billing = {
   },
   showPaywall() {
     document.getElementById('app-shell').classList.add('hidden');
-    document.getElementById('screen-paywall').classList.remove('hidden');
+    const pw = document.getElementById('screen-paywall');
+    pw.classList.remove('hidden');
+    // render 3 plans dynamically
+    const container = document.getElementById('paywall-plans-container');
+    if (container) container.innerHTML = this.renderPlansHTML();
   },
   renderTrialBanner() {
     if (this.isPaid()) return;
@@ -1717,19 +1755,20 @@ const Billing = {
     const banner = document.getElementById('trial-banner');
     if (!banner) return;
     const urgency = days <= 3 ? 'var(--red-600)' : days <= 7 ? 'var(--orange-500)' : 'var(--navy-500)';
+    const msg = days === 0 ? '⚠️ ניסיון Basic חינמי פג — בחר תוכנית להמשך'
+              : days === 1 ? '⚠️ יום אחד נותר בניסיון Basic החינמי'
+              : `⏳ ${days} ימים נותרו מתוך 30 ימי ניסיון חינמי — כולל כל תכונות Basic`;
     banner.innerHTML = `
-      <span style="font-size:13px;font-weight:700;color:${urgency}">
-        ⏳ ${days} ימים נותרו בתקופת הניסיון החינמית
-      </span>
-      <button class="btn btn-primary btn-sm" onclick="Billing.openCheckout('pro')" style="font-size:12px;padding:6px 14px;">
-        שדרג עכשיו →
+      <span style="font-size:13px;font-weight:700;color:${urgency}">${msg}</span>
+      <button class="btn btn-primary btn-sm" onclick="Billing.showPaywall()" style="font-size:12px;padding:6px 14px;white-space:nowrap;">
+        בחר תוכנית →
       </button>
     `;
     banner.classList.remove('hidden');
   },
-  openCheckout(plan = 'pro') {
-    const url = this.CHECKOUT_URLS[plan];
-    if (url.includes('REPLACE')) {
+  openCheckout(planId = 'pro') {
+    const url = this.CHECKOUT_URLS[planId];
+    if (!url || url.includes('REPLACE')) {
       toast('🔧 הגדר קישור Stripe ב-Billing.CHECKOUT_URLS', 'error');
       return;
     }
@@ -1744,10 +1783,28 @@ const Billing = {
   },
   planLabel() {
     const p = State.tenant?.plan;
-    if (p === 'pro')    return { text:'Pro ✓',   color:'var(--green-600)', bg:'var(--green-100)' };
-    if (p === 'basic')  return { text:'Basic ✓',  color:'var(--blue-500)',  bg:'var(--blue-100)' };
-    if (p === 'trial')  return { text:'ניסיון',   color:'var(--gold-600)',  bg:'var(--gold-100)' };
+    if (p === 'pro')      return { text:'Pro ✓',     color:'var(--purple-500)', bg:'var(--purple-100)' };
+    if (p === 'basic')    return { text:'Basic ✓',   color:'var(--blue-500)',   bg:'var(--blue-100)'   };
+    if (p === 'starter')  return { text:'Starter ✓', color:'var(--green-600)',  bg:'var(--green-100)'  };
+    if (p === 'trial')    return { text:'ניסיון חינם 30 יום', color:'var(--gold-600)', bg:'var(--gold-100)' };
     return { text:'לא פעיל', color:'var(--red-600)', bg:'var(--red-100)' };
+  },
+  renderPlansHTML(context = 'paywall') {
+    return this.PLANS.map(plan => `
+      <div class="paywall-plan ${plan.featured ? 'paywall-plan--featured' : ''}">
+        ${plan.featured ? '<div class="plan-badge">⭐ הכי פופולרי</div>' : ''}
+        <div class="plan-name">${plan.name}</div>
+        <div class="plan-desc">${plan.desc}</div>
+        <div class="plan-price">${plan.priceLabel}<span>/חודש</span></div>
+        <div class="plan-features">
+          ${plan.features.map(f => `<div>✓ ${f}</div>`).join('')}
+        </div>
+        <button class="btn ${plan.featured ? 'btn-primary' : 'btn-ghost'} w-full"
+                onclick="Billing.openCheckout('${plan.id}')">
+          התחל עם ${plan.name}
+        </button>
+      </div>
+    `).join('');
   },
 };
 
@@ -2398,11 +2455,12 @@ const Settings = {
         </div>
         ` : `
         <div class="billing-cta-box">
-          <div style="font-weight:800;font-size:15px;margin-bottom:4px;">⏳ ${Billing.daysLeft()} ימים נותרו בניסיון</div>
-          <div style="font-size:13px;color:var(--gray-500);margin-bottom:12px;">שדרג לתוכנית בתשלום כדי להמשיך ללא הגבלה</div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-ghost btn-sm" onclick="Billing.openCheckout('basic')" style="flex:1;">Basic ₪149/חודש</button>
-            <button class="btn btn-primary btn-sm" onclick="Billing.openCheckout('pro')" style="flex:1;">Pro ₪299/חודש ⭐</button>
+          <div style="font-weight:800;font-size:15px;margin-bottom:2px;">⏳ ${Billing.daysLeft()} ימים נותרו בניסיון Basic החינמי</div>
+          <div style="font-size:12px;color:var(--gray-500);margin-bottom:12px;">בחר תוכנית — ביטול בכל עת, ללא עמלות</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" onclick="Billing.openCheckout('starter')" style="flex:1;min-width:80px;">Starter<br><span style="font-size:11px;opacity:.7;">₪199/חודש</span></button>
+            <button class="btn btn-ghost btn-sm" onclick="Billing.openCheckout('basic')" style="flex:1;min-width:80px;">Basic<br><span style="font-size:11px;opacity:.7;">₪349/חודש</span></button>
+            <button class="btn btn-primary btn-sm" onclick="Billing.openCheckout('pro')" style="flex:1;min-width:80px;">Pro ⭐<br><span style="font-size:11px;opacity:.8;">₪549/חודש</span></button>
           </div>
         </div>
         `}

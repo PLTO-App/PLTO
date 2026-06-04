@@ -96,7 +96,8 @@
 - [x] Migration 011: עמודות billing בטבלת tenants (stripe_customer_id, subscription_id, trial_ends_at)
 - [x] `Billing` module: `isExpired()`, `daysLeft()`, `isPaid()`, `openCheckout()`, `openPortal()`
 - [x] Trial Banner — רצועה בראש האפליקציה עם ספירה לאחור
-- [x] Paywall Screen — מסך חסימה כשהניסיון פג, עם 2 תוכניות (Basic ₪149 / Pro ₪299)
+- [x] Paywall Screen — מסך חסימה כשהניסיון פג, עם 3 תוכניות (Starter ₪199 / Basic ₪349 / Pro ₪549)
+- [x] 30 יום ניסיון כולל תכונות **Basic** — ללא כרטיס אשראי
 - [x] Billing Gate — בדיקה אוטומטית בכניסה לאפליקציה
 - [x] Settings Billing Section — מצב מנוי + כפתורי שדרוג / Customer Portal
 
