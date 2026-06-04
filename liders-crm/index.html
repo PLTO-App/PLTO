@@ -606,7 +606,6 @@
       font-size: 11px; font-weight: 700; color: var(--gray-500);
       background: var(--gray-100); padding: 2px 7px; border-radius: var(--radius-full);
     }
-    .kanban-value { font-size: 11px; color: var(--gray-400); }
     .kanban-cards { display: flex; flex-direction: column; gap: 8px; }
     .kanban-add-btn {
       display: flex; align-items: center; gap: 6px; padding: 8px 12px;
@@ -727,10 +726,175 @@
       from { opacity: 0; transform: translateX(20px); }
       to   { opacity: 1; transform: translateX(0); }
     }
+
+    /* ═══════════════════════════════════════
+       LOADING OVERLAY
+    ═══════════════════════════════════════ */
+    #loading-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: linear-gradient(145deg, var(--navy-900) 0%, var(--navy-700) 60%, #1a3a6b 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+      transition: opacity 0.5s ease;
+    }
+    #loading-overlay.fade-out { opacity: 0; pointer-events: none; }
+    #loading-overlay.hidden { display: none; }
+    .loader-logo { font-size: 48px; font-weight: 900; color: #fff; letter-spacing: -2px; }
+    .loader-logo span { color: var(--gold-500); }
+    .loader-dots { display: flex; gap: 10px; }
+    .loader-dots span {
+      width: 10px; height: 10px; border-radius: 50%; background: var(--gold-400);
+      animation: ldot 1.3s ease-in-out infinite;
+    }
+    .loader-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loader-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes ldot { 0%,80%,100%{transform:scale(0);opacity:.3} 40%{transform:scale(1);opacity:1} }
+    .loader-text { font-size: 14px; color: var(--navy-100); font-weight: 500; letter-spacing: 0.5px; }
+
+    /* ═══════════════════════════════════════
+       LOGIN ENHANCEMENTS
+    ═══════════════════════════════════════ */
+    #screen-login::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 30% 20%, rgba(196,154,42,.15) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 80%, rgba(75,122,181,.2) 0%, transparent 55%);
+      pointer-events: none;
+    }
+    .login-card { animation: slideUp 0.5s cubic-bezier(.16,1,.3,1) both; }
+    @keyframes slideUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+    .login-logo-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--gold-100); color: var(--gold-600);
+      font-size: 11px; font-weight: 700; padding: 4px 10px;
+      border-radius: 99px; margin-bottom: 12px; letter-spacing: 0.5px;
+    }
+
+    /* ═══════════════════════════════════════
+       KPI CARDS — ENHANCED
+    ═══════════════════════════════════════ */
+    .kpi-card {
+      min-width: 140px; flex: 1; background: var(--surface);
+      border-radius: var(--radius-lg); padding: 16px 14px;
+      box-shadow: var(--shadow-sm); cursor: default;
+      border: 1px solid var(--border); transition: transform 0.18s, box-shadow 0.18s;
+      position: relative; overflow: hidden;
+    }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .kpi-card::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+      height: 3px; background: var(--kpi-accent, var(--navy-300));
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    }
+    .kpi-icon { font-size: 22px; margin-bottom: 8px; }
+    .kpi-label { font-size: 11px; color: var(--gray-500); font-weight: 600; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .4px; }
+    .kpi-value { font-size: 26px; font-weight: 900; color: var(--gray-900); line-height: 1; }
+    .kpi-sub { font-size: 11px; color: var(--gray-400); margin-top: 4px; }
+
+    /* ═══════════════════════════════════════
+       PIPELINE CHART
+    ═══════════════════════════════════════ */
+    .chart-card {
+      background: var(--surface); border-radius: var(--radius-lg);
+      padding: 16px 16px 8px; box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border); margin: 0 20px 8px;
+    }
+    .chart-card-title { font-size: 13px; font-weight: 700; color: var(--gray-600); margin-bottom: 10px; }
+
+    /* ═══════════════════════════════════════
+       KANBAN ENHANCEMENTS
+    ═══════════════════════════════════════ */
+    .kanban-col {
+      min-width: 220px; background: var(--gray-50);
+      border-radius: var(--radius-lg); padding: 0;
+      display: flex; flex-direction: column; gap: 0; overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .kanban-col-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 14px 10px;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--col-clr) 12%, white) 0%, white 100%);
+      border-bottom: 2px solid var(--col-clr);
+    }
+    .kanban-stage-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .kanban-stage-name { font-size: 13px; font-weight: 800; flex: 1; }
+    .kanban-count {
+      background: var(--col-clr); color: white;
+      font-size: 11px; font-weight: 800;
+      padding: 2px 7px; border-radius: 99px;
+    }
+    .kanban-value { font-size: 11px; color: var(--gray-500); padding: 4px 14px 6px; font-weight: 600; }
+    .kanban-cards { padding: 8px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .kanban-add-btn {
+      margin: 0 8px 8px; padding: 8px; border-radius: var(--radius-md);
+      border: 1.5px dashed var(--gray-300); background: transparent; cursor: pointer;
+      font-size: 12px; font-weight: 600; color: var(--gray-400);
+      transition: var(--transition); font-family: var(--font);
+    }
+    .kanban-add-btn:hover { border-color: var(--navy-300); color: var(--navy-400); background: var(--navy-50); }
+
+    /* ═══════════════════════════════════════
+       LEAD CARD ENHANCEMENTS
+    ═══════════════════════════════════════ */
+    .lead-card {
+      background: var(--surface); border-radius: var(--radius-md);
+      padding: 12px 12px 10px; box-shadow: 0 1px 4px rgba(0,0,0,.06);
+      cursor: pointer; border: 1px solid var(--border);
+      transition: box-shadow 0.15s, transform 0.15s;
+      border-right: 3px solid var(--stage-color, var(--gray-300));
+    }
+    .lead-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    .lead-card-name { font-size: 14px; font-weight: 800; color: var(--gray-900); }
+    .lead-card-meta { font-size: 11px; color: var(--gray-500); margin-top: 3px; }
+    .lead-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; flex-wrap: wrap; gap: 4px; }
+    .lead-card-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--stage-color, var(--navy-400)), var(--navy-600));
+      color: white; font-size: 11px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+
+    /* ═══════════════════════════════════════
+       SEARCH BAR
+    ═══════════════════════════════════════ */
+    .search-wrap { padding: 12px 20px 4px; }
+    .search-input {
+      width: 100%; padding: 10px 14px; border-radius: var(--radius-md);
+      border: 1.5px solid var(--border); background: var(--surface);
+      font-family: var(--font); font-size: 14px; color: var(--gray-900);
+      outline: none; transition: border-color 0.18s;
+    }
+    .search-input:focus { border-color: var(--navy-400); }
+    .search-input::placeholder { color: var(--gray-400); }
+
+    /* ═══════════════════════════════════════
+       SCORE RING
+    ═══════════════════════════════════════ */
+    .score-ring-wrap { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
+    .score-ring { transform: rotate(-90deg); }
+    .score-ring-bg { fill: none; stroke: var(--gray-200); stroke-width: 3; }
+    .score-ring-fill { fill: none; stroke-width: 3; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+    .score-ring-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800; }
+
+    /* FADE IN for screens */
+    .screen { animation: fadeIn 0.25s ease both; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 </head>
 <body>
+
+<!-- ═══════════════════════════════════════
+     LOADING OVERLAY
+═══════════════════════════════════════ -->
+<div id="loading-overlay" class="hidden">
+  <div class="loader-logo">Liders<span>.</span></div>
+  <div class="loader-dots">
+    <span></span><span></span><span></span>
+  </div>
+  <div class="loader-text">טוען נתונים...</div>
+</div>
 
 <!-- ═══════════════════════════════════════
      LOGIN SCREEN
@@ -826,6 +990,10 @@
         <div class="section-link" onclick="App.go('tasks')">כל המשימות</div>
       </div>
       <div class="tasks-list" id="dash-tasks"></div>
+      <div class="chart-card" id="dash-chart-container" style="display:none;">
+        <div class="chart-card-title">📊 שווי צינור לפי שלב</div>
+        <canvas id="pipeline-chart" height="140"></canvas>
+      </div>
       <div class="section-header mt-4">
         <div class="section-title">🕐 פעילות אחרונה</div>
       </div>
@@ -848,6 +1016,11 @@
       <div class="screen-header">
         <div class="screen-title">👥 כל הלידים</div>
         <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-lead')">+ ליד חדש</button>
+      </div>
+      <div class="search-wrap">
+        <input type="search" class="search-input" id="leads-search"
+               placeholder="🔍 חפש לפי שם, טלפון, אזור..."
+               oninput="Leads.search(this.value)">
       </div>
       <div class="screen-body" id="leads-list-container"></div>
     </div>
@@ -1443,6 +1616,7 @@ const App = {
   },
   async _authAndEnter(email, password) {
     const btn = document.querySelector('#screen-login .btn-primary');
+    const overlay = document.getElementById('loading-overlay');
     if (btn) { btn.disabled = true; btn.textContent = 'מתחבר...'; }
     try {
       const { data, error } = await DB.signIn(email, password);
@@ -1450,6 +1624,9 @@ const App = {
         toast('שגיאת התחברות: ' + (error?.message || 'נסה שנית'), 'error');
         return;
       }
+      // show loading overlay while fetching data
+      overlay.classList.remove('hidden', 'fade-out');
+      overlay.querySelector('.loader-text').textContent = 'טוען נתונים...';
       const user = data.user;
       await DB.ensureAgent(user.email, user.email.split('@')[0]);
       const loaded = await DB.loadAll();
@@ -1461,8 +1638,12 @@ const App = {
       State.agent  = { name: user.email.split('@')[0], email: user.email, initials: user.email[0].toUpperCase(), role: 'סוכן' };
       State.tenant = { name: 'לידרס נדל"ן — תל אביב' };
       this._showApp();
+      // fade out overlay
+      overlay.classList.add('fade-out');
+      setTimeout(() => overlay.classList.add('hidden'), 520);
     } catch(e) {
       toast('שגיאה: ' + e.message, 'error');
+      overlay.classList.add('hidden');
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = 'כניסה למערכת'; }
     }
@@ -1500,7 +1681,7 @@ const App = {
     switch (screen) {
       case 'dashboard':   Dashboard.render(); break;
       case 'pipeline':    Pipeline.render();  break;
-      case 'leads':       Leads.render();     break;
+      case 'leads':       Leads._query=''; const si=document.getElementById('leads-search'); if(si) si.value=''; Leads.render(); break;
       case 'lead-detail': LeadDetail.render(State.currentLeadId); break;
       case 'properties':  PropertiesScreen.render(); break;
       case 'tasks':       Tasks.render();     break;
@@ -1537,19 +1718,58 @@ const Dashboard = {
     const closedTotal= State.leads.filter(l => l.stage === 's5').length;
     const pipelineVal= State.leads.filter(l=>l.stage!=='s5').reduce((s,l)=>s+(l.budget_max||0),0);
     const kpis = [
-      { label:'לידים חדשים היום', value: newToday,        sub:'לידים חדשים', color:'#DBEAFE', icon:'🆕' },
-      { label:'עסקאות פעילות',   value: activeDeals,      sub:'בצינור',      color:'#EDE9FE', icon:'📋' },
-      { label:'עסקאות שנסגרו',   value: closedTotal,      sub:'סה"כ',        color:'#DCFCE7', icon:'🎉' },
-      { label:'שווי צינור',      value: formatMoney(pipelineVal), sub:'פוטנציאל', color:'#FEF3C7', icon:'💰' },
+      { label:'לידים חדשים היום', value: newToday,               sub:'לידים חדשים', accent:'#2563EB', icon:'🆕' },
+      { label:'עסקאות פעילות',   value: activeDeals,             sub:'בצינור',      accent:'#7C3AED', icon:'📋' },
+      { label:'עסקאות שנסגרו',   value: closedTotal,             sub:'סה"כ',        accent:'#16A34A', icon:'🎉' },
+      { label:'שווי צינור',      value: formatMoney(pipelineVal),sub:'פוטנציאל',    accent:'#C49A2A', icon:'💰' },
     ];
     document.getElementById('kpi-row').innerHTML = kpis.map(k => `
-      <div class="kpi-card">
-        <div class="kpi-icon" style="background:${k.color}">${k.icon}</div>
+      <div class="kpi-card" style="--kpi-accent:${k.accent}">
+        <div class="kpi-icon">${k.icon}</div>
         <div class="kpi-label">${k.label}</div>
         <div class="kpi-value">${k.value}</div>
         <div class="kpi-sub">${k.sub}</div>
       </div>
     `).join('');
+    this.renderChart();
+  },
+  _chartInst: null,
+  renderChart() {
+    const container = document.getElementById('dash-chart-container');
+    const canvas = document.getElementById('pipeline-chart');
+    if (!container || !canvas || !window.Chart) return;
+    const stageData = State.stages.map(s => {
+      const val = State.leads
+        .filter(l => l.stage === s.id && l.stage !== 's5')
+        .reduce((acc, l) => acc + (l.budget_max || 0), 0);
+      return { name: s.name, value: val, color: s.color };
+    }).filter(s => s.value > 0);
+    if (!stageData.length) { container.style.display = 'none'; return; }
+    container.style.display = '';
+    if (this._chartInst) { this._chartInst.destroy(); }
+    this._chartInst = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: stageData.map(s => s.name),
+        datasets: [{
+          data: stageData.map(s => s.value),
+          backgroundColor: stageData.map(s => s.color + 'CC'),
+          borderColor:     stageData.map(s => s.color),
+          borderWidth: 2,
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false }, tooltip: {
+          callbacks: { label: ctx => formatMoney(ctx.raw) }
+        }},
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { family:'Heebo', size:11 } } },
+          y: { display: false, beginAtZero: true }
+        }
+      }
+    });
   },
   renderTasks() {
     const urgent = State.tasks.filter(t => !t.done && diffDays(t.due) <= 0)
@@ -1589,13 +1809,13 @@ const Pipeline = {
       const leads = State.leads.filter(l => l.stage === stage.id);
       const totalVal = leads.reduce((s,l) => s + (l.budget_max||0), 0);
       return `
-        <div class="kanban-col">
+        <div class="kanban-col" style="--col-clr:${stage.color}">
           <div class="kanban-col-header">
             <div class="kanban-stage-dot" style="background:${stage.color}"></div>
             <div class="kanban-stage-name" style="color:${stage.color}">${stage.name}</div>
             <div class="kanban-count">${leads.length}</div>
           </div>
-          ${totalVal ? `<div style="font-size:11px;color:var(--gray-400);padding:2px 4px;">${formatMoney(totalVal)}</div>` : ''}
+          ${totalVal ? `<div class="kanban-value">${formatMoney(totalVal)}</div>` : ''}
           <div class="kanban-cards">
             ${leads.map(l => this.renderCard(l, stage.color)).join('')}
           </div>
@@ -1608,16 +1828,20 @@ const Pipeline = {
     const task = State.tasks.find(t => t.lead_id === lead.id && !t.done);
     const isOverdue = task && diffDays(task.due) < 0;
     const isToday = task && diffDays(task.due) === 0;
+    const initials = lead.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
     return `
       <div class="lead-card" style="--stage-color:${color}"
            onclick="App.go('lead-detail', {currentLeadId:'${lead.id}'})">
-        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
-          <div class="lead-card-name truncate">${lead.name}</div>
+        <div style="display:flex; align-items:flex-start; gap:8px;">
+          <div class="lead-card-avatar">${initials}</div>
+          <div style="flex:1; min-width:0;">
+            <div class="lead-card-name truncate">${lead.name}</div>
+            <div class="lead-card-meta truncate">${lead.desired_area || '—'} · ${lead.rooms || '?'} חד׳</div>
+            <div class="lead-card-meta">${formatMoney(lead.budget_min)}–${formatMoney(lead.budget_max)}</div>
+          </div>
           <div class="score-badge ${scoreClass(lead.score)}">${lead.score}</div>
         </div>
-        <div class="lead-card-meta truncate">${lead.desired_area || '—'} · ${lead.rooms || '?'} חד׳</div>
-        <div class="lead-card-meta">${formatMoney(lead.budget_min)}–${formatMoney(lead.budget_max)}</div>
-        <div class="lead-card-footer">
+        <div class="lead-card-footer" style="margin-top:8px;">
           <span class="badge badge-${lead.source}">${sourceLabel(lead.source)}</span>
           ${task ? `<span style="font-size:11px; color:${isOverdue?'var(--red-600)':isToday?'var(--orange-500)':'var(--gray-400)'}; font-weight:600;">
             ${typeEmoji(task.type)} ${formatRelDate(task.due)}
@@ -1632,13 +1856,26 @@ const Pipeline = {
    ALL LEADS LIST
 ═══════════════════════════════════════════ */
 const Leads = {
+  _query: '',
   render() {
+    const q = this._query.toLowerCase();
+    const list = q
+      ? State.leads.filter(l =>
+          l.name.toLowerCase().includes(q) ||
+          (l.phone||'').includes(q) ||
+          (l.desired_area||'').toLowerCase().includes(q)
+        )
+      : State.leads;
     const el = document.getElementById('leads-list-container');
-    el.innerHTML = `
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        ${State.leads.map(l => this.renderRow(l)).join('')}
-      </div>
-    `;
+    el.innerHTML = list.length
+      ? `<div style="display:flex;flex-direction:column;gap:10px;padding:0 0 80px;">
+           ${list.map(l => this.renderRow(l)).join('')}
+         </div>`
+      : `<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">לא נמצאו תוצאות</div></div>`;
+  },
+  search(q) {
+    this._query = q;
+    this.render();
   },
   renderRow(lead) {
     const stage = State.stages.find(s => s.id === lead.stage);
