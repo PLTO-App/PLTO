@@ -1101,6 +1101,59 @@
     .fab-opt-lead .fab-opt-icon { background: var(--navy-50); }
     .fab-opt-property .fab-opt-icon { background: var(--green-100); }
 
+    /* ── Voice recording button ── */
+    .btn.recording {
+      background: #fee2e2;
+      border-color: #ef4444;
+      color: #ef4444;
+      animation: pulse-red 1s infinite;
+    }
+    @keyframes pulse-red {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+      50%       { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+    }
+
+    /* ── Print / PDF Export ── */
+    @media print {
+      #sidebar, #bottom-nav, #fab-speed-dial, #trial-banner, .btn, nav { display: none !important; }
+      #main-content { margin: 0 !important; padding: 0 !important; }
+      .screen { display: block !important; }
+      .screen:not(#screen-analytics) { display: none !important; }
+      .kpi-card { break-inside: avoid; }
+      canvas { max-width: 100%; }
+      body { background: white; }
+    }
+
+    /* ── Mobile UI Polish ── */
+    @media (max-width: 768px) {
+      .btn { min-height: 44px; padding: 10px 16px; }
+      .form-input, .form-select { min-height: 44px; font-size: 16px; }
+      .task-item { padding: 14px 16px; }
+      .lead-card { padding: 14px; }
+      .tab-btn { padding: 10px 12px; font-size: 13px; }
+      .kpi-card { padding: 16px 12px; }
+      .nav-tab { padding: 8px 4px; font-size: 10px; }
+      .pipeline-card { padding: 12px; }
+      .pipeline-card .card-name { font-size: 15px; }
+      .modal { max-height: 92vh; overflow-y: auto; }
+    }
+
+    /* Swipe hint on pipeline */
+    .pipeline-wrapper {
+      scroll-snap-type: x mandatory;
+    }
+    .kanban-col {
+      scroll-snap-align: start;
+    }
+
+    /* Safe area for iPhone notch */
+    #bottom-nav {
+      padding-bottom: env(safe-area-inset-bottom, 8px);
+    }
+    #fab-speed-dial {
+      bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
@@ -1317,8 +1370,11 @@
 
     <!-- ── ANALYTICS ── -->
     <div id="screen-analytics" class="screen hidden">
-      <div class="screen-header">
+      <div class="screen-header" style="display:flex;align-items:center;gap:12px;">
         <div class="screen-title">📈 אנליטיקס</div>
+        <button class="btn btn-outline" onclick="Analytics.exportPDF()" style="margin-right:auto;font-size:13px;padding:6px 14px;">
+          📄 ייצוא PDF
+        </button>
       </div>
       <div class="analytics-body">
         <div class="analytics-kpi-row" id="analytics-kpis"></div>
@@ -1635,6 +1691,26 @@
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-add-property')">ביטול</button>
       <button class="btn btn-primary" style="flex:1;" onclick="addProperty()">שמור נכס</button>
+    </div>
+  </div>
+</div>
+
+<!-- Onboarding Wizard -->
+<div class="modal-overlay hidden" id="modal-onboarding">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header" style="border-bottom:none;padding-bottom:0;">
+      <div style="width:100%;text-align:center;">
+        <div id="ob-step-indicator" style="display:flex;gap:8px;justify-content:center;margin-bottom:16px;">
+          <!-- step dots rendered by JS -->
+        </div>
+        <h2 id="ob-title" style="margin:0;font-size:1.4rem;">ברוך הבא ל-Liders CRM 🎉</h2>
+        <p id="ob-subtitle" style="color:var(--gray-500);margin-top:6px;font-size:0.9rem;"></p>
+      </div>
+    </div>
+    <div class="modal-body" id="ob-body" style="min-height:220px;"></div>
+    <div class="modal-footer" style="display:flex;gap:12px;justify-content:space-between;">
+      <button class="btn btn-ghost" id="ob-back-btn" onclick="Onboarding.back()" style="display:none;">→ חזור</button>
+      <button class="btn btn-primary" id="ob-next-btn" onclick="Onboarding.next()" style="margin-right:auto;">הבא ←</button>
     </div>
   </div>
 </div>
@@ -2111,6 +2187,169 @@ const Billing = {
 };
 
 /* ═══════════════════════════════════════════
+   ONBOARDING WIZARD MODULE — Phase 5
+═══════════════════════════════════════════ */
+const Onboarding = {
+  _step: 0,
+  _steps: [
+    {
+      title: 'ברוך הבא ל-Liders CRM 🎉',
+      subtitle: 'בוא נגדיר את המערכת תוך 2 דקות',
+      render() {
+        return `
+          <div style="text-align:center;padding:24px 0;">
+            <div style="font-size:64px;margin-bottom:16px;">🏠</div>
+            <p style="font-size:1rem;color:var(--gray-500);line-height:1.6;">
+              מערכת ה-CRM החכמה ביותר לסוכני נדל"ן בישראל.<br>
+              נגדיר יחד את הסוכנות שלך בכמה שלבים פשוטים.
+            </p>
+          </div>`;
+      },
+    },
+    {
+      title: 'שם הסוכנות',
+      subtitle: 'איך קוראים לסוכנות שלך?',
+      render() {
+        const val = State.tenant?.name || '';
+        return `
+          <div style="padding:8px 0;">
+            <label class="form-label">שם הסוכנות *</label>
+            <input class="form-input" id="ob-agency-name" placeholder='לידרס נדל"ן — תל אביב' value="${val}" style="font-size:1.1rem;">
+            <label class="form-label" style="margin-top:16px;">טלפון ראשי (אופציונלי)</label>
+            <input class="form-input" id="ob-agency-phone" placeholder="050-0000000" type="tel">
+            <label class="form-label" style="margin-top:16px;">עיר / אזור עיקרי</label>
+            <input class="form-input" id="ob-agency-city" placeholder="תל אביב">
+          </div>`;
+      },
+      validate() {
+        const name = document.getElementById('ob-agency-name')?.value?.trim();
+        if (!name) { toast('נא הכנס שם סוכנות', 'error'); return false; }
+        Onboarding._data.agencyName = name;
+        Onboarding._data.agencyPhone = document.getElementById('ob-agency-phone')?.value?.trim();
+        Onboarding._data.agencyCity = document.getElementById('ob-agency-city')?.value?.trim();
+        return true;
+      },
+    },
+    {
+      title: 'שלבי פייפליין',
+      subtitle: 'אלו שלבים עוברים הלידים שלך?',
+      render() {
+        const stages = State.stages.length ? State.stages : [
+          { name: 'ליד חדש' }, { name: 'בקשר' }, { name: 'ביקור נקבע' },
+          { name: 'הצעה הוגשה' }, { name: 'סגירה' },
+        ];
+        return `
+          <div>
+            <p style="color:var(--gray-500);font-size:0.85rem;margin-bottom:12px;">אלו שלבי הפייפליין המוגדרים. ניתן לשנות בהגדרות.</p>
+            <div style="display:flex;flex-direction:column;gap:8px;" id="ob-stages-list">
+              ${stages.map((s, i) => `
+                <div style="display:flex;align-items:center;gap:10px;background:var(--bg-app);border-radius:8px;padding:10px 12px;">
+                  <span style="background:var(--navy-500);color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;">${i+1}</span>
+                  <span>${s.name}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>`;
+      },
+    },
+    {
+      title: 'WhatsApp Automations ⚡',
+      subtitle: 'חבר את Make.com לשליחת הודעות אוטומטיות',
+      render() {
+        return `
+          <div>
+            <p style="color:var(--gray-500);font-size:0.88rem;margin-bottom:16px;line-height:1.6;">
+              חיבור Make.com מאפשר שליחת הודעות WhatsApp אוטומטיות ללידים —
+              תזכורות, follow-up, ועדכוני עסקה.
+            </p>
+            <label class="form-label">Webhook URL של Make.com (אופציונלי)</label>
+            <input class="form-input" id="ob-webhook" placeholder="https://hook.eu1.make.com/..." dir="ltr">
+            <div style="margin-top:16px;padding:12px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0;">
+              <p style="margin:0;font-size:0.82rem;color:#15803d;">
+                💡 <strong>איך מגדירים?</strong> לך ל-make.com → צור Scenario → Webhook trigger → העתק את ה-URL לכאן
+              </p>
+            </div>
+          </div>`;
+      },
+      validate() {
+        const webhook = document.getElementById('ob-webhook')?.value?.trim();
+        if (webhook) {
+          Onboarding._data.webhook = webhook;
+          localStorage.setItem('make_webhook_url', webhook);
+        }
+        return true;
+      },
+    },
+    {
+      title: 'הכל מוכן! 🚀',
+      subtitle: 'המערכת שלך מוכנה לעבודה',
+      render() {
+        return `
+          <div style="text-align:center;padding:16px 0;">
+            <div style="font-size:64px;margin-bottom:16px;">🎉</div>
+            <p style="font-size:1rem;line-height:1.7;color:var(--gray-500);">
+              <strong style="color:var(--gray-900);">הגדרת הסוכנות הושלמה בהצלחה!</strong><br>
+              עכשיו תוכל להוסיף לידים, לנהל נכסים,<br>ולעקוב אחרי כל העסקאות במקום אחד.
+            </p>
+            <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px;text-align:right;">
+              <div style="display:flex;align-items:center;gap:10px;background:var(--bg-app);padding:10px 14px;border-radius:8px;">
+                <span>✅</span><span>הוסף את הליד הראשון שלך</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;background:var(--bg-app);padding:10px 14px;border-radius:8px;">
+                <span>✅</span><span>הוסף נכס לניהול</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;background:var(--bg-app);padding:10px 14px;border-radius:8px;">
+                <span>✅</span><span>הגדר את ה-Claude API Key בהגדרות</span>
+              </div>
+            </div>
+          </div>`;
+      },
+    },
+  ],
+  _data: {},
+
+  show() {
+    if (localStorage.getItem('onboarding_done') === '1') return;
+    this._step = 0;
+    this._data = {};
+    document.getElementById('modal-onboarding').classList.remove('hidden');
+    this._renderStep();
+  },
+
+  _renderStep() {
+    const s = this._steps[this._step];
+    const total = this._steps.length;
+    document.getElementById('ob-title').textContent = s.title;
+    document.getElementById('ob-subtitle').textContent = s.subtitle || '';
+    document.getElementById('ob-body').innerHTML = s.render();
+    document.getElementById('ob-step-indicator').innerHTML = this._steps.map((_, i) =>
+      `<div style="width:${i===this._step?24:8}px;height:8px;border-radius:4px;background:${i===this._step?'var(--navy-500)':'var(--border)'};transition:all 0.3s;"></div>`
+    ).join('');
+    const backBtn = document.getElementById('ob-back-btn');
+    const nextBtn = document.getElementById('ob-next-btn');
+    backBtn.style.display = this._step > 0 ? 'block' : 'none';
+    nextBtn.textContent = this._step === total - 1 ? '🚀 בוא נתחיל!' : 'הבא ←';
+  },
+
+  async next() {
+    const s = this._steps[this._step];
+    if (s.validate && !s.validate()) return;
+    if (this._step === this._steps.length - 1) {
+      localStorage.setItem('onboarding_done', '1');
+      document.getElementById('modal-onboarding').classList.add('hidden');
+      toast('🎉 ברוך הבא ל-Liders CRM!', 'success');
+      return;
+    }
+    this._step++;
+    this._renderStep();
+  },
+
+  back() {
+    if (this._step > 0) { this._step--; this._renderStep(); }
+  },
+};
+
+/* ═══════════════════════════════════════════
    MODAL UTILS
 ═══════════════════════════════════════════ */
 function openModal(id) {
@@ -2335,6 +2574,61 @@ const Make = {
 };
 
 /* ═══════════════════════════════════════════
+   VOICE-TO-CRM MODULE — Phase 5
+═══════════════════════════════════════════ */
+const Voice = {
+  _rec: null,
+  _active: false,
+
+  toggle() {
+    if (this._active) { this.stop(); return; }
+    this.start();
+  },
+
+  start() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { toast('הדפדפן לא תומך בהקלטה קולית', 'error'); return; }
+    const rec = new SR();
+    rec.lang = 'he-IL';
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    rec.onstart = () => {
+      this._active = true;
+      const icon = document.getElementById('voice-icon');
+      const status = document.getElementById('voice-status');
+      const btn = document.getElementById('voice-btn');
+      if (icon) icon.textContent = '⏹️';
+      if (status) status.textContent = 'מקליט...';
+      if (btn) btn.classList.add('recording');
+    };
+    rec.onresult = (e) => {
+      const text = e.results[0][0].transcript;
+      const ta = document.getElementById('new-activity-content');
+      if (ta) { ta.value = (ta.value ? ta.value + ' ' : '') + text; }
+      toast('✅ הטקסט הוזן', 'success');
+    };
+    rec.onerror = (e) => {
+      toast('שגיאה בהקלטה: ' + e.error, 'error');
+      this.stop();
+    };
+    rec.onend = () => this.stop();
+    rec.start();
+    this._rec = rec;
+  },
+
+  stop() {
+    if (this._rec) { try { this._rec.stop(); } catch(_) {} this._rec = null; }
+    this._active = false;
+    const icon = document.getElementById('voice-icon');
+    const status = document.getElementById('voice-status');
+    const btn = document.getElementById('voice-btn');
+    if (icon) icon.textContent = '🎤';
+    if (status) status.textContent = '';
+    if (btn) btn.classList.remove('recording');
+  },
+};
+
+/* ═══════════════════════════════════════════
    APP CONTROLLER
 ═══════════════════════════════════════════ */
 const App = {
@@ -2423,6 +2717,8 @@ const App = {
     Billing.renderTrialBanner();
     this.go('dashboard');
     this.updateBadges();
+    // Show onboarding wizard for new users
+    setTimeout(() => Onboarding.show(), 800);
   },
   async logout() {
     await DB.signOut();
@@ -2755,10 +3051,16 @@ const LeadDetail = {
 
         <!-- ACTIVITY TAB -->
         <div class="tab-content" id="tab-activity">
-          <button class="btn btn-ghost btn-sm w-full" style="margin-bottom:16px;"
-                  onclick="State.currentLeadId='${lead.id}'; openModal('modal-add-activity')">
-            + הוסף פעילות
-          </button>
+          <div style="display:flex;gap:8px;margin-bottom:16px;">
+            <button class="btn btn-ghost btn-sm" style="flex:1;"
+                    onclick="State.currentLeadId='${lead.id}'; openModal('modal-add-activity')">
+              + הוסף פעילות
+            </button>
+            <button class="btn btn-outline btn-icon" id="voice-btn" onclick="Voice.toggle()" title="הקלט הערה קולית" style="display:flex;align-items:center;gap:4px;padding:6px 12px;font-size:14px;">
+              <span id="voice-icon">🎤</span>
+              <span id="voice-status" style="font-size:12px;margin-right:4px;"></span>
+            </button>
+          </div>
           <div class="timeline">
             ${activities.length ? activities.map(a => `
               <div class="timeline-item">
@@ -3193,6 +3495,13 @@ const Analytics = {
         }
       }
     });
+  },
+
+  exportPDF() {
+    const orig = document.title;
+    document.title = 'Liders CRM — דוח אנליטיקה ' + new Date().toLocaleDateString('he-IL');
+    window.print();
+    document.title = orig;
   },
 };
 
