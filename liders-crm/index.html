@@ -1040,6 +1040,67 @@
       background: var(--gray-50); direction: ltr;
     }
 
+    /* ═══════════════════════════════════════
+       ANALYTICS SCREEN
+    ═══════════════════════════════════════ */
+    .analytics-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+    .analytics-kpi-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media (min-width: 640px) {
+      .analytics-kpi-row { grid-template-columns: repeat(4, 1fr); }
+    }
+    .analytics-chart-card {
+      background: var(--surface); border-radius: var(--radius-lg);
+      padding: 18px; box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+    }
+    .analytics-chart-title {
+      font-size: 14px; font-weight: 800; color: var(--gray-800); margin-bottom: 14px;
+    }
+
+    /* ═══════════════════════════════════════
+       FAB SPEED-DIAL
+    ═══════════════════════════════════════ */
+    .fab-speed-dial {
+      position: fixed; bottom: calc(var(--bottom-nav-h) + 16px); left: 20px;
+      z-index: 100; display: flex; flex-direction: column-reverse; align-items: center; gap: 10px;
+    }
+    @media (min-width: 768px) {
+      .fab-speed-dial { bottom: 24px; left: 24px; }
+    }
+    .fab-main {
+      width: 56px; height: 56px; border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--gold-400), var(--gold-600));
+      color: var(--white); font-size: 24px; font-weight: 300;
+      box-shadow: var(--shadow-xl); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .fab-main:hover { transform: scale(1.08); }
+    .fab-main:active { transform: scale(0.96); }
+    .fab-main.open { transform: rotate(45deg); }
+    .fab-options {
+      display: flex; flex-direction: column-reverse; gap: 8px;
+      align-items: center;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      opacity: 0; transform: translateY(8px); pointer-events: none;
+    }
+    .fab-options.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .fab-option {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface); border: none; cursor: pointer;
+      border-radius: var(--radius-full); box-shadow: var(--shadow-md);
+      padding: 8px 16px 8px 12px; font-size: 13px; font-weight: 700;
+      color: var(--gray-800); white-space: nowrap;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .fab-option:hover { transform: scale(1.04); box-shadow: var(--shadow-lg); }
+    .fab-option .fab-opt-icon {
+      width: 32px; height: 32px; border-radius: var(--radius-full);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .fab-opt-lead .fab-opt-icon { background: var(--navy-50); }
+    .fab-opt-property .fab-opt-icon { background: var(--green-100); }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
@@ -1127,6 +1188,9 @@
       <a class="nav-item" data-screen="tasks" onclick="App.go('tasks')">
         <span class="nav-icon">✅</span> משימות
         <span class="nav-badge" id="nav-badge-tasks">0</span>
+      </a>
+      <a class="nav-item" data-screen="analytics" onclick="App.go('analytics')">
+        <span class="nav-icon">📈</span> אנליטיקס
       </a>
       <a class="nav-item" data-screen="calendar" onclick="App.go('calendar')">
         <span class="nav-icon">📅</span> לוח שנה
@@ -1251,6 +1315,28 @@
       </div>
     </div>
 
+    <!-- ── ANALYTICS ── -->
+    <div id="screen-analytics" class="screen hidden">
+      <div class="screen-header">
+        <div class="screen-title">📈 אנליטיקס</div>
+      </div>
+      <div class="analytics-body">
+        <div class="analytics-kpi-row" id="analytics-kpis"></div>
+        <div class="analytics-chart-card">
+          <div class="analytics-chart-title">🔵 משפך המרה — לידים לפי שלב</div>
+          <canvas id="analytics-funnel-chart" height="160"></canvas>
+        </div>
+        <div class="analytics-chart-card">
+          <div class="analytics-chart-title">📊 לידים לפי מקור</div>
+          <canvas id="analytics-source-chart" height="180"></canvas>
+        </div>
+        <div class="analytics-chart-card">
+          <div class="analytics-chart-title">📅 לידים חדשים — 6 חודשים אחרונים</div>
+          <canvas id="analytics-monthly-chart" height="160"></canvas>
+        </div>
+      </div>
+    </div>
+
     <!-- ── SETTINGS ── -->
     <div id="screen-settings" class="screen hidden">
       <div class="screen-header"><div class="screen-title">⚙️ הגדרות</div></div>
@@ -1283,8 +1369,20 @@
     </div>
   </nav>
 
-  <!-- FAB -->
-  <button class="fab" onclick="openModal('modal-add-lead')" title="הוסף ליד חדש">+</button>
+  <!-- FAB SPEED-DIAL -->
+  <div class="fab-speed-dial" id="fab-speed-dial">
+    <button class="fab-main" id="fab-main-btn" onclick="toggleFAB()" title="פעולות מהירות">+</button>
+    <div class="fab-options" id="fab-options">
+      <button class="fab-option fab-opt-property" onclick="closeFAB(); openModal('modal-add-property')">
+        <div class="fab-opt-icon">🏠</div>
+        נכס חדש
+      </button>
+      <button class="fab-option fab-opt-lead" onclick="closeFAB(); openModal('modal-add-lead')">
+        <div class="fab-opt-icon">➕</div>
+        ליד חדש
+      </button>
+    </div>
+  </div>
 
 </div>
 
@@ -1460,6 +1558,83 @@
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-add-activity')">ביטול</button>
       <button class="btn btn-primary" style="flex:1;" onclick="addActivity()">שמור</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     MODAL: ADD PROPERTY
+═══════════════════════════════════════ -->
+<div id="modal-add-property" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-add-property')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">🏠 נכס חדש</div>
+      <button class="modal-close" onclick="closeModal('modal-add-property')">×</button>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div class="form-group">
+        <label class="form-label">כותרת הנכס *</label>
+        <input type="text" id="new-prop-title" class="form-input" placeholder="לדוגמה: 4 חדרים עם נוף לים">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">סוג נכס</label>
+          <select id="new-prop-type" class="form-input">
+            <option value="apartment">דירה</option>
+            <option value="house">בית פרטי</option>
+            <option value="penthouse">פנטהאוז</option>
+            <option value="commercial">מסחרי</option>
+            <option value="land">מגרש</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">סטטוס</label>
+          <select id="new-prop-status" class="form-input">
+            <option value="available">זמין</option>
+            <option value="under_offer">בהצעה</option>
+            <option value="sold">נמכר</option>
+            <option value="rented">מושכר</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">מחיר (₪) *</label>
+        <input type="number" id="new-prop-price" class="form-input" placeholder="2000000" min="0">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">חדרים</label>
+          <input type="number" id="new-prop-rooms" class="form-input" placeholder="3" min="0" step="0.5">
+        </div>
+        <div class="form-group">
+          <label class="form-label">שטח (מ"ר)</label>
+          <input type="number" id="new-prop-area" class="form-input" placeholder="90" min="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">קומה</label>
+          <input type="number" id="new-prop-floor" class="form-input" placeholder="3" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">עיר</label>
+          <input type="text" id="new-prop-city" class="form-input" placeholder="תל אביב">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">כתובת</label>
+        <input type="text" id="new-prop-address" class="form-input" placeholder="רחוב הרצל 10">
+      </div>
+      <div class="form-group">
+        <label class="form-label">תיאור</label>
+        <textarea id="new-prop-description" class="form-input form-textarea" placeholder="פרטים נוספים על הנכס..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-property')">ביטול</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="addProperty()">שמור נכס</button>
     </div>
   </div>
 </div>
@@ -1657,6 +1832,30 @@ const DB = {
     return {
       id: data.id, lead_id: data.lead_id, type: data.type,
       content: data.content, created_at: today(),
+    };
+  },
+
+  async addProperty(prop) {
+    const { data, error } = await supabase.from('properties').insert({
+      tenant_id: this.tenantId,
+      title: prop.title,
+      type: prop.type || 'apartment',
+      status: prop.status || 'available',
+      price: prop.price || 0,
+      rooms: prop.rooms || null,
+      area_sqm: prop.area || null,
+      floor: prop.floor || null,
+      address: prop.address || null,
+      city: prop.city || null,
+      description: prop.description || '',
+    }).select().single();
+    if (error) throw error;
+    return {
+      id: data.id, title: data.title, type: data.type, status: data.status,
+      price: Number(data.price), area: Number(data.area_sqm) || 0,
+      rooms: data.rooms, floor: data.floor,
+      address: data.address || '', city: data.city || '',
+      neighborhood: '', description: data.description || '',
     };
   },
 
@@ -2252,6 +2451,7 @@ const App = {
       case 'lead-detail': LeadDetail.render(State.currentLeadId); break;
       case 'properties':  PropertiesScreen.render(); break;
       case 'tasks':       Tasks.render();     break;
+      case 'analytics':   Analytics.render(); break;
       case 'settings':    Settings.render();  break;
     }
     window.scrollTo(0, 0);
@@ -2829,6 +3029,174 @@ function renderTaskItem(task) {
 }
 
 /* ═══════════════════════════════════════════
+   ANALYTICS SCREEN
+═══════════════════════════════════════════ */
+const Analytics = {
+  _charts: {},
+
+  _destroyAll() {
+    Object.values(this._charts).forEach(c => { try { c.destroy(); } catch(e){} });
+    this._charts = {};
+  },
+
+  render() {
+    this._destroyAll();
+    this.renderKPIs();
+    setTimeout(() => {
+      this.renderFunnelChart();
+      this.renderSourceChart();
+      this.renderMonthlyChart();
+    }, 50);
+  },
+
+  renderKPIs() {
+    const total = State.leads.length;
+    const closed = State.leads.filter(l => l.stage === 's5').length;
+    const convRate = total ? Math.round((closed / total) * 100) : 0;
+    const pipelineVal = State.leads
+      .filter(l => l.stage !== 's5')
+      .reduce((s, l) => s + (l.budget_max || 0), 0);
+    // avg days to close: use leads in s5 with created_at
+    const closedLeads = State.leads.filter(l => l.stage === 's5' && l.created_at);
+    const avgDays = closedLeads.length
+      ? Math.round(closedLeads.reduce((s, l) => s + Math.abs(diffDays(l.created_at)), 0) / closedLeads.length)
+      : 0;
+
+    const kpis = [
+      { icon: '👥', label: 'סה"כ לידים',       value: total,               sub: 'כל הזמנים',     accent: '#2563EB' },
+      { icon: '🎯', label: 'אחוז המרה',          value: convRate + '%',       sub: 'סגירות מסה"כ', accent: '#16A34A' },
+      { icon: '💰', label: 'שווי צינור',         value: formatMoney(pipelineVal), sub: 'פוטנציאל',   accent: '#C49A2A' },
+      { icon: '⏱️', label: 'ממוצע ימים לסגירה',  value: avgDays || '—',       sub: 'ימים',           accent: '#7C3AED' },
+    ];
+    document.getElementById('analytics-kpis').innerHTML = kpis.map(k => `
+      <div class="kpi-card" style="--kpi-accent:${k.accent}">
+        <div class="kpi-icon">${k.icon}</div>
+        <div class="kpi-label">${k.label}</div>
+        <div class="kpi-value">${k.value}</div>
+        <div class="kpi-sub">${k.sub}</div>
+      </div>
+    `).join('');
+  },
+
+  renderFunnelChart() {
+    const canvas = document.getElementById('analytics-funnel-chart');
+    if (!canvas || !window.Chart) return;
+    const data = State.stages.map(s => ({
+      name: s.name,
+      count: State.leads.filter(l => l.stage === s.id).length,
+      color: s.color,
+    }));
+    this._charts.funnel = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: data.map(d => d.name),
+        datasets: [{
+          data: data.map(d => d.count),
+          backgroundColor: data.map(d => d.color + 'CC'),
+          borderColor: data.map(d => d.color),
+          borderWidth: 2,
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false }, tooltip: {
+          callbacks: { label: ctx => ctx.raw + ' לידים' }
+        }},
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { family: 'Heebo', size: 11 } } },
+          y: { beginAtZero: true, ticks: { precision: 0, font: { family: 'Heebo', size: 11 } } }
+        }
+      }
+    });
+  },
+
+  renderSourceChart() {
+    const canvas = document.getElementById('analytics-source-chart');
+    if (!canvas || !window.Chart) return;
+    const sources = {};
+    State.leads.forEach(l => { sources[l.source] = (sources[l.source] || 0) + 1; });
+    const sorted = Object.entries(sources).sort((a, b) => b[1] - a[1]);
+    const colors = ['#2563EB','#16A34A','#C49A2A','#7C3AED','#EA580C','#0891B2','#9CA3AF'];
+    this._charts.source = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: sorted.map(([src]) => sourceLabel(src)),
+        datasets: [{
+          data: sorted.map(([, cnt]) => cnt),
+          backgroundColor: colors.slice(0, sorted.length).map(c => c + 'CC'),
+          borderColor: colors.slice(0, sorted.length),
+          borderWidth: 2,
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: { legend: { display: false }, tooltip: {
+          callbacks: { label: ctx => ctx.raw + ' לידים' }
+        }},
+        scales: {
+          x: { beginAtZero: true, ticks: { precision: 0, font: { family: 'Heebo', size: 11 } } },
+          y: { grid: { display: false }, ticks: { font: { family: 'Heebo', size: 12 } } }
+        }
+      }
+    });
+  },
+
+  renderMonthlyChart() {
+    const canvas = document.getElementById('analytics-monthly-chart');
+    if (!canvas || !window.Chart) return;
+    // build last 6 months
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(1);
+      d.setMonth(d.getMonth() - i);
+      months.push({
+        label: d.toLocaleDateString('he-IL', { month: 'short', year: '2-digit' }),
+        year: d.getFullYear(),
+        month: d.getMonth(),
+      });
+    }
+    const counts = months.map(m =>
+      State.leads.filter(l => {
+        if (!l.created_at) return false;
+        const d = new Date(l.created_at);
+        return d.getFullYear() === m.year && d.getMonth() === m.month;
+      }).length
+    );
+    this._charts.monthly = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: months.map(m => m.label),
+        datasets: [{
+          label: 'לידים חדשים',
+          data: counts,
+          borderColor: '#1C3E6B',
+          backgroundColor: 'rgba(28,62,107,0.1)',
+          borderWidth: 2.5,
+          pointBackgroundColor: '#1C3E6B',
+          pointRadius: 4,
+          tension: 0.35,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false }, tooltip: {
+          callbacks: { label: ctx => ctx.raw + ' לידים' }
+        }},
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { family: 'Heebo', size: 11 } } },
+          y: { beginAtZero: true, ticks: { precision: 0, font: { family: 'Heebo', size: 11 } } }
+        }
+      }
+    });
+  },
+};
+
+/* ═══════════════════════════════════════════
    SETTINGS SCREEN
 ═══════════════════════════════════════════ */
 const Settings = {
@@ -3131,6 +3499,62 @@ function openMoveStage(leadId) {
   `).join('');
   openModal('modal-move-stage');
 }
+
+async function addProperty() {
+  const title = document.getElementById('new-prop-title').value.trim();
+  const price = parseFloat(document.getElementById('new-prop-price').value) || 0;
+  if (!title) { toast('נא הכנס כותרת לנכס', 'error'); return; }
+  if (!price) { toast('נא הכנס מחיר', 'error'); return; }
+  const data = {
+    title,
+    type:        document.getElementById('new-prop-type').value,
+    status:      document.getElementById('new-prop-status').value,
+    price,
+    rooms:       parseFloat(document.getElementById('new-prop-rooms').value) || null,
+    area:        parseFloat(document.getElementById('new-prop-area').value) || null,
+    floor:       parseInt(document.getElementById('new-prop-floor').value) || null,
+    address:     document.getElementById('new-prop-address').value.trim(),
+    city:        document.getElementById('new-prop-city').value.trim(),
+    description: document.getElementById('new-prop-description').value.trim(),
+  };
+  try {
+    const prop = await DB.addProperty(data);
+    State.properties.unshift(prop);
+    closeModal('modal-add-property');
+    // clear form
+    ['new-prop-title','new-prop-price','new-prop-rooms','new-prop-area','new-prop-floor','new-prop-address','new-prop-city','new-prop-description']
+      .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    toast(`🏠 נכס "${title}" נוסף בהצלחה`, 'success');
+    if (State.screen === 'properties') PropertiesScreen.render();
+  } catch(e) {
+    toast('שגיאה בשמירה: ' + e.message, 'error');
+  }
+}
+
+/* FAB speed-dial toggle */
+function toggleFAB() {
+  const main = document.getElementById('fab-main-btn');
+  const opts = document.getElementById('fab-options');
+  const isOpen = opts.classList.contains('visible');
+  if (isOpen) {
+    main.classList.remove('open');
+    opts.classList.remove('visible');
+  } else {
+    main.classList.add('open');
+    opts.classList.add('visible');
+  }
+}
+
+function closeFAB() {
+  document.getElementById('fab-main-btn').classList.remove('open');
+  document.getElementById('fab-options').classList.remove('visible');
+}
+
+// Close FAB when clicking outside
+document.addEventListener('click', function(e) {
+  const dial = document.getElementById('fab-speed-dial');
+  if (dial && !dial.contains(e.target)) closeFAB();
+});
 
 /* ═══════════════════════════════════════════
    SET DEFAULT DATE FOR TASK MODAL
