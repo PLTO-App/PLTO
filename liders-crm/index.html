@@ -3910,6 +3910,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+// Expose globals for inline onclick handlers (mobile browser compatibility)
+window.App      = App;
+window.DB       = DB;
+window.Voice    = Voice;
+window.Onboarding = Onboarding;
+window.Analytics  = Analytics;
 </script>
 </body>
 </html>
