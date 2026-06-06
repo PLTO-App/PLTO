@@ -512,14 +512,22 @@
       box-shadow: var(--shadow-xl);
     }
     .login-logo {
-      text-align: center; margin-bottom: 28px;
+      text-align: center; margin-bottom: 24px;
     }
     .login-logo-text {
-      font-size: 36px; font-weight: 900; color: var(--navy-700);
-      letter-spacing: -1px;
+      font-size: 48px; font-weight: 900; color: var(--navy-700);
+      letter-spacing: -2px; line-height: 1;
     }
     .login-logo-text span { color: var(--gold-500); }
-    .login-tagline { font-size: 13px; color: var(--gray-500); margin-top: 4px; }
+    .login-tagline {
+      font-size: 18px; font-weight: 800; color: var(--navy-600);
+      margin-top: 8px; letter-spacing: -0.3px;
+    }
+    .login-sub {
+      font-size: 12px; color: var(--gray-400); margin-top: 6px;
+      display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;
+    }
+    .login-sub span { display: flex; align-items: center; gap: 3px; }
     .login-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; color: var(--gray-900); }
     .login-form { display: flex; flex-direction: column; gap: 14px; }
     .login-divider {
@@ -530,12 +538,29 @@
       content: ''; flex: 1; height: 1px; background: var(--border);
     }
     .login-demo-btn {
-      background: var(--navy-50); color: var(--navy-500); font-weight: 700;
-      font-size: 14px; padding: 11px; border-radius: var(--radius-md);
-      border: 2px dashed var(--navy-200); cursor: pointer; width: 100%;
-      transition: var(--transition);
+      background: linear-gradient(135deg, var(--gold-100), #fff8e8);
+      color: var(--gold-600); font-weight: 800;
+      font-size: 14px; padding: 13px; border-radius: var(--radius-md);
+      border: 2px solid var(--gold-300); cursor: pointer; width: 100%;
+      transition: var(--transition); box-shadow: 0 2px 8px rgba(196,154,42,0.15);
     }
-    .login-demo-btn:hover { background: var(--navy-100); }
+    .login-demo-btn:hover { background: var(--gold-100); transform: translateY(-1px); }
+    .ind-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 4px 0;
+    }
+    .ind-card {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 6px; padding: 12px 6px; border-radius: var(--radius-md); cursor: pointer;
+      border: 2px solid var(--border); background: var(--gray-50);
+      transition: all 0.15s ease; text-align: center;
+    }
+    .ind-card:hover { border-color: var(--navy-300); background: var(--navy-50); }
+    .ind-card.selected {
+      border-color: var(--navy-500); background: var(--navy-50);
+      box-shadow: 0 0 0 3px rgba(28,62,107,0.12);
+    }
+    .ind-icon { font-size: 26px; line-height: 1; }
+    .ind-label { font-size: 11px; font-weight: 700; color: var(--gray-700); line-height: 1.2; }
     .btn-google {
       display: flex; align-items: center; justify-content: center; gap: 10px;
       background: white; color: #3c4043; font-weight: 600; font-size: 14px;
@@ -1195,7 +1220,12 @@
   <div class="login-card">
     <div class="login-logo">
       <div class="login-logo-text">Liders<span>.</span></div>
-      <div class="login-tagline">מערכת ניהול לידים לסוכני נדל"ן</div>
+      <div class="login-tagline">המכונה שמייצרת כסף 💰</div>
+      <div class="login-sub">
+        <span>✅ ניהול לידים</span>
+        <span>⚡ סגירת עסקאות</span>
+        <span>📈 צמיחה</span>
+      </div>
     </div>
     <div class="login-form">
       <div class="form-group">
@@ -1254,8 +1284,8 @@
       <a class="nav-item" data-screen="leads" onclick="App.go('leads')">
         <span class="nav-icon">👥</span> כל הלידים
       </a>
-      <a class="nav-item" data-screen="properties" onclick="App.go('properties')">
-        <span class="nav-icon">🏠</span> נכסים
+      <a class="nav-item" data-screen="properties" onclick="App.go('properties')" id="nav-properties-label">
+        <span class="nav-icon">🏠</span> <span id="label-properties">נכסים</span>
       </a>
       <a class="nav-item" data-screen="tasks" onclick="App.go('tasks')">
         <span class="nav-icon">✅</span> משימות
@@ -1432,7 +1462,7 @@
     </div>
     <div class="bottom-nav-item" data-screen="properties" onclick="App.go('properties')">
       <div class="bni-icon">🏠</div>
-      <div>נכסים</div>
+      <div id="bn-label-properties">נכסים</div>
     </div>
     <div class="bottom-nav-item" data-screen="tasks" onclick="App.go('tasks')">
       <div class="bni-icon">✅</div>
@@ -2212,28 +2242,50 @@ const Onboarding = {
   _step: 0,
   _steps: [
     {
-      title: 'ברוך הבא ל-Liders CRM 🎉',
-      subtitle: 'בוא נגדיר את המערכת תוך 2 דקות',
+      title: 'מה תחום העסק שלך? 🎯',
+      subtitle: 'נגדיר את המערכת בדיוק עבורך — תוך 2 דקות',
       render() {
+        const INDUSTRIES = [
+          { id: 'realestate', icon: '🏠', label: 'נדל"ן' },
+          { id: 'sales',      icon: '💼', label: 'מכירות B2B' },
+          { id: 'ecommerce',  icon: '🛒', label: 'E-Commerce' },
+          { id: 'beauty',     icon: '💅', label: 'יופי ובריאות' },
+          { id: 'services',   icon: '⚙️', label: 'שירות ותמיכה' },
+          { id: 'other',      icon: '🎯', label: 'אחר' },
+        ];
+        const current = localStorage.getItem('liders_industry') || '';
         return `
-          <div style="text-align:center;padding:24px 0;">
-            <div style="font-size:64px;margin-bottom:16px;">🏠</div>
-            <p style="font-size:1rem;color:var(--gray-500);line-height:1.6;">
-              מערכת ה-CRM החכמה ביותר לסוכני נדל"ן בישראל.<br>
-              נגדיר יחד את הסוכנות שלך בכמה שלבים פשוטים.
-            </p>
+          <div class="ind-grid">
+            ${INDUSTRIES.map(ind => `
+              <div class="ind-card ${current === ind.id ? 'selected' : ''}"
+                   onclick="Onboarding._selectIndustry('${ind.id}')">
+                <div class="ind-icon">${ind.icon}</div>
+                <div class="ind-label">${ind.label}</div>
+              </div>
+            `).join('')}
           </div>`;
+      },
+      validate() {
+        if (!localStorage.getItem('liders_industry')) {
+          toast('נא לבחור את תחום העסק שלך', 'error'); return false;
+        }
+        return true;
       },
     },
     {
-      title: 'שם הסוכנות',
-      subtitle: 'איך קוראים לסוכנות שלך?',
+      title: 'שם העסק שלך',
+      subtitle: 'איך קוראים לעסק שלך?',
       render() {
         const val = State.tenant?.name || '';
+        const industry = localStorage.getItem('liders_industry') || 'other';
+        const placeholder = industry === 'realestate' ? 'לידרס נדל"ן — תל אביב'
+          : industry === 'sales' ? 'לידרס מכירות — תל אביב'
+          : industry === 'beauty' ? 'לידרס ביוטי — רמת גן'
+          : 'שם העסק שלי';
         return `
           <div style="padding:8px 0;">
-            <label class="form-label">שם הסוכנות *</label>
-            <input class="form-input" id="ob-agency-name" placeholder='לידרס נדל"ן — תל אביב' value="${val}" style="font-size:1.1rem;">
+            <label class="form-label">שם העסק *</label>
+            <input class="form-input" id="ob-agency-name" placeholder='${placeholder}' value="${val}" style="font-size:1.1rem;">
             <label class="form-label" style="margin-top:16px;">טלפון ראשי (אופציונלי)</label>
             <input class="form-input" id="ob-agency-phone" placeholder="050-0000000" type="tel">
             <label class="form-label" style="margin-top:16px;">עיר / אזור עיקרי</label>
@@ -2327,6 +2379,19 @@ const Onboarding = {
   ],
   _data: {},
 
+  _selectIndustry(id) {
+    localStorage.setItem('liders_industry', id);
+    document.querySelectorAll('.ind-card').forEach(el => {
+      el.classList.toggle('selected', el.onclick?.toString().includes(`'${id}'`) || el.getAttribute('onclick')?.includes(`'${id}'`));
+    });
+    // Re-render all cards to reflect selection
+    document.querySelectorAll('.ind-card').forEach(el => {
+      const onclick = el.getAttribute('onclick') || '';
+      const cardId = (onclick.match(/'([^']+)'/) || [])[1];
+      el.classList.toggle('selected', cardId === id);
+    });
+  },
+
   show() {
     if (localStorage.getItem('onboarding_done') === '1') return;
     this._step = 0;
@@ -2367,6 +2432,22 @@ const Onboarding = {
     if (this._step > 0) { this._step--; this._renderStep(); }
   },
 };
+
+/* ═══════════════════════════════════════════
+   INDUSTRY LABELS — adapts app language per industry
+═══════════════════════════════════════════ */
+const INDUSTRY_LABELS = {
+  realestate: { lead:'ליד', leads:'לידים', property:'נכס', properties:'נכסים', deal:'עסקה', client:'לקוח', meeting:'ביקור', agent:'סוכן' },
+  sales:      { lead:'ליד', leads:'לידים', property:'מוצר', properties:'מוצרים', deal:'עסקה', client:'לקוח', meeting:'פגישה', agent:'מוכר' },
+  ecommerce:  { lead:'ליד', leads:'לידים', property:'פריט', properties:'מלאי', deal:'הזמנה', client:'קונה', meeting:'שיחה', agent:'נציג' },
+  beauty:     { lead:'ליד', leads:'לידים', property:'שירות', properties:'שירותים', deal:'תור', client:'לקוחה', meeting:'תור', agent:'מטפלת' },
+  services:   { lead:'ליד', leads:'לידים', property:'שירות', properties:'שירותים', deal:'פרויקט', client:'לקוח', meeting:'פגישה', agent:'נציג' },
+  other:      { lead:'ליד', leads:'לידים', property:'מוצר', properties:'מוצרים', deal:'עסקה', client:'לקוח', meeting:'פגישה', agent:'נציג' },
+};
+function getLabel(key) {
+  const ind = localStorage.getItem('liders_industry') || 'other';
+  return (INDUSTRY_LABELS[ind] || INDUSTRY_LABELS.other)[key] || key;
+}
 
 /* ═══════════════════════════════════════════
    MODAL UTILS
@@ -2739,10 +2820,18 @@ const App = {
     document.getElementById('sidebar-agent-initials').textContent = State.agent.initials;
     document.getElementById('sidebar-agent-role').textContent  = State.agent.role;
     Billing.renderTrialBanner();
+    this._applyIndustryLabels();
     this.go('dashboard');
     this.updateBadges();
     // Show onboarding wizard for new users
     setTimeout(() => Onboarding.show(), 800);
+  },
+  _applyIndustryLabels() {
+    const props = getLabel('properties');
+    const el1 = document.getElementById('label-properties');
+    const el2 = document.getElementById('bn-label-properties');
+    if (el1) el1.textContent = props;
+    if (el2) el2.textContent = props;
   },
   async logout() {
     await DB.signOut();
