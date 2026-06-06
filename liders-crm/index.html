@@ -151,6 +151,10 @@
       background: transparent; color: var(--gray-700); border: 1.5px solid var(--border);
     }
     .btn-ghost:hover { background: var(--gray-100); }
+    .btn-outline {
+      background: transparent; color: var(--navy-500); border: 1.5px solid var(--navy-500);
+    }
+    .btn-outline:hover { background: var(--navy-50, var(--gray-100)); }
     .btn-danger { background: var(--red-100); color: var(--red-600); }
     .btn-danger:hover { background: var(--red-500); color: var(--white); }
     .btn-sm { font-size: 13px; padding: 7px 14px; }
@@ -1962,6 +1966,7 @@ const DB = {
   },
 
   async addLead(lead) {
+    const firstStageId = this.stageRev['s1'] || Object.values(this.stageRev)[0] || null;
     const { data, error } = await sbClient.from('leads').insert({
       tenant_id: this.tenantId, agent_id: this.agentId,
       name: lead.name, phone: lead.phone,
@@ -1969,7 +1974,7 @@ const DB = {
       budget_max: lead.budget_max || null,
       desired_area: lead.desired_area || null,
       notes: lead.notes || '',
-      pipeline_stage_id: this.stageRev['s1'],
+      pipeline_stage_id: firstStageId,
       score: 50, next_followup: addDays(1),
     }).select().single();
     if (error) throw error;
@@ -2526,6 +2531,9 @@ const Onboarding = {
     if (s.validate && !s.validate()) return;
     if (this._step === this._steps.length - 1) {
       localStorage.setItem('onboarding_done', '1');
+      if (this._data.agencyName) localStorage.setItem('liders_agency_name', this._data.agencyName);
+      if (this._data.agencyPhone) localStorage.setItem('liders_agency_phone', this._data.agencyPhone);
+      if (this._data.agencyCity) localStorage.setItem('liders_agency_city', this._data.agencyCity);
       document.getElementById('modal-onboarding').classList.add('hidden');
       toast('🎉 ברוך הבא ל-Liders CRM!', 'success');
       return;
@@ -3224,7 +3232,7 @@ const LeadDetail = {
 
     document.getElementById('lead-detail-content').innerHTML = `
       <div class="lead-detail-header">
-        <button class="back-btn" onclick="history.back() || App.go('pipeline')">← חזרה</button>
+        <button class="back-btn" onclick="history.back()">← חזרה</button>
         <div style="display:flex; align-items:center; justify-content:space-between;">
           <div class="lead-detail-name">${lead.name}</div>
           <div class="score-badge ${scoreClass(lead.score)}" style="width:44px;height:44px;font-size:15px;">${lead.score}</div>
@@ -3408,7 +3416,8 @@ const LeadDetail = {
         </div>`;
       // update score badge in header
       document.querySelectorAll('.score-badge').forEach(b => {
-        if (b.textContent == lead.score || true) b.className = 'score-badge ' + scoreClass(lead.score);
+        b.textContent = lead.score;
+        b.className = 'score-badge ' + scoreClass(lead.score);
       });
     } catch(e) {
       document.getElementById('ai-score-result').innerHTML = `<div style="color:var(--red-600);font-size:13px;padding:8px;">שגיאה: ${e.message}</div>`;
@@ -3484,7 +3493,7 @@ const PropertiesScreen = {
     const statusBadge = { available:'זמין', under_offer:'הצעה', sold:'נמכר', rented:'מושכר' };
     const statusClass = { available:'badge-status-available', under_offer:'badge-status-offer', sold:'badge-status-sold' };
     document.getElementById('properties-grid').innerHTML = State.properties.map(p => `
-      <div class="property-card">
+      <div class="property-card" onclick="toast('מסך פרטי נכס בפיתוח — בקרוב 🏠', 'info')">
         <div class="property-photo">🏠</div>
         <div class="property-body">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;">
@@ -3498,7 +3507,7 @@ const PropertiesScreen = {
             <div class="property-spec">📐 ${p.area} מ"ר</div>
             ${p.floor > 0 ? `<div class="property-spec">🏢 קומה ${p.floor}</div>` : ''}
           </div>
-          <div style="font-size:12px;color:var(--gray-500);margin-top:6px;line-height:1.4;">${p.description.slice(0,80)}...</div>
+          ${p.description ? `<div style="font-size:12px;color:var(--gray-500);margin-top:6px;line-height:1.4;">${p.description.slice(0,80)}${p.description.length > 80 ? '...' : ''}</div>` : ''}
         </div>
       </div>
     `).join('') || '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🏠</div><div class="empty-title">אין נכסים עדיין</div></div>';
@@ -3931,13 +3940,15 @@ async function addLead() {
       notes: document.getElementById('new-lead-notes').value,
     });
     State.leads.unshift(lead);
-    await DB.addActivity({ lead_id: lead.id, type: 'lead_created', content: 'ליד חדש נוצר' });
+    await DB.addActivity({ lead_id: lead.id, type: 'note', content: 'ליד חדש נוצר' });
     State.activities.unshift({ id: uid(), lead_id: lead.id, type: 'note', content: 'ליד חדש נוצר', created_at: today() });
     closeModal('modal-add-lead');
     document.getElementById('new-lead-name').value = '';
     document.getElementById('new-lead-phone').value = '';
     document.getElementById('new-lead-area').value = '';
     document.getElementById('new-lead-notes').value = '';
+    document.getElementById('new-lead-budget').value = '';
+    document.getElementById('new-lead-source').value = 'other';
     toast(`✅ ליד "${name}" נוסף בהצלחה`, 'success');
     Make.newLead(lead);
     App.updateBadges();
@@ -4217,11 +4228,18 @@ window.Analytics  = Analytics;
   function bind(id, handler) {
     var el = document.getElementById(id);
     if (!el) return;
+    var lastFired = 0;
+    function guarded() {
+      var now = Date.now();
+      if (now - lastFired < 800) return;   // debounce: prevent double-fire from pointerdown+click
+      lastFired = now;
+      handler();
+    }
     el.addEventListener('pointerdown', function(e) {
       e.preventDefault();
-      handler();
+      guarded();
     });
-    el.addEventListener('click', handler);
+    el.addEventListener('click', guarded);
   }
   bind('btn-login-email',  function(){ App.loginWithEmail(); });
   bind('btn-login-demo',   function(){ App.loginDemo(); });
