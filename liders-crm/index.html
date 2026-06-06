@@ -2210,14 +2210,16 @@ const Billing = {
     },
   ],
 
-  // החלף בקישורי Stripe אמיתיים אחרי יצירת המוצרים
+  // ─── STRIPE CONFIG — מלא אחרי יצירת המוצרים ב-Stripe Dashboard ───
+  // 1. stripe.com → Products → Add product לכל תוכנית → Copy "Payment link"
+  // 2. הוסף ?client_reference_id={TENANT_ID} לכל URL (מגיע אוטומטי מהקוד)
   CHECKOUT_URLS: {
-    basic:   'https://buy.stripe.com/test_6oU8wQ9bVfeJ9Fia853Ru00',
-    pro:     'https://buy.stripe.com/test_cNidRa0FpaYtaJm4NL3Ru01',
-    premium: 'https://buy.stripe.com/test_14A00k3RB9UpdVy2FD3Ru02',
+    basic:   'REPLACE_WITH_STRIPE_PAYMENT_LINK_BASIC',
+    pro:     'REPLACE_WITH_STRIPE_PAYMENT_LINK_PRO',
+    premium: 'REPLACE_WITH_STRIPE_PAYMENT_LINK_PREMIUM',
   },
-
-  PORTAL_URL: 'https://billing.stripe.com/p/login/test_6oU8wQ9bVfeJ9Fia853Ru00',
+  // stripe.com → Settings → Billing → Customer portal → Copy link
+  PORTAL_URL: 'REPLACE_WITH_STRIPE_CUSTOMER_PORTAL_URL',
 
   daysLeft() {
     const t = State.tenant?.trial_ends_at;
@@ -2296,7 +2298,14 @@ const Billing = {
       toast('🔧 הגדר קישור Stripe ב-Billing.CHECKOUT_URLS', 'error');
       return;
     }
-    window.open(url, '_blank');
+    // Pass tenant_id so Stripe webhook can identify the paying tenant
+    const tenantId = State.tenant?.id || DB.tenantId || '';
+    const email    = State.agent?.email || '';
+    const fullUrl  = url
+      + (url.includes('?') ? '&' : '?')
+      + 'client_reference_id=' + encodeURIComponent(tenantId)
+      + '&prefilled_email='    + encodeURIComponent(email);
+    window.open(fullUrl, '_blank');
   },
   openPortal() {
     if (this.PORTAL_URL.includes('REPLACE')) {
