@@ -1669,6 +1669,67 @@
 
 
 <!-- ═══════════════════════════════════════
+     MODAL: EDIT LEAD
+═══════════════════════════════════════ -->
+<div id="modal-edit-lead" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-edit-lead')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">✏️ עריכת ליד</div>
+      <button class="modal-close" onclick="closeModal('modal-edit-lead')">×</button>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div class="form-group">
+        <label class="form-label">שם מלא *</label>
+        <input type="text" id="edit-lead-name" class="form-input" placeholder="ישראל ישראלי">
+      </div>
+      <div class="form-group">
+        <label class="form-label">טלפון *</label>
+        <input type="tel" id="edit-lead-phone" class="form-input" placeholder="050-0000000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">אימייל</label>
+        <input type="email" id="edit-lead-email" class="form-input" placeholder="israel@example.com">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">תקציב מינימום (₪)</label>
+          <input type="number" id="edit-lead-budget-min" class="form-input" placeholder="1000000" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">תקציב מקסימום (₪)</label>
+          <input type="number" id="edit-lead-budget-max" class="form-input" placeholder="2000000" min="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">אזור מבוקש</label>
+        <input type="text" id="edit-lead-area" class="form-input" placeholder="תל אביב, גבעתיים...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">מקור</label>
+        <select id="edit-lead-source" class="form-input">
+          <option value="yad2">יד2</option>
+          <option value="madlan">מדלן</option>
+          <option value="facebook">פייסבוק</option>
+          <option value="referral">הפניה</option>
+          <option value="website">אתר</option>
+          <option value="call">שיחה</option>
+          <option value="other">אחר</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">הערות</label>
+        <textarea id="edit-lead-notes" class="form-input form-textarea" placeholder="מה יודעים על הליד?"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-edit-lead')">ביטול</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="saveEditLead()">שמור שינויים</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
      MODAL: ADD PROPERTY
 ═══════════════════════════════════════ -->
 <div id="modal-add-property" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-add-property')">
@@ -3169,6 +3230,7 @@ const LeadDetail = {
           <button class="lead-action-btn" onclick="window.open('https://wa.me/972${lead.phone.replace(/^0/,'').replace(/-/g,'')}')">💬 ווצאפ</button>
           <button class="lead-action-btn" onclick="openMoveStage('${lead.id}')">🔄 שנה שלב</button>
           <button class="lead-action-btn" onclick="State.currentLeadId='${lead.id}'; openModal('modal-add-activity')">📝 הוסף</button>
+          <button class="lead-action-btn" onclick="openEditLead('${lead.id}')">✏️ עריכה</button>
         </div>
       </div>
       <div class="lead-detail-body">
@@ -3992,6 +4054,60 @@ async function addProperty() {
       .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
     toast(`🏠 נכס "${title}" נוסף בהצלחה`, 'success');
     if (State.screen === 'properties') PropertiesScreen.render();
+  } catch(e) {
+    toast('שגיאה בשמירה: ' + e.message, 'error');
+  }
+}
+
+function openEditLead(leadId) {
+  const lead = State.leads.find(l => l.id === leadId);
+  if (!lead) return;
+  document.getElementById('edit-lead-name').value = lead.name || '';
+  document.getElementById('edit-lead-phone').value = lead.phone || '';
+  document.getElementById('edit-lead-email').value = lead.email || '';
+  document.getElementById('edit-lead-budget-min').value = lead.budget_min || '';
+  document.getElementById('edit-lead-budget-max').value = lead.budget_max || '';
+  document.getElementById('edit-lead-area').value = lead.desired_area || '';
+  document.getElementById('edit-lead-source').value = lead.source || 'other';
+  document.getElementById('edit-lead-notes').value = lead.notes || '';
+  State.currentLeadId = leadId;
+  openModal('modal-edit-lead');
+}
+
+async function saveEditLead() {
+  const leadId = State.currentLeadId;
+  const lead = State.leads.find(l => l.id === leadId);
+  if (!lead) return;
+  const name = document.getElementById('edit-lead-name').value.trim();
+  const phone = document.getElementById('edit-lead-phone').value.trim();
+  if (!name || !phone) { toast('נא מלא שם וטלפון', 'error'); return; }
+  const patch = {
+    name,
+    phone,
+    email: document.getElementById('edit-lead-email').value.trim() || null,
+    budget_min: parseInt(document.getElementById('edit-lead-budget-min').value) || null,
+    budget_max: parseInt(document.getElementById('edit-lead-budget-max').value) || null,
+    desired_area: document.getElementById('edit-lead-area').value.trim() || null,
+    source: document.getElementById('edit-lead-source').value,
+    notes: document.getElementById('edit-lead-notes').value.trim(),
+  };
+  try {
+    await DB.updateLead(leadId, patch);
+    Object.assign(lead, {
+      name: patch.name,
+      phone: patch.phone,
+      email: patch.email || '',
+      budget_min: patch.budget_min || 0,
+      budget_max: patch.budget_max || 0,
+      desired_area: patch.desired_area || '',
+      source: patch.source,
+      notes: patch.notes || '',
+    });
+    closeModal('modal-edit-lead');
+    toast('✅ פרטי הליד עודכנו', 'success');
+    if (State.screen === 'lead-detail') LeadDetail.render(leadId);
+    else if (State.screen === 'pipeline') Pipeline.render();
+    else if (State.screen === 'leads') Leads.render();
   } catch(e) {
     toast('שגיאה בשמירה: ' + e.message, 'error');
   }
