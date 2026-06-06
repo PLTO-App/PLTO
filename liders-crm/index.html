@@ -1497,14 +1497,14 @@
 <div id="screen-paywall" class="hidden">
   <div class="paywall-card">
     <div class="paywall-logo">Liders<span>.</span></div>
-    <div class="paywall-icon">🔓</div>
-    <div class="paywall-title">30 יום ניסיון חינמי — כולל Basic</div>
+    <div class="paywall-icon">🔒</div>
+    <div class="paywall-title">הנתונים שלך בטוחים 🔒</div>
     <div class="paywall-sub">
-      ניסית את המערכת עם <strong>כל תכונות Basic</strong> — ללא תשלום.<br>
-      בחר תוכנית להמשיך, או שדרג ל-Pro לתכונות AI מתקדמות.
+      30 ימי הניסיון החינמי הסתיימו.<br>
+      כל הלידים, הנכסים והמשימות שלך <strong>שמורים ומחכים לך</strong> — בחר תוכנית להמשיך:
     </div>
     <div class="paywall-trial-note">
-      ✅ ניסיון חינמי · אין צורך בכרטיס אשראי מראש · ביטול בכל עת
+      ✅ הנתונים שמורים · ביטול בכל עת · ללא עמלות
     </div>
     <div class="paywall-plans" id="paywall-plans-container"></div>
     <button class="btn btn-ghost btn-sm mt-4" onclick="App.logout()" style="opacity:.6;">← חזור להתחברות</button>
@@ -1991,6 +1991,12 @@ const DB = {
       .update({ pipeline_stage_id: uuid }).eq('id', leadId);
     if (error) throw error;
   },
+
+  async updateLead(id, patch) {
+    const { data, error } = await sbClient.from('leads').update(patch).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+  },
 };
 
 /* ═══════════════════════════════════════════
@@ -2192,6 +2198,36 @@ const Billing = {
       </button>
     `;
     banner.classList.remove('hidden');
+  },
+  showDailyReminder() {
+    const days = this.daysLeft();
+    if (days > 7 || days <= 0 || this.isPaid()) return;
+    const key = 'billing_reminder_' + new Date().toISOString().split('T')[0];
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, '1');
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = 'modal-billing-reminder';
+    modal.style.cssText = 'z-index:5000;';
+    modal.innerHTML = `
+      <div class="modal" style="max-width:380px;text-align:center;border-radius:var(--radius-xl);">
+        <div style="font-size:48px;margin-bottom:12px;">⏰</div>
+        <h2 style="font-size:1.3rem;margin-bottom:8px;">נותרו ${days} ימים בניסיון החינמי</h2>
+        <p style="color:var(--gray-500);font-size:0.9rem;margin-bottom:20px;line-height:1.6;">
+          כל הנתונים שלך — הלידים, הנכסים, המשימות — <strong>בטוחים ושמורים</strong>.<br>
+          הוסף פרטי תשלום עכשיו ותמשיך לעבוד בלי הפרעה.
+        </p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button class="btn btn-primary" onclick="Billing.openCheckout('basic');document.getElementById('modal-billing-reminder').remove();" style="padding:14px;">
+            הוסף פרטי תשלום — מ-₪199/חודש
+          </button>
+          <button class="btn btn-ghost" onclick="document.getElementById('modal-billing-reminder').remove();" style="font-size:13px;">
+            תזכיר לי מאוחר יותר
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
   },
   openCheckout(planId = 'pro') {
     const url = this.CHECKOUT_URLS[planId];
@@ -2821,10 +2857,13 @@ const App = {
     document.getElementById('sidebar-agent-role').textContent  = State.agent.role;
     Billing.renderTrialBanner();
     this._applyIndustryLabels();
+    history.pushState({ screen: 'dashboard' }, '', location.pathname + '?s=dashboard');
     this.go('dashboard');
     this.updateBadges();
     // Show onboarding wizard for new users
     setTimeout(() => Onboarding.show(), 800);
+    // Show billing reminder for days 7-1 (once per day)
+    setTimeout(() => Billing.showDailyReminder(), 1500);
   },
   _applyIndustryLabels() {
     const props = getLabel('properties');
@@ -2841,6 +2880,11 @@ const App = {
   go(screen, params = {}) {
     Object.assign(State, params);
     State.screen = screen;
+    // push browser history state for back-button support
+    const url = location.pathname + '?s=' + screen;
+    if (!history.state || history.state.screen !== screen) {
+      history.pushState({ screen }, '', url);
+    }
     // hide all screens
     document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
     const target = document.getElementById('screen-' + screen);
@@ -3976,6 +4020,18 @@ function closeFAB() {
 document.addEventListener('click', function(e) {
   const dial = document.getElementById('fab-speed-dial');
   if (dial && !dial.contains(e.target)) closeFAB();
+});
+
+// Back button / popstate support
+window.addEventListener('popstate', function(e) {
+  // Only navigate within the app if the app shell is visible
+  const appShell = document.getElementById('app-shell');
+  if (!appShell || appShell.classList.contains('hidden')) return;
+  if (e.state && e.state.screen) {
+    App.go(e.state.screen);
+  } else {
+    App.go('dashboard');
+  }
 });
 
 /* ═══════════════════════════════════════════
