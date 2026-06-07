@@ -1,0 +1,39 @@
+name: Deploy CRM to GitHub Pages
+
+on:
+  push:
+    branches:
+      - claude/liders-crm-build-gTzqi
+    paths:
+      - 'liders-crm/index.html'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync gh-pages with latest build (new commit per deploy — keeps full history)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          BLOB=$(git rev-parse HEAD:liders-crm/index.html)
+          SUBTREE=$(printf '100644 blob %s\tindex.html\n' "$BLOB" | git mktree)
+          NEWROOT=$(printf '100644 blob %s\tindex.html\n040000 tree %s\tliders-crm\n' "$BLOB" "$SUBTREE" | git mktree)
+
+          git fetch origin gh-pages
+          PARENT=$(git rev-parse origin/gh-pages)
+
+          SHORT_SHA="${GITHUB_SHA:0:7}"
+          MSG="deploy: ${SHORT_SHA} — ${{ github.event.head_commit.message }}"
+          NEWCOMMIT=$(git commit-tree "$NEWROOT" -p "$PARENT" -m "$MSG")
+
+          git push origin "$NEWCOMMIT:refs/heads/gh-pages"
