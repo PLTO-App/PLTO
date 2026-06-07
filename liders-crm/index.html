@@ -1048,11 +1048,6 @@
     .ai-next-action-label {
       font-size: 11px; font-weight: 700; color: var(--navy-500); margin-bottom: 4px;
     }
-    .ai-no-key-hint {
-      background: var(--gold-100); border: 1px solid var(--gold-300);
-      border-radius: var(--radius-md); padding: 12px;
-      font-size: 13px; color: var(--gray-700);
-    }
     .cold-lead-row {
       display: flex; align-items: center; gap: 10px; padding: 10px 12px;
       background: var(--orange-100); border-radius: var(--radius-md); margin-bottom: 6px;
@@ -2623,33 +2618,13 @@ function toast(msg, type='') {
    AI MODULE — Phase 3
 ═══════════════════════════════════════════ */
 const AI = {
-  MODEL: 'claude-opus-4-8',
-
-  getKey() { return localStorage.getItem('claude_api_key') || ''; },
-  setKey(k) {
-    localStorage.setItem('claude_api_key', k.trim());
-    toast('✅ מפתח API נשמר', 'success');
-    if (State.screen === 'settings') Settings.render();
-  },
-
   async call(messages, maxTokens = 400) {
-    const key = this.getKey();
-    if (!key) { toast('🔑 הגדר Claude API Key בהגדרות', 'error'); return null; }
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({ model: this.MODEL, max_tokens: maxTokens, messages }),
+    const { data, error } = await sbClient.functions.invoke('ai-proxy', {
+      body: { messages, max_tokens: maxTokens },
     });
-    if (!res.ok) {
-      const e = await res.json();
-      throw new Error(e.error?.message || 'שגיאת Claude API');
-    }
-    return (await res.json()).content[0].text;
+    if (error) throw new Error(error.message || 'שגיאת שירות AI');
+    if (data?.error) throw new Error(data.error?.message || data.error || 'שגיאת Claude API');
+    return data?.content?.[0]?.text || null;
   },
 
   async scoreLead(lead) {
@@ -3390,11 +3365,6 @@ const LeadDetail = {
         <!-- AI TAB -->
         <div class="tab-content" id="tab-ai">
           <div class="ai-panel">
-            ${!AI.getKey() ? `
-            <div class="ai-no-key-hint">
-              ⚙️ הגדר Claude API Key ב<button onclick="App.go('settings')" style="color:var(--navy-500);font-weight:700;background:none;border:none;cursor:pointer;font-size:13px;padding:0;">הגדרות</button> כדי להפעיל AI
-            </div>
-            ` : ''}
             <!-- Score -->
             <button class="btn btn-primary w-full" onclick="LeadDetail.runScore()">
               🎯 נתח ליד וקבל ציון AI
@@ -3884,25 +3854,11 @@ const Settings = {
           </div>
           <div class="settings-arrow">›</div>
         </div>
-        <div class="settings-row" style="flex-direction:column; align-items:stretch;">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <div class="settings-row-icon">🤖</div>
-            <div class="settings-row-body" style="flex:1;">
-              <div class="settings-row-label">AI — Claude</div>
-              <div class="settings-row-sub" style="color:${AI.getKey() ? 'var(--green-600)' : 'var(--orange-500)'};">
-                ${AI.getKey() ? '✅ מפתח API מוגדר' : 'הגדר מפתח API להפעלת AI'}
-              </div>
-            </div>
-          </div>
-          <div class="api-key-row">
-            <input type="password" id="claude-api-key-input"
-                   placeholder="sk-ant-api03-..."
-                   value="${AI.getKey() ? '••••••••••••••••' : ''}" />
-            <button class="btn btn-primary btn-sm"
-                    onclick="const v=document.getElementById('claude-api-key-input').value; if(v&&!v.startsWith('•')) AI.setKey(v);">
-              שמור
-            </button>
-            ${AI.getKey() ? `<button class="btn btn-ghost btn-sm" onclick="localStorage.removeItem('claude_api_key'); toast('מפתח נמחק',''); Settings.render();">מחק</button>` : ''}
+        <div class="settings-row">
+          <div class="settings-row-icon">🤖</div>
+          <div class="settings-row-body">
+            <div class="settings-row-label">AI — Claude</div>
+            <div class="settings-row-sub" style="color:var(--green-600);">✅ פעיל ומאובטח בצד השרת</div>
           </div>
         </div>
       </div>
