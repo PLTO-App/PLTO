@@ -21,6 +21,10 @@ jobs:
           fetch-depth: 0
 
       - name: Sync gh-pages with latest build (new commit per deploy — keeps full history)
+        env:
+          # Passed via env (not interpolated into the script) to avoid shell/script injection
+          # from untrusted commit message content — see GitHub's script-injection guidance.
+          SOURCE_COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -33,7 +37,7 @@ jobs:
           PARENT=$(git rev-parse origin/gh-pages)
 
           SHORT_SHA="${GITHUB_SHA:0:7}"
-          MSG="deploy: ${SHORT_SHA} — ${{ github.event.head_commit.message }}"
+          MSG="deploy: ${SHORT_SHA} — ${SOURCE_COMMIT_MSG}"
           NEWCOMMIT=$(git commit-tree "$NEWROOT" -p "$PARENT" -m "$MSG")
 
           git push origin "$NEWCOMMIT:refs/heads/gh-pages"
