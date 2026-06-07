@@ -132,6 +132,24 @@
 | `/design-system` | `design-system.md` | tokens, components, RTL specs |
 | `/crm-live-data` | `crm-live-data.md` | שאיבת נתונים חיים מכל MCPs |
 
+### 🛡️ סוכני אבטחה (`.claude/agents/`) — "צוות האבטחה"
+
+זוג סוכנים אדוורסריאליים שעובדים יחד על **כל שינוי רגיש** (auth, RLS/migrations,
+billing/Stripe, secrets, רינדור קלט-משתמש). זו ההתחלה של "צבא אבטחה" שיתרחב עם הזמן —
+כל סוכן חדש אמור לתקוף/לבדוק את קודמיו, לא רק לחזור על הממצאים שלהם.
+
+| סוכן | תפקיד | קובץ |
+|------|-------|------|
+| `security-hardener` | "כוח כחול" — מאתר בעיות קונקרטיות (cross-tenant leaks, secrets, XSS, billing tamper) ומציע תיקון מינימלי | `security-hardener.md` |
+| `security-adversary` | "כוח אדום" — תוקף את הממצאים/תיקונים של ה-hardener, מחפש מה הוא פספס ואיך לעקוף את התיקון | `security-adversary.md` |
+
+**ממצא פתוח שכבר זוהה ומתועד** ב-`security-guardian.md` / `supabase-security.md`:
+מפתח ה-Claude API מאוחסן ב-`localStorage` ונשלח ישירות מהדפדפן ל-Anthropic
+(`anthropic-dangerous-direct-browser-access: true`) — דורש מעבר ל-Edge Function + Vault.
+זה הפריט הראשון בתור לטיפול ע"י צוות האבטחה.
+
+> **תמיד תעדכן את המשתמש כשמתגלים ממצאי אבטחה** — זה כלל קריטי בפרויקט הזה.
+
 ### מובנים ב-Claude Code (תמיד זמינים)
 
 | פקודה | תיאור |

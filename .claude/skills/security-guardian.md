@@ -1,138 +1,156 @@
-# Security Guardian — מלי יופי ועור
+# Security Guardian — Liders CRM
 
 ## פקודה: `/security-guardian`
 
-הגנת data, checklist אבטחה, incident response.
+הגנת מידע, threat model ו-incident response עבור **Liders** — CRM נדל"ן ישראלי, **מולטי-טננטי** (SaaS).
+
+> ⚠️ גרסה קודמת של הסקיל הזה הייתה מועתקת מפרויקט אחר (סלון יופי "מלי" — `bookings`/`clients`/PIN).
+> הגרסה הזו נכתבה מחדש מול הסכימה והקוד האמיתיים של Liders.
+
+---
+
+## ההקשר: על מה אנחנו מגנים
+
+Liders הוא **מולטי-טננט** — עשרות סוכנויות נדל"ן חולקות אותו DB (`scyfywvzoogfrlalgftv`,
+eu-central-1), מבודדות באמצעות `tenant_id` + RLS (ראה `/supabase-security`).
+
+**דליפת מידע בין טננטים (cross-tenant leak) היא הסיכון המרכזי במערכת הזו** — חמור בהרבה
+מכל באג UI, כי משמעותו שסוכנות א' רואה לידים, נכסים ונתוני billing של סוכנות ב'.
 
 ---
 
 ## Data Classification
 
-| נתון | רמת רגישות | הגנה נדרשת |
-|------|-----------|-----------|
-| שמות לקוחות | רגיש | RLS + לא מוצג בלוגים |
-| מספרי טלפון | גבוה מאוד | RLS + masking בלוגים |
-| הערות עור/אלרגיות | רפואי/קריטי | RLS + encryption |
-| מחירים | נמוך | ציבורי |
-| PIN admin | קריטי | hash + rate limit |
-| API keys | קריטי | .env only, לעולם לא ב-git |
+| נתון | טבלה / מיקום | רמת רגישות | הגנה נדרשת |
+|------|--------------|-----------|-----------|
+| שם + טלפון ליד | `leads` | גבוה | RLS לפי `tenant_id`, masking בלוגים |
+| תקציב / שלב משא-ומתן | `leads.budget_*`, `status` | עסקי-רגיש | RLS, לא נחשף ב-API ציבורי |
+| כתובות נכסים | `properties` | בינוני-גבוה | RLS לפי `tenant_id` |
+| פרטי סוכנים (email, role) | `agent_users` | גבוה | RLS + Supabase Auth |
+| Stripe customer/subscription IDs | `tenants` | קריטי | RLS; לכתיבה — webhook בלבד |
+| **מפתחות API (Claude / Make webhook)** | `localStorage` בדפדפן | 🔴 **קריטי — חשוף כרגע** | ראה "סיכון פתוח" למטה |
+| audit trail | `audit_log` | קריטי | `service_role` בלבד, append-only |
+
+---
+
+## 🔴 סיכון פתוח שזוהה — מפתח Claude API נחשף בצד הלקוח
+
+ב-`AI` module (`index.html`):
+```js
+localStorage.setItem('claude_api_key', k.trim());          // plaintext בדפדפן
+fetch('https://api.anthropic.com/v1/messages', { headers: {
+  'x-api-key': key,
+  'anthropic-dangerous-direct-browser-access': 'true',     // 🚩 השם מדבר בעד עצמו
+}});
+```
+**וקטור התקפה:** XSS כלשהו (יש 31 שימושי `innerHTML` בקוד) / תוסף דפדפן זדוני / גישה פיזית
+למחשב משותף ⟵ גניבת מפתח API מלא של הסוכנות, שימוש לרעה על חשבונה.
+
+**התיקון הנכון:** Supabase Edge Function שמחזיק את המפתח ב-Vault/secrets בצד השרת;
+הדפדפן קורא ל-Edge Function בלבד — **לעולם לא** ל-`api.anthropic.com` ישירות.
+אותו דפוס חל על `make_webhook_url` (פחות קריטי — לא secret כשלעצמו, אך חושף תשתית פנימית).
+
+> זהו פריט #1 ל-backlog האבטחה — ראו גם `.claude/agents/security-hardener.md`.
 
 ---
 
 ## Security Checklist — Daily
 
 ```
-□ אין API keys ב-git history (git log --all -p | grep "sk-")
-□ .env.local ב-.gitignore
-□ Supabase advisors scan נקי (mcp: get_advisors)
-□ PIN לא '1234' (default)
-□ Admin session expires
+□ אין API keys / service_role_key ב-git history   (git log --all -p | grep -E "sk-ant-|sk_live_|eyJhbGci")
+□ .env.local / .env.production ב-.gitignore
+□ Supabase advisors scan נקי                       (mcp: get_advisors)
+□ אין secret חדש שנכנס ל-localStorage
 ```
 
-## Security Checklist — Pre-Deploy
+## Security Checklist — Pre-Deploy (לכל feature חדש)
 
 ```
-□ RLS enabled על כל הטבלאות
-□ service_role_key לא נחשף לצד הלקוח
-□ Input sanitization (XSS prevention)
-□ HTTPS בלבד
-□ Rate limiting על booking API
-□ CORS מוגדר
-□ Secrets ב-Supabase Vault (לא ב-DB)
-□ Webhook secret validation
-□ Error messages לא חושפים stack traces
+□ RLS מופעל, ונבדק עם 2 טננטים אמיתיים — ודא בידוד מלא (ה"מבחן הדו-טננטי")
+□ כל query/RPC חדש משתמש ב-get_my_tenant_id(), לא ב-tenant_id שמגיע מה-client
+□ service_role_key ו-Stripe secret key לא נחשפים ב-index.html / git
+□ קלט חופשי ממשתמש (שם ליד, הערה, חיפוש) → escape לפני innerHTML, עדיפות ל-textContent
+□ Stripe webhook מאמת חתימה (stripe-signature header) לפני שינוי plan
+□ הודעות שגיאה ללקוח לא חושפות SQL / stack traces
 ```
 
 ---
 
-## Threat Model — מלי CRM
+## Threat Model — Liders CRM
 
-### Attack Vectors
-
-#### 1. Unauthorized Admin Access
+### 1. Cross-Tenant Data Leak ⟵ הסיכון המרכזי
 ```
-ריסק: גישה לתורים, לקוחות, שינוי מחירים
-מניעה:
-- PIN חזק + hash
-- Lockout אחרי 5 ניסיונות
-- IP whitelist (optional)
-- Session timeout
+וקטורים: RLS policy שגוי/חסר, query בלי tenant_id, materialized views משותפים
+          (lead_score_summary, pipeline_summary, overdue_tasks), state בצד הלקוח
+          שלא מתאפס בין החלפת טננט.
+מניעה: get_my_tenant_id() בכל policy; "מבחן דו-טננטי" ידני אחרי כל migration;
+       רענון מלא של State בכל login/logout (לא רק עדכון חלקי).
 ```
 
-#### 2. Data Scraping / Enumeration
+### 2. XSS דרך שדות חופשיים (31 שימושי innerHTML בקוד)
 ```
-ריסק: חשיפת כל מספרי הטלפון
-מניעה:
-- RLS — לקוח רואה רק את עצמו
-- Rate limiting
-- No public API for listing clients
+וקטור: <script> מוזרק דרך שם ליד / הערה / כתובת נכס שמוצגים עם innerHTML.
+מניעה: escape HTML על כל ערך שמגיע מ-DB לפני הזרקה ל-innerHTML; textContent כברירת מחדל;
+       CSP header (Content-Security-Policy) ב-hosting.
 ```
 
-#### 3. Booking Spam
+### 3. דליפת מפתחות API מהדפדפן
 ```
-ריסק: מילוי כל הסלוטים בהזמנות מזויפות
-מניעה:
-- Phone verification (SMS OTP)
-- Captcha
-- Rate limit per IP
-- Manual confirmation flow
+ראה "סיכון פתוח" למעלה — claude_api_key + direct-browser-access header.
 ```
 
-#### 4. XSS via Notes Field
+### 4. ניצול-לרעה של signup אוטומטי / register_demo_agent()
 ```
-ריסק: הזרקת script בהערות לקוח
-מניעה:
-- Sanitize הערות לפני הצגה
-- innerHTML → textContent
-- CSP headers
+וקטור: יצירת tenants/agents מזויפים בהמוניהם (spam signup), מיצוי trial quota, DoS.
+מניעה: rate limiting על signup; ניטור audit_log לקצב יצירת tenants חריג;
+       ודא ש-register_demo_agent() (SECURITY DEFINER) לא קריאה ע"י anon.
+```
+
+### 5. Stripe Billing Tampering — עקיפת ה-Paywall
+```
+וקטור: שינוי plan / trial_ends_at ישירות מה-client כדי "לפרוץ" את חסימת ה-Paywall.
+מניעה: plan/trial_ends_at משתנים אך ורק דרך Stripe webhook מאומת-חתימה + service_role
+       (Edge Function) — לעולם לא דרך update ישיר מה-client. RLS: read בלבד ללקוח.
 ```
 
 ---
 
 ## Incident Response
 
-### תור נמחק בטעות
+### חשד לדליפת מידע בין טננטים
 ```bash
-# 1. בדוק audit_log
-SELECT * FROM audit_log WHERE table_name='bookings' ORDER BY created_at DESC;
-
-# 2. שחזר מגיבוי Supabase
-# Dashboard → Database → Backups → Point-in-time recovery
+# 1. נעל גישה מיידית — Supabase Dashboard → Auth → Disable signups
+# 2. בדוק audit_log לפעילות חריגה:
+SELECT * FROM audit_log WHERE created_at > now() - interval '24 hours' ORDER BY created_at DESC;
+# 3. הרץ get_advisors — אתר RLS policies חסרות/רחבות מדי
+# 4. תקן את ה-policy → migration → deploy → רק אז פתח signups מחדש
 ```
 
-### חשד לפריצה
+### API Key נחשף (Claude / Stripe / Supabase)
 ```bash
-# 1. נעל מיידית
-# Supabase Dashboard → Auth → Disable signups
-
-# 2. בדוק לוגים
-# mcp: get_logs (service='auth')
-
-# 3. שנה כל הסיסמאות/keys
-# Supabase → Settings → API → Regenerate keys
-
-# 4. בדוק audit_log
-SELECT * FROM audit_log WHERE created_at > now() - interval '24 hours';
+# 1. Revoke מיידי בדשבורד הרלוונטי (Anthropic Console / Stripe / Supabase → Settings → API)
+# 2. צור מפתח חדש — שמור ב-Edge Function secrets, לא ב-index.html
+# 3. git log --all -p | grep -E "sk-ant-|sk_live_|eyJhbGci" — ודא שלא נכנס להיסטוריה
+# 4. אם כן נכנס: BFG Repo Cleaner + force-push מתואם
 ```
 
-### API Key נחשף
+### ליד / נכס נמחק בטעות
 ```bash
-# 1. מיידי — revoke ב-Supabase Dashboard
-# 2. Generate key חדש
-# 3. Update .env.local ועדכן deploy
-# 4. git log בדיקה: git log --all -p | grep "eyJhbGci"
-# 5. אם ב-git history: BFG Repo Cleaner
+SELECT * FROM audit_log WHERE entity_type='lead' AND action='DELETE' ORDER BY created_at DESC LIMIT 20;
+# שחזור: Supabase Dashboard → Database → Backups → Point-in-time recovery
 ```
 
 ---
 
-## Privacy (GDPR-adjacent — ישראל)
+## פרטיות — חוק הגנת הפרטיות (ישראל)
 
 ```
-לפי חוק הגנת הפרטיות הישראלי:
-□ יידוע לקוחות על שמירת נתונים
-□ זכות למחיקה — DELETE endpoint
-□ לא שומרים נתונים מעבר לנדרש
-□ מספרי טלפון לא מועברים לצד שלישי ללא הסכמה
-□ Google Calendar — תורים ללא שמות מלאים אם אפשר
+□ יידוע סוכנים/לקוחות-קצה על איסוף ושמירת מידע (privacy notice בהרשמה)
+□ זכות עיון/תיקון/מחיקה — מסלול למחיקת ליד/נתון לפי בקשה
+□ מינימיזציה — לא שומרים שדות שלא נחוצים לתפעול
+□ מדיניות שימור מוגדרת (ראה: 30 יום שימור נתונים אחרי תום ניסיון — Billing module)
+□ טלפוני לידים לא עוברים לצד ג' (Make.com/WhatsApp) בלי בסיס חוקי/הסכמה
+□ מידע שנשלח ל-AI (Claude) — לוודא שאין PII רגיש מעבר לנדרש בפרומפט
+□ להתעדכן בדרישות התיקון העדכני לחוק הגנת הפרטיות (תיקון 13, נכנס לתוקף 2025) —
+  ייתכן שמטיל חובות נוספות (ממונה הגנת פרטיות, רישום מאגרים) שרלוונטיות ל-SaaS עם PII
 ```

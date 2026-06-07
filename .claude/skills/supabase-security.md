@@ -1,168 +1,154 @@
-# Supabase Security — מלי יופי ועור
+# Supabase Security — Liders CRM
 
 ## פקודה: `/supabase-security`
 
-RLS policies, auth, secrets, audit לכל טבלאות המערכת.
+RLS policies, auth, secrets ו-audit — מול הסכימה **האמיתית** של Liders
+(`scyfywvzoogfrlalgftv`, eu-central-1).
+
+> ⚠️ גרסה קודמת של הסקיל הזה הייתה מועתקת מפרויקט אחר (`bookings`/`clients`/PIN auth).
+> הגרסה הזו נכתבה מחדש מול המיגרציות והקוד האמיתיים (001–010).
 
 ---
 
-## RLS Policies — טבלאות CRM
+## ארכיטקטורת בידוד (Multi-Tenant Isolation)
 
-### bookings
+כל טבלה tenant-scoped מבודדת באמצעות helper function אחד — `get_my_tenant_id()` —
+שמחזיר את ה-`tenant_id` של המשתמש המחובר (`auth.uid()`).
+
+### תבנית ה-RLS הסטנדרטית בפרויקט (העתק לכל טבלה חדשה — ראה 004_leads.sql)
 ```sql
--- Enable RLS
-ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE <table> ENABLE ROW LEVEL SECURITY;
 
--- לקוחות רואים רק את התורים שלהם (לפי phone)
-CREATE POLICY "clients_own_bookings" ON bookings
-  FOR SELECT USING (
-    phone = current_setting('app.current_phone', true)
-  );
-
--- כתיבה פתוחה לכולם (יצירת תור)
-CREATE POLICY "anyone_can_book" ON bookings
-  FOR INSERT WITH CHECK (true);
-
--- admin בלבד יכול לעדכן/מחוק
-CREATE POLICY "admin_full_access" ON bookings
-  FOR ALL USING (
-    auth.jwt() ->> 'role' = 'admin'
-  );
+CREATE POLICY "tenant isolation" ON <table>
+  FOR ALL
+  USING       (tenant_id = get_my_tenant_id())
+  WITH CHECK  (tenant_id = get_my_tenant_id());
 ```
 
-### services
-```sql
-ALTER TABLE services ENABLE ROW LEVEL SECURITY;
-
--- כולם יכולים לקרוא שירותים פעילים
-CREATE POLICY "public_read_active_services" ON services
-  FOR SELECT USING (active = true);
-
--- admin בלבד יכול לנהל
-CREATE POLICY "admin_manage_services" ON services
-  FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+### "המבחן הדו-טננטי" — חובה אחרי כל migration חדשה
 ```
-
-### clients
-```sql
-ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
-
--- admin only
-CREATE POLICY "admin_only_clients" ON clients
-  FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+1. התחבר כסוכן מ-tenant A → ודא שאתה רואה רק את הנתונים שלו
+2. התחבר כסוכן מ-tenant B → ודא 0 חפיפה עם A
+3. נסה query ישיר על הטבלה החדשה בלי get_my_tenant_id() → ודא ש-RLS חוסם
 ```
 
 ---
 
-## Auth Setup
+## טבלאות המערכת — מצב RLS נוכחי (מ-migrations 001–009)
 
-### Admin Authentication
-```typescript
-// Supabase Auth — admin login
-import { createClient } from '@supabase/supabase-js';
+| טבלה | RLS | Policy | מקור |
+|------|-----|--------|------|
+| `tenants` | ✅ | כתיבה — `service_role` בלבד | 001 |
+| `agent_users` | ✅ | tenant isolation | 002 |
+| `pipeline_stages` | ✅ | tenant isolation | 003 |
+| `leads` | ✅ | tenant isolation | 004 |
+| `properties` | ✅ | tenant isolation | 005 |
+| `tasks` | ✅ | tenant isolation | 006 |
+| `showings` | ✅ | tenant isolation | 007 |
+| `activities` | ✅ | tenant isolation | 008 |
+| `audit_log` | ✅ | `service_role` בלבד, append-only | 009 |
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+**שים לב — views/materialized views משותפים** (`lead_score_summary`, `pipeline_summary`,
+`overdue_tasks` מ-009): הם מחזיקים `tenant_id` כעמודה, אך views לא יורשים RLS אוטומטית
+מהטבלאות הבסיס באותה צורה — ודא שה-query בצד הלקוח **תמיד** מסנן לפי `get_my_tenant_id()`,
+ושאין דרך לבקש את ה-view בלי הסינון הזה.
 
-async function adminLogin(pin: string) {
-  // hash PIN before comparing
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: 'admin@mali-beauty.local',
-    password: pin,
-  });
-  return { data, error };
-}
+> טבלה חדשה בלי RLS + tenant isolation = לא עובר code review (כלל #5 ב-CLAUDE.md, ללא יוצא מן הכלל).
+
+---
+
+## Auth — איך זה עובד בפועל
+
+Liders משתמש ב-**Supabase Auth (email + password, auto-signup)** — אין PIN, אין custom auth:
+
+```js
+// register_demo_agent() — SECURITY DEFINER fn (מיגרציה 010)
+// פותר bootstrap problem: יוצר tenant + agent_user בעסקה אחת,
+// בלי לחשוף ל-client את היכולת לעקוף RLS ישירות
+await sbClient.auth.signInWithPassword({ email, password });
+// signUp אוטומטי בכניסה ראשונה אם המשתמש לא קיים
 ```
 
-### PIN Security (current implementation)
-```javascript
-// ⚠️ PIN הנוכחי מאוחסן בלוקל — לשדרוג ל-Supabase Auth
-// hash PIN locally before storing
-async function hashPin(pin) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(pin + 'mali-salt-2025');
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return btoa(String.fromCharCode(...new Uint8Array(hash)));
-}
+**נקודות לבדיקה (Auth):**
+```
+□ register_demo_agent() — ודא שהיא ניתנת לקריאה רק ע"י authenticated, לא anon
+□ Email confirmation: כבוי בדמו הפנימי בלבד! ללקוחות אמיתיים — חובה דלוק (CLAUDE.md מדגיש)
+□ session timeout / refresh-token rotation — ברירת המחדל של Supabase; לא לגעת בלי סיבה טובה
+□ מה קורה ב-double-signup עם אותו email משני דפדפנים? race condition אפשרי?
 ```
 
 ---
 
-## Secrets Management
+## 🔴 Secrets שזוהו חשופים בצד ה-Client (ב-localStorage)
 
-### .env.local (לעולם לא commit!)
+| מפתח ב-localStorage | מודול | חומרה | פירוט |
+|---------------------|-------|-------|-------|
+| `claude_api_key` | `AI` | 🔴 קריטי | מפתח Anthropic מלא, נשלח ישירות מהדפדפן ל-`api.anthropic.com` עם `anthropic-dangerous-direct-browser-access: true` |
+| `make_webhook_url` | `Make` | 🟡 בינוני | לא secret כשלעצמו, אך חושף תשתית אוטומציה פנימית |
+| `whatsapp_number` | `Make` | 🟢 נמוך | נתון תפעולי בלבד |
+
+**התיקון הנכון ל-`claude_api_key`:** Edge Function (`deploy_edge_function`) שמחזיק את
+המפתח ב-Supabase Vault/secrets בצד השרת; הדפדפן קורא ל-Edge Function בלבד.
+ה-header `anthropic-dangerous-direct-browser-access` הוא 🚩 — אנתרופיק עצמה קוראת לו
+"dangerous" כי הוא נועד לפיתוח/דמואים, לא לפרודקשן עם משתמשי קצה.
+
+**כל secret עתידי** (Stripe secret key, service_role key, OAuth client secrets) —
+**אסור** שיגיע ל-localStorage. רק Edge Function + Vault.
+
+---
+
+## Secrets Management — כללים
+
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGci...  # server-side only
-ANTHROPIC_API_KEY=sk-ant-...
+# .env.local — לעולם לא commit!
+SUPABASE_URL=https://scyfywvzoogfrlalgftv.supabase.co
+SUPABASE_ANON_KEY=eyJ...           # ✅ מותר ב-client — מוגן ע"י RLS
+SUPABASE_SERVICE_ROLE_KEY=eyJ...   # ❌ לעולם לא ב-client — Edge Functions בלבד
+ANTHROPIC_API_KEY=sk-ant-...       # ❌ לא ב-localStorage — Edge Function + Vault
+STRIPE_SECRET_KEY=sk_live_...      # ❌ Edge Function בלבד (webhook handler)
 MAKE_WEBHOOK_URL=https://hook.eu1.make.com/...
 ```
 
-### .gitignore חובה
 ```
-.env.local
-.env.production
-*.key
+.gitignore חובה: .env.local  .env.production  *.key
 ```
 
 ---
 
-## Security Checklist
-
-```
-אימות:
-□ PIN מוגן עם hash (לא plaintext)
-□ Brute force protection (lockout אחרי 5 ניסיונות)
-□ Session timeout לאחר 30 דקות
-
-נתונים:
-□ RLS פועל על כל הטבלאות
-□ אין service_role_key בצד הלקוח
-□ Phone numbers masked בלוגים
-□ PII fields מוצפנים במנוחה
-
-API:
-□ Rate limiting על booking endpoint
-□ CORS מוגבל ל-domain הרלוונטי
-□ Input validation (phone format, date sanity)
-
-Supabase:
-□ Advisors scan עבר ב-get_advisors
-□ Extensions מינימליות
-□ Webhooks עם secret validation
-```
-
----
-
-## Audit Trail
+## Audit Trail — המבנה הקיים (009_rls_policies.sql)
 
 ```sql
--- טבלת audit
-CREATE TABLE audit_log (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  table_name text NOT NULL,
-  action text NOT NULL,  -- INSERT, UPDATE, DELETE
-  record_id uuid,
-  old_data jsonb,
-  new_data jsonb,
-  user_role text,
-  created_at timestamptz DEFAULT now()
-);
+-- audit_log: id, tenant_id, agent_id, action, entity_type, entity_id,
+--            old_value, new_value, ip_address, user_agent, created_at
+-- RLS: "service role only" — FOR ALL TO service_role — append-only,
+--      אף משתמש (כולל admin) לא יכול לקרוא/לערוך/למחוק ישירות מה-client
+```
 
--- Trigger אוטומטי
-CREATE OR REPLACE FUNCTION audit_trigger()
-RETURNS trigger AS $$
-BEGIN
-  INSERT INTO audit_log(table_name, action, record_id, old_data, new_data)
-  VALUES (TG_TABLE_NAME, TG_OP, NEW.id, row_to_json(OLD), row_to_json(NEW));
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+```
+□ כל פעולה רגישה (מחיקת ליד/נכס, שינוי plan, גישת admin) → INSERT ל-audit_log
+□ ודא שאין trigger/policy שמתיר UPDATE/DELETE על audit_log עצמה
+□ old_value/new_value לא כוללים secrets (API keys, סיסמאות, טוקנים)
+```
 
-CREATE TRIGGER bookings_audit
-  AFTER INSERT OR UPDATE OR DELETE ON bookings
-  FOR EACH ROW EXECUTE FUNCTION audit_trigger();
+---
+
+## Security Checklist — לפני כל deploy
+
+```
+טננטים ובידוד:
+□ get_advisors רץ ונקי (RLS חסר / policy רחבה מדי)
+□ "מבחן דו-טננטי" עבר ידנית עם 2 חשבונות אמיתיים
+□ views/materialized views משותפים מסוננים תמיד לפי get_my_tenant_id()
+
+Auth:
+□ Email confirmation דלוק עבור לקוחות אמיתיים (לא דמו)
+□ register_demo_agent() לא חשוף ל-anon role
+
+Secrets:
+□ אין service_role / Stripe secret / Anthropic key בקוד צד-לקוח
+□ git log --all -p | grep -E "sk-ant-|sk_live_|service_role" — נקי
+
+Billing (Stripe):
+□ plan / trial_ends_at משתנים רק דרך webhook מאומת-חתימה (לא update ישיר מה-client)
+□ Customer Portal URL ו-Checkout links לא חושפים מידע על טננטים אחרים
 ```
