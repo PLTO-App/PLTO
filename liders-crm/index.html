@@ -1503,11 +1503,11 @@
     <div class="paywall-logo">Liders<span>.</span></div>
     <div class="paywall-icon">🔒</div>
     <div class="paywall-title">הנתונים שלך בטוחים 🔒</div>
-    <div class="paywall-sub">
+    <div class="paywall-sub" id="paywall-sub-text">
       30 ימי הניסיון החינמי הסתיימו.<br>
       כל הלידים, הנכסים והמשימות שלך <strong>שמורים ומחכים לך</strong> — בחר תוכנית להמשיך:
     </div>
-    <div class="paywall-trial-note">
+    <div class="paywall-trial-note" id="paywall-trial-note">
       ✅ הנתונים שמורים · ביטול בכל עת · ללא עמלות
     </div>
     <div class="paywall-plans" id="paywall-plans-container"></div>
@@ -2231,6 +2231,18 @@ const Billing = {
     if (!t) return 30;
     return Math.max(0, Math.ceil((new Date(t) - new Date()) / 864e5));
   },
+  // תקופת שימור נתונים — 30 יום נוספים בחינם אחרי תום הניסיון, בלי גישה לשימוש במערכת
+  RETENTION_DAYS: 30,
+  retentionEndsAt() {
+    const t = State.tenant?.trial_ends_at;
+    if (!t) return null;
+    return new Date(new Date(t).getTime() + this.RETENTION_DAYS * 864e5);
+  },
+  retentionDaysLeft() {
+    const end = this.retentionEndsAt();
+    if (!end) return this.RETENTION_DAYS;
+    return Math.max(0, Math.ceil((end - new Date()) / 864e5));
+  },
   isPaid() {
     return ['basic','pro','premium'].includes(State.tenant?.plan);
   },
@@ -2249,6 +2261,26 @@ const Billing = {
     // render 3 plans dynamically
     const container = document.getElementById('paywall-plans-container');
     if (container) container.innerHTML = this.renderPlansHTML();
+    // render הודעת שימור נתונים — תקופת חסד של עד 30 יום אחרי תום הניסיון
+    const subEl  = document.getElementById('paywall-sub-text');
+    const noteEl = document.getElementById('paywall-trial-note');
+    if (subEl && noteEl) {
+      const rDays = this.retentionDaysLeft();
+      if (rDays > 0) {
+        subEl.innerHTML = `
+          30 ימי הניסיון החינמי הסתיימו.<br>
+          הלידים, הנכסים והמשימות שלך <strong>שמורים בחינם למשך ${rDays} ימים נוספים</strong> — בלי כרטיס אשראי ובלי לבחור תוכנית.<br>
+          כדי <strong>להמשיך להשתמש</strong> במערכת — בחר תוכנית עכשיו:
+        `;
+        noteEl.innerHTML = `🛡️ הנתונים שמורים בחינם ל-${rDays} ימים נוספים · המערכת נעולה לשימוש עד הצטרפות למסלול בתשלום`;
+      } else {
+        subEl.innerHTML = `
+          תקופת השימור החינמי של הנתונים הסתיימה.<br>
+          בחר תוכנית עכשיו כדי <strong>לשחזר גישה מלאה</strong> ללידים, לנכסים ולמשימות שלך:
+        `;
+        noteEl.innerHTML = `⏰ פנה לתמיכה אם אינך רואה את הנתונים שלך לאחר ההצטרפות · ביטול בכל עת`;
+      }
+    }
   },
   renderTrialBanner() {
     if (this.isPaid()) return;
