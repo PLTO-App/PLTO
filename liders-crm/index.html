@@ -1356,6 +1356,10 @@
         שלום, <span id="dash-agent-name">ישראל</span> 👋
         <div class="dashboard-date" id="dash-date"></div>
       </div>
+      <div class="ai-card" id="dash-ai-briefing" style="margin: 0 20px 14px;">
+        <div class="ai-card-title">✨ עוזר AI אישי — תדרוך יומי על המערכת</div>
+        <div id="dash-ai-briefing-body"></div>
+      </div>
       <div class="kpi-row" id="kpi-row"></div>
       <div class="section-header">
         <div class="section-title">⚡ משימות דחופות</div>
@@ -2719,6 +2723,48 @@ const AI = {
 **דגלים אדומים:** [אם יש, אחרת "אין"]`
     }], 350);
   },
+
+  async getDailyBriefing() {
+    const active = State.leads.filter(l => l.stage !== 's5');
+    const stageName = id => State.stages.find(s => s.id === id)?.name || '—';
+    const hot = [...active].sort((a,b) => (b.score||0) - (a.score||0)).slice(0, 5);
+    const urgentTasks = State.tasks.filter(t => !t.done && diffDays(t.due) <= 0)
+      .sort((a,b) => new Date(a.due) - new Date(b.due)).slice(0, 5);
+    const cold = State.leads.filter(l => {
+      if (l.stage === 's5') return false;
+      if (!l.last_contact) return diffDays(l.created_at) < -14;
+      return diffDays(l.last_contact) < -14;
+    }).slice(0, 5);
+    const closedTotal = State.leads.filter(l => l.stage === 's5').length;
+    const pipelineVal = active.reduce((s,l) => s + (l.budget_max||0), 0);
+
+    const fmtLead = l => `${l.name} — ציון ${l.score ?? '—'}, שלב "${stageName(l.stage)}", ${l.desired_area || 'אזור לא ידוע'}, תקציב ${formatMoney(l.budget_max)}`;
+    const fmtTask = t => `${t.title} (${typeEmoji(t.type)} ${t.lead_id ? (State.leads.find(l=>l.id===t.lead_id)?.name || '') : ''}, ${formatRelDate(t.due)})`;
+    const fmtCold = l => `${l.name} — ${l.last_contact ? Math.abs(diffDays(l.last_contact)) : '14+'} ימים בלי קשר, שלב "${stageName(l.stage)}"`;
+
+    const prompt = `אתה עוזר אישי חכם של מתווך נדל"ן ישראלי, שמנהל עבורו יום-יום את המערכת ונותן לו תדרוך בוקר ממוקד.
+
+📊 תמונת מצב:
+לידים פעילים: ${active.length} | שווי צינור: ${formatMoney(pipelineVal)} | עסקאות שנסגרו עד כה: ${closedTotal}
+
+🔥 לידים מובילים (לפי ציון AI):
+${hot.map(fmtLead).join('\n') || 'אין לידים פעילים'}
+
+⏰ משימות שדורשות טיפול היום (או באיחור):
+${urgentTasks.map(fmtTask).join('\n') || 'אין משימות דחופות — מצוין'}
+
+❄️ לידים קפואים (14+ יום בלי קשר):
+${cold.map(fmtCold).join('\n') || 'אין לידים קפואים'}
+
+כתוב תדרוך יומי קצר וממוקד בעברית, בדיוק בפורמט הזה:
+**🎯 המוקד של היום:** [1-2 דברים הכי חשובים שהסוכן צריך לטפל בהם עכשיו]
+**👥 לטפל בדחיפות:** [שמות ספציפיים מהרשימות למעלה + סיבה קצרה, עד 3 שמות]
+**💡 תובנה לשיפור:** [המלצה אחת קונקרטית ומעשית שתשפר תוצאות השבוע]
+
+כללים: היה ישיר, מעשי וממוקד-תוצאות, בלי קלישאות וללא הקדמות. עד 8 שורות בסך הכל.`;
+
+    return this.call([{ role: 'user', content: prompt }], 550);
+  },
 };
 
 function copyAIText(elId) {
@@ -3061,6 +3107,7 @@ const Dashboard = {
     this.renderTasks();
     this.renderColdLeads();
     this.renderActivity();
+    this.renderAIBriefing();
   },
   renderKPIs() {
     const newToday   = State.leads.filter(l => l.created_at === today()).length;
@@ -3167,6 +3214,52 @@ const Dashboard = {
         <div class="cold-badge">❄️ ${l.last_contact ? Math.abs(diffDays(l.last_contact)) : '14+'} ימים</div>
       </div>
     `).join('');
+  },
+
+  _briefingCache: null,
+  renderAIBriefing() {
+    const el = document.getElementById('dash-ai-briefing-body');
+    if (!el) return;
+    const cache = this._briefingCache;
+    if (cache && cache.date === today() && cache.html) {
+      el.innerHTML = `
+        <div class="ai-card-body">${cache.html}</div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:10px;" onclick="Dashboard.runAIBriefing(true)">🔄 רענן תדרוך</button>
+      `;
+      return;
+    }
+    el.innerHTML = `
+      <div style="font-size:13px; color:var(--gray-600); line-height:1.6; margin-bottom:10px;">
+        קבל תדרוך יומי אישי — מה הכי חשוב היום, אילו לידים לטפל בהם דחוף, והמלצה לשיפור הביצועים.
+      </div>
+      <button class="btn btn-primary btn-sm w-full" onclick="Dashboard.runAIBriefing()">✨ קבל תדרוך AI על המערכת</button>
+    `;
+  },
+
+  async runAIBriefing(force) {
+    const el = document.getElementById('dash-ai-briefing-body');
+    if (!el) return;
+    if (!force && this._briefingCache?.date === today()) { this.renderAIBriefing(); return; }
+    el.innerHTML = `<div class="ai-thinking">✨ סורק לידים, משימות ופעילות ובונה תדרוך אישי... <div class="ai-dots"><span></span><span></span><span></span></div></div>`;
+    try {
+      const text = await AI.getDailyBriefing();
+      if (!text) {
+        this._briefingCache = null;
+        el.innerHTML = `<div style="color:var(--gray-400);font-size:13px;padding:8px;">לא הצלחתי להכין תדרוך כרגע. נסה שוב מאוחר יותר.</div>`;
+        return;
+      }
+      const html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+      this._briefingCache = { date: today(), html };
+      el.innerHTML = `
+        <div class="ai-card-body">${html}</div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:10px;" onclick="Dashboard.runAIBriefing(true)">🔄 רענן תדרוך</button>
+      `;
+    } catch(e) {
+      el.innerHTML = `
+        <div style="color:var(--red-600);font-size:13px;padding:8px;">שגיאה: ${e.message}</div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:6px;" onclick="Dashboard.runAIBriefing(true)">נסה שוב</button>
+      `;
+    }
   }
 };
 
