@@ -4309,37 +4309,44 @@ document.getElementById('new-task-due').value = addDays(1);
 // misses that one-time event and strands the user on the login screen after a
 // successful OAuth redirect. #screen-login / #loading-overlay already exist in the
 // DOM at this point — this <script> runs after them in source order.
-sbClient.auth.onAuthStateChange(async (event, session) => {
+sbClient.auth.onAuthStateChange((event, session) => {
   if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session?.user) {
     const loginScreen = document.getElementById('screen-login');
     if (!loginScreen.classList.contains('hidden')) {
-      // User just signed in via OAuth redirect
-      const overlay = document.getElementById('loading-overlay');
-      overlay.classList.remove('hidden', 'fade-out');
-      overlay.querySelector('.loader-text').textContent = 'מתחבר...';
-      try {
-        await DB.ensureAgent(session.user.email, session.user.user_metadata?.full_name || session.user.email.split('@')[0]);
-        const loaded = await DB.loadAll();
-        State.stages     = loaded.stages;
-        State.leads      = loaded.leads;
-        State.tasks      = loaded.tasks;
-        State.properties = loaded.properties;
-        State.activities = loaded.activities;
-        const name = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
-        State.agent  = { name, email: session.user.email, initials: name[0].toUpperCase(), role: 'סוכן' };
-        const t = loaded.tenant;
-        State.tenant = t
-          ? { name: t.name, slug: t.slug, plan: t.plan,
-              trial_ends_at: t.trial_ends_at, billing_email: t.billing_email,
-              stripe_customer_id: t.stripe_customer_id, stripe_subscription_id: t.stripe_subscription_id }
-          : { name: 'לידרס נדל"ן', plan: 'trial' };
-        App._showApp();
-        overlay.classList.add('fade-out');
-        setTimeout(() => overlay.classList.add('hidden'), 520);
-      } catch(e) {
-        overlay.classList.add('hidden');
-        toast('שגיאה בטעינת הנתונים', 'error');
-      }
+      // User just signed in via OAuth redirect.
+      // IMPORTANT: supabase-js holds an internal auth lock for the duration of
+      // this callback — awaiting sbClient.rpc()/from() calls in here deadlocks
+      // (the query waits on the same lock the callback is blocking). Defer the
+      // actual work to a macrotask so it runs after the callback returns and
+      // the lock is released. See supabase/supabase-js auth deadlock issues.
+      setTimeout(async () => {
+        const overlay = document.getElementById('loading-overlay');
+        overlay.classList.remove('hidden', 'fade-out');
+        overlay.querySelector('.loader-text').textContent = 'מתחבר...';
+        try {
+          await DB.ensureAgent(session.user.email, session.user.user_metadata?.full_name || session.user.email.split('@')[0]);
+          const loaded = await DB.loadAll();
+          State.stages     = loaded.stages;
+          State.leads      = loaded.leads;
+          State.tasks      = loaded.tasks;
+          State.properties = loaded.properties;
+          State.activities = loaded.activities;
+          const name = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
+          State.agent  = { name, email: session.user.email, initials: name[0].toUpperCase(), role: 'סוכן' };
+          const t = loaded.tenant;
+          State.tenant = t
+            ? { name: t.name, slug: t.slug, plan: t.plan,
+                trial_ends_at: t.trial_ends_at, billing_email: t.billing_email,
+                stripe_customer_id: t.stripe_customer_id, stripe_subscription_id: t.stripe_subscription_id }
+            : { name: 'לידרס נדל"ן', plan: 'trial' };
+          App._showApp();
+          overlay.classList.add('fade-out');
+          setTimeout(() => overlay.classList.add('hidden'), 520);
+        } catch(e) {
+          overlay.classList.add('hidden');
+          toast('שגיאה בטעינת הנתונים', 'error');
+        }
+      }, 0);
     }
   }
 });
