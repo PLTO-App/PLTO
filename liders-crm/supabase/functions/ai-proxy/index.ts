@@ -30,10 +30,20 @@ const MAX_TOKENS_CAP = 1000;
 // via an oversized `messages` payload.
 const MAX_MESSAGES_JSON_BYTES = 8000;
 
+// Browsers preflight cross-origin calls that carry Authorization/Content-Type
+// headers with an OPTIONS request — without these headers on every response
+// (including the OPTIONS reply itself), the browser blocks the real POST
+// before it's sent and supabase-js surfaces it as a generic "failed to fetch".
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
 const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+  new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
 Deno.serve(async (req: Request) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
   if (!ANTHROPIC_API_KEY) return json({ error: 'AI is not configured on the server yet' }, 500);
 
