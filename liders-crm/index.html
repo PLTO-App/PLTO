@@ -1240,7 +1240,7 @@
   <div class="shield-icon">🔒</div>
   <div class="shield-logo">Liders<span>.</span></div>
   <div class="shield-msg">התצוגה מוסתרת זמנית להגנה על פרטיות הנתונים שלך ושל הלקוחות שלך</div>
-  <div class="shield-sub">המסך יחזור להופיע ברגע שתחזרו לחלון הזה</div>
+  <div class="shield-sub">המסך יחזור להופיע ברגע שתחזר לחלון הזה</div>
 </div>
 
 <!-- ═══════════════════════════════════════
@@ -1261,7 +1261,7 @@
       <div class="form-group">
         <label class="form-label">אימייל</label>
         <input type="email" id="login-email" class="form-input" placeholder="israel@liders.co.il"
-               autocomplete="username">
+               autocomplete="username" style="direction:ltr;">
       </div>
       <div class="form-group">
         <label class="form-label">סיסמה</label>
@@ -1272,7 +1272,7 @@
         כניסה למערכת
       </button>
       <div class="login-trial-badge">
-        🎁 30 ימים נסיון במערכת - בלי אשראי בכלל!
+        🎁 30 ימי ניסיון חינמי — בלי כרטיס אשראי בכלל!
       </div>
       <div class="login-divider">או</div>
       <button id="btn-login-google" type="button" class="btn-google" style="touch-action:manipulation;">
@@ -1361,23 +1361,23 @@
       <div class="card" id="dash-getting-started" style="margin:0 20px 16px; display:none;">
         <div style="text-align:center; padding:6px 4px;">
           <div style="font-size:40px; margin-bottom:8px;">🚀</div>
-          <div style="font-weight:800; font-size:1.05rem; margin-bottom:4px;">בואו נתחיל לבנות את הפייפליין שלך</div>
+          <div style="font-weight:800; font-size:1.05rem; margin-bottom:4px;">בוא נתחיל לבנות את הפייפליין שלך</div>
           <div style="color:var(--gray-500); font-size:0.85rem; line-height:1.6; margin-bottom:16px;">
-            עדיין אין לכם לידים במערכת — זה הזמן להוסיף את הראשון, או לייבא רשימה קיימת בלחיצה אחת.
+            עדיין אין לך לידים במערכת — זה הזמן להוסיף את הראשון, או לייבא רשימה קיימת בלחיצה אחת.
           </div>
           <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-            <button class="btn btn-primary" onclick="openModal('modal-add-lead')">➕ הוספת ליד ראשון</button>
+            <button class="btn btn-primary" onclick="openModal('modal-add-lead')">➕ הוסף ליד ראשון</button>
             <button class="btn btn-ghost" onclick="LeadImport.open()">📋 ייבוא רשימת לידים מקובץ</button>
           </div>
           <div style="margin-top:18px; display:flex; flex-direction:column; gap:8px; text-align:right;">
             <div style="display:flex; align-items:center; gap:10px; background:var(--bg-app); padding:10px 14px; border-radius:8px; font-size:13px;">
-              <span>1️⃣</span><span>הוסיפו לידים — ידנית, אחד-אחד, או בבת אחת מקובץ קיים</span>
+              <span>1️⃣</span><span>הוסף לידים — ידנית, אחד-אחד, או בבת אחת מקובץ קיים</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px; background:var(--bg-app); padding:10px 14px; border-radius:8px; font-size:13px;">
-              <span>2️⃣</span><span>גררו אותם בין שלבי הפייפליין במסך "פייפליין לידים" כדי לעקוב אחרי כל עסקה</span>
+              <span>2️⃣</span><span>גרור אותם בין שלבי הפייפליין במסך "פייפליין לידים" כדי לעקוב אחרי כל עסקה</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px; background:var(--bg-app); padding:10px 14px; border-radius:8px; font-size:13px;">
-              <span>3️⃣</span><span>קבלו תזכורות אוטומטיות וניתוח AI שיעזרו לכם לסגור עוד עסקאות</span>
+              <span>3️⃣</span><span>קבל תזכורות אוטומטיות וניתוח AI שיעזרו לך לסגור עוד עסקאות</span>
             </div>
           </div>
         </div>
@@ -1597,7 +1597,7 @@
       </div>
       <div class="form-group">
         <label class="form-label">טלפון *</label>
-        <input type="tel" id="new-lead-phone" class="form-input" placeholder="050-0000000">
+        <input type="tel" id="new-lead-phone" class="form-input" placeholder="050-0000000" style="direction:ltr;">
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -1683,7 +1683,7 @@
           <label class="form-label">סוג</label>
           <select id="new-task-type" class="form-input">
             <option value="call">📞 שיחה</option>
-            <option value="whatsapp">💬 ווצאפ</option>
+            <option value="whatsapp">💬 WhatsApp</option>
             <option value="email">📧 אימייל</option>
             <option value="showing">🏠 ביקור</option>
             <option value="meeting">🤝 פגישה</option>
@@ -1727,7 +1727,7 @@
         <label class="form-label">סוג פעילות</label>
         <select id="new-activity-type" class="form-input">
           <option value="call">📞 שיחה</option>
-          <option value="whatsapp">💬 ווצאפ</option>
+          <option value="whatsapp">💬 WhatsApp</option>
           <option value="email">📧 אימייל</option>
           <option value="showing">🏠 ביקור</option>
           <option value="note">📝 הערה</option>
@@ -1741,7 +1741,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-add-activity')">ביטול</button>
-      <button class="btn btn-primary" style="flex:1;" onclick="addActivity()">שמור</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="addActivity()">שמור פעילות</button>
     </div>
   </div>
 </div>
@@ -1764,11 +1764,11 @@
       </div>
       <div class="form-group">
         <label class="form-label">טלפון *</label>
-        <input type="tel" id="edit-lead-phone" class="form-input" placeholder="050-0000000">
+        <input type="tel" id="edit-lead-phone" class="form-input" placeholder="050-0000000" style="direction:ltr;">
       </div>
       <div class="form-group">
         <label class="form-label">אימייל</label>
-        <input type="email" id="edit-lead-email" class="form-input" placeholder="israel@example.com">
+        <input type="email" id="edit-lead-email" class="form-input" placeholder="israel@example.com" style="direction:ltr;">
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -1898,7 +1898,7 @@
     </div>
     <div class="modal-body" id="ob-body" style="min-height:220px;"></div>
     <div class="modal-footer" style="display:flex;gap:12px;justify-content:space-between;">
-      <button class="btn btn-ghost" id="ob-back-btn" onclick="Onboarding.back()" style="display:none;">→ חזור</button>
+      <button class="btn btn-ghost" id="ob-back-btn" onclick="Onboarding.back()" style="display:none;">← חזור</button>
       <button class="btn btn-primary" id="ob-next-btn" onclick="Onboarding.next()" style="margin-right:auto;">הבא ←</button>
     </div>
   </div>
@@ -2350,7 +2350,7 @@ const Billing = {
       price: 199,
       priceLabel: '₪199',
       desc: 'לסוכן עצמאי',
-      features: ['סוכן 1 בלבד', 'לידים ללא הגבלה', 'Pipeline Kanban', 'WhatsApp reminders', 'אפליקציה מובייל'],
+      features: ['סוכן 1 בלבד', 'לידים ללא הגבלה', 'לוח Kanban', 'תזכורות WhatsApp', 'אפליקציה מובייל'],
       featured: false,
       agentLimit: '1 סוכן',
     },
@@ -2360,7 +2360,7 @@ const Billing = {
       price: 349,
       priceLabel: '₪349',
       desc: 'לצוות קטן',
-      features: ['עד 5 סוכנים', 'כל מה ב-Basic +', 'AI Lead Score', 'Analytics בסיסי', 'חיבור Google Calendar'],
+      features: ['עד 5 סוכנים', 'כל מה ב-Basic +', 'ציון AI לכל ליד', 'אנליטיקס בסיסי', 'חיבור Google Calendar'],
       featured: false,
       agentLimit: 'עד 5 סוכנים',
     },
@@ -2370,7 +2370,7 @@ const Billing = {
       price: 549,
       priceLabel: '₪549',
       desc: 'לסוכנות',
-      features: ['עד 10 סוכנים', 'כל מה ב-Pro +', 'AI Follow-up אוטומטי', 'Analytics מתקדם', 'API + Integrations', 'תמיכה עדיפות', 'מעל 10 סוכנים — צור קשר לתמחור'],
+      features: ['עד 10 סוכנים', 'כל מה ב-Pro +', 'מעקב אוטומטי AI', 'אנליטיקס מתקדם', 'API + חיבורים', 'תמיכה עדיפות', 'מעל 10 סוכנים — צור קשר לתמחור'],
       featured: true,
       agentLimit: 'עד 10 סוכנים',
     },
@@ -2552,7 +2552,7 @@ const Onboarding = {
         const INDUSTRIES = [
           { id: 'realestate', icon: '🏠', label: 'נדל"ן' },
           { id: 'sales',      icon: '💼', label: 'מכירות B2B' },
-          { id: 'ecommerce',  icon: '🛒', label: 'E-Commerce' },
+          { id: 'ecommerce',  icon: '🛒', label: 'חנות אונליין' },
           { id: 'beauty',     icon: '💅', label: 'יופי ובריאות' },
           { id: 'services',   icon: '⚙️', label: 'שירות ותמיכה' },
           { id: 'other',      icon: '🎯', label: 'אחר' },
@@ -2591,7 +2591,7 @@ const Onboarding = {
             <label class="form-label">שם העסק *</label>
             <input class="form-input" id="ob-agency-name" placeholder='${placeholder}' value="${escapeHtml(val)}" style="font-size:1.1rem;">
             <label class="form-label" style="margin-top:16px;">טלפון ראשי (אופציונלי)</label>
-            <input class="form-input" id="ob-agency-phone" placeholder="050-0000000" type="tel">
+            <input class="form-input" id="ob-agency-phone" placeholder="050-0000000" type="tel" style="direction:ltr;">
             <label class="form-label" style="margin-top:16px;">עיר / אזור עיקרי</label>
             <input class="form-input" id="ob-agency-city" placeholder="תל אביב">
           </div>`;
@@ -2628,14 +2628,14 @@ const Onboarding = {
       },
     },
     {
-      title: 'WhatsApp Automations ⚡',
+      title: 'אוטומציות WhatsApp ⚡',
       subtitle: 'חבר את Make.com לשליחת הודעות אוטומטיות',
       render() {
         return `
           <div>
             <p style="color:var(--gray-500);font-size:0.88rem;margin-bottom:16px;line-height:1.6;">
               חיבור Make.com מאפשר שליחת הודעות WhatsApp אוטומטיות ללידים —
-              תזכורות, follow-up, ועדכוני עסקה.
+              תזכורות, מעקב, ועדכוני עסקה.
             </p>
             <label class="form-label">Webhook URL של Make.com (אופציונלי)</label>
             <input class="form-input" id="ob-webhook" placeholder="https://hook.eu1.make.com/..." dir="ltr">
@@ -3498,8 +3498,8 @@ const Leads = {
       : State.leads.length === 0
       ? `<div class="empty-state">
            <div class="empty-icon">👥</div>
-           <div class="empty-title">עדיין אין לכם לידים</div>
-           <div class="empty-sub">הוסיפו את הליד הראשון שלכם, או ייבאו רשימה קיימת מקובץ</div>
+           <div class="empty-title">עדיין אין לך לידים</div>
+           <div class="empty-sub">הוסף את הליד הראשון שלך, או ייבא רשימה קיימת מקובץ</div>
            <div style="display:flex; gap:10px; justify-content:center; margin-top:16px;">
              <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-lead')">➕ הוספת ליד</button>
              <button class="btn btn-ghost btn-sm" onclick="LeadImport.open()">📋 ייבוא מקובץ</button>
@@ -3558,7 +3558,7 @@ const LeadDetail = {
         </div>
         <div class="lead-detail-actions">
           <button class="lead-action-btn" data-phone="${escapeHtml(lead.phone)}" onclick="window.open('tel:'+this.dataset.phone)">📞 שיחה</button>
-          <button class="lead-action-btn" data-phone="${escapeHtml(lead.phone)}" onclick="window.open('https://wa.me/972'+this.dataset.phone.replace(/^0/,'').replace(/-/g,''))">💬 ווצאפ</button>
+          <button class="lead-action-btn" data-phone="${escapeHtml(lead.phone)}" onclick="window.open('https://wa.me/972'+this.dataset.phone.replace(/^0/,'').replace(/-/g,''))">💬 WhatsApp</button>
           <button class="lead-action-btn" onclick="openMoveStage('${lead.id}')">🔄 שנה שלב</button>
           <button class="lead-action-btn" onclick="State.currentLeadId='${lead.id}'; openModal('modal-add-activity')">📝 הוסף</button>
           <button class="lead-action-btn" onclick="openEditLead('${lead.id}')">✏️ עריכה</button>
@@ -3581,7 +3581,7 @@ const LeadDetail = {
             <div class="info-item"><div class="info-label">אזור מבוקש</div><div class="info-value">${escapeHtml(lead.desired_area||'—')}</div></div>
             <div class="info-item"><div class="info-label">מקור</div><div class="info-value">${escapeHtml(sourceLabel(lead.source))}</div></div>
             <div class="info-item"><div class="info-label">קשר אחרון</div><div class="info-value">${formatRelDate(lead.last_contact)||'—'}</div></div>
-            <div class="info-item"><div class="info-label">follow-up</div><div class="info-value ${diffDays(lead.next_followup)<0?'':''}">
+            <div class="info-item"><div class="info-label">מעקב הבא</div><div class="info-value ${diffDays(lead.next_followup)<0?'':''}">
               ${lead.next_followup ? formatRelDate(lead.next_followup) : '—'}</div></div>
           </div>
           ${lead.notes ? `<div style="background:var(--gray-50);border-radius:var(--radius-md);padding:12px;font-size:14px;color:var(--gray-700);">${escapeHtml(lead.notes)}</div>` : ''}
@@ -3646,8 +3646,8 @@ const LeadDetail = {
                 <div class="card" style="padding:14px;display:flex;gap:12px;align-items:center;">
                   <div style="font-size:28px;">🏠</div>
                   <div style="flex:1;">
-                    <div style="font-weight:700;font-size:14px;">${p.title}</div>
-                    <div style="font-size:12px;color:var(--gray-500);">${p.city} · ${p.rooms} חד׳ · ${p.area} מ"ר</div>
+                    <div style="font-weight:700;font-size:14px;">${escapeHtml(p.title)}</div>
+                    <div style="font-size:12px;color:var(--gray-500);">${escapeHtml(p.city)} · ${p.rooms} חד׳ · ${p.area} מ"ר</div>
                     <div style="font-size:14px;font-weight:800;color:var(--navy-500);margin-top:3px;">${formatMoney(p.price)}</div>
                   </div>
                 </div>
@@ -3666,7 +3666,7 @@ const LeadDetail = {
             <div id="ai-score-result" class="hidden"></div>
             <!-- Follow-up -->
             <button class="btn btn-ghost w-full" style="margin-top:4px;" onclick="LeadDetail.runFollowup()">
-              💬 כתוב הודעת follow-up לוואטסאפ
+              💬 כתוב הודעת מעקב ל-WhatsApp
             </button>
             <div id="ai-followup-result" class="hidden"></div>
             <!-- Rescue (only if cold lead) -->
@@ -4045,7 +4045,7 @@ const Analytics = {
 
   exportPDF() {
     const orig = document.title;
-    document.title = 'Liders — דוח אנליטיקה ' + new Date().toLocaleDateString('he-IL');
+    document.title = 'Liders — דוח אנליטיקס ' + new Date().toLocaleDateString('he-IL');
     window.print();
     document.title = orig;
   },
@@ -4135,7 +4135,7 @@ const Settings = {
             </div>
           </div>
           <div class="api-key-row">
-            <input type="url" id="make-webhook-input" placeholder="https://hook.eu2.make.com/..." value="${Make.getWebhook()}" style="direction:ltr;" />
+            <input type="url" id="make-webhook-input" placeholder="https://hook.eu2.make.com/..." value="${escapeHtml(Make.getWebhook())}" style="direction:ltr;" />
             <button class="btn btn-primary btn-sm" onclick="const v=document.getElementById('make-webhook-input').value; if(v) Make.setWebhook(v);">שמור</button>
             ${Make.getWebhook() ? `<button class="btn btn-ghost btn-sm" onclick="Make.test()">בדוק</button>` : ''}
           </div>
@@ -4386,8 +4386,8 @@ const LeadImport = {
           <div style="font-size:40px;margin-bottom:10px;">📋</div>
           <div style="font-weight:700;margin-bottom:6px;">ייבוא רשימת לידים מקובץ</div>
           <div style="color:var(--gray-500);font-size:0.85rem;line-height:1.6;margin-bottom:18px;">
-            כבר יש לכם רשימת לידים באקסל או ב-CSV? העלו אותה כאן —
-            נעזור לכם לשייך כל עמודה לשדה הנכון במערכת.
+            כבר יש לך רשימת לידים באקסל או ב-CSV? העלה אותה כאן —
+            נעזור לך לשייך כל עמודה לשדה הנכון במערכת.
           </div>
           <label class="btn btn-primary" style="cursor:pointer;display:inline-block;">
             📁 בחירת קובץ CSV

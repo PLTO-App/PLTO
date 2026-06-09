@@ -15,7 +15,8 @@ async function verifyStripeSignature(payload: string, sig: string, secret: strin
   if (!ts || !v1) return false;
 
   // Replay-attack protection: reject events older than 5 minutes
-  if (Math.abs(Date.now() / 1000 - parseInt(ts, 10)) > 300) return false;
+  const tsNum = parseInt(ts, 10);
+  if (isNaN(tsNum) || Math.abs(Date.now() / 1000 - tsNum) > 300) return false;
 
   const signed  = `${ts}.${payload}`;
   const key     = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
@@ -151,9 +152,14 @@ serve(async (req: Request) => {
 
     // Subscription cancellations use stripe_customer_id — server-assigned,
     // not client-controlled, so no tamper risk here.
-    await sb.from('tenants')
+    const { error: cancelError } = await sb.from('tenants')
       .update({ plan: 'cancelled', stripe_subscription_id: null })
       .eq('stripe_customer_id', customerId);
+
+    if (cancelError) {
+      console.error(`stripe-webhook: failed to cancel tenant for customer ${customerId}: ${cancelError.message}`);
+      return new Response('DB update failed', { status: 500 });
+    }
 
     console.log(`stripe-webhook: subscription cancelled for customer ${customerId}`);
   }

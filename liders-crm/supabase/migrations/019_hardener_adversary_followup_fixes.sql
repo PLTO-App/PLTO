@@ -16,8 +16,11 @@
 
 -- ── 1. Add 'premium' to plan check ──────────────────────────────────────────
 ALTER TABLE tenants DROP CONSTRAINT IF EXISTS tenants_plan_check;
-ALTER TABLE tenants ADD CONSTRAINT tenants_plan_check
-  CHECK (plan IN ('trial', 'basic', 'pro', 'premium', 'cancelled'));
+DO $$ BEGIN
+  ALTER TABLE tenants ADD CONSTRAINT tenants_plan_check
+    CHECK (plan IN ('trial', 'basic', 'pro', 'premium', 'cancelled'));
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ── 2. Backfill billing_email from agent_users.email for owner rows ──────────
 UPDATE tenants t
