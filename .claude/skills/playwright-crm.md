@@ -1,8 +1,8 @@
-# Playwright E2E Testing — מלי יופי ועור
+# Playwright E2E Testing — Liders CRM Platform
 
 ## פקודה: `/playwright-crm`
 
-בדיקות E2E אוטומטיות לכל flows של מערכת ה-CRM.
+בדיקות E2E אוטומטיות לכל flows של Admin Dashboard.
 
 ---
 
@@ -20,7 +20,7 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/e2e',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:8080',
     locale: 'he-IL',
     timezoneId: 'Asia/Jerusalem',
     screenshot: 'only-on-failure',
@@ -37,103 +37,100 @@ export default defineConfig({
 
 ## Test Suites
 
-### 1. Booking Flow
+### 1. Auth Flow
 ```typescript
-// tests/e2e/booking.spec.ts
+// tests/e2e/auth.spec.ts
 import { test, expect } from '@playwright/test';
 
-test.describe('Booking Flow', () => {
-  test('הזמנה מלאה — שלב 1 עד אישור', async ({ page }) => {
+test.describe('Auth Flow', () => {
+  test('כניסה עם פרטים נכונים', async ({ page }) => {
     await page.goto('/');
+    await expect(page.locator('#auth-screen')).toBeVisible();
 
-    // שלב 1 — בחירת שירות
-    await expect(page.getByText('בחרי טיפול')).toBeVisible();
-    await page.getByText('טיפול פנים קלאסי').click();
-    await expect(page.locator('.service-card.selected')).toBeVisible();
-    await page.getByText('המשך').click();
+    await page.fill('#email-input', 'Liders.crm@gmail.com');
+    await page.fill('#password-input', 'LidersCRM_2026!');
+    await page.click('#login-btn');
 
-    // שלב 2 — בחירת תאריך
-    await expect(page.getByText('בחרי תאריך')).toBeVisible();
-    const openDay = page.locator('.cal-day.open').first();
-    await openDay.click();
-    await page.getByText('המשך').click();
-
-    // שלב 3 — בחירת שעה
-    await expect(page.getByText('בחרי שעה')).toBeVisible();
-    const slot = page.locator('.slot:not(.booked)').first();
-    await slot.click();
-    await page.getByText('המשך').click();
-
-    // שלב 4 — פרטים אישיים
-    await page.fill('#f-name', 'שרה לוי');
-    await page.fill('#f-phone', '052-1234567');
-    await page.getByText('אישור הזמנה').click();
-
-    // הצלחה
-    await expect(page.getByText('התור נקבע!')).toBeVisible();
+    await expect(page.locator('#app')).toBeVisible();
+    await expect(page.locator('.topbar-logo')).toContainText('Liders');
   });
 
-  test('ימים סגורים אינם ניתנים לבחירה', async ({ page }) => {
+  test('כניסה עם פרטים שגויים מציגה שגיאה', async ({ page }) => {
     await page.goto('/');
-    const closedDay = page.locator('.cal-day.closed').first();
-    await expect(closedDay).not.toHaveClass(/open/);
+    await page.fill('#email-input', 'wrong@email.com');
+    await page.fill('#password-input', 'wrongpassword');
+    await page.click('#login-btn');
+    await expect(page.locator('#auth-error')).toBeVisible();
   });
 
-  test('slots תפוסים מוצגים כ-disabled', async ({ page }) => {
-    await page.goto('/');
-    // בחר שירות ותאריך עם booking קיים
-    // ...
-    const bookedSlot = page.locator('.slot.booked').first();
-    await expect(bookedSlot).not.toBeClickable?.();
-  });
-});
-```
-
-### 2. Admin Panel
-```typescript
-// tests/e2e/admin.spec.ts
-test.describe('Admin Panel', () => {
-  test('PIN נכון פותח את הניהול', async ({ page }) => {
-    await page.goto('/');
-    await page.getByText('ניהול').click();
-
-    // הכנס PIN
-    for (const digit of ['1','2','3','4']) {
-      await page.locator(`[data-digit="${digit}"]`).click();
-    }
-    await expect(page.locator('#admin-panel')).toBeVisible();
-  });
-
-  test('PIN שגוי מציג שגיאה', async ({ page }) => {
-    await page.goto('/');
-    await page.getByText('ניהול').click();
-    for (const digit of ['9','9','9','9']) {
-      await page.locator(`[data-digit="${digit}"]`).click();
-    }
-    await expect(page.locator('#pin-err')).toBeVisible();
-  });
-
-  test('הוספת שירות חדש', async ({ page }) => {
+  test('יציאה מנתקת את המשתמש', async ({ page }) => {
     // login first...
-    await page.getByText('+ הוסיפי שירות').click();
-    // fill service form...
-    await expect(page.locator('#svc-admin .svc-row')).toHaveCount(9);
+    await page.click('.btn-logout');
+    await expect(page.locator('#auth-screen')).toBeVisible();
   });
 });
 ```
 
-### 3. Mobile Responsiveness
+### 2. Accounts Management
+```typescript
+// tests/e2e/accounts.spec.ts
+test.describe('Accounts', () => {
+  test.beforeEach(async ({ page }) => {
+    // login before each test
+    await page.goto('/');
+    await page.fill('#password-input', 'LidersCRM_2026!');
+    await page.click('#login-btn');
+    await page.click('.nav-tab:nth-child(2)'); // לקוחות פלטפורמה
+  });
+
+  test('טבלת לקוחות מוצגת', async ({ page }) => {
+    await expect(page.locator('#accounts-tbody tr')).not.toHaveCount(0);
+  });
+
+  test('הוספת לקוח חדש', async ({ page }) => {
+    await page.click('button:has-text("+ הוסף לקוח")');
+    await expect(page.locator('#account-modal.open')).toBeVisible();
+
+    await page.fill('#acc-business-name', 'עסק בדיקה');
+    await page.fill('#acc-owner-name', 'בעל בדיקה');
+    await page.click('#account-save-btn');
+
+    await expect(page.locator('#toast.success')).toBeVisible();
+  });
+
+  test('חיפוש מסנן תוצאות', async ({ page }) => {
+    await page.fill('#accounts-search', 'xxxnotexist');
+    const rows = page.locator('#accounts-tbody tr');
+    await expect(rows).toHaveCount(1); // empty state row
+  });
+});
+```
+
+### 3. Invoices
+```typescript
+// tests/e2e/invoices.spec.ts
+test.describe('Invoices', () => {
+  test('סימון חשבונית כשולם', async ({ page }) => {
+    // navigate to invoices tab
+    await page.click('.nav-tab:nth-child(3)');
+    const markPaidBtn = page.locator('button[title="סמן כשולם"]').first();
+    if (await markPaidBtn.isVisible()) {
+      await markPaidBtn.click();
+      await expect(page.locator('#toast.success')).toBeVisible();
+    }
+  });
+});
+```
+
+### 4. Mobile Responsiveness
 ```typescript
 test.describe('Mobile', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test('booking flow עובד במובייל', async ({ page }) => {
+  test('dashboard נטען במובייל', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.service-list')).toBeVisible();
-    // verify RTL layout
-    const body = await page.$('body');
-    const dir = await body?.getAttribute('dir') ?? '';
-    expect(dir).toBe('rtl'); // via html[dir]
+    const dir = await page.$eval('html', el => el.getAttribute('dir'));
+    expect(dir).toBe('rtl');
   });
 });
 ```
@@ -170,7 +167,7 @@ jobs:
 ```bash
 npx playwright test                    # כל הבדיקות
 npx playwright test --ui               # UI mode
-npx playwright test booking.spec.ts    # קובץ ספציפי
+npx playwright test auth.spec.ts       # קובץ ספציפי
 npx playwright test --headed           # עם browser נראה
-npx playwright codegen http://localhost:3000  # הקלטת בדיקות חדשות
+npx playwright codegen http://localhost:8080  # הקלטת בדיקות חדשות
 ```

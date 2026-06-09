@@ -1,38 +1,48 @@
-# Figma UI/UX Skill — מלי יופי ועור
+# Figma UI/UX Skill — Liders CRM Platform
 
 ## פקודה: `/figma-crm-ui`
 
-עיצוב UI/UX עם Figma MCP + Canva MCP, RTL מלא, design tokens של הסלון.
+עיצוב UI/UX עם Figma MCP + Canva MCP, RTL מלא, dark theme tokens של Liders CRM.
 
 ---
 
-## Design Tokens — מלי יופי ועור
+## Design Tokens — Liders CRM
 
 ```css
-/* פלטת צבעים */
---ink:         #1C1410;   /* טקסט ראשי */
---espresso:    #3A2318;   /* header, buttons */
---terracotta:  #B06A4A;   /* accent, highlights */
---sand:        #D4A882;   /* secondary text, borders */
---blush:       #EDD5BF;   /* backgrounds, cards */
---parch:       #F7EFE5;   /* page background */
---ivory:       #FDFAF6;   /* white areas */
---sage:        #7A9E7E;   /* success, available */
---sage-light:  #EBF2EC;   /* success backgrounds */
---error:       #B84C4C;   /* errors, warnings */
+:root {
+  /* Background */
+  --bg:        #0F172A;   /* עמוד ראשי */
+  --surface:   #1E293B;   /* כרטיסים, topbar */
+  --surface2:  #273549;   /* hover, inputs */
+  --border:    #334155;   /* גבולות */
 
-/* Typography */
---font-display: 'Cormorant Garamond', Georgia, serif;
---font-body:    'Heebo', sans-serif;
+  /* Brand */
+  --gold:      #F59E0B;   /* accent ראשי */
+  --gold-light:#FDE68A;
+  --gold-dim:  rgba(245,158,11,0.12);
 
-/* Radius */
---radius-sm: 10px;
---radius-md: 16px;
---radius-lg: 24px;
+  /* Text */
+  --text:      #F1F5F9;
+  --text-muted:#94A3B8;
+  --text-dim:  #64748B;
 
-/* Shadows */
---shadow-soft: 0 4px 24px rgba(28,20,16,0.08);
---shadow-card: 0 2px 12px rgba(28,20,16,0.07);
+  /* Semantic */
+  --green:     #10B981;
+  --green-bg:  rgba(16,185,129,0.12);
+  --red:       #EF4444;
+  --red-bg:    rgba(239,68,68,0.12);
+  --blue:      #3B82F6;
+  --blue-bg:   rgba(59,130,246,0.12);
+  --orange:    #F97316;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius:    12px;
+  --radius-lg: 20px;
+
+  /* Shadows */
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
 ```
 
 ---
@@ -41,13 +51,13 @@
 
 ### שליפת design context
 ```
-// השתמש ב: mcp__88a7dadd__get_design_context
+// mcp__88a7dadd__get_design_context
 // לקבלת tokens, components וספריות מ-Figma
 ```
 
 ### יצירת component חדש
 ```
-1. get_libraries() — ראה אילו ספריות זמינות
+1. get_libraries() — ראה ספריות זמינות
 2. get_design_context(url) — שלוף tokens קיימים
 3. use_figma() — פתח עורך Figma
 4. generate_diagram() — צור ERD / flow ב-FigJam
@@ -59,39 +69,32 @@
 
 ### כללים קריטיים
 ```css
-/* תמיד על html */
 html { direction: rtl; }
 
-/* Flexbox — הפוך gap */
-.flex-row { 
-  display: flex; 
-  flex-direction: row;
-  /* בעברית: ימין לשמאל */
-}
-
 /* Icons ב-RTL */
-.arrow-back::before { content: '→'; }   /* ← בלטינית */
+.arrow-back::before    { content: '→'; }
 .arrow-forward::before { content: '←'; }
 ```
 
 ### Component Patterns
 ```html
-<!-- כרטיס שירות — RTL -->
-<div class="service-card" dir="rtl">
-  <div class="svc-info">
-    <div class="svc-name">טיפול פנים קלאסי</div>
-    <div class="svc-sub">⏱ 60 דקות</div>
-    <span class="svc-tag">פנים</span>
-  </div>
-  <div class="svc-price-col">
-    <div class="svc-price">₪220</div>
-  </div>
-</div>
+<!-- Badge -->
+<span class="badge badge-green">פעיל</span>
+<span class="badge badge-blue">ניסיון</span>
+<span class="badge badge-gold">Pro</span>
+<span class="badge badge-red">חריגה</span>
 
-<!-- form field — LTR לטלפון -->
-<div class="form-field">
-  <label>טלפון</label>
-  <input type="tel" dir="ltr" placeholder="05X-XXXXXXX">
+<!-- Table Row -->
+<tr>
+  <td><strong>שם עסק</strong></td>
+  <td><span class="badge badge-gold">Pro</span></td>
+  <td style="color:var(--gold)">₪299</td>
+</tr>
+
+<!-- Input field -->
+<div class="form-group">
+  <label>שם העסק *</label>
+  <input type="text" id="acc-business-name">
 </div>
 ```
 
@@ -100,16 +103,15 @@ html { direction: rtl; }
 ## Canva MCP — Marketing Materials
 
 ```
-// mcp__3f33a9a8__generate_design — יצירת עיצוב שיווקי
+// mcp__3f33a9a8__generate_design
 // מתאים ל:
-- פוסטים לרשתות חברתיות (Instagram, Facebook)
-- כרטיסי ביקור דיגיטליים
-- banner לאתר
-- Stories עם מבצעים
+- פוסטים לרשתות חברתיות
+- pitch deck ללקוחות פוטנציאליים
+- onboarding materials
 
 // פרמטרים:
 {
-  brand_colors: ['#3A2318', '#B06A4A', '#D4A882'],
+  brand_colors: ['#0F172A', '#F59E0B', '#1E293B'],
   font: 'Heebo',
   language: 'he',
   direction: 'rtl'
@@ -118,35 +120,36 @@ html { direction: rtl; }
 
 ---
 
-## Screen Inventory
+## Screen Inventory — Admin Dashboard
 
 | מסך | תיאור | Status |
 |-----|-------|--------|
-| Booking Flow | 4 שלבים: שירות → תאריך → שעה → פרטים | ✅ |
-| Success Screen | אישור הזמנה | ✅ |
-| About Page | פרופיל מלי | ✅ |
-| Admin - Login | PIN pad | ✅ |
-| Admin - Dashboard | תורים, שירותים, שעות | ✅ |
-| Client Profile | כרטיס לקוח מפורט | ⏳ |
-| Analytics | דוחות הכנסות, ביקורים | ⏳ |
-| Notifications | WhatsApp, SMS | ⏳ |
+| Auth — Login | Email + Password | ✅ |
+| Dashboard | Stats + recent accounts | ✅ |
+| Accounts | רשימה + חיפוש + פילטר | ✅ |
+| Account Modal | הוסף/ערוך לקוח | ✅ |
+| Invoices | חשבוניות + סיכומים | ✅ |
+| Invoice Modal | הוסף חשבונית | ✅ |
+| Client CRM | external link | ✅ |
 
 ---
 
 ## Figma File Structure (מומלץ)
 
 ```
-📁 מלי יופי ועור - CRM
-  📄 Design Tokens
+📁 Liders CRM — Admin Dashboard
+  📄 Design Tokens (dark theme)
   📄 Components Library
-    🔲 Service Card
-    🔲 Booking Card
-    🔲 Client Card
-    🔲 Slot Button
-    🔲 Admin Block
-  📄 Screens - Mobile
-    📱 Booking Flow
-    📱 Admin Panel
-  📄 Screens - Desktop
-  📄 Marketing Assets
+    🔲 Stat Card
+    🔲 Table Row
+    🔲 Badge
+    🔲 Button (primary/outline/icon)
+    🔲 Modal
+    🔲 Toast
+  📄 Screens — Desktop
+    🖥️ Auth
+    🖥️ Dashboard
+    🖥️ Accounts
+    🖥️ Invoices
+  📄 Screens — Mobile (390px)
 ```

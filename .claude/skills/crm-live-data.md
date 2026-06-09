@@ -2,7 +2,7 @@
 
 ## פקודה: `/crm-live-data`
 
-סקיל לשאיבה, סנכרון וניתוח נתונים חיים מכל מערכות ה-MCP המחוברות:
+סקיל לשאיבה, סנכרון וניתוח נתונים חיים מכל מערכות ה-MCP:
 Supabase, Google Calendar, Gmail, Make.com, Airtable, Notion.
 
 ---
@@ -10,103 +10,73 @@ Supabase, Google Calendar, Gmail, Make.com, Airtable, Notion.
 ## מה הסקיל הזה עושה
 
 כשמפעילים `/crm-live-data` Claude:
-1. **שולף נתונים עדכניים** מ-Supabase (תורים, לקוחות, שירותים)
-2. **מסנכרן עם Google Calendar** (בדיקת conflicts, הוספת תורים)
-3. **מושך דואר מ-Gmail** (בקשות הזמנה, ביטולים)
-4. **בודק Make.com** (automations שפועלות/נכשלות)
-5. **מעדכן Notion** (דשבורד, דוחות שבועיים)
-6. **מנתח ומסכם** את מצב המערכת
+1. **שולף נתונים עדכניים** מ-Supabase (liders_accounts, liders_invoices)
+2. **בודק Make.com** (automations פעילות/כשלים)
+3. **מושך דואר מ-Gmail** (בקשות לקוחות, תשלומים)
+4. **מעדכן Notion** (דשבורד, דוחות)
+5. **מנתח ומסכם** את מצב הפלטפורמה
 
 ---
 
 ## Supabase — שאיבת נתונים
 
 ```typescript
-// פונקציות שאיבה ראשיות
-
-async function getLiveBookings(date?: string) {
-  // mcp: mcp__f474d5bb__execute_sql
-  const sql = date
-    ? `SELECT * FROM bookings WHERE date = '${date}' ORDER BY time`
-    : `SELECT * FROM bookings WHERE date >= CURRENT_DATE ORDER BY date, time LIMIT 50`;
-  return await supabase.from('bookings').select('*').gte('date', date ?? new Date().toISOString().split('T')[0]);
-}
-
-async function getClientHistory(phone: string) {
+// Accounts פעילים
+async function getLiveAccounts() {
   return await supabase
-    .from('bookings')
+    .from('liders_accounts')
     .select('*')
-    .eq('phone', phone)
-    .order('date', { ascending: false });
+    .order('created_at', { ascending: false });
 }
 
+// חשבוניות פתוחות
+async function getOpenInvoices() {
+  return await supabase
+    .from('liders_invoices')
+    .select('*, liders_accounts(business_name, owner_name, phone)')
+    .in('status', ['pending', 'overdue']);
+}
+
+// MRR חישוב
+async function getMRR() {
+  const { data } = await supabase
+    .from('liders_accounts')
+    .select('mrr, plan, status')
+    .eq('status', 'active');
+  return (data ?? []).reduce((sum, a) => sum + Number(a.mrr), 0);
+}
+
+// Revenue stats
 async function getRevenueStats(period: 'week' | 'month') {
+  // mcp__f474d5bb__execute_sql
   const sql = `
     SELECT
-      COUNT(*) as total_bookings,
-      SUM(price) as total_revenue,
-      AVG(price) as avg_price,
-      service,
-      COUNT(*) as service_count
-    FROM bookings
-    WHERE date >= CURRENT_DATE - INTERVAL '1 ${period}'
-      AND status NOT IN ('cancelled', 'no_show')
-    GROUP BY service
-    ORDER BY service_count DESC
+      status,
+      COUNT(*) as count,
+      SUM(amount) as total
+    FROM liders_invoices
+    WHERE created_at >= NOW() - INTERVAL '1 ${period}'
+    GROUP BY status
   `;
-  // mcp: execute_sql(sql)
 }
 ```
 
 ---
 
-## Google Calendar — סנכרון תורים
+## Gmail — בקשות ותשלומים
 
 ```typescript
-// mcp: mcp__6368118b__list_events
+// mcp__4e93495e__search_threads
 
-async function syncCalendarWithBookings() {
-  // 1. שלוף תורים מ-Supabase
-  const bookings = await getLiveBookings();
-
-  // 2. שלוף events מ-Google Calendar
-  // mcp__6368118b__list_events({
-  //   calendarId: 'mali-beauty@gmail.com',
-  //   timeMin: new Date().toISOString(),
-  //   maxResults: 50
-  // })
-
-  // 3. מצא conflicts ודיווח
-}
-
-async function addBookingToCalendar(booking: Booking) {
-  // mcp__6368118b__create_event({
-  //   summary: `${booking.service} — ${booking.client_name}`,
-  //   description: `טלפון: ${booking.phone}\nהערות: ${booking.notes}`,
-  //   start: { dateTime: `${booking.date}T${booking.time}:00`, timeZone: 'Asia/Jerusalem' },
-  //   end: { dateTime: calculateEnd(booking), timeZone: 'Asia/Jerusalem' },
-  //   colorId: '3'  // sage green
-  // })
-}
-```
-
----
-
-## Gmail — בקשות ובקרה
-
-```typescript
-// mcp: mcp__4e93495e__search_threads
-
-async function checkBookingRequests() {
-  // חפש הזמנות שהגיעו דרך אימייל
+async function checkPaymentEmails() {
   // mcp__4e93495e__search_threads({
-  //   query: 'subject:(תור OR הזמנה OR booking) is:unread'
+  //   query: 'subject:(תשלום OR invoice OR חשבונית) is:unread'
   // })
 }
 
-async function checkCancellations() {
+async function checkNewClientRequests() {
   // mcp__4e93495e__search_threads({
-  //   query: 'subject:(ביטול OR cancel) newer_than:1d'
+  //   query: 'subject:(הצטרפות OR demo OR Liders CRM) newer_than:7d'
   // })
 }
 ```
@@ -116,18 +86,18 @@ async function checkCancellations() {
 ## Make.com — בדיקת Automations
 
 ```typescript
-// mcp: mcp__194941ca__scenarios_list + executions_list
+// mcp__194941ca__scenarios_list + executions_list
 
 async function checkAutomationHealth() {
-  // 1. רשימת כל הסצנריות
+  // 1. רשימת סצנריות פעילות
   // mcp__194941ca__scenarios_list()
 
-  // 2. בדוק executions אחרונות
+  // 2. executions אחרונות
   // mcp__194941ca__executions_list({ limit: 20 })
 
   // 3. דווח על כשלים
-  const failedExecutions = executions.filter(e => e.status === 'error');
-  return failedExecutions;
+  const failed = executions.filter(e => e.status === 'error');
+  return failed;
 }
 ```
 
@@ -136,17 +106,18 @@ async function checkAutomationHealth() {
 ## Notion — עדכון Dashboard
 
 ```typescript
-// mcp: mcp__97537a26__notion-update-page
+// mcp__97537a26__notion-update-page
 
-async function updateNotionDashboard(stats: RevenueStats) {
-  // mcp__97537a26__notion-search({ query: 'CRM Dashboard מלי' })
+async function updateNotionDashboard(stats: PlatformStats) {
+  // mcp__97537a26__notion-search({ query: 'Liders CRM Dashboard' })
   // מצא pageId
   // mcp__97537a26__notion-update-page({
   //   pageId,
   //   properties: {
-  //     'הכנסות השבוע': { number: stats.weekly_revenue },
-  //     'תורים השבוע': { number: stats.weekly_bookings },
-  //     'עדכון אחרון': { date: new Date().toISOString() }
+  //     'MRR': { number: stats.mrr },
+  //     'Active Accounts': { number: stats.activeAccounts },
+  //     'Open Invoices': { number: stats.openInvoices },
+  //     'Last Updated': { date: new Date().toISOString() }
   //   }
   // })
 }
@@ -154,17 +125,14 @@ async function updateNotionDashboard(stats: RevenueStats) {
 
 ---
 
-## Airtable — סנכרון לקוחות
+## Airtable — גיבוי נתונים
 
 ```typescript
-// mcp: mcp__273af94e__list_records_for_table
+// mcp__273af94e__list_records_for_table
 
-async function syncClientsToAirtable() {
-  // 1. שלוף לקוחות מ-Supabase
-  const clients = await supabase.from('clients').select('*');
-
-  // 2. עדכן/צור ב-Airtable
-  // mcp__273af94e__search_bases({ query: 'מלי CRM' })
+async function syncAccountsToAirtable() {
+  const accounts = await getLiveAccounts();
+  // mcp__273af94e__search_bases({ query: 'Liders CRM' })
   // mcp__273af94e__update_records_for_table(...)
 }
 ```
@@ -173,26 +141,27 @@ async function syncClientsToAirtable() {
 
 ## Live Status Report — `/crm-live-data status`
 
-כשמריצים עם פרמטר `status`, Claude יפיק דוח כזה:
-
 ```
-📊 דוח מערכת — מלי יופי ועור
+📊 דוח פלטפורמה — Liders CRM
 ═══════════════════════════════
 📅 תאריך: [היום]
 
-🗓️  תורים היום: X תורים
-   הבא: [שם] — [שעה] — [שירות]
+👥 חשבונות פעילים: X / סה"כ: Y
+💰 MRR כולל: ₪X
+   - Basic: X × ₪149 = ₪X
+   - Pro: X × ₪299 = ₪X
+   - Enterprise: X × ₪599 = ₪X
 
-📆 תורים השבוע: X | הכנסה צפויה: ₪X
-
-👥 לקוחות חדשות החודש: X
-   לקוחות לא פעילות (>60 יום): X
+📄 חשבוניות:
+   - ממתינות לתשלום: X (₪X)
+   - בחריגה: X (₪X)
+   - שולם החודש: ₪X
 
 ⚙️  Make.com: X automations פעילות | X כשלים
 📧  Gmail: X הודעות לא נקראו
 
-🔴 דורש תשומת לב:
-   - [רשימת בעיות אם יש]
+🔴 דורש טיפול:
+   - [רשימת בעיות]
 ```
 
 ---
@@ -200,12 +169,10 @@ async function syncClientsToAirtable() {
 ## הוראות הפעלה
 
 ```bash
-# בשיחה עם Claude:
 /crm-live-data              # שאיבה כללית
 /crm-live-data status       # דוח מלא
-/crm-live-data today        # תורים היום בלבד
-/crm-live-data week         # סיכום שבועי
-/crm-live-data client [phone]  # היסטוריית לקוח ספציפי
-/crm-live-data sync-calendar   # סנכרון עם Google Calendar
-/crm-live-data check-automations # בדיקת Make.com
+/crm-live-data invoices     # חשבוניות פתוחות בלבד
+/crm-live-data mrr          # מצב MRR עדכני
+/crm-live-data check-automations  # בדיקת Make.com
+/crm-live-data sync-notion  # עדכון דשבורד Notion
 ```

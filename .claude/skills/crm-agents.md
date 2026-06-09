@@ -1,196 +1,168 @@
-# CRM AI Agents — מלי יופי ועור
+# CRM AI Agents — Liders CRM Platform
 
 ## פקודה: `/crm-agents`
 
-סוכני AI: booking assistant, תזכורות, insights, ניתוח לקוחות.
+סוכני AI לפלטפורמת Liders: onboarding, alerts, insights, churn prediction.
 
 ---
 
-## סוכן 1: Booking Assistant
+## סוכן 1: Onboarding Assistant
 
-מטרה: סוכן שמטפל בהזמנות דרך WhatsApp/צ'אט
+מטרה: מדריך לקוח חדש בתהליך ההגדרה של ה-CRM שלו
 
 ```typescript
 import Anthropic from '@anthropic-ai/sdk';
 
 const client = new Anthropic();
 
-const BOOKING_SYSTEM_PROMPT = `
-אתה עוזר הזמנות של מלי • יופי ועור בטבריה.
-אתה עונה בעברית, בשפה חמה ומקצועית.
+const ONBOARDING_SYSTEM = `
+אתה עוזר onboarding של Liders CRM.
+אתה עוזר לבעלי עסקים חדשים להגדיר את מערכת ה-CRM שלהם.
+עונה בעברית, שפה ברורה ומקצועית.
 
-שירותים זמינים:
-- טיפול פנים קלאסי — ₪220, 60 דקות
-- טיפול פנים עמוק (KB Pure) — ₪320, 75 דקות
-- טיפול אנטי-אייג'ינג — ₪380, 75 דקות
-- טיפול אקנה ובעיות עור — ₪280, 60 דקות
-- פדיקור רפואי — ₪200, 60 דקות
-- פדיקור + לק — ₪240, 70 דקות
-- הסרת שיער בשעווה (פנים) — ₪80, 25 דקות
-- עיצוב גבות — ₪70, 20 דקות
-
-שעות פעילות: א'-ה' 09:00-17:00, ו' 09:00-13:30
-סגור: שבת
-
-תמיד:
-1. שאל איזה טיפול מעניין
-2. הצע תאריך ושעה פנויה
-3. אשר שם ומספר טלפון
-4. שלח אישור
+שלבי ה-onboarding:
+1. חיבור Supabase
+2. הגדרת שירותים/מוצרים
+3. ייבוא לקוחות קיימים
+4. חיבור WhatsApp / Gmail
+5. הגדרת Make.com automations
 `;
 
-async function bookingAgent(userMessage: string, history: any[]) {
-  const response = await client.messages.create({
+async function onboardingAgent(userMessage: string, history: any[]) {
+  return await client.messages.create({
     model: 'claude-opus-4-8',
     max_tokens: 1024,
-    system: BOOKING_SYSTEM_PROMPT,
-    messages: [
-      ...history,
-      { role: 'user', content: userMessage }
-    ],
+    system: ONBOARDING_SYSTEM,
+    messages: [...history, { role: 'user', content: userMessage }],
     tools: [
       {
-        name: 'check_availability',
-        description: 'בדוק זמינות תורים לתאריך ושירות',
+        name: 'check_setup_status',
+        description: 'בדוק מצב ה-setup של לקוח',
         input_schema: {
           type: 'object',
-          properties: {
-            date: { type: 'string', description: 'YYYY-MM-DD' },
-            service_id: { type: 'number' }
-          },
-          required: ['date', 'service_id']
+          properties: { account_id: { type: 'string' } },
+          required: ['account_id']
         }
       },
       {
-        name: 'create_booking',
-        description: 'צור הזמנה חדשה',
+        name: 'send_setup_email',
+        description: 'שלח מייל הגדרה ללקוח',
         input_schema: {
           type: 'object',
           properties: {
-            client_name: { type: 'string' },
-            phone: { type: 'string' },
-            service_id: { type: 'number' },
-            date: { type: 'string' },
-            time: { type: 'string' },
-            notes: { type: 'string' }
+            email: { type: 'string' },
+            step: { type: 'string' }
           },
-          required: ['client_name', 'phone', 'service_id', 'date', 'time']
+          required: ['email', 'step']
         }
       }
     ]
   });
-  return response;
 }
 ```
 
 ---
 
-## סוכן 2: Reminder Agent
+## סוכן 2: Churn Detection Agent
 
-מטרה: שליחת תזכורות אוטומטיות 24 שעות לפני תור
+מטרה: זיהוי לקוחות בסיכון לנטישה
 
 ```typescript
-// Make.com Webhook trigger — runs daily at 10:00
-async function sendReminders() {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const dateStr = tomorrow.toISOString().split('T')[0];
+async function churnDetectionAgent() {
+  const { data: accounts } = await supabase
+    .from('liders_accounts')
+    .select('*, liders_invoices(*)')
+    .eq('status', 'active');
 
-  // שלוף תורים למחר מ-Supabase
-  const { data: bookings } = await supabase
-    .from('bookings')
-    .select('*')
-    .eq('date', dateStr)
-    .eq('status', 'confirmed');
+  for (const account of accounts ?? []) {
+    const riskScore = calculateChurnRisk(account);
 
-  for (const booking of bookings ?? []) {
-    await sendWhatsAppReminder(booking);
+    if (riskScore > 0.7) {
+      await alertChurnRisk(account, riskScore);
+    }
   }
 }
 
-async function sendWhatsAppReminder(booking: Booking) {
-  const message = `
-שלום ${booking.client_name} 😊
-
-תזכורת לתורך מחר:
-📅 ${formatDate(booking.date)} בשעה ${booking.time}
-💆 ${booking.service}
-💰 ₪${booking.price}
-
-לביטול/שינוי: 050-XXXXXXX
-מלי • יופי ועור 🌿
-  `.trim();
-
-  // Make.com webhook → WhatsApp
-  await fetch(process.env.MAKE_WEBHOOK_URL!, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phone: booking.phone, message })
-  });
+function calculateChurnRisk(account: LidersAccount): number {
+  let score = 0;
+  const overdueInvoices = account.liders_invoices?.filter(i => i.status === 'overdue').length ?? 0;
+  if (overdueInvoices > 0) score += 0.4;
+  if (account.plan === 'trial') score += 0.3;
+  // חודש ללא שימוש ב-CRM
+  const daysSinceUpdate = Math.floor((Date.now() - new Date(account.updated_at).getTime()) / 86400000);
+  if (daysSinceUpdate > 30) score += 0.3;
+  return Math.min(score, 1);
 }
 ```
 
 ---
 
-## סוכן 3: Client Insights Agent
+## סוכן 3: Revenue Insights Agent
 
-מטרה: ניתוח לקוחות, המלצות טיפולים, זיהוי לקוחות לא פעילים
-
-```typescript
-async function clientInsightsAgent(clientId: string) {
-  const { data: client } = await supabase
-    .from('clients')
-    .select('*, bookings(*)')
-    .eq('id', clientId)
-    .single();
-
-  const prompt = `
-נתח את פרופיל הלקוחה הבא ותן המלצות:
-
-שם: ${client.name}
-ביקורים: ${client.total_visits}
-הוצאה כוללת: ₪${client.total_spent}
-ביקור אחרון: ${client.last_visit ?? 'אין'}
-סוג עור: ${client.skin_type ?? 'לא ידוע'}
-אלרגיות: ${client.allergies ?? 'אין'}
-היסטוריית טיפולים: ${JSON.stringify(client.bookings)}
-
-תן:
-1. ניתוח קצר של הלקוחה
-2. 3 המלצות טיפולים הבאים
-3. האם היא בסיכון לנטישה?
-4. הודעת WhatsApp מומלצת לחזרה
-`;
-
-  const response = await client.messages.create({
-    model: 'claude-opus-4-8',
-    max_tokens: 500,
-    messages: [{ role: 'user', content: prompt }]
-  });
-
-  return response.content[0].text;
-}
-```
-
----
-
-## סוכן 4: Revenue Analytics Agent
+מטרה: דוח הכנסות ותחזית MRR
 
 ```typescript
-async function revenueInsights(period: 'week' | 'month' | 'quarter') {
-  // שאל Claude לנתח נתוני הכנסות
+async function revenueInsightsAgent(period: 'month' | 'quarter') {
+  const { data: invoices } = await supabase
+    .from('liders_invoices')
+    .select('*, liders_accounts(business_name, plan)')
+    .eq('status', 'paid')
+    .gte('paid_at', getPeriodStart(period));
+
   const prompt = `
-נתח את נתוני ההכנסות הבאים ותן insights:
-[נתונים מ-Supabase]
+נתח את נתוני ההכנסות הבאים של פלטפורמת Liders CRM:
+
+${JSON.stringify(invoices, null, 2)}
 
 תן:
 - סה"כ הכנסות vs תקופה קודמת
-- שירות הכי רווחי
-- ימים/שעות עמוסים
-- המלצה לתמחור
-- תחזית לחודש הבא
+- MRR לפי תוכנית (trial/basic/pro/enterprise)
+- לקוחות הכי רווחיים
+- תחזית חודש הבא
+- המלצות להגדלת הכנסות
 `;
-  // ...
+
+  return await client.messages.create({
+    model: 'claude-opus-4-8',
+    max_tokens: 1000,
+    messages: [{ role: 'user', content: prompt }]
+  });
+}
+```
+
+---
+
+## סוכן 4: Invoice Reminder Agent
+
+מטרה: שליחת תזכורות תשלום אוטומטיות
+
+```typescript
+// Make.com Webhook trigger — runs daily at 09:00
+async function invoiceReminderAgent() {
+  const { data: overdueInvoices } = await supabase
+    .from('liders_invoices')
+    .select('*, liders_accounts(owner_name, email, phone)')
+    .in('status', ['pending', 'overdue'])
+    .lt('due_date', new Date().toISOString().split('T')[0]);
+
+  for (const invoice of overdueInvoices ?? []) {
+    const message = `
+שלום ${invoice.liders_accounts.owner_name},
+
+תזכורת לתשלום חשבונית ${invoice.invoice_number}:
+💰 סכום: ₪${invoice.amount}
+📅 תאריך פירעון: ${invoice.due_date}
+
+לתשלום ויצירת קשר: Liders.crm@gmail.com
+Liders CRM 🚀
+    `.trim();
+
+    await fetch(process.env.MAKE_WEBHOOK_URL!, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: invoice.liders_accounts.phone, message })
+    });
+  }
 }
 ```
 
@@ -200,8 +172,8 @@ async function revenueInsights(period: 'week' | 'month' | 'quarter') {
 
 | Trigger | Action | סוכן |
 |---------|--------|------|
-| הזמנה חדשה | WhatsApp אישור | Booking |
-| 24h לפני תור | WhatsApp תזכורת | Reminder |
-| תור בוטל | SMS + Email | Booking |
-| לקוח לא חזר 60 יום | WhatsApp reactivation | Insights |
-| סוף שבוע | סיכום שבועי למלי | Analytics |
+| לקוח חדש נוסף | Welcome email + WhatsApp | Onboarding |
+| חשבונית עוברת due_date | תזכורת תשלום | Invoice Reminder |
+| plan ניסיון עומד לפוג | הצעת שדרוג | Churn Detection |
+| MRR ירד | Alert לאדמין | Revenue Insights |
+| סוף חודש | דוח MRR אוטומטי | Revenue Insights |

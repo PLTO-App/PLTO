@@ -47,8 +47,7 @@
     ]
   },
   "env": {
-    "SALON_NAME": "mali-beauty-crm",
-    "SALON_LOCATION": "tiberias",
+    "PROJECT_NAME": "liders-crm",
     "TIMEZONE": "Asia/Jerusalem",
     "LOCALE": "he-IL"
   },

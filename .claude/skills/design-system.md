@@ -1,8 +1,8 @@
-# Design System Pro — מלי יופי ועור
+# Design System Pro — Liders CRM Platform
 
 ## פקודה: `/design-system`
 
-Design tokens מדויקים, component specs, RTL guidelines.
+Design tokens מדויקים, component specs, RTL guidelines — dark theme.
 
 ---
 
@@ -10,61 +10,62 @@ Design tokens מדויקים, component specs, RTL guidelines.
 
 ```css
 :root {
-  /* Primary — Espresso & Terracotta */
-  --color-ink:         #1C1410;
-  --color-espresso:    #3A2318;
-  --color-espresso-60: rgba(58,35,24,0.6);
-  --color-espresso-20: rgba(58,35,24,0.2);
-  --color-terracotta:  #B06A4A;
-  --color-terracotta-light: rgba(176,106,74,0.15);
+  /* Backgrounds */
+  --bg:        #0F172A;   /* עמוד ראשי */
+  --surface:   #1E293B;   /* כרטיסים, sidebar, topbar */
+  --surface2:  #273549;   /* hover states, inputs */
+  --border:    #334155;   /* כל הגבולות */
 
-  /* Neutrals — Sand & Blush */
-  --color-sand:        #D4A882;
-  --color-blush:       #EDD5BF;
-  --color-parch:       #F7EFE5;
-  --color-ivory:       #FDFAF6;
-
-  /* Semantic */
-  --color-success:     #7A9E7E;
-  --color-success-bg:  #EBF2EC;
-  --color-error:       #B84C4C;
-  --color-error-bg:    rgba(184,76,76,0.1);
-  --color-warning:     #C8A028;
-  --color-warning-bg:  rgba(200,160,40,0.1);
+  /* Brand Accent */
+  --gold:      #F59E0B;
+  --gold-light:#FDE68A;
+  --gold-dim:  rgba(245,158,11,0.12);
 
   /* Text */
-  --text-primary:   var(--color-ink);
-  --text-secondary: #9A7E6F;
-  --text-muted:     #B89A8A;
-  --text-on-dark:   var(--color-ivory);
+  --text:      #F1F5F9;   /* ראשי */
+  --text-muted:#94A3B8;   /* משני */
+  --text-dim:  #64748B;   /* שלישוני */
+
+  /* Semantic — Success */
+  --green:     #10B981;
+  --green-bg:  rgba(16,185,129,0.12);
+
+  /* Semantic — Error */
+  --red:       #EF4444;
+  --red-bg:    rgba(239,68,68,0.12);
+
+  /* Semantic — Info */
+  --blue:      #3B82F6;
+  --blue-bg:   rgba(59,130,246,0.12);
+
+  /* Semantic — Warning */
+  --orange:    #F97316;
+  --orange-bg: rgba(249,115,22,0.12);
 }
 ```
 
 ---
 
-## Typography Scale
+## Typography
 
 ```css
 :root {
-  --font-display: 'Cormorant Garamond', Georgia, serif;
-  --font-body:    'Heebo', sans-serif;
+  --font-body: 'Heebo', sans-serif;
 
   /* Scale */
-  --text-xs:   0.72rem;   /* 11.5px */
-  --text-sm:   0.8rem;    /* 12.8px */
-  --text-base: 0.9rem;    /* 14.4px */
+  --text-xs:   0.75rem;   /* 12px */
+  --text-sm:   0.82rem;   /* 13px */
+  --text-base: 0.875rem;  /* 14px */
   --text-md:   1rem;      /* 16px */
-  --text-lg:   1.2rem;    /* 19.2px */
+  --text-lg:   1.1rem;    /* 17.6px */
   --text-xl:   1.5rem;    /* 24px */
-  --text-2xl:  2rem;      /* 32px */
-  --text-hero: 2.2rem;    /* 35.2px */
 
   /* Weights */
-  --fw-light:   300;
   --fw-regular: 400;
   --fw-medium:  500;
   --fw-semi:    600;
   --fw-bold:    700;
+  --fw-black:   800;
 }
 ```
 
@@ -81,20 +82,13 @@ Design tokens מדויקים, component specs, RTL guidelines.
   --space-5:  20px;
   --space-6:  24px;
   --space-8:  32px;
-  --space-10: 40px;
 
-  /* Radius */
-  --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
-  --radius-xl: 32px;
+  --radius-sm: 8px;
+  --radius:    12px;
+  --radius-lg: 20px;
   --radius-full: 9999px;
 
-  /* Shadows */
-  --shadow-xs:   0 1px 4px rgba(28,20,16,0.06);
-  --shadow-sm:   0 2px 12px rgba(28,20,16,0.07);
-  --shadow-md:   0 4px 24px rgba(28,20,16,0.08);
-  --shadow-lg:   0 8px 48px rgba(28,20,16,0.12);
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
 }
 ```
 
@@ -102,109 +96,102 @@ Design tokens מדויקים, component specs, RTL guidelines.
 
 ## Component Specs
 
-### Service Card
+### Stat Card
 ```
-┌─────────────────────────────────────┐
-│  [tag pill]                         │
-│  שם הטיפול (font-body, fw-700)      │
-│  ⏱ XX דקות (text-secondary, text-sm)│
-│                        ₪XXX         │
-│                     (terracotta)     │
-└─────────────────────────────────────┘
-border: 1.5px solid blush
-border-radius: radius-md
-padding: 16px
-selected: border-color: terracotta, bg: terracotta-light
+background: var(--surface)
+border: 1px solid var(--border)
+border-radius: var(--radius)
+padding: 1.2rem
+
+.stat-label: text-sm, text-muted
+.stat-value: 1.8rem, bold
+  .gold variant: color = --gold
+  .green variant: color = --green
+  .red variant: color = --red
+  .blue variant: color = --blue
 ```
 
-### Slot Button
+### Table
 ```
-Normal:    bg=white, border=blush, text=ink
-Selected:  bg=terracotta, border=terracotta, text=ivory
-Booked:    bg=parch, border=blush, text=muted, cursor=default
-Width:     calc(25% - 6px) — 4 columns
-Height:    40px
-Radius:    radius-sm
+.table-wrap:
+  background: var(--surface)
+  border: 1px solid var(--border)
+  border-radius: var(--radius)
+  overflow: hidden
+
+thead th:
+  background: var(--surface2)
+  color: text-muted
+  font-size: 0.78rem
+
+tbody td:
+  border-bottom: 1px solid var(--border)
+  font-size: 0.875rem
+
+tr:hover td:
+  background: var(--surface2)
 ```
 
-### Admin Block
-```
-background: white
-border-radius: radius-lg
-padding: 24px
-box-shadow: shadow-sm
-margin-bottom: 24px
+### Badges
+```css
+.badge {
+  display: inline-flex; align-items: center;
+  padding: .2rem .6rem; border-radius: 20px;
+  font-size: .75rem; font-weight: 600;
+}
 
-Header:
-  font-size: text-lg
-  font-weight: fw-semi
-  color: espresso
+.badge-green  { background: var(--green-bg);  color: var(--green)  }
+.badge-red    { background: var(--red-bg);    color: var(--red)    }
+.badge-blue   { background: var(--blue-bg);   color: var(--blue)   }
+.badge-gold   { background: var(--gold-dim);  color: var(--gold)   }
+.badge-dim    { background: rgba(100,116,139,0.15); color: var(--text-dim) }
 ```
 
 ### Buttons
 ```css
 /* Primary */
-.btn-main {
-  background: var(--espresso);
-  color: var(--ivory);
-  border-radius: var(--radius-full);
-  padding: 14px 28px;
-  font-family: var(--font-body);
-  font-size: var(--text-base);
-  font-weight: var(--fw-medium);
-  letter-spacing: 0.04em;
+.btn-primary {
+  background: var(--gold); color: #000;
+  border: none; border-radius: var(--radius-sm);
+  font-weight: 700; cursor: pointer;
 }
 
-/* Ghost */
-.btn-ghost {
+/* Outline */
+.btn-outline {
   background: transparent;
-  border: 1.5px solid rgba(58,35,24,0.25);
-  color: var(--espresso);
-  border-radius: var(--radius-full);
-  padding: 12px 24px;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
 }
+.btn-outline:hover { border-color: var(--gold); color: var(--gold) }
+
+/* Icon Button */
+.btn-icon {
+  width: 30px; height: 30px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.btn-icon:hover { border-color: var(--gold); color: var(--gold) }
+.btn-icon.danger:hover { border-color: var(--red); color: var(--red) }
+```
+
+### Modal
+```
+overlay: rgba(0,0,0,0.7)
+.modal:
+  background: var(--surface)
+  border: 1px solid var(--border)
+  border-radius: var(--radius-lg)
+  max-width: 520px; max-height: 90vh
+  padding: 1.75rem
 ```
 
 ---
 
-## Tag Pills — Service Categories
+## RTL Guidelines
 
-```css
-.svc-tag {
-  background: var(--parch);
-  border: 1px solid var(--blush);
-  border-radius: var(--radius-full);
-  color: var(--terracotta);
-  font-size: var(--text-xs);
-  padding: 3px 10px;
-}
 ```
-
----
-
-## Iconography
-
-| Symbol | שימוש |
-|--------|-------|
-| 🌿 | logo, brand identity |
-| 📅 | תאריכים, הזמנות |
-| ⏱ | משך טיפול |
-| ✓ | הצלחה, confirmation |
-| 🔒 | admin lock |
-| 💾 | שמירה |
-| ✦ | badge, premium |
-
----
-
-## Dark Mode Support (Future)
-
-```css
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-ink:    #F7EFE5;
-    --color-ivory:  #1C1410;
-    --color-parch:  #2A1E16;
-    /* blush/sand נשארים — warm neutrals עובדים */
-  }
-}
+כל component — dir="rtl" על html
+text-align: right ברירת מחדל
+flex-direction: row → ימין לשמאל אוטומטית ב-RTL
 ```
