@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>מלי • יופי ועור | הזמנת תור</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --ink:     #1C1410;
@@ -942,90 +943,152 @@ body::before{
 </div>
 
 <script>
-/* ═══════════════════════════
+/* ═══════════════════════════════════════
+   SUPABASE CONFIG
+═══════════════════════════════════════ */
+const SUPA_URL  = 'https://scyfywvzoogfrlalgftv.supabase.co'
+const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjeWZ5d3Z6b29nZnJsYWxnZnR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MDA3MzAsImV4cCI6MjA5NjA3NjczMH0._D8ho0Yj8fEk7nd6-vmkjKkKyjfvHDmSq9Y8h5XzQCM'
+const ADMIN_URL = SUPA_URL + '/functions/v1/admin-ops'
+const sb        = window.supabase.createClient(SUPA_URL, SUPA_KEY)
+
+/* ═══════════════════════════════════════
    DATA / STATE
-═══════════════════════════ */
+═══════════════════════════════════════ */
 const S = {
   salonName: 'מלי • יופי ועור',
-  tagline: 'טיפולי עור מתקדמים • טבריה',
-  pin: '1234',
-  slotMin: 30,
+  tagline:   'טיפולי עור מתקדמים • טבריה',
+  slotMin:   30,
   services: [
-    { id:1, name:'טיפול פנים קלאסי', price:220, duration:60,  tag:'פנים' },
-    { id:2, name:'טיפול פנים עמוק (KB Pure)', price:320, duration:75, tag:'פרמיום' },
-    { id:3, name:'טיפול אנטי-אייג\'ינג', price:380, duration:75, tag:'רפואי' },
-    { id:4, name:'טיפול אקנה ובעיות עור', price:280, duration:60, tag:'רפואי' },
-    { id:5, name:'פדיקור רפואי', price:200, duration:60,  tag:'רגליים' },
-    { id:6, name:'פדיקור + לק', price:240, duration:70,   tag:'רגליים' },
-    { id:7, name:'הסרת שיער בשעווה (פנים)', price:80, duration:25, tag:'הסרה' },
-    { id:8, name:'עיצוב גבות', price:70, duration:20, tag:'פנים' },
+    { id:'_1', name:'טיפול פנים קלאסי',         price:220, duration:60, tag:'פנים'   },
+    { id:'_2', name:"טיפול פנים עמוק (KB Pure)", price:320, duration:75, tag:'פרמיום' },
+    { id:'_3', name:"טיפול אנטי-אייג'ינג",       price:380, duration:75, tag:'רפואי'  },
+    { id:'_4', name:'טיפול אקנה ובעיות עור',      price:280, duration:60, tag:'רפואי'  },
+    { id:'_5', name:'פדיקור רפואי',               price:200, duration:60, tag:'רגליים' },
+    { id:'_6', name:'פדיקור + לק',                price:240, duration:70, tag:'רגליים' },
+    { id:'_7', name:'הסרת שיער בשעווה (פנים)',    price:80,  duration:25, tag:'הסרה'   },
+    { id:'_8', name:'עיצוב גבות',                 price:70,  duration:20, tag:'פנים'   },
   ],
   schedule: {
-    0:{ open:false, from:'09:00', to:'17:00' },
-    1:{ open:true,  from:'09:00', to:'17:00' },
-    2:{ open:true,  from:'09:00', to:'17:00' },
-    3:{ open:true,  from:'09:00', to:'17:00' },
-    4:{ open:true,  from:'09:00', to:'17:00' },
-    5:{ open:true,  from:'09:00', to:'13:30' },
-    6:{ open:false, from:'09:00', to:'17:00' },
+    0:{open:false, from:'09:00', to:'17:00'},
+    1:{open:true,  from:'09:00', to:'17:00'},
+    2:{open:true,  from:'09:00', to:'17:00'},
+    3:{open:true,  from:'09:00', to:'17:00'},
+    4:{open:true,  from:'09:00', to:'17:00'},
+    5:{open:true,  from:'09:00', to:'13:30'},
+    6:{open:false, from:'09:00', to:'17:00'},
   },
-  bookings: [
-    { id:1, name:'שרה לוי',    phone:'052-1234567', service:'טיפול פנים קלאסי',    price:220, date:todayStr(),       time:'10:00', notes:'' },
-    { id:2, name:'רחל כהן',   phone:'054-9876543', service:'פדיקור רפואי',         price:200, date:todayStr(),       time:'14:30', notes:'כאב בבוהן ימין' },
-    { id:3, name:'מיכל גל',   phone:'050-5554321', service:'טיפול אנטי-אייג\'ינג', price:380, date:dateStr(1),       time:'11:00', notes:'' },
-    { id:4, name:'דנה אברהם', phone:'053-7771234', service:'עיצוב גבות',            price:70,  date:dateStr(2),       time:'09:30', notes:'' },
-  ]
+  bookings: []
 };
 
-const MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
-const DAYS_S = ['א','ב','ג','ד','ה','ו','ש'];
-const DAY_NM = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+const MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
+const DAYS_S  = ['א','ב','ג','ד','ה','ו','ש']
+const DAY_NM  = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת']
 
-let bk = { service:null, date:null, time:null };
-let step = 1;
-let calMonth = new Date(); calMonth.setDate(1);
-let pinStr = '';
-let adminOpen = false;
+let bk        = { service:null, date:null, time:null }
+let step      = 1
+let calMonth  = new Date(); calMonth.setDate(1)
+let pinStr    = ''
+let adminOpen = false
+let adminPin  = null
+let bookedCache = {}  // date → Set<"HH:mm">
 
-function todayStr(){
-  const d=new Date();
-  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
-}
-function dateStr(off=0){
-  const d=new Date(); d.setDate(d.getDate()+off);
-  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
-}
+/* ── Utilities ── */
+function todayStr(){const d=new Date();return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`}
 function p(n){return String(n).padStart(2,'0')}
 function fmtDate(s){if(!s)return'';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`}
-function fmtDay(s){
-  if(!s)return'';
-  const d=new Date(s+'T00:00:00');
-  return DAY_NM[d.getDay()]+', '+fmtDate(s);
-}
+function fmtDay(s){if(!s)return'';const d=new Date(s+'T00:00:00');return DAY_NM[d.getDay()]+', '+fmtDate(s)}
 function slots(from,to,dur){
-  const r=[];let[fh,fm]=from.split(':').map(Number);
-  let[th,tm]=to.split(':').map(Number);
-  let c=fh*60+fm,e=th*60+tm;
-  while(c+dur<=e){r.push(`${p(Math.floor(c/60))}:${p(c%60)}`);c+=dur;}
-  return r;
+  const r=[];let[fh,fm]=from.split(':').map(Number);let[th,tm]=to.split(':').map(Number)
+  let c=fh*60+fm,e=th*60+tm
+  while(c+dur<=e){r.push(`${p(Math.floor(c/60))}:${p(c%60)}`);c+=dur}
+  return r
 }
-function isBooked(date,time){return S.bookings.some(b=>b.date===date&&b.time===time)}
+function applyBranding(){
+  const parts=S.salonName.split('•')
+  const h=document.querySelector('.hero h1')
+  if(h) h.innerHTML=parts.length>1?`<strong>${parts[0].trim()}</strong> • ${parts[1].trim()}`:`<strong>${S.salonName}</strong>`
+  const t=document.querySelector('.hero-tagline')
+  if(t) t.textContent=S.tagline
+}
+
+/* ═══════════════════════════════════════
+   SUPABASE — DATA LOADING
+═══════════════════════════════════════ */
+async function loadData(){
+  try{
+    const[settRes,svcRes,schedRes]=await Promise.all([
+      sb.from('salon_settings').select('name,tagline,slot_min').single(),
+      sb.from('services').select('id,name,price,duration,tag').order('sort_order').order('created_at'),
+      sb.from('schedule').select('day,open,from_time,to_time').order('day')
+    ])
+    if(settRes.data){
+      S.salonName=settRes.data.name||S.salonName
+      S.tagline=settRes.data.tagline||S.tagline
+      S.slotMin=settRes.data.slot_min||S.slotMin
+      applyBranding()
+    }
+    if(svcRes.data?.length){
+      S.services=svcRes.data.map(s=>({id:s.id,name:s.name,price:Number(s.price),duration:s.duration,tag:s.tag||'כללי'}))
+    }
+    if(schedRes.data?.length){
+      schedRes.data.forEach(r=>{
+        S.schedule[r.day]={open:r.open,from:(r.from_time||'09:00:00').substring(0,5),to:(r.to_time||'17:00:00').substring(0,5)}
+      })
+    }
+  }catch(e){console.warn('loadData fallback:',e)}
+  renderServices()
+  checkNext()
+}
+
+async function loadAdminData(){
+  try{
+    const rows=await adminOp('get-bookings',{})
+    if(Array.isArray(rows)){
+      S.bookings=rows.map(b=>({id:b.id,name:b.client_name,phone:b.phone,service:b.service_name,price:Number(b.price),date:b.date,time:(b.time||'').substring(0,5),notes:b.notes||'',status:b.status}))
+    }
+  }catch(e){console.warn('loadAdminData:',e);S.bookings=[]}
+}
+
+async function loadBookedSlots(date){
+  if(bookedCache[date])return
+  try{
+    const{data}=await sb.rpc('get_booked_slots',{p_date:date})
+    bookedCache[date]=new Set((data||[]).map(r=>(r.slot_time||'').substring(0,5)))
+  }catch{bookedCache[date]=new Set()}
+}
+function isBooked(date,time){return bookedCache[date]?.has(time)??false}
+
+/* ═══════════════════════════════════════
+   ADMIN OPERATIONS (Edge Function)
+═══════════════════════════════════════ */
+async function adminOp(action,data={}){
+  const res=await fetch(ADMIN_URL,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPA_KEY}`},
+    body:JSON.stringify({action,pin:adminPin,data})
+  })
+  const json=await res.json()
+  if(!res.ok)throw new Error(json.error||'Admin error')
+  return json
+}
 
 /* ── Pages ── */
-function showPage(name,btn){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
-  document.getElementById('page-'+name).classList.add('active');
-  if(btn) btn.classList.add('active');
-  if(name==='admin') renderAdmin();
+async function showPage(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
+  document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'))
+  document.getElementById('page-'+name).classList.add('active')
+  if(btn)btn.classList.add('active')
+  if(name==='admin'&&adminOpen){await loadAdminData();renderAdmin()}
 }
 
-/* ══════════════════════════
+/* ═══════════════════════════════════════
    BOOKING FLOW
-══════════════════════════ */
+═══════════════════════════════════════ */
 function renderServices(){
-  document.getElementById('svc-list').innerHTML = S.services.map(s=>`
-    <div class="service-card ${bk.service?.id===s.id?'selected':''}" onclick="selectSvc(${s.id})">
+  const el=document.getElementById('svc-list')
+  if(!el)return
+  el.innerHTML=S.services.map(s=>`
+    <div class="service-card ${bk.service?.id===s.id?'selected':''}" onclick="selectSvc('${s.id}')">
       <div>
         <div class="svc-name">${s.name}</div>
         <div class="svc-sub">⏱ ${s.duration} דקות</div>
@@ -1035,67 +1098,58 @@ function renderServices(){
         <div class="svc-price">₪${s.price}</div>
         <div class="svc-dur">לטיפול</div>
       </div>
-    </div>`).join('');
+    </div>`).join('')
 }
 
 function selectSvc(id){
-  bk.service=S.services.find(s=>s.id===id);
-  bk.date=null;bk.time=null;
-  renderServices();checkNext();
+  bk.service=S.services.find(s=>s.id===id)
+  bk.date=null;bk.time=null
+  renderServices();checkNext()
 }
 
 function renderCal(){
-  const y=calMonth.getFullYear(),m=calMonth.getMonth();
-  document.getElementById('month-label').textContent=`${MONTHS[m]} ${y}`;
-  const first=new Date(y,m,1).getDay();
-  const days=new Date(y,m+1,0).getDate();
-  const today=new Date();today.setHours(0,0,0,0);
-  let html=DAYS_S.map(d=>`<div class="cal-lbl">${d}</div>`).join('');
-  for(let i=0;i<first;i++) html+=`<div class="cal-day empty"></div>`;
+  const y=calMonth.getFullYear(),m=calMonth.getMonth()
+  document.getElementById('month-label').textContent=`${MONTHS[m]} ${y}`
+  const first=new Date(y,m,1).getDay()
+  const days=new Date(y,m+1,0).getDate()
+  const today=new Date();today.setHours(0,0,0,0)
+  let html=DAYS_S.map(d=>`<div class="cal-lbl">${d}</div>`).join('')
+  for(let i=0;i<first;i++)html+=`<div class="cal-day empty"></div>`
   for(let d=1;d<=days;d++){
-    const dt=new Date(y,m,d);
-    const dow=dt.getDay();
-    const ds=`${y}-${p(m+1)}-${p(d)}`;
-    const past=dt<today;
-    const closed=!S.schedule[dow]?.open;
-    const isTod=dt.toDateString()===today.toDateString();
-    const sel=bk.date===ds;
-    let cls='cal-day';
-    if(past)cls+=' past';
-    else if(closed)cls+=' closed';
-    else cls+=' open';
-    if(isTod)cls+=' today';
-    if(sel)cls+=' selected';
-    const click=(!past&&!closed)?`onclick="selectDate('${ds}')"`: '';
-    html+=`<div class="${cls}" ${click}>${d}</div>`;
+    const dt=new Date(y,m,d),dow=dt.getDay()
+    const ds=`${y}-${p(m+1)}-${p(d)}`
+    const past=dt<today,closed=!S.schedule[dow]?.open
+    const isTod=dt.toDateString()===today.toDateString(),sel=bk.date===ds
+    let cls='cal-day'
+    if(past)cls+=' past';else if(closed)cls+=' closed';else cls+=' open'
+    if(isTod)cls+=' today';if(sel)cls+=' selected'
+    const click=(!past&&!closed)?`onclick="selectDate('${ds}')"`:'';
+    html+=`<div class="${cls}" ${click}>${d}</div>`
   }
-  document.getElementById('cal-grid').innerHTML=html;
+  document.getElementById('cal-grid').innerHTML=html
 }
 
-function selectDate(ds){
-  bk.date=ds;bk.time=null;
-  renderCal();renderSlots();checkNext();
+function selectDate(ds){bk.date=ds;bk.time=null;renderCal();checkNext()}
+function changeMonth(dir){calMonth.setMonth(calMonth.getMonth()+dir);renderCal()}
+
+async function renderSlots(){
+  if(!bk.date)return
+  document.getElementById('slots-date-label').textContent='📅 '+fmtDay(bk.date)
+  const grid=document.getElementById('slots-grid')
+  grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:16px;color:#9A7E6F;font-size:0.85rem">טוענת שעות...</div>'
+  await loadBookedSlots(bk.date)
+  const dow=new Date(bk.date+'T00:00:00').getDay()
+  const sc=S.schedule[dow]
+  const dur=bk.service?.duration||S.slotMin
+  const sl=slots(sc.from,sc.to,dur)
+  if(!sl.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#9A7E6F;font-size:0.85rem;padding:12px">אין שעות פנויות</div>';return}
+  grid.innerHTML=sl.map(t=>{
+    const bked=isBooked(bk.date,t)
+    return`<div class="slot ${bked?'booked':''} ${bk.time===t?'selected':''}" ${bked?'':` onclick="selectTime('${t}')"`}>${bked?'תפוס':t}</div>`
+  }).join('')
 }
 
-function changeMonth(dir){
-  calMonth.setMonth(calMonth.getMonth()+dir);renderCal();
-}
-
-function renderSlots(){
-  if(!bk.date)return;
-  document.getElementById('slots-date-label').textContent='📅 '+fmtDay(bk.date);
-  const dow=new Date(bk.date+'T00:00:00').getDay();
-  const sc=S.schedule[dow];
-  const dur=bk.service?.duration||S.slotMin;
-  const sl=slots(sc.from,sc.to,dur);
-  if(!sl.length){document.getElementById('slots-grid').innerHTML='<div style="grid-column:1/-1;text-align:center;color:#9A7E6F;font-size:0.85rem;padding:12px">אין שעות פנויות</div>';return;}
-  document.getElementById('slots-grid').innerHTML=sl.map(t=>{
-    const bked=isBooked(bk.date,t);
-    return`<div class="slot ${bked?'booked':''} ${bk.time===t?'selected':''}" ${bked?'':` onclick="selectTime('${t}')"`}>${bked?'תפוס':t}</div>`;
-  }).join('');
-}
-
-function selectTime(t){bk.time=t;renderSlots();checkNext();}
+function selectTime(t){bk.time=t;renderSlots();checkNext()}
 
 function buildSummary(elId){
   document.getElementById(elId).innerHTML=`
@@ -1104,111 +1158,125 @@ function buildSummary(elId){
     <div class="sum-row"><span class="lbl">תאריך</span><span class="val">${fmtDay(bk.date)}</span></div>
     <div class="sum-row"><span class="lbl">שעה</span><span class="val">${bk.time}</span></div>
     <div class="sum-row"><span class="lbl">משך</span><span class="val">${bk.service.duration} דקות</span></div>
-    <div class="sum-row price-row"><span class="lbl">לתשלום</span><span class="val">₪${bk.service.price}</span></div>`;
+    <div class="sum-row price-row"><span class="lbl">לתשלום</span><span class="val">₪${bk.service.price}</span></div>`
 }
 
 function checkNext(){
-  const btn=document.getElementById('next-btn');
-  if(step===1) btn.disabled=!bk.service;
-  else if(step===2) btn.disabled=!bk.date;
-  else if(step===3) btn.disabled=!bk.time;
-  else btn.disabled=false;
-  for(let i=1;i<=4;i++) document.getElementById('sd'+i).classList.toggle('active',i<=step);
+  const btn=document.getElementById('next-btn')
+  if(step===1)btn.disabled=!bk.service
+  else if(step===2)btn.disabled=!bk.date
+  else if(step===3)btn.disabled=!bk.time
+  else btn.disabled=false
+  for(let i=1;i<=4;i++)document.getElementById('sd'+i).classList.toggle('active',i<=step)
 }
 
-function nextStep(){
-  if(step===4){submitBooking();return;}
-  step++;
-  showStep(step);
-  if(step===2) renderCal();
-  if(step===3) renderSlots();
-  if(step===4){buildSummary('booking-summary');document.getElementById('next-btn').textContent='✓ אשרי הזמנה';}
-  document.getElementById('back-btn').style.display=step>1?'block':'none';
-  checkNext();
+async function nextStep(){
+  if(step===4){await submitBooking();return}
+  step++
+  showStep(step)
+  if(step===2)renderCal()
+  if(step===3)await renderSlots()
+  if(step===4){buildSummary('booking-summary');document.getElementById('next-btn').textContent='✓ אשרי הזמנה'}
+  document.getElementById('back-btn').style.display=step>1?'block':'none'
+  checkNext()
 }
 
 function prevStep(){
-  step--;
-  showStep(step);
-  document.getElementById('next-btn').textContent='המשך';
-  document.getElementById('back-btn').style.display=step>1?'block':'none';
-  checkNext();
+  step--;showStep(step)
+  document.getElementById('next-btn').textContent='המשך'
+  document.getElementById('back-btn').style.display=step>1?'block':'none'
+  checkNext()
 }
 
-function showStep(n){
-  for(let i=1;i<=4;i++) document.getElementById('step'+i).style.display=i===n?'block':'none';
-}
+function showStep(n){for(let i=1;i<=4;i++)document.getElementById('step'+i).style.display=i===n?'block':'none'}
 
-function submitBooking(){
-  const name=document.getElementById('f-name').value.trim();
-  const phone=document.getElementById('f-phone').value.trim();
-  if(!name||!phone){alert('נא למלא שם וטלפון');return;}
-  S.bookings.push({
-    id:Date.now(),name,phone,
-    service:bk.service.name,price:bk.service.price,
-    date:bk.date,time:bk.time,
-    notes:document.getElementById('f-notes').value.trim()
-  });
-  document.getElementById('booking-flow').style.display='none';
-  buildSummary('success-summary');
-  document.getElementById('success-screen').style.display='block';
+async function submitBooking(){
+  const name=document.getElementById('f-name').value.trim()
+  const phone=document.getElementById('f-phone').value.trim()
+  if(!name||!phone){alert('נא למלא שם וטלפון');return}
+  const btn=document.getElementById('next-btn')
+  btn.disabled=true;btn.textContent='שומרת...'
+  try{
+    const isUUID=/^[0-9a-f-]{36}$/i.test(bk.service.id)
+    const{error}=await sb.from('bookings').insert({
+      client_name:name,phone,
+      service_name:bk.service.name,
+      service_id:isUUID?bk.service.id:null,
+      price:bk.service.price,
+      date:bk.date,
+      time:bk.time+':00',
+      notes:document.getElementById('f-notes').value.trim(),
+      status:'pending'
+    })
+    if(error)throw error
+    if(!bookedCache[bk.date])bookedCache[bk.date]=new Set()
+    bookedCache[bk.date].add(bk.time)
+    document.getElementById('booking-flow').style.display='none'
+    buildSummary('success-summary')
+    document.getElementById('success-screen').style.display='block'
+  }catch(e){
+    console.error('booking error:',e)
+    alert('שגיאה בשמירת התור. אנא נסי שוב.')
+    btn.disabled=false;btn.textContent='✓ אשרי הזמנה'
+  }
 }
 
 function resetBooking(){
-  bk={service:null,date:null,time:null};step=1;
-  ['f-name','f-phone','f-notes'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('next-btn').textContent='המשך';
-  document.getElementById('booking-flow').style.display='block';
-  document.getElementById('success-screen').style.display='none';
-  showStep(1);renderServices();checkNext();
+  bk={service:null,date:null,time:null};step=1
+  ;['f-name','f-phone','f-notes'].forEach(id=>{document.getElementById(id).value=''})
+  document.getElementById('next-btn').textContent='המשך'
+  document.getElementById('booking-flow').style.display='block'
+  document.getElementById('success-screen').style.display='none'
+  showStep(1);renderServices();checkNext()
 }
 
-/* ══════════════════════════
+/* ═══════════════════════════════════════
    ADMIN
-══════════════════════════ */
+═══════════════════════════════════════ */
 function buildNumpad(){
-  const keys=[1,2,3,4,5,6,7,8,9,null,0,'⌫'];
+  const keys=[1,2,3,4,5,6,7,8,9,null,0,'⌫']
   document.getElementById('numpad').innerHTML=keys.map(k=>{
-    if(k===null) return'<div></div>';
-    return`<button class="num-key ${k==='⌫'?'del':''}" onclick="pinPress('${k}')">${k}</button>`;
-  }).join('');
+    if(k===null)return'<div></div>'
+    return`<button class="num-key ${k==='⌫'?'del':''}" onclick="pinPress('${k}')">${k}</button>`
+  }).join('')
 }
 
-function pinPress(v){
-  if(v==='⌫') pinStr=pinStr.slice(0,-1);
-  else if(pinStr.length<4) pinStr+=v;
-  updatePinDots();
+async function pinPress(v){
+  if(v==='⌫')pinStr=pinStr.slice(0,-1)
+  else if(pinStr.length<4)pinStr+=v
+  updatePinDots()
   if(pinStr.length===4){
-    if(pinStr===S.pin){
-      adminOpen=true;
-      document.getElementById('admin-lock').style.display='none';
-      document.getElementById('admin-panel').style.display='block';
-      renderAdmin();
-    } else {
-      document.getElementById('pin-err').textContent='קוד שגוי, נסי שוב';
-      pinStr='';
-      setTimeout(()=>{document.getElementById('pin-err').textContent='';updatePinDots();},1000);
+    try{
+      adminPin=pinStr
+      await adminOp('verify',{})
+      adminOpen=true
+      document.getElementById('admin-lock').style.display='none'
+      document.getElementById('admin-panel').style.display='block'
+      await loadAdminData()
+      renderAdmin()
+    }catch{
+      document.getElementById('pin-err').textContent='קוד שגוי, נסי שוב'
+      adminPin=null;pinStr=''
+      setTimeout(()=>{document.getElementById('pin-err').textContent='';updatePinDots()},1000)
     }
   }
 }
 
-function updatePinDots(){
-  for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.toggle('on',i<pinStr.length);
-}
+function updatePinDots(){for(let i=0;i<4;i++)document.getElementById('pd'+i).classList.toggle('on',i<pinStr.length)}
 
 function renderAdmin(){
-  if(!adminOpen) return;
-  renderBookingList();
-  renderSvcAdmin();
-  renderSchedAdmin();
-  document.getElementById('set-name').value=S.salonName;
-  document.getElementById('set-tagline').value=S.tagline;
+  if(!adminOpen)return
+  renderBookingList()
+  renderSvcAdmin()
+  renderSchedAdmin()
+  document.getElementById('set-name').value=S.salonName
+  document.getElementById('set-tagline').value=S.tagline
 }
 
 function renderBookingList(){
-  const today=todayStr();
-  const list=S.bookings.filter(b=>b.date>=today).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
-  document.getElementById('bk-list').innerHTML = list.length ? list.map(b=>`
+  const today=todayStr()
+  const list=S.bookings.filter(b=>b.status!=='cancelled').sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))
+  document.getElementById('bk-list').innerHTML=list.length?list.map(b=>`
     <div class="booking-card ${b.date===today?'today-card':''}">
       <div class="bk-time-col">
         <div class="bk-time">${b.time}</div>
@@ -1221,9 +1289,21 @@ function renderBookingList(){
         ${b.notes?`<div class="bk-detail">💬 ${b.notes}</div>`:''}
         <div class="bk-detail">📱 ${b.phone}</div>
       </div>
-      <div class="bk-price">₪${b.price}</div>
+      <div>
+        <div class="bk-price">₪${b.price}</div>
+        <button onclick="cancelBooking('${b.id}')" style="margin-top:6px;background:none;border:none;cursor:pointer;font-size:0.72rem;color:#C5BAB3;display:block">ביטול</button>
+      </div>
     </div>`).join('')
-    : '<div class="empty-msg">אין תורים קרובים</div>';
+    :'<div class="empty-msg">אין תורים קרובים</div>'
+}
+
+async function cancelBooking(id){
+  if(!confirm('לבטל תור זה?'))return
+  try{
+    await adminOp('update-booking-status',{id,status:'cancelled'})
+    S.bookings=S.bookings.filter(b=>b.id!==id)
+    renderBookingList()
+  }catch{alert('שגיאה בביטול התור')}
 }
 
 function renderSvcAdmin(){
@@ -1241,15 +1321,15 @@ function renderSvcAdmin(){
       <input class="price-edit" type="number" value="${s.price}" onchange="S.services[${i}].price=+this.value" min="0">
       <span style="font-size:0.8rem;color:#9A7E6F">₪</span>
       <button class="del-btn" onclick="delSvc(${i})">🗑</button>
-    </div>`).join('');
+    </div>`).join('')
 }
 
 function addService(){
-  S.services.push({id:Date.now(),name:'שירות חדש',price:0,duration:30,tag:'כללי'});
-  renderSvcAdmin();renderServices();
+  S.services.push({id:'new_'+Date.now(),isNew:true,name:'שירות חדש',price:0,duration:30,tag:'כללי'})
+  renderSvcAdmin();renderServices()
 }
 function delSvc(i){
-  if(confirm('למחוק שירות זה?')){S.services.splice(i,1);renderSvcAdmin();renderServices();}
+  if(confirm('למחוק שירות זה?')){S.services.splice(i,1);renderSvcAdmin();renderServices()}
 }
 
 function renderSchedAdmin(){
@@ -1266,31 +1346,45 @@ function renderSchedAdmin(){
         <span>עד</span>
         <input type="time" value="${v.to}" onchange="S.schedule[${d}].to=this.value" ${!v.open?'disabled':''}>
       </div>
-    </div>`).join('');
+    </div>`).join('')
 }
 
 function toggleTimes(d,open){
-  const row=document.getElementById('tr-'+d);
-  row.style.opacity=open?'1':'0.3';
-  row.querySelectorAll('input').forEach(i=>i.disabled=!open);
+  const row=document.getElementById('tr-'+d)
+  row.style.opacity=open?'1':'0.3'
+  row.querySelectorAll('input').forEach(i=>i.disabled=!open)
 }
 
-function saveSettings(){
-  S.salonName=document.getElementById('set-name').value;
-  S.tagline=document.getElementById('set-tagline').value;
-  const newPin=document.getElementById('set-pin').value;
-  if(newPin&&/^\d{4}$/.test(newPin)) S.pin=newPin;
-  document.querySelector('.hero h1').innerHTML=`<strong>${S.salonName.split('•')[0].trim()}</strong> ${S.salonName.includes('•')?'• '+S.salonName.split('•')[1].trim():''}`;
-  document.querySelector('.hero-tagline').textContent=S.tagline;
-  const btn=document.querySelector('.save-bar .btn-main');
-  btn.textContent='✓ נשמר בהצלחה!';btn.style.background='var(--sage)';
-  setTimeout(()=>{btn.textContent='💾 שמור שינויים';btn.style.background='';},2200);
+async function saveAll(){
+  const btn=document.querySelector('.save-bar .btn-main')
+  btn.disabled=true;btn.textContent='שומרת...'
+  try{
+    const newName=document.getElementById('set-name').value
+    const newTagline=document.getElementById('set-tagline').value
+    const newPin=document.getElementById('set-pin').value
+    await Promise.all([
+      adminOp('save-services',{services:S.services}),
+      adminOp('save-schedule',{schedule:S.schedule}),
+      adminOp('save-settings',{name:newName,tagline:newTagline,newPin:newPin&&/^\d{4}$/.test(newPin)?newPin:null,slotMin:S.slotMin})
+    ])
+    if(newPin&&/^\d{4}$/.test(newPin))adminPin=newPin
+    S.salonName=newName;S.tagline=newTagline
+    applyBranding()
+    btn.textContent='✓ נשמר בהצלחה!';btn.style.background='var(--sage)'
+    setTimeout(()=>{btn.textContent='💾 שמור שינויים';btn.style.background='';btn.disabled=false},2200)
+  }catch(e){
+    console.error(e)
+    alert('שגיאה בשמירה: '+e.message)
+    btn.textContent='💾 שמור שינויים';btn.disabled=false
+  }
 }
+function saveSettings(){return saveAll()}  // backward compat alias
 
 /* ── Init ── */
-renderServices();
-checkNext();
-buildNumpad();
+buildNumpad()
+renderServices()
+checkNext()
+loadData()
 </script>
 </body>
 </html>
