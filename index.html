@@ -210,6 +210,12 @@ select.fi{appearance:none}
 .gate-box .num-key:hover{background:rgba(37,99,235,.5);border-color:var(--blue)}
 .gate-err-txt{color:#FDA4AF;font-size:.82rem;margin-top:14px;min-height:20px}
 
+/* ══ GOOGLE SIGN-IN BTN ══ */
+.google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:240px;margin:0 auto;padding:13px 20px;border-radius:var(--r-md);background:white;border:none;cursor:pointer;font-family:var(--font);font-size:.92rem;font-weight:600;color:#3C4043;box-shadow:0 2px 10px rgba(0,0,0,.3);transition:box-shadow .15s,transform .1s}
+.google-btn:hover{box-shadow:0 4px 18px rgba(0,0,0,.4);transform:translateY(-1px)}
+.gate-spinner{display:none;width:20px;height:20px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;margin:12px auto 0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 /* ══ HEADER LOCK BTN ══ */
 .hdr-lock{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:var(--r-sm);color:white;font-size:.75rem;padding:5px 10px;cursor:pointer;font-family:var(--font)}
 .hdr-lock:hover{background:rgba(255,255,255,.18)}
@@ -223,13 +229,16 @@ select.fi{appearance:none}
     <div class="gate-logo-icon">L</div>
     <div class="gate-brand">LIDERS CRM</div>
     <div class="gate-sub">הפלטפורמה שהופכת לידים לעסקאות</div>
-    <div class="pin-dots">
-      <div class="pin-dot" id="gd0"></div>
-      <div class="pin-dot" id="gd1"></div>
-      <div class="pin-dot" id="gd2"></div>
-      <div class="pin-dot" id="gd3"></div>
-    </div>
-    <div class="numpad" id="gate-numpad"></div>
+    <button class="google-btn" id="google-btn" onclick="signInWithGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 002.38-5.88c0-.57-.05-.66-.15-1.18z"/>
+        <path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 01-7.18-2.54H1.83v2.07A8 8 0 008.98 17z"/>
+        <path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 010-3.04V5.41H1.83a8 8 0 000 7.18l2.67-2.07z"/>
+        <path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 001.83 5.4L4.5 7.49a4.77 4.77 0 014.48-3.31z"/>
+      </svg>
+      כניסה עם Google
+    </button>
+    <div class="gate-spinner" id="gate-spinner"></div>
     <div class="gate-err-txt" id="gate-err"></div>
   </div>
 </div>
@@ -313,21 +322,7 @@ select.fi{appearance:none}
 <!-- ══════════════════════ SETTINGS ══════════════════════ -->
 <div class="page" id="page-settings">
 
-  <div id="s-lock" class="lock-wrap">
-    <div class="lock-ico">🔐</div>
-    <h2>כניסה לניהול</h2>
-    <p>הכנס קוד PIN כדי להיכנס</p>
-    <div class="pin-dots">
-      <div class="pin-dot" id="pd0"></div>
-      <div class="pin-dot" id="pd1"></div>
-      <div class="pin-dot" id="pd2"></div>
-      <div class="pin-dot" id="pd3"></div>
-    </div>
-    <div class="numpad" id="numpad"></div>
-    <div class="pin-err" id="pin-err"></div>
-  </div>
-
-  <div id="s-panel" style="display:none">
+  <div id="s-panel">
     <div class="scard">
       <div class="scard-title">מיתוג</div>
       <div class="srow">
@@ -339,17 +334,7 @@ select.fi{appearance:none}
         <input class="sinp" id="set-tag">
       </div>
     </div>
-
-    <div class="scard">
-      <div class="scard-title">אבטחה</div>
-      <div class="srow">
-        <div class="slbl"><div class="t">PIN חדש</div><div class="s">4 ספרות</div></div>
-        <input class="sinp" id="set-pin" placeholder="••••" maxlength="4" type="password" autocomplete="new-password">
-      </div>
-    </div>
-
     <button class="save-btn" id="save-btn" onclick="saveSettings()">💾 שמור שינויים</button>
-    <button class="lock-link" onclick="lockSettings()">🔒 נעל פאנל</button>
   </div>
 
 </div>
@@ -410,16 +395,18 @@ const ST = {
 };
 
 /* ══════════════════
+   CONFIG
+══════════════════ */
+const ADMIN_EMAILS = ['liders.crm@gmail.com','elgrablidudu@gmail.com'];
+
+/* ══════════════════
    STATE
 ══════════════════ */
-let leads    = [];
-let cfg      = {company_name:'Liders CRM',tagline:'הפלטפורמה שהופכת לידים לעסקאות'};
-let stageF   = 0;
-let editId   = null;
-let pinStr   = '';
-let sessPin  = '';
-let adminOn  = false;
-let gateStr  = '';
+let leads   = [];
+let cfg     = {company_name:'Liders CRM',tagline:'הפלטפורמה שהופכת לידים לעסקאות'};
+let stageF  = 0;
+let editId  = null;
+let adminOn = false;
 
 /* ══════════════════
    HELPERS
@@ -462,9 +449,7 @@ function showPage(name,btn){
   document.getElementById('page-'+name).classList.add('active');
   if(btn) btn.classList.add('active');
   document.getElementById('fab').style.display = (name==='leads'||name==='dash')?'flex':'none';
-  if(name==='settings' && adminOn){
-    document.getElementById('s-lock').style.display='none';
-    document.getElementById('s-panel').style.display='block';
+  if(name==='settings'){
     document.getElementById('set-company').value = cfg.company_name||'';
     document.getElementById('set-tag').value     = cfg.tagline||'';
   }
@@ -638,100 +623,53 @@ async function saveLead(){
 }
 
 /* ══════════════════
-   APP GATE
+   AUTH (Google)
 ══════════════════ */
-function buildGateNumpad(){
-  document.getElementById('gate-numpad').innerHTML=[1,2,3,4,5,6,7,8,9,null,0,'⌫'].map(k=>{
-    if(k===null) return '<div></div>';
-    return `<button class="num-key${k==='⌫'?' del':''}" onclick="gatePin('${k}')">${k}</button>`;
-  }).join('');
-}
-
-function updGateDots(){
-  for(let i=0;i<4;i++) document.getElementById('gd'+i).classList.toggle('on',i<gateStr.length);
-}
-
-async function gatePin(v){
-  if(v==='⌫'){ gateStr=gateStr.slice(0,-1); updGateDots(); return; }
-  if(gateStr.length>=4) return;
-  gateStr+=v; updGateDots();
-  if(gateStr.length===4){
-    document.getElementById('gate-err').textContent='בודק…';
-    const {data}=await DB.rpc('verify_admin_pin',{pin_input:gateStr});
-    if(data===true){
-      sessPin=gateStr; adminOn=true;
-      document.getElementById('app-gate').style.display='none';
-      loadData();
-    } else {
-      document.getElementById('gate-err').textContent='קוד שגוי, נסה שוב';
-      gateStr='';
-      setTimeout(()=>{ document.getElementById('gate-err').textContent=''; updGateDots(); },1200);
-    }
-  }
-}
-
-function lockApp(){
-  adminOn=false; sessPin=''; gateStr=''; pinStr='';
-  document.getElementById('app-gate').style.display='flex';
-  updGateDots();
+async function signInWithGoogle(){
+  const btn=document.getElementById('google-btn');
+  const spin=document.getElementById('gate-spinner');
+  btn.disabled=true; spin.style.display='block';
   document.getElementById('gate-err').textContent='';
-  document.getElementById('s-lock').style.display='block';
-  document.getElementById('s-panel').style.display='none';
-}
-
-/* ══════════════════
-   PIN / SETTINGS
-══════════════════ */
-function buildNumpad(){
-  document.getElementById('numpad').innerHTML=[1,2,3,4,5,6,7,8,9,null,0,'⌫'].map(k=>{
-    if(k===null) return '<div></div>';
-    return `<button class="num-key${k==='⌫'?' del':''}" onclick="pinPress('${k}')">${k}</button>`;
-  }).join('');
-}
-
-async function pinPress(v){
-  if(v==='⌫'){ pinStr=pinStr.slice(0,-1); updDots(); return; }
-  if(pinStr.length>=4) return;
-  pinStr+=v; updDots();
-  if(pinStr.length===4){
-    document.getElementById('pin-err').textContent='בודק…';
-    const {data}=await DB.rpc('verify_admin_pin',{pin_input:pinStr});
-    if(data===true){
-      sessPin=pinStr; adminOn=true;
-      document.getElementById('s-lock').style.display='none';
-      document.getElementById('s-panel').style.display='block';
-      document.getElementById('set-company').value = cfg.company_name||'';
-      document.getElementById('set-tag').value     = cfg.tagline||'';
-      document.getElementById('set-pin').value     = '';
-    } else {
-      document.getElementById('pin-err').textContent='קוד שגוי, נסה שוב';
-      pinStr='';
-      setTimeout(()=>{ document.getElementById('pin-err').textContent=''; updDots(); },1000);
-    }
+  const {error}=await DB.auth.signInWithOAuth({
+    provider:'google',
+    options:{redirectTo:location.href.split('?')[0].split('#')[0]}
+  });
+  if(error){
+    document.getElementById('gate-err').textContent=error.message;
+    btn.disabled=false; spin.style.display='none';
   }
 }
 
-function updDots(){ for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.toggle('on',i<pinStr.length); }
+function handleSession(session){
+  const email=session?.user?.email||'';
+  if(ADMIN_EMAILS.includes(email)){
+    adminOn=true;
+    document.getElementById('app-gate').style.display='none';
+    loadData();
+  } else if(email){
+    document.getElementById('gate-err').textContent=email+' — אין הרשאת גישה';
+    DB.auth.signOut();
+  }
+}
 
-function lockSettings(){
-  adminOn=false; pinStr=''; sessPin='';
-  document.getElementById('s-lock').style.display='block';
-  document.getElementById('s-panel').style.display='none';
-  updDots();
+async function lockApp(){
+  adminOn=false; leads=[];
+  await DB.auth.signOut();
+  document.getElementById('app-gate').style.display='flex';
+  document.getElementById('gate-err').textContent='';
+  const btn=document.getElementById('google-btn');
+  const spin=document.getElementById('gate-spinner');
+  if(btn) btn.disabled=false;
+  if(spin) spin.style.display='none';
 }
 
 async function saveSettings(){
-  const company = document.getElementById('set-company').value.trim();
-  const tagline = document.getElementById('set-tag').value.trim();
-  const newPin  = document.getElementById('set-pin').value;
+  const company=document.getElementById('set-company').value.trim();
+  const tagline=document.getElementById('set-tag').value.trim();
   const btn=document.getElementById('save-btn');
   btn.textContent='שומר…'; btn.disabled=true;
 
-  const pinToSet=(newPin&&/^\d{4}$/.test(newPin))?newPin:null;
-  await DB.rpc('save_crm_settings',{
-    pin_input:sessPin, p_company_name:company, p_tagline:tagline, p_new_pin:pinToSet
-  });
-  if(pinToSet){ sessPin=pinToSet; document.getElementById('set-pin').value=''; }
+  await DB.rpc('save_crm_settings',{p_company_name:company,p_tagline:tagline});
   cfg.company_name=company; cfg.tagline=tagline;
   updateBrand();
 
@@ -740,8 +678,8 @@ async function saveSettings(){
 }
 
 /* ── Init ── */
-buildGateNumpad();
-buildNumpad();
+DB.auth.getSession().then(({data:{session}})=>{ if(session) handleSession(session); });
+DB.auth.onAuthStateChange((_,session)=>{ if(session) handleSession(session); });
 </script>
 </body>
 </html>
