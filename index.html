@@ -3101,9 +3101,12 @@ const App = {
   async loginWithGoogle() {
     const btn = document.querySelector('.btn-google');
     if (btn) { btn.disabled = true; btn.style.opacity = '0.7'; }
+    const REDIRECT = window.location.origin.includes('localhost')
+      ? window.location.href
+      : 'https://liders-crm.github.io/liders_crm/';
     const { error } = await sbClient.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.href },
+      options: { redirectTo: REDIRECT },
     });
     if (error) {
       toast('שגיאת Google: ' + error.message, 'error');
