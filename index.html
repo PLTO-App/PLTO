@@ -81,7 +81,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:10
 
 /* ══ KPI GRID ══ */
 .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
-.kpi-card{background:var(--white);border-radius:var(--r-md);padding:14px;box-shadow:var(--sh)}
+.kpi-card{background:var(--white);border-radius:var(--r-md);padding:14px;box-shadow:var(--sh);cursor:pointer;transition:transform .15s,box-shadow .15s}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
 .kpi-label{font-size:.7rem;color:var(--steel);margin-bottom:4px}
 .kpi-val{font-size:1.65rem;font-weight:700;color:var(--ink);line-height:1}
 .kpi-sub{font-size:.65rem;color:var(--steel-lt);margin-top:3px}
@@ -93,7 +94,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:10
 
 /* ══ PIPELINE BARS ══ */
 .pipe-card{background:var(--white);border-radius:var(--r-md);padding:14px;box-shadow:var(--sh);margin-bottom:18px}
-.pipe-row{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.pipe-row{display:flex;align-items:center;gap:8px;margin-bottom:9px;cursor:pointer;border-radius:6px;padding:2px 4px;transition:background .12s}
+.pipe-row:hover{background:var(--blue-lt)}
 .pipe-row:last-child{margin-bottom:0}
 .pipe-lbl{font-size:.72rem;color:var(--ink);width:100px;text-align:right;flex-shrink:0}
 .pipe-bar-bg{flex:1;height:7px;background:var(--bg);border-radius:4px;overflow:hidden}
@@ -102,7 +104,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:10
 
 /* ══ RECENT LIST ══ */
 .recent-card{background:var(--white);border-radius:var(--r-md);padding:4px 14px;box-shadow:var(--sh);margin-bottom:18px}
-.recent-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.recent-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;border-radius:6px;padding-inline:6px}
+.recent-row:hover{background:var(--blue-lt)}
 .recent-row:last-child{border-bottom:none}
 .av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#60A5FA);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;color:white;flex-shrink:0}
 .av.sm{width:40px;height:40px;font-size:.9rem}
@@ -228,25 +231,25 @@ select.fi{appearance:none}
 <div class="page active" id="page-dash">
 
   <div class="kpi-grid">
-    <div class="kpi-card blue">
+    <div class="kpi-card blue" onclick="goToLeads(0)">
       <div class="kpi-label">סה"כ לידים</div>
       <div class="kpi-val" id="kpi-total">—</div>
-      <div class="kpi-sub">בפייפליין</div>
+      <div class="kpi-sub">בפייפליין ←</div>
     </div>
-    <div class="kpi-card">
+    <div class="kpi-card" onclick="goToLeads(-1)">
       <div class="kpi-label">פעילים</div>
       <div class="kpi-val" id="kpi-active">—</div>
-      <div class="kpi-sub">לידים פתוחים</div>
+      <div class="kpi-sub">לידים פתוחים ←</div>
     </div>
-    <div class="kpi-card green">
+    <div class="kpi-card green" onclick="goToLeads(5)">
       <div class="kpi-label">עסקאות סגורות</div>
       <div class="kpi-val" id="kpi-closed">—</div>
-      <div class="kpi-sub">סה"כ</div>
+      <div class="kpi-sub">סה"כ ←</div>
     </div>
-    <div class="kpi-card">
+    <div class="kpi-card" onclick="goToLeads(-1)">
       <div class="kpi-label">ערך פייפליין</div>
       <div class="kpi-val" id="kpi-pipe">—</div>
-      <div class="kpi-sub">₪ לידים פעילים</div>
+      <div class="kpi-sub">₪ לידים פעילים ←</div>
     </div>
   </div>
 
@@ -420,7 +423,21 @@ function showPage(name,btn){
   document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   if(btn) btn.classList.add('active');
-  document.getElementById('fab').style.display = name==='leads'?'flex':'none';
+  document.getElementById('fab').style.display = (name==='leads'||name==='dash')?'flex':'none';
+}
+
+function goToLeads(stageId){
+  // stageId: 0=all, -1=active only (stages 1-4), 1-5=specific stage
+  if(stageId===-1){
+    stageF=0; // will filter active in renderLeads
+    window._activeOnly=true;
+  } else {
+    stageF=stageId;
+    window._activeOnly=false;
+  }
+  const btn=document.querySelectorAll('.tab-btn')[1];
+  showPage('leads',btn);
+  buildChips(); renderLeads();
 }
 
 /* ══════════════════
@@ -441,7 +458,7 @@ function renderDash(){
   document.getElementById('pipe-bars').innerHTML = Object.entries(ST).map(([id,s])=>{
     const cnt=leads.filter(l=>l.stage_id===+id).length;
     const pct=Math.round(cnt/mx*100);
-    return `<div class="pipe-row">
+    return `<div class="pipe-row" onclick="goToLeads(${id})">
       <span class="pipe-lbl">${s.n}</span>
       <div class="pipe-bar-bg"><div class="pipe-bar" style="width:${pct}%;background:${s.c}"></div></div>
       <span class="pipe-cnt">${cnt}</span>
@@ -451,7 +468,7 @@ function renderDash(){
   const recent=leads.slice(0,5);
   document.getElementById('recent-list').innerHTML = recent.length
     ? recent.map(l=>`
-      <div class="recent-row">
+      <div class="recent-row" onclick="openModal(${l.id})">
         <div class="av">${ini(l.name)}</div>
         <div class="rr-info">
           <div class="rr-name">${l.name}</div>
@@ -477,12 +494,13 @@ function buildChips(){
     }).join('');
 }
 
-function setFilter(s){ stageF=s; buildChips(); renderLeads(); }
+function setFilter(s){ stageF=s; window._activeOnly=false; buildChips(); renderLeads(); }
 
 function renderLeads(){
   const q=(document.getElementById('search')?.value||'').toLowerCase();
   let list=leads;
   if(stageF) list=list.filter(l=>l.stage_id===stageF);
+  else if(window._activeOnly) list=list.filter(l=>l.stage_id<5);
   if(q)      list=list.filter(l=>(l.name+' '+(l.company||'')+' '+(l.phone||'')).toLowerCase().includes(q));
 
   document.getElementById('leads-list').innerHTML = list.length
