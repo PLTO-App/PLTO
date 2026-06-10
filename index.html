@@ -1456,6 +1456,7 @@
       <div class="screen-header">
         <div class="screen-title">📋 פייפליין לידים</div>
         <div class="flex gap-2">
+          <button class="btn btn-ghost btn-sm" onclick="LeadImport.open()">📋 ייבוא</button>
           <button class="btn btn-ghost btn-sm" onclick="openModal('modal-add-lead')">+ ליד</button>
         </div>
       </div>
@@ -1583,6 +1584,10 @@
   <div class="fab-speed-dial" id="fab-speed-dial">
     <button class="fab-main" id="fab-main-btn" onclick="toggleFAB()" title="פעולות מהירות">+</button>
     <div class="fab-options" id="fab-options">
+      <button class="fab-option" style="background:#fff;color:var(--navy-600);border:1.5px solid var(--border);" onclick="closeFAB(); LeadImport.open()">
+        <div class="fab-opt-icon">📋</div>
+        ייבוא לידים
+      </button>
       <button class="fab-option fab-opt-property" onclick="closeFAB(); openModal('modal-add-property')">
         <div class="fab-opt-icon">🏠</div>
         נכס חדש
