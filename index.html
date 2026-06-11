@@ -1277,7 +1277,7 @@
       </div>
     </div>
     <div class="login-trial-badge" style="margin-bottom:4px;">
-      🎁 30 ימי ניסיון חינמי — בלי כרטיס אשראי!
+      🎁 21 ימים חינם במערכת — בלי כרטיס אשראי!
     </div>
     <div class="login-form">
       <button id="btn-login-google" type="button" class="btn-google" style="touch-action:manipulation; padding:13px; font-size:15px;">
@@ -1315,7 +1315,7 @@
       </button>
       <div class="login-divider">או</div>
       <button id="btn-login-demo" type="button" class="login-demo-btn" style="touch-action:manipulation;">
-        ⚡ כניסת דמו — ראה את המערכת מיד
+        👀 לצפייה זריזה בדמו
       </button>
     </div>
   </div>
@@ -1610,7 +1610,7 @@
     <div class="paywall-icon">🔒</div>
     <div class="paywall-title">הנתונים שלך בטוחים 🔒</div>
     <div class="paywall-sub" id="paywall-sub-text">
-      30 ימי הניסיון החינמי הסתיימו.<br>
+      21 ימי הניסיון החינמי הסתיימו.<br>
       כל הלידים, הנכסים והמשימות שלך <strong>שמורים ומחכים לך</strong> — בחר תוכנית להמשיך:
     </div>
     <div class="paywall-trial-note" id="paywall-trial-note">
@@ -2495,7 +2495,7 @@ const Billing = {
       const rDays = this.retentionDaysLeft();
       if (rDays > 0) {
         subEl.innerHTML = `
-          30 ימי הניסיון החינמי הסתיימו.<br>
+          21 ימי הניסיון החינמי הסתיימו.<br>
           הלידים, הנכסים והמשימות שלך <strong>שמורים בחינם למשך ${rDays} ימים נוספים</strong> — בלי כרטיס אשראי ובלי לבחור תוכנית.<br>
           כדי <strong>להמשיך להשתמש</strong> במערכת — בחר תוכנית עכשיו:
         `;
@@ -2517,7 +2517,7 @@ const Billing = {
     const urgency = days <= 3 ? 'var(--red-600)' : days <= 7 ? 'var(--orange-500)' : 'var(--navy-500)';
     const msg = days === 0 ? '⚠️ ניסיון Basic חינמי פג — בחר תוכנית להמשך'
               : days === 1 ? '⚠️ יום אחד נותר בניסיון Basic החינמי'
-              : `⏳ ${days} ימים נותרו מתוך 30 ימי ניסיון חינמי — כולל כל תכונות Basic`;
+              : `⏳ ${days} ימים נותרו מתוך 21 ימים חינם — כולל כל תכונות Basic`;
     banner.innerHTML = `
       <span style="font-size:13px;font-weight:700;color:${urgency}">${msg}</span>
       <button class="btn btn-primary btn-sm" onclick="Billing.showPaywall()" style="font-size:12px;padding:6px 14px;white-space:nowrap;">
@@ -2583,7 +2583,7 @@ const Billing = {
     if (p === 'premium') return { text:'Premium ✓', color:'var(--purple-500)', bg:'var(--purple-100)' };
     if (p === 'pro')     return { text:'Pro ✓',     color:'var(--blue-500)',   bg:'var(--blue-100)'   };
     if (p === 'basic')   return { text:'Basic ✓',   color:'var(--green-600)',  bg:'var(--green-100)'  };
-    if (p === 'trial')   return { text:'ניסיון חינם 30 יום', color:'var(--gold-600)', bg:'var(--gold-100)' };
+    if (p === 'trial')   return { text:'ניסיון חינם 21 יום', color:'var(--gold-600)', bg:'var(--gold-100)' };
     return { text:'לא פעיל', color:'var(--red-600)', bg:'var(--red-100)' };
   },
   renderPlansHTML() {
