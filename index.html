@@ -2466,9 +2466,10 @@ const Billing = {
     },
   ],
 
-  // ─── STRIPE CONFIG — מלא אחרי יצירת המוצרים ב-Stripe Dashboard ───
+  // ─── STRIPE CONFIG — החלף ב-LIVE URLs לפני פרודקשן ───
   // 1. stripe.com → Products → Add product לכל תוכנית → Copy "Payment link"
   // 2. הוסף ?client_reference_id={TENANT_ID} לכל URL (מגיע אוטומטי מהקוד)
+  // ⚠️ SECURITY: כל URL שמכיל 'test_' הוא TEST MODE — לא לשימוש אמיתי!
   CHECKOUT_URLS: {
     basic:   'https://buy.stripe.com/test_fZu6oH6Bo8US097a962go01',
     pro:     'https://buy.stripe.com/test_6oUaEX8Jwb305tr6WU2go02',
@@ -2476,6 +2477,7 @@ const Billing = {
   },
   // stripe.com → Settings → Billing → Customer portal → Copy link
   PORTAL_URL: 'https://billing.stripe.com/p/login/test_dRmaEX3pc8USdZX4OM2go00',
+  _isTestMode() { return Object.values(this.CHECKOUT_URLS).some(u => u.includes('/test_')); },
 
   daysLeft() {
     const t = State.tenant?.trial_ends_at;
@@ -2622,6 +2624,9 @@ const Billing = {
     if (!url || url.includes('REPLACE')) {
       toast('🔧 הגדר קישור Stripe ב-Billing.CHECKOUT_URLS', 'error');
       return;
+    }
+    if (this._isTestMode()) {
+      toast('⚠️ Stripe במצב בדיקה — לא תחויב כסף אמיתי', '');
     }
     // Pass tenant_id so Stripe webhook can identify the paying tenant
     const tenantId = State.tenant?.id || DB.tenantId || '';
@@ -3756,7 +3761,7 @@ const Pipeline = {
     const task = State.tasks.find(t => t.lead_id === lead.id && !t.done);
     const isOverdue = task && diffDays(task.due) < 0;
     const isToday = task && diffDays(task.due) === 0;
-    const initials = lead.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    const initials = escapeHtml(lead.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase());
     return `
       <div class="lead-card" style="--stage-color:${color}"
            onclick="App.go('lead-detail', {currentLeadId:'${lead.id}'})">

@@ -985,10 +985,7 @@ async function loadAccounts() {
   const tbody = document.getElementById('accounts-tbody');
   tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="spinner"></div></div></td></tr>';
 
-  const { data, error } = await sb
-    .from('tenants')
-    .select('id, name, billing_email, plan, trial_ends_at, created_at')
-    .order('created_at', { ascending: false });
+  const { data, error } = await sb.rpc('admin_get_accounts');
 
   if (error) {
     tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><p style="color:var(--red)">שגיאה: ${esc(error.message)}</p></div></td></tr>`;
@@ -1059,16 +1056,14 @@ async function saveAccount() {
   const plan  = document.getElementById('acc-plan').value;
   if (!name) { toast('נא מלא שם סוכנות', 'error'); return; }
 
-  if (id) {
-    const { error } = await sb.from('tenants').update({ name, billing_email: email||null, plan }).eq('id', id);
-    if (error) { toast('שגיאה: ' + error.message, 'error'); return; }
-    toast('✅ חשבון עודכן', 'success');
-  } else {
-    const slug = 'agency-' + Math.random().toString(36).slice(2,10);
-    const { error } = await sb.from('tenants').insert({ name, billing_email: email||null, plan, slug });
-    if (error) { toast('שגיאה: ' + error.message, 'error'); return; }
-    toast('✅ חשבון נוסף', 'success');
-  }
+  const { error } = await sb.rpc('admin_save_account', {
+    p_id:    id    || null,
+    p_name:  name,
+    p_email: email || null,
+    p_plan:  plan,
+  });
+  if (error) { toast('שגיאה: ' + error.message, 'error'); return; }
+  toast(id ? '✅ חשבון עודכן' : '✅ חשבון נוסף', 'success');
   closeModal('modal-account');
   await loadAccounts();
   renderDashboard();
@@ -1079,17 +1074,11 @@ async function loadInvoices() {
   const tbody = document.getElementById('invoices-tbody');
   tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="spinner"></div></div></td></tr>';
 
-  // Try liders_invoices first, fall back gracefully
-  const { data, error } = await sb
-    .from('liders_invoices')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(200);
+  const { data, error } = await sb.rpc('admin_get_invoices');
 
   if (error) {
-    // Table may not exist yet — show empty state gracefully
     allInvoices = [];
-    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="icon">📄</div><p style="color:var(--text-dim)">טבלת החשבוניות טרם נוצרה</p></div></td></tr>';
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><p style="color:var(--red)">שגיאה: ${esc(error.message)}</p></div></td></tr>`;
     return;
   }
   allInvoices = data || [];
@@ -1166,15 +1155,15 @@ async function saveInvoice() {
   const status   = document.getElementById('inv-status').value;
   const notes    = document.getElementById('inv-notes').value.trim();
 
-  if (id) {
-    const { error } = await sb.from('liders_invoices').update({ tenant_id: tenantId, amount, status, notes }).eq('id', id);
-    if (error) { toast('שגיאה: ' + error.message, 'error'); return; }
-    toast('✅ חשבונית עודכנה', 'success');
-  } else {
-    const { error } = await sb.from('liders_invoices').insert({ tenant_id: tenantId, amount, status, notes });
-    if (error) { toast('שגיאה: ' + error.message, 'error'); return; }
-    toast('✅ חשבונית נוספה', 'success');
-  }
+  const { error } = await sb.rpc('admin_save_invoice', {
+    p_id:        id        || null,
+    p_tenant_id: tenantId,
+    p_amount:    amount,
+    p_status:    status,
+    p_notes:     notes,
+  });
+  if (error) { toast('שגיאה: ' + error.message, 'error'); return; }
+  toast(id ? '✅ חשבונית עודכנה' : '✅ חשבונית נוספה', 'success');
   closeModal('modal-invoice');
   await loadInvoices();
 }
@@ -1244,7 +1233,11 @@ function renderSaasTable(tenants) {
 
 async function grantFreePlan(tenantId) {
   if (!confirm('להעניק גישה חינמית לצמיתות לטנאנט זה?')) return;
-  const { error } = await sb.from('tenants').update({ plan: 'premium', trial_ends_at: null }).eq('id', tenantId);
+  const { error } = await sb.rpc('admin_set_plan', {
+    p_tenant_id:    tenantId,
+    p_plan:         'premium',
+    p_trial_ends_at: null,
+  });
   if (error) { alert('שגיאה: ' + error.message); return; }
   toast('⭐ גישה חינמית לצמיתות הוענקה!', 'success');
   loadSaasTenants();
@@ -1252,8 +1245,11 @@ async function grantFreePlan(tenantId) {
 
 async function resetToTrial(tenantId) {
   if (!confirm('להחזיר טנאנט זה לניסיון של 21 יום?')) return;
-  const trialEnd = new Date(Date.now() + 21 * 864e5).toISOString();
-  const { error } = await sb.from('tenants').update({ plan: 'trial', trial_ends_at: trialEnd }).eq('id', tenantId);
+  const { error } = await sb.rpc('admin_set_plan', {
+    p_tenant_id:    tenantId,
+    p_plan:         'trial',
+    p_trial_ends_at: new Date(Date.now() + 21 * 864e5).toISOString(),
+  });
   if (error) { alert('שגיאה: ' + error.message); return; }
   toast('↩ הוחזר לניסיון', '');
   loadSaasTenants();
