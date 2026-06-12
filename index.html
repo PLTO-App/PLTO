@@ -1352,7 +1352,7 @@
   <nav id="sidebar">
     <div class="sidebar-brand">
       <div class="sidebar-logo">Liders<span>.</span></div>
-      <div class="sidebar-subtitle" id="sidebar-tenant-name">סוכנות נדל"ן</div>
+      <div class="sidebar-subtitle" id="sidebar-tenant-name">הסוכנות שלי</div>
     </div>
     <div class="sidebar-nav">
       <a class="nav-item active" data-screen="dashboard" onclick="App.go('dashboard')">
@@ -2930,8 +2930,22 @@ const AI = {
     return data?.content?.[0]?.text || null;
   },
 
+  _industryRole() {
+    const ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+    const map = {
+      realestate: 'מומחה נדל"ן ומתווך',
+      sales:      'מומחה מכירות B2B',
+      ecommerce:  'מומחה מסחר אלקטרוני',
+      beauty:     'מומחה תחום היופי והאסתטיקה',
+      finance:    'מומחה פיננסי ויועץ השקעות',
+      health:     'מומחה שירותי בריאות',
+      education:  'מומחה חינוך והדרכה',
+    };
+    return map[ind] || 'מומחה מכירות ופיתוח עסקי';
+  },
+
   async scoreLead(lead) {
-    const prompt = `אתה מומחה ניתוח לידים בנדל"ן ישראלי.
+    const prompt = `אתה ${this._industryRole()} ישראלי.
 נתח את הליד ותן ציון 0-100.
 
 שם: ${lead.name}
@@ -2958,7 +2972,7 @@ const AI = {
   async writeFollowup(lead) {
     const stage = State.stages.find(s => s.id === lead.stage);
     return this.call([{ role: 'user', content:
-      `כתוב הודעת WhatsApp קצרה ואנושית לליד נדל"ן.
+      `כתוב הודעת WhatsApp קצרה ואנושית לליד.
 שם: ${lead.name} | שלב: ${stage?.name || 'ראשוני'}
 אזור: ${lead.desired_area || 'לא ידוע'} | תקציב: ${lead.budget_max ? formatMoney(lead.budget_max) : 'לא ידוע'}
 קשר אחרון: ${lead.last_contact ? formatRelDate(lead.last_contact) : 'לא היה קשר'}
@@ -2980,7 +2994,7 @@ const AI = {
     const acts = State.activities.filter(a => a.lead_id === lead.id)
       .sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
     return this.call([{ role: 'user', content:
-      `אתה יועץ נדל"ן עם 20 שנות ניסיון. נתח את העסקה ותמליץ על הצעד הבא.
+      `אתה ${this._industryRole()} עם 20 שנות ניסיון. נתח את העסקה ותמליץ על הצעד הבא.
 לקוח: ${lead.name} | שלב: ${stage?.name || 'לא ידוע'}
 תקציב: ${lead.budget_max ? formatMoney(lead.budget_max) : 'לא ידוע'} | אזור: ${lead.desired_area || 'לא ידוע'}
 קשר אחרון: ${lead.last_contact ? formatRelDate(lead.last_contact) : 'לא היה'} | follow-up: ${lead.next_followup ? formatRelDate(lead.next_followup) : 'לא מתוכנן'}
@@ -3010,7 +3024,7 @@ const AI = {
     const fmtTask = t => `${t.title} (${typeEmoji(t.type)} ${t.lead_id ? (State.leads.find(l=>l.id===t.lead_id)?.name || '') : ''}, ${formatRelDate(t.due)})`;
     const fmtCold = l => `${l.name} — ${l.last_contact ? Math.abs(diffDays(l.last_contact)) : '14+'} ימים בלי קשר, שלב "${stageName(l.stage)}"`;
 
-    const prompt = `אתה עוזר אישי חכם של מתווך נדל"ן ישראלי, שמנהל עבורו יום-יום את המערכת ונותן לו תדרוך בוקר ממוקד.
+    const prompt = `אתה עוזר אישי חכם של ${this._industryRole()} ישראלי, שמנהל עבורו יום-יום את המערכת ונותן לו תדרוך בוקר ממוקד.
 
 📊 תמונת מצב:
 לידים פעילים: ${active.length} | שווי צינור: ${formatMoney(pipelineVal)} | עסקאות שנסגרו עד כה: ${closedTotal}
@@ -3366,7 +3380,7 @@ const App = {
       State.tenant = t
         ? { id: t.id, name: t.name, slug: t.slug, plan: t.plan, trial_ends_at: t.trial_ends_at,
             make_webhook_url: t.make_webhook_url || null, whatsapp_number: t.whatsapp_number || null }
-        : { name: 'לידרס נדל"ן — תל אביב', plan: 'trial' };
+        : { name: 'הסוכנות שלי', plan: 'trial' };
       // Seed localStorage from DB so Make.getWebhook() works offline too
       if (t?.make_webhook_url) localStorage.setItem('make_webhook_url', t.make_webhook_url);
       if (t?.whatsapp_number)  localStorage.setItem('whatsapp_number',  t.whatsapp_number);
@@ -4370,7 +4384,7 @@ const Settings = {
         <div class="settings-row">
           <div class="settings-row-icon">🏢</div>
           <div class="settings-row-body">
-            <div class="settings-row-label">${escapeHtml(State.tenant?.name || 'לידרס נדל"ן')}</div>
+            <div class="settings-row-label">${escapeHtml(State.tenant?.name || 'הסוכנות שלי')}</div>
             <div class="settings-row-sub">
               <span style="background:${Billing.planLabel().bg};color:${Billing.planLabel().color};padding:2px 8px;border-radius:99px;font-weight:700;font-size:11px;">
                 ${Billing.planLabel().text}
@@ -5146,7 +5160,7 @@ sbClient.auth.onAuthStateChange((event, session) => {
           State.tenant = t
             ? { id: t.id, name: t.name, slug: t.slug, plan: t.plan, trial_ends_at: t.trial_ends_at,
                 make_webhook_url: t.make_webhook_url || null, whatsapp_number: t.whatsapp_number || null }
-            : { name: 'לידרס נדל"ן', plan: 'trial' };
+            : { name: 'הסוכנות שלי', plan: 'trial' };
           if (t?.make_webhook_url) localStorage.setItem('make_webhook_url', t.make_webhook_url);
           if (t?.whatsapp_number)  localStorage.setItem('whatsapp_number',  t.whatsapp_number);
           State.isNewTenant = isNew;
