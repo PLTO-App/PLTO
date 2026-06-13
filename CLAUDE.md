@@ -15,6 +15,25 @@
 
 ---
 
+## ✅ לאחר העלייה לאוויר — משימות אבטחה שנותרו
+
+> בוצע ביקורת אבטחה מלאה (13.6.2026) — migrations 027–028 יושמו.
+> הפריטים הבאים **לא דחופים לפרודוקשן** אך יש לבצע בהקדם לאחר השקה:
+
+1. **Leaked Password Protection** — הפעל ב-Supabase Dashboard → Auth → Security
+   - מונע שימוש בסיסמאות שדלפו (HaveIBeenPwned)
+
+2. **`log_lead_stage_change()` — שלילת גישה מ-`authenticated`**
+   - זו פונקציית trigger פנימית שלא אמורה להיות חשופה ב-API
+   - לפני ביצוע: לוודא שהאפליקציה לא קוראת לה ישירות
+   - `REVOKE EXECUTE ON FUNCTION public.log_lead_stage_change() FROM authenticated;`
+
+3. **שדות רגישים בטבלת `tenants`** — column-level restriction
+   - `make_webhook_url`, `stripe_customer_id`, `stripe_subscription_id` חשופים לכל agent מאומת
+   - פתרון: view מוגבל שמציג לסוכנים רק `id, name, plan, trial_ends_at`
+
+---
+
 ## חזון הפרויקט
 
 **Liders CRM** — הפלטפורמה שהופכת לידים לעסקאות.
