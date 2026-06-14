@@ -138,6 +138,27 @@
               "metadata": { "designer": { "x": 200, "y": 400 } }
             }
           ]
+        },
+        {
+          "flow": [
+            {
+              "id": 8,
+              "module": "google-email:sendAnEmail",
+              "version": 4,
+              "parameters": { "__IMTCONN__": 8042119 },
+              "filter": {
+                "name": "נאדג׳ אמצע ניסיון — יום 10",
+                "conditions": [[{ "a": "{{1.notification_type}}", "b": "midtrial_nudge", "o": "text:equal" }]]
+              },
+              "mapper": {
+                "to": [{ "value": "{{1.billing_email}}" }],
+                "subject": "🌟 10 ימים ראשונים — איך הולך?",
+                "bodyType": "rawHtml",
+                "html": "<div dir='rtl' style='font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;'><div style='background:linear-gradient(135deg,#0F1F3D,#2563EB);padding:36px 32px;border-radius:16px 16px 0 0;text-align:center;'><div style='font-size:44px;'>🌟</div><h1 style='color:#fff;font-size:22px;margin:8px 0 4px;'>10 ימים ראשונים</h1><p style='color:#C8DDEF;margin:0;font-size:14px;'>עשית 10 ימים — מרשים!</p></div><div style='padding:32px;background:#F8FAFF;border-radius:0 0 16px 16px;border:1px solid #E2E8F0;border-top:none;'><p style='font-size:16px;color:#374151;line-height:1.7;'>שלום,</p><p style='font-size:15px;color:#374151;line-height:1.7;'>עברו 10 ימים מאז שהצטרפת ל-Liders CRM. נשארו לך עוד <strong>11 ימים</strong> בניסיון החינמי.</p><div style='background:#fff;border-radius:10px;padding:20px;margin:20px 0;border:1px solid #E2E8F0;'><p style='color:#6B7280;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 12px;'>רעיונות לימים הקרובים</p><p style='margin:8px 0;font-size:14px;color:#1F2937;'>📋 הוסף את כל הלידים הפעילים שלך</p><p style='margin:8px 0;font-size:14px;color:#1F2937;'>🔔 חבר Make.com להתראות בזמן אמת</p><p style='margin:8px 0;font-size:14px;color:#1F2937;'>📱 שמור לדף הבית (PWA) לגישה מהירה</p></div><p style='font-size:14px;color:#6B7280;line-height:1.7;'>אם יש שאלות — ענה על המייל הזה ונשמח לעזור.</p><div style='text-align:center;margin:24px 0;'><a href='https://liders-crm.github.io/liders_crm/' style='background:#2563EB;color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:16px;font-weight:bold;'>המשך לעבוד →</a></div><p style='color:#9CA3AF;font-size:12px;text-align:center;border-top:1px solid #E5E7EB;padding-top:16px;'>הניסיון פג ב-{{formatDate(1.trial_ends_at; \"DD/MM/YYYY\")}}</p></div></div>"
+              },
+              "metadata": { "designer": { "x": 200, "y": 600 } }
+            }
+          ]
         }
       ]
     }
