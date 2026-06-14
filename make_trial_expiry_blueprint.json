@@ -1,0 +1,159 @@
+{
+  "name": "Liders CRM — Trial Expiry Notifications",
+  "_make_scenario_id": 6185659,
+  "_note": "HTTP module returns JSON array; Make.com splits each row into a separate bundle automatically. Replace YOUR_SUPABASE_SERVICE_ROLE_KEY in module 1 headers.",
+  "flow": [
+    {
+      "id": 1,
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": {
+        "handleErrors": false,
+        "useNewZLibDeCompress": true
+      },
+      "mapper": {
+        "url": "https://scyfywvzoogfrlalgftv.supabase.co/rest/v1/rpc/get_trial_expiry_candidates",
+        "method": "post",
+        "headers": [
+          { "name": "apikey",        "value": "YOUR_SUPABASE_SERVICE_ROLE_KEY" },
+          { "name": "Authorization", "value": "Bearer YOUR_SUPABASE_SERVICE_ROLE_KEY" },
+          { "name": "Content-Type",  "value": "application/json" }
+        ],
+        "qs": [],
+        "bodyType": "raw",
+        "parseResponse": true,
+        "body": "{}"
+      },
+      "metadata": { "designer": { "x": -400, "y": 0 } }
+    },
+    {
+      "id": 2,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": {},
+      "metadata": { "designer": { "x": -100, "y": 0 } },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 3,
+              "module": "google-email:sendAnEmail",
+              "version": 4,
+              "parameters": { "__IMTCONN__": 8042119 },
+              "filter": {
+                "name": "7 ימים לפני סיום",
+                "conditions": [[{ "a": "{{1.notification_type}}", "b": "7_days", "o": "text:equal" }]]
+              },
+              "mapper": {
+                "to": [{ "value": "{{1.billing_email}}" }],
+                "subject": "⏳ עוד 7 ימים לניסיון שלך ב-Liders CRM",
+                "bodyType": "rawHtml",
+                "html": "<div dir='rtl' style='font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#F8FAFF;border-radius:16px;border:1px solid #E2E8F0;'><h1 style='color:#0F1F3D;font-size:24px;'>⏳ עוד שבוע לניסיון שלך</h1><p>הניסיון החינמי של <strong>{{1.tenant_name}}</strong> יסתיים בעוד <strong>7 ימים</strong> ({{formatDate(1.trial_ends_at; \"DD/MM/YYYY\")}}).</p><p>כדי להמשיך ללא הפרעה — שדרג עכשיו.</p><div style='text-align:center;margin:28px 0;'><a href='https://liders-crm.github.io/liders_crm/' style='background:#2563EB;color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:16px;font-weight:bold;'>שדרג עכשיו</a></div></div>"
+              },
+              "metadata": { "designer": { "x": 200, "y": -400 } }
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 4,
+              "module": "google-email:sendAnEmail",
+              "version": 4,
+              "parameters": { "__IMTCONN__": 8042119 },
+              "filter": {
+                "name": "3 ימים לפני סיום",
+                "conditions": [[{ "a": "{{1.notification_type}}", "b": "3_days", "o": "text:equal" }]]
+              },
+              "mapper": {
+                "to": [{ "value": "{{1.billing_email}}" }],
+                "subject": "⚠️ עוד 3 ימים לניסיון שלך ב-Liders CRM",
+                "bodyType": "rawHtml",
+                "html": "<div dir='rtl' style='font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#FFFBEB;border-radius:16px;border:1px solid #FCD34D;'><h1 style='color:#92400E;font-size:24px;'>⚠️ עוד 3 ימים בלבד!</h1><p>הניסיון החינמי של <strong>{{1.tenant_name}}</strong> יסתיים בעוד <strong>3 ימים</strong> ({{formatDate(1.trial_ends_at; \"DD/MM/YYYY\")}}).</p><p>אל תאבד את הנתונים שצברת — שדרג עכשיו.</p><div style='text-align:center;margin:28px 0;'><a href='https://liders-crm.github.io/liders_crm/' style='background:#D97706;color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:16px;font-weight:bold;'>שדרג לפני שיאוחר</a></div></div>"
+              },
+              "metadata": { "designer": { "x": 200, "y": -200 } }
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 5,
+              "module": "google-email:sendAnEmail",
+              "version": 4,
+              "parameters": { "__IMTCONN__": 8042119 },
+              "filter": {
+                "name": "יום לפני סיום",
+                "conditions": [[{ "a": "{{1.notification_type}}", "b": "1_day", "o": "text:equal" }]]
+              },
+              "mapper": {
+                "to": [{ "value": "{{1.billing_email}}" }],
+                "subject": "🚨 מחר פג הניסיון שלך ב-Liders CRM",
+                "bodyType": "rawHtml",
+                "html": "<div dir='rtl' style='font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#FEF2F2;border-radius:16px;border:1px solid #FCA5A5;'><h1 style='color:#991B1B;font-size:24px;'>🚨 מחר זה הסוף!</h1><p>הניסיון החינמי של <strong>{{1.tenant_name}}</strong> <strong>פג מחר</strong> ({{formatDate(1.trial_ends_at; \"DD/MM/YYYY\")}}).</p><p>מחר הגישה תיחסם. עכשיו זה הרגע האחרון.</p><div style='text-align:center;margin:28px 0;'><a href='https://liders-crm.github.io/liders_crm/' style='background:#DC2626;color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:16px;font-weight:bold;'>שמור על הגישה שלך עכשיו</a></div></div>"
+              },
+              "metadata": { "designer": { "x": 200, "y": 0 } }
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 6,
+              "module": "google-email:sendAnEmail",
+              "version": 4,
+              "parameters": { "__IMTCONN__": 8042119 },
+              "filter": {
+                "name": "הניסיון פג היום",
+                "conditions": [[{ "a": "{{1.notification_type}}", "b": "expired_today", "o": "text:equal" }]]
+              },
+              "mapper": {
+                "to": [{ "value": "{{1.billing_email}}" }],
+                "subject": "🔒 הניסיון שלך ב-Liders CRM פג היום",
+                "bodyType": "rawHtml",
+                "html": "<div dir='rtl' style='font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#F9FAFB;border-radius:16px;border:1px solid #D1D5DB;'><h1 style='color:#111827;font-size:24px;'>🔒 הניסיון החינמי הסתיים</h1><p>הניסיון החינמי של <strong>{{1.tenant_name}}</strong> הסתיים היום.</p><p>הנתונים שלך נשמרים — שדרג כדי לחזור לפעילות מלאה.</p><div style='text-align:center;margin:28px 0;'><a href='https://liders-crm.github.io/liders_crm/' style='background:#0F1F3D;color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:16px;font-weight:bold;'>שדרג ופתח את הגישה</a></div></div>"
+              },
+              "metadata": { "designer": { "x": 200, "y": 200 } }
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 7,
+              "module": "google-email:sendAnEmail",
+              "version": 4,
+              "parameters": { "__IMTCONN__": 8042119 },
+              "filter": {
+                "name": "אזהרת מחיקה",
+                "conditions": [[{ "a": "{{1.notification_type}}", "b": "delete_warning", "o": "text:equal" }]]
+              },
+              "mapper": {
+                "to": [{ "value": "{{1.billing_email}}" }],
+                "subject": "⚠️ הנתונים שלך ב-Liders CRM עומדים להימחק",
+                "bodyType": "rawHtml",
+                "html": "<div dir='rtl' style='font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#FFF7ED;border-radius:16px;border:1px solid #FDBA74;'><h1 style='color:#C2410C;font-size:24px;'>⚠️ הנתונים בסכנת מחיקה</h1><p>הניסיון של <strong>{{1.tenant_name}}</strong> פג אתמול. אם לא תשדרג תוך 48 שעות — הנתונים עלולים להימחק לצמיתות.</p><div style='text-align:center;margin:28px 0;'><a href='https://liders-crm.github.io/liders_crm/' style='background:#EA580C;color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:16px;font-weight:bold;'>שמור את הנתונים שלי</a></div></div>"
+              },
+              "metadata": { "designer": { "x": 200, "y": 400 } }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": false,
+    "version": 1,
+    "designer": { "orphans": [] },
+    "scenario": {
+      "dlq": false, "slots": null, "dataloss": false, "maxErrors": 3,
+      "autoCommit": true, "roundtrips": 1, "sequential": false,
+      "confidential": false, "freshVariables": false, "autoCommitTriggerLast": true
+    }
+  },
+  "scheduling": {
+    "type": "indefinitely",
+    "interval": 1440
+  }
+}
