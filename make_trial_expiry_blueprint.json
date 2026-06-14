@@ -1,0 +1,234 @@
+{
+  "name": "Liders CRM — Trial Expiry Emails",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:TriggerPeriodic",
+      "version": 1,
+      "parameters": {
+        "interval": 1440,
+        "startAt": "08:00",
+        "zone": "Asia/Jerusalem"
+      },
+      "mapper": {},
+      "metadata": {
+        "designer": { "x": -900, "y": 0 },
+        "restore": {}
+      }
+    },
+    {
+      "id": 2,
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": {
+        "handleErrors": true,
+        "useNewZLibDeCompress": true
+      },
+      "mapper": {
+        "url": "https://scyfywvzoogfrlalgftv.supabase.co/rest/v1/rpc/get_trial_expiry_candidates",
+        "method": "get",
+        "headers": [
+          {
+            "name": "apikey",
+            "value": "YOUR_SUPABASE_SERVICE_ROLE_KEY"
+          },
+          {
+            "name": "Authorization",
+            "value": "Bearer YOUR_SUPABASE_SERVICE_ROLE_KEY"
+          },
+          {
+            "name": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "timeout": 30,
+        "parseResponse": true,
+        "useQuerystring": false,
+        "shareCookies": false,
+        "rejectUnauthorized": true,
+        "followRedirect": true
+      },
+      "metadata": {
+        "designer": { "x": -600, "y": 0 }
+      }
+    },
+    {
+      "id": 3,
+      "module": "builtin:BasicIterator",
+      "version": 1,
+      "parameters": {},
+      "mapper": {
+        "array": "{{2.data}}"
+      },
+      "metadata": {
+        "designer": { "x": -300, "y": 0 }
+      }
+    },
+    {
+      "id": 4,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": {},
+      "metadata": {
+        "designer": { "x": 0, "y": 0 }
+      },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 5,
+              "module": "gmail:ActionSendEmail",
+              "version": 1,
+              "parameters": {
+                "account": "YOUR_GMAIL_CONNECTION_ID"
+              },
+              "filter": {
+                "name": "7 ימים נשארו",
+                "conditions": [
+                  [{ "a": "{{3.value.email_type}}", "b": "seven_days_left", "o": "text:equal" }]
+                ]
+              },
+              "mapper": {
+                "to": "{{3.value.billing_email}}",
+                "subject": "⏳ נשארו לך 7 ימים ב-Liders — טיפ לסגירת עסקה מהירה",
+                "content": "<div dir='rtl' style='font-family:Heebo,Arial,sans-serif;max-width:600px;margin:0 auto;background:#F8FAFC;padding:24px;border-radius:12px;'><div style='background:linear-gradient(135deg,#0F1F3D,#1C3E6B);border-radius:10px;padding:28px 24px;text-align:center;margin-bottom:24px;'><h1 style='color:#fff;margin:0 0 6px;font-size:24px;'>🏆 Liders CRM</h1><p style='color:rgba(255,255,255,0.7);margin:0;font-size:13px;'>הפלטפורמה שהופכת לידים לעסקאות</p></div><p style='font-size:16px;color:#1E293B;'>שלום {{3.value.tenant_name}},</p><p style='color:#475569;line-height:1.7;'>עברת כבר שבועיים! נשארו לך <strong>7 ימים</strong> להתנסות ב-Liders CRM.</p><div style='background:#EFF6FF;border-right:4px solid #2563EB;padding:16px 20px;border-radius:6px;margin:20px 0;'><h3 style='color:#1D4ED8;margin:0 0 10px;font-size:15px;'>💡 טיפ לסגירה מהירה יותר:</h3><p style='color:#3730A3;margin:0;line-height:1.7;'>סוכנים שמגיעים לשלב <strong>\"הצעה הוגשה\"</strong> בתוך 48 שעות מקבלת ליד — סוגרים <strong>3× יותר עסקאות</strong>.<br>מה המצב בפייפליין שלך?</p></div><div style='text-align:center;margin:28px 0;'><a href='https://liders-crm.github.io/Liders_CRM/' style='background:#2563EB;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;'>פתח את הפייפליין שלי ←</a></div><p style='color:#64748B;font-size:13px;text-align:center;'>לשדרוג לפלן בתשלום לפני תום הניסיון → <a href='https://liders-crm.github.io/Liders_CRM/' style='color:#2563EB;'>לחץ כאן</a></p><hr style='border:none;border-top:1px solid #E2E8F0;margin:20px 0;'><p style='color:#94A3B8;font-size:11px;text-align:center;margin:0;'>Liders CRM · liders.crm@gmail.com</p></div>",
+                "type": "html"
+              },
+              "metadata": {
+                "designer": { "x": 300, "y": -300 }
+              }
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 6,
+              "module": "gmail:ActionSendEmail",
+              "version": 1,
+              "parameters": {
+                "account": "YOUR_GMAIL_CONNECTION_ID"
+              },
+              "filter": {
+                "name": "3 ימים נשארו",
+                "conditions": [
+                  [{ "a": "{{3.value.email_type}}", "b": "three_days_left", "o": "text:equal" }]
+                ]
+              },
+              "mapper": {
+                "to": "{{3.value.billing_email}}",
+                "subject": "⚠️ נשארו 3 ימים בניסיון — ככה Liders שומרת על הלידים שלך",
+                "content": "<div dir='rtl' style='font-family:Heebo,Arial,sans-serif;max-width:600px;margin:0 auto;background:#F8FAFC;padding:24px;border-radius:12px;'><div style='background:linear-gradient(135deg,#0F1F3D,#1C3E6B);border-radius:10px;padding:28px 24px;text-align:center;margin-bottom:24px;'><h1 style='color:#fff;margin:0 0 6px;font-size:24px;'>🏆 Liders CRM</h1><p style='color:rgba(255,255,255,0.7);margin:0;font-size:13px;'>הפלטפורמה שהופכת לידים לעסקאות</p></div><p style='font-size:16px;color:#1E293B;'>שלום {{3.value.tenant_name}},</p><p style='color:#475569;line-height:1.7;'>נשארו רק <strong>3 ימים</strong> בניסיון החינמי שלך.</p><div style='background:#FEF3C7;border-right:4px solid #F59E0B;padding:16px 20px;border-radius:6px;margin:20px 0;'><h3 style='color:#92400E;margin:0 0 8px;font-size:15px;'>🔐 מה קורה לנתונים שלך אחרי הניסיון?</h3><ul style='color:#78350F;margin:0;padding-right:20px;line-height:1.8;'><li>כל הלידים שלך <strong>שמורים ומאובטחים</strong></li><li>גישה לאפליקציה <strong>נחסמת</strong> זמנית</li><li>הנתונים מוחזקים <strong>30 יום נוספים</strong></li><li>שדרג בכל רגע — הנתונים חוזרים מיד</li></ul></div><div style='background:#fff;border:1px solid #E2E8F0;border-radius:8px;padding:16px 20px;margin:20px 0;'><p style='color:#1E293B;font-weight:700;margin:0 0 12px;'>תוכניות Liders:</p><table style='width:100%;border-collapse:collapse;'><tr style='background:#F1F5F9;'><td style='padding:8px 12px;font-weight:600;'>Basic</td><td style='padding:8px 12px;color:#475569;'>ניהול לידים + פייפליין</td><td style='padding:8px 12px;font-weight:700;color:#2563EB;'>₪49/חודש</td></tr><tr><td style='padding:8px 12px;font-weight:600;'>Pro</td><td style='padding:8px 12px;color:#475569;'>+ AI briefing + דוחות</td><td style='padding:8px 12px;font-weight:700;color:#2563EB;'>₪99/חודש</td></tr><tr style='background:#F1F5F9;'><td style='padding:8px 12px;font-weight:600;'>Premium</td><td style='padding:8px 12px;color:#475569;'>+ WhatsApp + אוטומציות</td><td style='padding:8px 12px;font-weight:700;color:#2563EB;'>₪199/חודש</td></tr></table></div><div style='text-align:center;margin:28px 0;'><a href='https://liders-crm.github.io/Liders_CRM/' style='background:#F59E0B;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;'>שדרג עכשיו ←</a></div><hr style='border:none;border-top:1px solid #E2E8F0;margin:20px 0;'><p style='color:#94A3B8;font-size:11px;text-align:center;margin:0;'>Liders CRM · liders.crm@gmail.com</p></div>",
+                "type": "html"
+              },
+              "metadata": {
+                "designer": { "x": 300, "y": -150 }
+              }
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 7,
+              "module": "gmail:ActionSendEmail",
+              "version": 1,
+              "parameters": {
+                "account": "YOUR_GMAIL_CONNECTION_ID"
+              },
+              "filter": {
+                "name": "יום אחד נשאר",
+                "conditions": [
+                  [{ "a": "{{3.value.email_type}}", "b": "one_day_left", "o": "text:equal" }]
+                ]
+              },
+              "mapper": {
+                "to": "{{3.value.billing_email}}",
+                "subject": "🚨 מחר נגמר הניסיון — שמור על הלידים שלך היום",
+                "content": "<div dir='rtl' style='font-family:Heebo,Arial,sans-serif;max-width:600px;margin:0 auto;background:#F8FAFC;padding:24px;border-radius:12px;'><div style='background:linear-gradient(135deg,#7F1D1D,#B91C1C);border-radius:10px;padding:28px 24px;text-align:center;margin-bottom:24px;'><h1 style='color:#fff;margin:0 0 6px;font-size:24px;'>🏆 Liders CRM</h1><p style='color:rgba(255,255,255,0.7);margin:0;font-size:13px;'>הפלטפורמה שהופכת לידים לעסקאות</p></div><p style='font-size:16px;color:#1E293B;'>שלום {{3.value.tenant_name}},</p><div style='background:#FEE2E2;border-right:4px solid #DC2626;padding:16px 20px;border-radius:6px;margin:20px 0;text-align:center;'><p style='color:#991B1B;font-size:20px;font-weight:700;margin:0;'>⏰ הניסיון מסתיים מחר</p></div><p style='color:#475569;line-height:1.7;'>כל הלידים, הנכסים, והמשימות שיצרת — <strong>עדיין שמורים</strong> ומחכים לך.</p><p style='color:#475569;line-height:1.7;'>שדרג עכשיו ותמשיך לעבוד בלי הפסקה.</p><div style='text-align:center;margin:28px 0;'><a href='https://liders-crm.github.io/Liders_CRM/' style='background:#DC2626;color:#fff;padding:16px 40px;border-radius:8px;text-decoration:none;font-weight:700;font-size:17px;display:inline-block;'>שדרג עכשיו — לפני שיאוחר ←</a></div><p style='color:#64748B;font-size:13px;text-align:center;'>מחר — גישה לאפליקציה תיחסם זמנית. הנתונים נשמרים 30 יום.</p><hr style='border:none;border-top:1px solid #E2E8F0;margin:20px 0;'><p style='color:#94A3B8;font-size:11px;text-align:center;margin:0;'>Liders CRM · liders.crm@gmail.com</p></div>",
+                "type": "html"
+              },
+              "metadata": {
+                "designer": { "x": 300, "y": 0 }
+              }
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 8,
+              "module": "gmail:ActionSendEmail",
+              "version": 1,
+              "parameters": {
+                "account": "YOUR_GMAIL_CONNECTION_ID"
+              },
+              "filter": {
+                "name": "הניסיון פג היום",
+                "conditions": [
+                  [{ "a": "{{3.value.email_type}}", "b": "expired_today", "o": "text:equal" }]
+                ]
+              },
+              "mapper": {
+                "to": "{{3.value.billing_email}}",
+                "subject": "📦 הניסיון שלך ב-Liders הסתיים — הנתונים שמורים 30 יום",
+                "content": "<div dir='rtl' style='font-family:Heebo,Arial,sans-serif;max-width:600px;margin:0 auto;background:#F8FAFC;padding:24px;border-radius:12px;'><div style='background:linear-gradient(135deg,#0F1F3D,#1C3E6B);border-radius:10px;padding:28px 24px;text-align:center;margin-bottom:24px;'><h1 style='color:#fff;margin:0 0 6px;font-size:24px;'>🏆 Liders CRM</h1><p style='color:rgba(255,255,255,0.7);margin:0;font-size:13px;'>הפלטפורמה שהופכת לידים לעסקאות</p></div><p style='font-size:16px;color:#1E293B;'>שלום {{3.value.tenant_name}},</p><p style='color:#475569;line-height:1.7;'>הניסיון החינמי שלך הסתיים — תודה שנתת ל-Liders הזדמנות לעזור לך.</p><div style='background:#F0FDF4;border-right:4px solid #10B981;padding:16px 20px;border-radius:6px;margin:20px 0;'><h3 style='color:#065F46;margin:0 0 8px;'>✅ הנתונים שלך שמורים</h3><p style='color:#047857;margin:0;line-height:1.7;'>כל הלידים, הנכסים, המשימות, וההיסטוריה שלך — שמורים ב-Liders עוד <strong>30 יום</strong>.<br>שדרג בכל רגע ותחזור לעבוד בדיוק מאיפה שעצרת.</p></div><div style='text-align:center;margin:28px 0;'><a href='https://liders-crm.github.io/Liders_CRM/' style='background:#10B981;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;'>חזור ל-Liders ←</a></div><p style='color:#64748B;font-size:13px;text-align:center;'>יש שאלות? השב למייל הזה ונחזור אליך.</p><hr style='border:none;border-top:1px solid #E2E8F0;margin:20px 0;'><p style='color:#94A3B8;font-size:11px;text-align:center;margin:0;'>Liders CRM · liders.crm@gmail.com</p></div>",
+                "type": "html"
+              },
+              "metadata": {
+                "designer": { "x": 300, "y": 150 }
+              }
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 9,
+              "module": "gmail:ActionSendEmail",
+              "version": 1,
+              "parameters": {
+                "account": "YOUR_GMAIL_CONNECTION_ID"
+              },
+              "filter": {
+                "name": "מחיקת נתונים מחר",
+                "conditions": [
+                  [{ "a": "{{3.value.email_type}}", "b": "data_delete_tomorrow", "o": "text:equal" }]
+                ]
+              },
+              "mapper": {
+                "to": "{{3.value.billing_email}}",
+                "subject": "🗑️ הנתונים שלך ב-Liders יימחקו מחר — פעולה נדרשת",
+                "content": "<div dir='rtl' style='font-family:Heebo,Arial,sans-serif;max-width:600px;margin:0 auto;background:#F8FAFC;padding:24px;border-radius:12px;'><div style='background:linear-gradient(135deg,#0F1F3D,#1C3E6B);border-radius:10px;padding:28px 24px;text-align:center;margin-bottom:24px;'><h1 style='color:#fff;margin:0 0 6px;font-size:24px;'>🏆 Liders CRM</h1></div><p style='font-size:16px;color:#1E293B;'>שלום {{3.value.tenant_name}},</p><div style='background:#FEE2E2;border:1px solid #FECACA;border-radius:8px;padding:16px 20px;margin:20px 0;'><p style='color:#991B1B;font-size:16px;font-weight:700;margin:0 0 8px;'>⚠️ הנתונים שלך יימחקו מחר</p><p style='color:#7F1D1D;margin:0;line-height:1.7;'>30 הימים של שמירת הנתונים מסתיימים מחר.<br>אם תרצה לשחזר את הלידים שלך — <strong>שדרג היום</strong>.</p></div><div style='text-align:center;margin:28px 0;'><a href='https://liders-crm.github.io/Liders_CRM/' style='background:#DC2626;color:#fff;padding:16px 40px;border-radius:8px;text-decoration:none;font-weight:700;font-size:17px;display:inline-block;'>שחזר את הנתונים שלי ←</a></div><p style='color:#94A3B8;font-size:11px;text-align:center;margin:0;'>Liders CRM · liders.crm@gmail.com</p></div>",
+                "type": "html"
+              },
+              "metadata": {
+                "designer": { "x": 300, "y": 300 }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": false,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false,
+      "freshVariables": false
+    },
+    "designer": {
+      "orphans": []
+    },
+    "zone": "eu1.make.com"
+  }
+}
