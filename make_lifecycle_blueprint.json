@@ -1,0 +1,104 @@
+{
+  "_note": "ייבא כ-scenario חדש ב-Make.com → Create scenario → Import blueprint. חיבור Gmail: 8042119 (liders.crm@gmail.com). הוסף את ה-webhook URL שמופיע בתחילת הסנריו לקוד האפליקציה (LIFECYCLE_WEBHOOK_URL).",
+  "name": "Liders CRM — Lead Notifications (v2 with Lifecycle)",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 1,
+      "parameters": { "hook": "YOUR_HOOK_ID", "maxResults": 1 },
+      "mapper": {},
+      "metadata": { "designer": { "x": -400, "y": 0 } }
+    },
+    {
+      "id": 2,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": null,
+      "metadata": { "designer": { "x": -100, "y": 0 } },
+      "routes": [
+        {
+          "flow": [{
+            "id": 3,
+            "filter": { "name": "ליד חדש", "conditions": [[{ "a": "{{1.event}}", "b": "lead.created", "o": "text:equal" }]] },
+            "mapper": {
+              "to": [{ "value": "liders.crm@gmail.com" }],
+              "subject": "🆕 ליד חדש: {{1.lead_name}} — {{1.tenant}}",
+              "bodyType": "rawHtml",
+              "html": "<div dir='rtl' style='font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:24px;background:#F8F9FA;border-radius:12px;'><h2 style='color:#1A3C5E;'>🆕 ליד חדש נכנס!</h2><table style='width:100%;font-size:14px;'><tr><td style='color:#6C757D;padding:4px 0;'>שם:</td><td style='font-weight:bold;'>{{1.lead_name}}</td></tr><tr><td style='color:#6C757D;padding:4px 0;'>טלפון:</td><td>{{1.lead_phone}}</td></tr><tr><td style='color:#6C757D;padding:4px 0;'>אימייל:</td><td>{{1.lead_email}}</td></tr><tr><td style='color:#6C757D;padding:4px 0;'>שלב:</td><td>{{1.stage}}</td></tr><tr><td style='color:#6C757D;padding:4px 0;'>סוכנות:</td><td>{{1.tenant}}</td></tr></table></div>"
+            },
+            "module": "google-email:sendAnEmail", "version": 4,
+            "parameters": { "__IMTCONN__": 8042119 },
+            "metadata": { "designer": { "x": 200, "y": -600 } }
+          }]
+        },
+        {
+          "flow": [{
+            "id": 4,
+            "filter": { "name": "עסקה נסגרה", "conditions": [[{ "a": "{{1.event}}", "b": "deal.closed", "o": "text:equal" }]] },
+            "mapper": {
+              "to": [{ "value": "liders.crm@gmail.com" }],
+              "subject": "🎉 עסקה נסגרה: {{1.lead_name}} — {{1.tenant}}",
+              "bodyType": "rawHtml",
+              "html": "<div dir='rtl' style='font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:24px;background:#F0FDF4;border-radius:12px;'><h2 style='color:#15803D;'>🎉 עסקה נסגרה!</h2><p><strong>{{1.lead_name}}</strong> עבר לסגירה.</p><p style='color:#6C757D;'>סוכנות: {{1.tenant}}</p></div>"
+            },
+            "module": "google-email:sendAnEmail", "version": 4,
+            "parameters": { "__IMTCONN__": 8042119 },
+            "metadata": { "designer": { "x": 200, "y": -420 } }
+          }]
+        },
+        {
+          "flow": [{
+            "id": 5,
+            "filter": { "name": "שינוי שלב", "conditions": [[{ "a": "{{1.event}}", "b": "lead.stage_changed", "o": "text:equal" }]] },
+            "mapper": {
+              "to": [{ "value": "liders.crm@gmail.com" }],
+              "subject": "🔄 עדכון ליד: {{1.lead_name}} — {{1.tenant}}",
+              "bodyType": "rawHtml",
+              "html": "<div dir='rtl' style='font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:24px;background:#F8F9FA;border-radius:12px;'><h2 style='color:#1A3C5E;'>🔄 שינוי שלב</h2><p><strong>{{1.lead_name}}</strong> עבר מ-<strong>{{1.from_stage}}</strong> ל-<strong>{{1.to_stage}}</strong></p><p style='color:#6C757D;'>סוכנות: {{1.tenant}}</p></div>"
+            },
+            "module": "google-email:sendAnEmail", "version": 4,
+            "parameters": { "__IMTCONN__": 8042119 },
+            "metadata": { "designer": { "x": 200, "y": -240 } }
+          }]
+        },
+        {
+          "flow": [{
+            "id": 6,
+            "filter": { "name": "ברוך הבא — משתמש חדש", "conditions": [[{ "a": "{{1.event}}", "b": "user.signup", "o": "text:equal" }]] },
+            "mapper": {
+              "to": [{ "value": "{{1.billing_email}}" }],
+              "subject": "🎉 ברוכים הבאים ל-Liders — 21 הימים הכי טובים שיהיו לך השנה",
+              "bodyType": "rawHtml",
+              "html": "<div dir='rtl' style='font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;'><div style='background:linear-gradient(135deg,#0F1F3D,#2563EB);padding:40px 32px;border-radius:16px 16px 0 0;text-align:center;'><h1 style='color:#fff;font-size:26px;margin:0 0 6px;'>היי {{1.agent_name}} 👋</h1><p style='color:#C8DDEF;margin:0;font-size:15px;'>ברוכים הבאים ל-Liders CRM</p></div><div style='padding:32px;background:#F8FAFF;border-radius:0 0 16px 16px;border:1px solid #E2E8F0;border-top:none;'><p style='font-size:16px;color:#374151;line-height:1.7;'>קיבלת <strong>21 ימים חינמיים</strong> — ללא כרטיס אשראי, ללא הפתעות.</p><p style='font-size:15px;color:#374151;'>הפייפליין שלך ריק ומחכה. זה הזמן לשים שם לידים.</p><div style='background:#fff;border-radius:10px;padding:20px;margin:20px 0;border:1px solid #E2E8F0;'><p style='color:#6B7280;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 10px;'>3 דברים לעשות עכשיו</p><p style='margin:6px 0;font-size:14px;color:#1F2937;'>✅ הוסף ליד ראשון</p><p style='margin:6px 0;font-size:14px;color:#1F2937;'>📱 הוסף לדף הבית (PWA)</p><p style='margin:6px 0;font-size:14px;color:#1F2937;'>🔔 חבר Make.com להתראות</p></div><div style='text-align:center;margin:24px 0;'><a href='https://liders-crm.github.io/liders_crm/' style='background:#2563EB;color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:16px;font-weight:bold;'>פתח את Liders CRM →</a></div><p style='color:#9CA3AF;font-size:12px;text-align:center;border-top:1px solid #E5E7EB;padding-top:16px;'>הניסיון פג ב-{{formatDate(1.trial_ends_at; \"DD/MM/YYYY\")}}</p></div></div>"
+            },
+            "module": "google-email:sendAnEmail", "version": 4,
+            "parameters": { "__IMTCONN__": 8042119 },
+            "metadata": { "designer": { "x": 200, "y": -60 } }
+          }]
+        },
+        {
+          "flow": [{
+            "id": 7,
+            "filter": { "name": "שדרוג לתוכנית בתשלום", "conditions": [[{ "a": "{{1.event}}", "b": "subscription.activated", "o": "text:equal" }]] },
+            "mapper": {
+              "to": [{ "value": "{{1.billing_email}}" }],
+              "subject": "🚀 רשמי: עלית רמה ל-Liders {{1.plan_name}}",
+              "bodyType": "rawHtml",
+              "html": "<div dir='rtl' style='font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;'><div style='background:linear-gradient(135deg,#1C3E6B,#2563EB);padding:40px 32px;border-radius:16px 16px 0 0;text-align:center;'><div style='font-size:48px;'>🚀</div><h1 style='color:#fff;font-size:24px;margin:8px 0;'>עלית רמה!</h1><p style='color:#C8DDEF;margin:0;'>תוכנית {{1.plan_name}} — פעילה</p></div><div style='padding:32px;background:#F8FAFF;border-radius:0 0 16px 16px;border:1px solid #E2E8F0;border-top:none;'><p style='font-size:16px;color:#374151;'>היי {{1.agent_name}},</p><p style='font-size:15px;color:#374151;line-height:1.7;'>הכרטיס עבר, ה-CRM פתוח לגמרי. כל הפיצ׳רים, כל הלידים, אפס הגבלות.</p><div style='background:#EFF6FF;border-right:4px solid #2563EB;padding:14px 18px;border-radius:8px;margin:20px 0;'><p style='margin:0;font-size:14px;color:#1E40AF;font-weight:500;'>💡 עכשיו שיש לך גישה מלאה — הגיע הזמן לבנות את הפייפליין האמיתי שלך.</p></div><div style='text-align:center;margin:24px 0;'><a href='https://liders-crm.github.io/liders_crm/' style='background:#2563EB;color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:16px;font-weight:bold;'>קדימה לעבודה 💪</a></div><p style='color:#9CA3AF;font-size:12px;text-align:center;border-top:1px solid #E5E7EB;padding-top:16px;'>Liders CRM — הפלטפורמה שהופכת לידים לעסקאות</p></div></div>"
+            },
+            "module": "google-email:sendAnEmail", "version": 4,
+            "parameters": { "__IMTCONN__": 8042119 },
+            "metadata": { "designer": { "x": 200, "y": 120 } }
+          }]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": true, "version": 1, "designer": { "orphans": [] },
+    "scenario": { "dlq": false, "slots": null, "dataloss": false, "maxErrors": 3, "autoCommit": true, "roundtrips": 1, "sequential": false, "confidential": false, "freshVariables": false, "autoCommitTriggerLast": true }
+  },
+  "scheduling": { "type": "immediately", "maximum_runs_per_minute": 100 }
+}

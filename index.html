@@ -2952,6 +2952,13 @@ const Onboarding = {
       if (this._data.agencyCity) localStorage.setItem('liders_agency_city', this._data.agencyCity);
       document.getElementById('modal-onboarding').classList.add('hidden');
       toast('🎉 ברוך הבא ל-Liders!', 'success');
+      // שלח מייל ברוכים הבאים — בלי להמתין, לא חוסם
+      Make.userSignup(
+        State.agent?.name  || this._data.agencyName || '',
+        State.agent?.email || '',
+        this._data.agencyName || State.tenant?.name || '',
+        State.tenant?.trial_ends_at || ''
+      );
       return;
     }
     this._step++;
@@ -3273,6 +3280,26 @@ const Make = {
     if (!url) { toast('הוסף Webhook URL קודם', 'error'); return; }
     await this.trigger('webhook.test', { message: '✅ בדיקת חיבור מ-Liders עובד!' });
     toast('✅ Webhook נשלח — בדוק את Make.com', 'success');
+  },
+
+  userSignup(agentName, billingEmail, tenantName, trialEndsAt) {
+    return this.trigger('user.signup', {
+      agent_name:    agentName  || '—',
+      billing_email: billingEmail || '',
+      tenant:        tenantName || '—',
+      trial_ends_at: trialEndsAt || '',
+      message: `משתמש חדש נרשם: ${agentName} (${billingEmail})`,
+    });
+  },
+
+  subscriptionActivated(agentName, billingEmail, planName) {
+    return this.trigger('subscription.activated', {
+      agent_name:    agentName  || '—',
+      billing_email: billingEmail || '',
+      plan_name:     planName   || 'Pro',
+      tenant:        State.tenant?.name || '—',
+      message: `🚀 שדרוג: ${agentName} עלה לתוכנית ${planName}`,
+    });
   },
 };
 
