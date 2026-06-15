@@ -2598,24 +2598,34 @@ const Billing = {
     // render 3 plans dynamically
     const container = document.getElementById('paywall-plans-container');
     if (container) container.innerHTML = this.renderPlansHTML();
-    // render הודעת שימור נתונים — תקופת חסד של עד 30 יום אחרי תום הניסיון
     const subEl  = document.getElementById('paywall-sub-text');
     const noteEl = document.getElementById('paywall-trial-note');
     if (subEl && noteEl) {
-      const rDays = this.retentionDaysLeft();
-      if (rDays > 0) {
+      if (!this.isExpired()) {
+        // Trial still active — user clicked "שדרג" proactively
+        const days = this.daysLeft();
         subEl.innerHTML = `
-          21 ימי הניסיון החינמי הסתיימו.<br>
-          הלידים, הנכסים והמשימות שלך <strong>שמורים בחינם למשך ${rDays} ימים נוספים</strong> — בלי כרטיס אשראי ובלי לבחור תוכנית.<br>
-          כדי <strong>להמשיך להשתמש</strong> במערכת — בחר תוכנית עכשיו:
+          נשארו לך עוד <strong>${days} ימים</strong> בניסיון החינמי.<br>
+          שדרג עכשיו — <strong>הימים הנותרים לא נמחקים.</strong><br>
+          התשלום יתחיל רק ביום שבו הניסיון מסתיים.
         `;
-        noteEl.innerHTML = `🛡️ הנתונים שמורים בחינם ל-${rDays} ימים נוספים · המערכת נעולה לשימוש עד הצטרפות למסלול בתשלום`;
+        noteEl.innerHTML = `🎁 שדרג היום וקבל את מלוא הניסיון + חיסכון מיידי · ביטול בכל עת`;
       } else {
-        subEl.innerHTML = `
-          תקופת השימור החינמי של הנתונים הסתיימה.<br>
-          בחר תוכנית עכשיו כדי <strong>לשחזר גישה מלאה</strong> ללידים, לנכסים ולמשימות שלך:
-        `;
-        noteEl.innerHTML = `⏰ פנה לתמיכה אם אינך רואה את הנתונים שלך לאחר ההצטרפות · ביטול בכל עת`;
+        const rDays = this.retentionDaysLeft();
+        if (rDays > 0) {
+          subEl.innerHTML = `
+            21 ימי הניסיון החינמי הסתיימו.<br>
+            הלידים, הנכסים והמשימות שלך <strong>שמורים בחינם למשך ${rDays} ימים נוספים</strong> — בלי כרטיס אשראי ובלי לבחור תוכנית.<br>
+            כדי <strong>להמשיך להשתמש</strong> במערכת — בחר תוכנית עכשיו:
+          `;
+          noteEl.innerHTML = `🛡️ הנתונים שמורים בחינם ל-${rDays} ימים נוספים · המערכת נעולה לשימוש עד הצטרפות למסלול בתשלום`;
+        } else {
+          subEl.innerHTML = `
+            תקופת השימור החינמי של הנתונים הסתיימה.<br>
+            בחר תוכנית עכשיו כדי <strong>לשחזר גישה מלאה</strong> ללידים, לנכסים ולמשימות שלך:
+          `;
+          noteEl.innerHTML = `⏰ פנה לתמיכה אם אינך רואה את הנתונים שלך לאחר ההצטרפות · ביטול בכל עת`;
+        }
       }
     }
   },
@@ -2661,9 +2671,12 @@ const Billing = {
         <div style="background:rgba(255,255,255,0.13);border-radius:99px;height:8px;margin-bottom:12px;overflow:hidden;">
           <div style="width:${pct}%;background:linear-gradient(90deg,#10B981,#F59E0B);height:100%;border-radius:99px;"></div>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="color:rgba(255,255,255,0.7);font-size:12px;line-height:1.4;">${urgMsg}</span>
-          <button onclick="Billing.showPaywall()" style="background:#2563EB;color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;margin-right:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+          <div style="flex:1;">
+            <div style="color:rgba(255,255,255,0.7);font-size:12px;line-height:1.4;">${urgMsg}</div>
+            <div style="color:rgba(255,255,255,0.45);font-size:10px;margin-top:3px;">🎁 שדרג עכשיו — הימים הנותרים לא נמחקים</div>
+          </div>
+          <button onclick="Billing.showPaywall()" style="background:#2563EB;color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;">
             שדרג
           </button>
         </div>
@@ -2683,10 +2696,14 @@ const Billing = {
       <div class="modal" style="max-width:380px;text-align:center;border-radius:var(--radius-xl);">
         <div style="font-size:48px;margin-bottom:12px;">⏰</div>
         <h2 style="font-size:1.3rem;margin-bottom:8px;">נותרו ${days} ימים בניסיון החינמי</h2>
-        <p style="color:var(--gray-500);font-size:0.9rem;margin-bottom:20px;line-height:1.6;">
+        <p style="color:var(--gray-500);font-size:0.9rem;margin-bottom:14px;line-height:1.6;">
           כל הנתונים שלך — הלידים, הנכסים, המשימות — <strong>בטוחים ושמורים</strong>.<br>
           הוסף פרטי תשלום עכשיו ותמשיך לעבוד בלי הפרעה.
         </p>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:11px 16px;font-size:13px;color:#15803d;margin-bottom:18px;line-height:1.5;text-align:right;">
+          🎁 <strong>שדרג עכשיו — ה-${days} ימים הנותרים לא נמחקים.</strong><br>
+          התשלום מתחיל רק ביום שהניסיון מסתיים.
+        </div>
         <div style="display:flex;flex-direction:column;gap:10px;">
           <button class="btn btn-primary" onclick="Billing.openCheckout('basic');document.getElementById('modal-billing-reminder').remove();" style="padding:14px;">
             הוסף פרטי תשלום — מ-₪199/חודש
@@ -5052,8 +5069,55 @@ function openMoveStage(leadId) {
 
 function demoGuard() {
   if (!State.isDemo) return false;
-  toast('⚡ מצב דמו — התחבר כדי לשמור נתונים אמיתיים', 'warning');
+  // Show conversion popup instead of plain toast
+  if (document.getElementById('modal-demo-convert')) return true;
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'modal-demo-convert';
+  modal.style.cssText = 'z-index:6000;';
+  modal.innerHTML = `
+    <div class="modal" style="max-width:380px;text-align:center;border-radius:var(--radius-xl);padding:28px 24px;">
+      <div style="font-size:52px;margin-bottom:10px;">💾</div>
+      <h2 style="font-size:1.25rem;margin-bottom:8px;">רוצה לשמור את הלידים שלך?</h2>
+      <p style="color:var(--gray-500);font-size:0.88rem;line-height:1.6;margin-bottom:18px;">
+        במצב דמו הנתונים לא נשמרים.<br>
+        פתח חשבון חינמי ב-30 שניות — <strong>21 יום ניסיון, ללא כרטיס אשראי.</strong>
+      </p>
+      <input type="email" id="demo-convert-email" class="form-input" placeholder="האימייל שלך" dir="ltr"
+        style="margin-bottom:12px;text-align:center;font-size:15px;" inputmode="email">
+      <button class="btn btn-primary w-full" style="padding:13px;font-size:15px;margin-bottom:10px;"
+        onclick="demoConvertStart()">
+        התחל ניסיון חינמי — 21 יום 🚀
+      </button>
+      <button class="btn btn-ghost w-full" style="font-size:13px;"
+        onclick="document.getElementById('modal-demo-convert').remove();document.getElementById('screen-login').classList.remove('hidden');document.getElementById('app-shell').classList.add('hidden');State.isDemo=false;">
+        יש לי חשבון כבר — כניסה
+      </button>
+      <button onclick="document.getElementById('modal-demo-convert').remove();"
+        style="background:none;border:none;color:var(--gray-400);font-size:12px;cursor:pointer;margin-top:10px;display:block;width:100%;">
+        המשך לצפות בדמו
+      </button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  setTimeout(() => document.getElementById('demo-convert-email')?.focus(), 100);
   return true;
+}
+
+function demoConvertStart() {
+  const email = (document.getElementById('demo-convert-email')?.value || '').trim();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    toast('נא להזין אימייל תקין', 'error');
+    return;
+  }
+  document.getElementById('modal-demo-convert')?.remove();
+  State.isDemo = false;
+  // Pre-fill email in login screen and navigate there
+  document.getElementById('app-shell').classList.add('hidden');
+  document.getElementById('screen-login').classList.remove('hidden');
+  const loginEmail = document.getElementById('login-email');
+  if (loginEmail) { loginEmail.value = email; loginEmail.focus(); }
+  toast('הזן סיסמה כדי לסיים את ההרשמה', 'info');
 }
 
 function togglePasswordVisibility() {
