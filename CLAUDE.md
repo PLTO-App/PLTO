@@ -1,5 +1,37 @@
 # CLAUDE.md — Liders CRM
 
+## 📋 סיכום סשן אחרון — 15 יוני 2026
+
+### מה בוצע
+- **Make.com** — בדיקת סטטוס מלאה:
+  - Team ID: `1851801` (zone: eu1)
+  - 2 סצנריות פעילות ועובדות
+  - Webhook URL מוגדר בשני הטנאנטים ב-Supabase
+- **תיקון Trial Expiry** — רץ כל 24 דקות במקום פעם ביום. תוקן ל-86,400 שניות (24 שעות)
+- **עדכון CLAUDE.md** — נוספו קישורים חיים, Team ID, Webhook URL, קישורים לסצנריות
+- Branch `claude/make-setup-instructions-3xuf7o` — **טרם מוזג ל-main**
+
+### מצב נוכחי
+| רכיב | סטטוס |
+|------|-------|
+| CRM ללקוחות | ✅ חי — https://liders-crm.github.io/liders_crm/ |
+| פאנל אדמין | ✅ חי — https://liders-crm.github.io/liders_crm/admin.html |
+| Make.com — Lead Notifications | ✅ פעיל |
+| Make.com — Trial Expiry | ✅ פעיל (תוקן) |
+| Supabase | ✅ פעיל — 2 טנאנטים: ארביטראז + Liders |
+| Stripe | ❌ Test mode — ממתין למס עוסק (~19-20 יוני 2026) |
+
+### משימות פתוחות
+1. **Stripe Live Mode** (כשיהיה מס עוסק):
+   - להשלים אימות ב-Stripe
+   - ליצור Payment Links חדשים (Live)
+   - ליצור Webhook חדש (Live) ← לעדכן `STRIPE_WEBHOOK_SECRET` ב-Supabase
+   - לשלוח 4 URLs לקלוד ← יעדכן `index.html`
+2. **למזג ל-main** את branch `claude/make-setup-instructions-3xuf7o`
+3. **לבדוק ולסגור** את הקובץ הכפול ב-Drive
+
+---
+
 ## 🚨 LAUNCH BLOCKER — חובה להזכיר בכל שיחה
 
 > **Stripe Live Mode ממתין לאישור עסקי**
