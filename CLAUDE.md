@@ -14,8 +14,8 @@
 ### מצב נוכחי
 | רכיב | סטטוס |
 |------|-------|
-| CRM ללקוחות | ✅ חי — https://liders-crm.github.io/liders_crm/ |
-| פאנל אדמין | ✅ חי — https://liders-crm.github.io/liders_crm/admin.html |
+| CRM ללקוחות | ✅ חי — https://liders-crm.github.io/Liders_CRM/ |
+| פאנל אדמין | ✅ חי — https://liders-crm.github.io/Liders_CRM/admin.html |
 | Make.com — Lead Notifications | ✅ פעיל |
 | Make.com — Trial Expiry | ✅ פעיל (תוקן) |
 | Supabase | ✅ פעיל — 2 טנאנטים: ארביטראז + Liders |
