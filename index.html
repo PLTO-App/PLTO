@@ -3144,6 +3144,12 @@ const AI = {
     return data?.content?.[0]?.text || null;
   },
 
+  _clientLangInstruction() {
+    return Settings.getClientLang() === 'en'
+      ? 'When drafting any message or email TO the client/lead, write it in English.'
+      : '';
+  },
+
   _industryRole() {
     const ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
     const map = {
@@ -3459,6 +3465,7 @@ const Make = {
           agent_name: State.agent?.name || 'סוכן',
           tenant: State.tenant?.name || 'לידרס',
           whatsapp_from: this.getWhatsApp(),
+          client_lang: Settings.getClientLang(),
           timestamp: new Date().toISOString(),
         }), signal: _ctrl.signal });
     } catch(_e) { /* timeout or network — silent */ } finally { clearTimeout(_timer); }
@@ -4826,6 +4833,16 @@ const Settings = {
                 תחום נוכחי: <strong>${curMeta.icon} ${curMeta.label}</strong>
               </div>
               <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">${grid}</div>
+              <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:var(--gray-700);">📧 שפת מיילים ללקוחות</div>
+                  <div style="font-size:11px;color:var(--gray-500);margin-top:2px;">השפה בה ישלחו מיילים ל-leads שלך</div>
+                </div>
+                <div style="display:flex;gap:4px;">
+                  <button onclick="Settings.setClientLang('he')" style="padding:5px 10px;font-size:12px;font-weight:700;border-radius:6px;border:1px solid var(--border);cursor:pointer;background:${Settings.getClientLang()==='he'?'var(--navy-500)':'var(--gray-50)'};color:${Settings.getClientLang()==='he'?'white':'var(--gray-600)'};">עברית</button>
+                  <button onclick="Settings.setClientLang('en')" style="padding:5px 10px;font-size:12px;font-weight:700;border-radius:6px;border:1px solid var(--border);cursor:pointer;background:${Settings.getClientLang()==='en'?'var(--navy-500)':'var(--gray-50)'};color:${Settings.getClientLang()==='en'?'white':'var(--gray-600)'};">English</button>
+                </div>
+              </div>
             </div>`;
         })()}
       </div>
@@ -4988,9 +5005,25 @@ const Settings = {
       </div>
     `;
   },
+  getClientLang() {
+    const saved = localStorage.getItem('liders_client_lang');
+    if (saved) return saved;
+    return localStorage.getItem('liders_industry') === 'construction' ? 'en' : 'he';
+  },
+
+  setClientLang(lang) {
+    localStorage.setItem('liders_client_lang', lang);
+    Settings.render();
+    toast(lang === 'en' ? '✅ מיילים ישלחו ללקוח באנגלית' : '✅ מיילים ישלחו ללקוח בעברית', 'success');
+  },
+
   async setIndustry(ind) {
     if (!INDUSTRY_LABELS[ind]) return;
     localStorage.setItem('liders_industry', ind);
+    // Auto-set client lang: construction → English (client is an English-speaking homeowner)
+    if (!localStorage.getItem('liders_client_lang')) {
+      localStorage.setItem('liders_client_lang', ind === 'construction' ? 'en' : 'he');
+    }
     await DB.updateIndustry(ind);
     // Switching industry resets custom labels so defaults feel fresh
     DB.updateCustomLabels({});
