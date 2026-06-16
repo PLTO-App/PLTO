@@ -4830,7 +4830,7 @@ const Settings = {
         })()}
       </div>
       <div class="settings-section">
-        <div class="settings-section-title">✏️ התאמת שפה</div>
+        <div class="settings-section-title">✏️ עריכת שמות</div>
         ${(() => {
           const ind = localStorage.getItem('liders_industry') || 'other';
           const indLabels = INDUSTRY_LABELS[ind] || INDUSTRY_LABELS.other;
@@ -4853,7 +4853,7 @@ const Settings = {
             </div>`).join('');
           const hasCustom = Object.keys(custom).length > 0;
           return `<div style="padding:12px 16px;">
-            ${hasCustom ? `<div style="font-size:11px;color:var(--blue-600);background:var(--blue-50);border-radius:6px;padding:6px 10px;margin-bottom:12px;">✨ שפה מותאמת אישית פעילה</div>` : ''}
+            ${hasCustom ? `<div style="font-size:11px;color:var(--blue-600);background:var(--blue-50);border-radius:6px;padding:6px 10px;margin-bottom:12px;">✨ שמות מותאמים פעילים</div>` : ''}
             ${rows}
             <div style="display:flex;gap:8px;margin-top:4px;">
               ${hasCustom ? `<button class="btn btn-ghost btn-sm" onclick="Settings.resetCustomLabels()">↺ ברירת מחדל</button>` : ''}
@@ -5010,7 +5010,7 @@ const Settings = {
     DB.updateCustomLabels(labels);
     App._applyIndustryLabels();
     Settings.render();
-    toast('✅ שפת המערכת עודכנה', 'success');
+    toast('✅ שמות עודכנו', 'success');
   },
 
   resetCustomLabels() {
@@ -5018,7 +5018,7 @@ const Settings = {
     DB.updateCustomLabels({});
     App._applyIndustryLabels();
     Settings.render();
-    toast('↺ שפה אופסה לברירת מחדל', 'success');
+    toast('↺ שמות אופסו לברירת מחדל', 'success');
   },
   addStage() {
     const list = document.getElementById('settings-stages-list');
