@@ -1375,14 +1375,14 @@
         <span class="nav-icon">📊</span> לוח מחוונים
       </a>
       <a class="nav-item" data-screen="pipeline" onclick="App.go('pipeline')">
-        <span class="nav-icon">📋</span> פייפליין לידים
+        <span class="nav-icon">📋</span> <span id="label-pipeline">פייפליין לידים</span>
         <span class="nav-badge" id="nav-badge-pipeline">0</span>
       </a>
       <a class="nav-item" data-screen="leads" onclick="App.go('leads')">
-        <span class="nav-icon">👥</span> כל הלידים
+        <span class="nav-icon">👥</span> <span id="label-all-leads">כל הלידים</span>
       </a>
       <a class="nav-item" data-screen="properties" onclick="App.go('properties')" id="nav-properties-label">
-        <span class="nav-icon">🏠</span> <span id="label-properties">נכסים</span>
+        <span class="nav-icon" id="label-properties-icon">🏠</span> <span id="label-properties">נכסים</span>
       </a>
       <a class="nav-item" data-screen="tasks" onclick="App.go('tasks')">
         <span class="nav-icon">✅</span> משימות
@@ -1494,7 +1494,7 @@
     <!-- ── PIPELINE ── -->
     <div id="screen-pipeline" class="screen hidden">
       <div class="screen-header">
-        <div class="screen-title">📋 פייפליין לידים</div>
+        <div class="screen-title" id="screen-pipeline-title">📋 פייפליין לידים</div>
         <div class="flex gap-2">
           <button class="btn btn-ghost btn-sm" onclick="LeadImport.open()">📋 ייבוא</button>
           <button class="btn btn-ghost btn-sm" onclick="openModal('modal-add-lead')">+ ליד</button>
@@ -1506,10 +1506,10 @@
     <!-- ── ALL LEADS ── -->
     <div id="screen-leads" class="screen hidden">
       <div class="screen-header">
-        <div class="screen-title">👥 כל הלידים</div>
+        <div class="screen-title" id="screen-leads-title">👥 כל הלידים</div>
         <div class="flex gap-2">
           <button class="btn btn-ghost btn-sm" onclick="LeadImport.open()">📋 ייבוא</button>
-          <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-lead')">+ ליד חדש</button>
+          <button class="btn btn-primary btn-sm btn-add-lead-label" onclick="openModal('modal-add-lead')">+ ליד חדש</button>
         </div>
       </div>
       <div class="search-wrap">
@@ -1604,10 +1604,10 @@
     </div>
     <div class="bottom-nav-item" data-screen="pipeline" onclick="App.go('pipeline')">
       <div class="bni-icon">📋</div>
-      <div>פייפליין</div>
+      <div id="bn-label-pipeline">פייפליין</div>
     </div>
     <div class="bottom-nav-item" data-screen="properties" onclick="App.go('properties')">
-      <div class="bni-icon">🏠</div>
+      <div class="bni-icon" id="bn-icon-properties">🏠</div>
       <div id="bn-label-properties">נכסים</div>
     </div>
     <div class="bottom-nav-item" data-screen="tasks" onclick="App.go('tasks')">
@@ -1629,12 +1629,12 @@
         ייבוא לידים
       </button>
       <button class="fab-option fab-opt-property" onclick="closeFAB(); openModal('modal-add-property')">
-        <div class="fab-opt-icon">🏠</div>
-        נכס חדש
+        <div class="fab-opt-icon" id="fab-icon-property">🏠</div>
+        <span id="fab-label-property">נכס חדש</span>
       </button>
       <button class="fab-option fab-opt-lead" onclick="closeFAB(); openModal('modal-add-lead')">
         <div class="fab-opt-icon">➕</div>
-        ליד חדש
+        <span id="fab-label-lead">ליד חדש</span>
       </button>
     </div>
   </div>
@@ -2967,12 +2967,48 @@ const Onboarding = {
    INDUSTRY LABELS — adapts app language per industry
 ═══════════════════════════════════════════ */
 const INDUSTRY_LABELS = {
-  realestate: { lead:'ליד', leads:'לידים', property:'נכס', properties:'נכסים', deal:'עסקה', client:'לקוח', meeting:'ביקור', agent:'סוכן' },
-  sales:      { lead:'ליד', leads:'לידים', property:'מוצר', properties:'מוצרים', deal:'עסקה', client:'לקוח', meeting:'פגישה', agent:'מוכר' },
-  ecommerce:  { lead:'ליד', leads:'לידים', property:'פריט', properties:'מלאי', deal:'הזמנה', client:'קונה', meeting:'שיחה', agent:'נציג' },
-  beauty:     { lead:'ליד', leads:'לידים', property:'שירות', properties:'שירותים', deal:'תור', client:'לקוחה', meeting:'תור', agent:'מטפלת' },
-  services:   { lead:'ליד', leads:'לידים', property:'שירות', properties:'שירותים', deal:'פרויקט', client:'לקוח', meeting:'פגישה', agent:'נציג' },
-  other:      { lead:'ליד', leads:'לידים', property:'מוצר', properties:'מוצרים', deal:'עסקה', client:'לקוח', meeting:'פגישה', agent:'נציג' },
+  realestate: {
+    lead:'קונה', leads:'קונים', property:'נכס', properties:'נכסים', deal:'עסקה', client:'לקוח', meeting:'ביקור נכס', agent:'מתווך',
+    addLead:'קונה חדש', allLeads:'כל הקונים', pipeline:'פייפליין עסקאות', propertiesIcon:'🏠',
+    matchTab:'נכסים מתאימים', docLabel:'מסמכים',
+    stages:['פנייה נכנסה','יצרנו קשר','ביקור נקבע','הצעת מחיר הוגשה','חוזה נחתם ✓'],
+    notesPlaceholder:'הערות על הקונה — תקציב, דרישות, אזור מועדף, מועד מבוקש...',
+  },
+  sales: {
+    lead:'ליד', leads:'לידים', property:'מוצר', properties:'מוצרים', deal:'עסקה', client:'לקוח', meeting:'פגישה עסקית', agent:'מנהל מכירות',
+    addLead:'ליד חדש', allLeads:'כל הלידים', pipeline:'פייפליין מכירות', propertiesIcon:'📁',
+    matchTab:'מוצרים מתאימים', docLabel:'מסמכים',
+    stages:['ליד נכנס','שיחת גילוי','הצעה נשלחה','משא ומתן','עסקה נסגרה ✓'],
+    notesPlaceholder:'הערות — צרכי הלקוח, כאב, תקציב, מסגרת זמן, מקבלי החלטה...',
+  },
+  ecommerce: {
+    lead:'קונה', leads:'קונים', property:'פריט', properties:'מלאי', deal:'הזמנה', client:'קונה', meeting:'שיחה', agent:'נציג',
+    addLead:'קונה חדש', allLeads:'כל הקונים', pipeline:'פייפליין הזמנות', propertiesIcon:'🛒',
+    matchTab:'מוצרים מתאימים', docLabel:'מסמכים',
+    stages:['עגלה פתוחה','יצרנו קשר','הצעה נשלחה','ממתין לתשלום','הזמנה בוצעה ✓'],
+    notesPlaceholder:'הערות על הקונה — מוצרים שמעניינים, תקציב, כמות...',
+  },
+  beauty: {
+    lead:'לקוחה', leads:'לקוחות', property:'שירות', properties:'שירותים', deal:'תור', client:'לקוחה', meeting:'טיפול', agent:'מטפלת',
+    addLead:'לקוחה חדשה', allLeads:'כל הלקוחות', pipeline:'פייפליין לקוחות', propertiesIcon:'💅',
+    matchTab:'שירותים מתאימים', docLabel:'מסמכים',
+    stages:['פנייה נכנסה','יצרנו קשר','תור נקבע','טיפול בוצע','לקוחה קבועה ✓'],
+    notesPlaceholder:'הערות — סוג טיפול, העדפות, אלרגיות, תדירות ביקורים...',
+  },
+  services: {
+    lead:'לקוח', leads:'לקוחות', property:'שירות', properties:'שירותים', deal:'פרויקט', client:'לקוח', meeting:'פגישה', agent:'נציג',
+    addLead:'לקוח חדש', allLeads:'כל הלקוחות', pipeline:'פייפליין פרויקטים', propertiesIcon:'⚙️',
+    matchTab:'שירותים מתאימים', docLabel:'מסמכים',
+    stages:['פנייה נכנסה','בירור צרכים','הצעת מחיר','בביצוע','פרויקט הושלם ✓'],
+    notesPlaceholder:'הערות — סוג שירות, לוח זמנים, תקציב, דרישות טכניות...',
+  },
+  other: {
+    lead:'ליד', leads:'לידים', property:'מוצר', properties:'מוצרים', deal:'עסקה', client:'לקוח', meeting:'פגישה', agent:'נציג',
+    addLead:'ליד חדש', allLeads:'כל הלידים', pipeline:'פייפליין לידים', propertiesIcon:'🏠',
+    matchTab:'מוצרים מתאימים', docLabel:'מסמכים',
+    stages:['פנייה נכנסה','יצרנו קשר','הצעה נשלחה','במשא ומתן','עסקה נסגרה ✓'],
+    notesPlaceholder:'הערות על הליד...',
+  },
 };
 function getLabel(key) {
   const ind = localStorage.getItem('liders_industry') || 'other';
@@ -3142,6 +3178,127 @@ function copyAIText(elId) {
 }
 
 /* ═══════════════════════════════════════════
+   LEAD DOCUMENTS MODULE
+═══════════════════════════════════════════ */
+const LeadDocs = {
+  _cache: {},
+
+  async load(leadId) {
+    const container = document.getElementById('docs-list');
+    if (!container) return;
+    if (State.isDemo) {
+      container.innerHTML = this._renderEmpty('מצב דמו — מסמכים לא זמינים');
+      return;
+    }
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gray-400)">טוען...</div>';
+    try {
+      const { data, error } = await sbClient
+        .from('lead_documents')
+        .select('*')
+        .eq('lead_id', leadId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      this._cache[leadId] = data || [];
+      container.innerHTML = data?.length
+        ? data.map(d => this._renderDocRow(d)).join('')
+        : this._renderEmpty('אין מסמכים עדיין — העלה את הראשון');
+    } catch(e) {
+      container.innerHTML = this._renderEmpty('שגיאה בטעינת מסמכים');
+    }
+  },
+
+  _renderDocRow(doc) {
+    const sent = doc.sent_at
+      ? `<span style="color:var(--green-600);font-size:11px;">✅ נשלח ${doc.sent_to_email ? 'ל-' + escapeHtml(doc.sent_to_email) : ''}</span>`
+      : `<button class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:12px;"
+           onclick="LeadDocs.sendEmail('${doc.id}','${doc.lead_id}')">📧 שלח למייל הליד</button>`;
+    return `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg-app);border-radius:8px;border:1px solid var(--border);">
+        <div style="font-size:22px;">📄</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(doc.file_name)}</div>
+          <div style="font-size:11px;color:var(--gray-400);">${formatRelDate(doc.created_at)}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+          ${sent}
+          <a href="${escapeHtml(doc.file_url)}" target="_blank" class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:12px;">⬇️</a>
+          <button class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:12px;color:var(--red-500);"
+                  onclick="LeadDocs.delete('${doc.id}','${doc.lead_id}')">🗑</button>
+        </div>
+      </div>`;
+  },
+
+  _renderEmpty(msg) {
+    return `<div class="empty-state"><div class="empty-icon">📂</div><div class="empty-title">${msg}</div></div>`;
+  },
+
+  async upload(leadId, input) {
+    const file = input.files?.[0];
+    if (!file) return;
+    input.value = '';
+    if (file.size > 10 * 1024 * 1024) { toast('הקובץ גדול מדי (מקס׳ 10MB)', 'error'); return; }
+    toast('מעלה מסמך...', '');
+    try {
+      const ext   = file.name.split('.').pop() || 'bin';
+      const path  = `${DB.tenantId}/${leadId}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      const { error: upErr } = await sbClient.storage.from('lead-documents').upload(path, file, { contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: urlData } = sbClient.storage.from('lead-documents').getPublicUrl(path);
+      const lead = State.leads.find(l => l.id === leadId);
+      const { data: doc, error: dbErr } = await sbClient.from('lead_documents').insert({
+        tenant_id: DB.tenantId,
+        lead_id:   leadId,
+        agent_id:  DB.agentId || null,
+        file_name: file.name,
+        file_url:  urlData.publicUrl,
+        file_size: file.size,
+      }).select().single();
+      if (dbErr) throw dbErr;
+      toast('✅ המסמך הועלה בהצלחה', 'success');
+      await DB.addActivity({ lead_id: leadId, type: 'note', content: `📄 מסמך הועלה: ${file.name}` });
+      this.load(leadId);
+    } catch(e) {
+      toast('שגיאה בהעלאה: ' + e.message, 'error');
+    }
+  },
+
+  async sendEmail(docId, leadId) {
+    const doc  = this._cache[leadId]?.find(d => d.id === docId);
+    const lead = State.leads.find(l => l.id === leadId);
+    if (!doc || !lead) return;
+    if (!lead.email) { toast('לליד אין כתובת מייל — הוסף מייל בעריכה', 'error'); return; }
+    toast('שולח מייל...', '');
+    try {
+      await Make.trigger('document.sent', {
+        lead_name:  lead.name,
+        lead_email: lead.email,
+        lead_phone: lead.phone || '',
+        doc_name:   doc.file_name,
+        doc_url:    doc.file_url,
+        message:    `היי ${lead.name.split(' ')[0]}, מצורף המסמך ${doc.file_name} לעיונך. לשאלות אני כאן 🙂`,
+      });
+      await sbClient.from('lead_documents').update({ sent_at: new Date().toISOString(), sent_to_email: lead.email }).eq('id', docId);
+      await DB.addActivity({ lead_id: leadId, type: 'email', content: `📧 מסמך "${doc.file_name}" נשלח למייל ${lead.email}` });
+      toast(`✅ המסמך נשלח ל-${lead.email}`, 'success');
+      this.load(leadId);
+    } catch(e) {
+      toast('שגיאה בשליחה: ' + e.message, 'error');
+    }
+  },
+
+  async delete(docId, leadId) {
+    if (!confirm('למחוק את המסמך?')) return;
+    try {
+      await sbClient.from('lead_documents').delete().eq('id', docId);
+      toast('מסמך נמחק', 'success');
+      this.load(leadId);
+    } catch(e) {
+      toast('שגיאה במחיקה: ' + e.message, 'error');
+    }
+  },
+};
+
+/* ═══════════════════════════════════════════
    MAKE.COM MODULE — Phase 4
 ═══════════════════════════════════════════ */
 const Make = {
@@ -3191,6 +3348,7 @@ const Make = {
     'task.completed':     '✅ משימה הושלמה',
     'task.due_today':     '⏰ תזכורת למשימה',
     'lead.cold':          '⚠️ ליד התקרר',
+    'document.sent':      '📧 מסמך נשלח ללקוח',
     'webhook.test':       '🔔 בדיקת חיבור',
   },
 
@@ -3510,11 +3668,20 @@ const App = {
     if (!State.isDemo) setTimeout(() => Billing.showDailyReminder(), 1500);
   },
   _applyIndustryLabels() {
-    const props = getLabel('properties');
-    const el1 = document.getElementById('label-properties');
-    const el2 = document.getElementById('bn-label-properties');
-    if (el1) el1.textContent = props;
-    if (el2) el2.textContent = props;
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('label-properties',        getLabel('properties'));
+    set('bn-label-properties',     getLabel('properties'));
+    set('label-properties-icon',   getLabel('propertiesIcon'));
+    set('bn-icon-properties',      getLabel('propertiesIcon'));
+    set('label-all-leads',         getLabel('allLeads'));
+    set('label-pipeline',          getLabel('pipeline'));
+    set('bn-label-pipeline',       'פייפליין');
+    set('fab-label-lead',          getLabel('addLead'));
+    set('fab-label-property',      getLabel('properties').replace(/ים$/, '') + ' חדש');
+    set('screen-pipeline-title',   '📋 ' + getLabel('pipeline'));
+    set('screen-leads-title',      '👥 ' + getLabel('allLeads'));
+    const addBtns = document.querySelectorAll('.btn-add-lead-label');
+    addBtns.forEach(b => { b.textContent = '+ ' + getLabel('addLead'); });
   },
   async logout() {
     await DB.signOut();
@@ -3964,7 +4131,8 @@ const LeadDetail = {
           <button class="tab-btn active" onclick="switchTab(this,'tab-info')">מידע</button>
           <button class="tab-btn" onclick="switchTab(this,'tab-activity')">פעילות (${activities.length})</button>
           <button class="tab-btn" onclick="switchTab(this,'tab-tasks')">משימות (${tasks.filter(t=>!t.done).length})</button>
-          <button class="tab-btn" onclick="switchTab(this,'tab-match')">נכסים מתאימים (${matchProps.length})</button>
+          <button class="tab-btn" onclick="switchTab(this,'tab-match')">${getLabel('matchTab')} (${matchProps.length})</button>
+          <button class="tab-btn" onclick="switchTab(this,'tab-docs'); LeadDocs.load('${lead.id}')">📄 ${getLabel('docLabel')}</button>
           <button class="tab-btn" onclick="switchTab(this,'tab-ai')">🤖 AI</button>
         </div>
 
@@ -4049,6 +4217,17 @@ const LeadDetail = {
               `).join('')}
             </div>
           ` : '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">לא נמצאו נכסים מתאימים</div><div class="empty-sub">הוסף נכסים שיתאימו לתקציב ולאזור של הליד</div></div>'}
+        </div>
+
+        <!-- DOCS TAB -->
+        <div class="tab-content" id="tab-docs">
+          <div id="docs-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
+          <label class="btn btn-ghost w-full" style="cursor:pointer;justify-content:center;display:flex;gap:8px;align-items:center;">
+            <input type="file" id="doc-file-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                   style="display:none" onchange="LeadDocs.upload('${lead.id}', this)">
+            📎 העלה מסמך (PDF / Word / תמונה)
+          </label>
+          <p style="font-size:11px;color:var(--gray-400);text-align:center;margin-top:6px;">עד 10MB לקובץ</p>
         </div>
 
         <!-- AI TAB -->
@@ -5306,6 +5485,7 @@ window.DB         = DB;
 window.Voice      = Voice;
 window.Onboarding = Onboarding;
 window.Analytics  = Analytics;
+window.LeadDocs   = LeadDocs;
 
 // Bind login buttons — uses both click and pointerdown for maximum mobile compatibility
 (function bindLoginButtons() {
