@@ -3803,7 +3803,9 @@ const App = {
     State.isDemo = false;
     document.getElementById('demo-banner')?.classList.add('hidden');
     ['make_webhook_url','whatsapp_number','onboarding_done','liders_industry',
-     'liders_agency_name','liders_agency_phone','liders_agency_city'].forEach(k => localStorage.removeItem(k));
+     'liders_agency_name','liders_agency_phone','liders_agency_city',
+     'liders_custom_labels','liders_client_lang'].forEach(k => localStorage.removeItem(k));
+    State.customLabels = {};
     State.leads       = [...DEMO.leads];
     State.properties  = [...DEMO.properties];
     State.tasks       = [...DEMO.tasks];
