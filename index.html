@@ -1237,12 +1237,85 @@
       .modal { max-height: 92vh; overflow-y: auto; }
     }
 
-    /* Swipe hint on pipeline */
-    .pipeline-wrapper {
-      scroll-snap-type: x mandatory;
+    /* Pipeline search bar */
+    .pipeline-search-wrap {
+      padding: 8px 16px 4px;
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
-    .kanban-col {
-      scroll-snap-align: start;
+    .pipeline-search-input {
+      width: 100%; box-sizing: border-box;
+      padding: 9px 14px;
+      border-radius: var(--radius-full);
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      font-family: var(--font);
+      font-size: 14px;
+      color: var(--gray-800);
+      outline: none;
+      transition: var(--transition);
+    }
+    .pipeline-search-input:focus { border-color: var(--blue-500); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+    .pipeline-search-input::placeholder { color: var(--gray-400); }
+
+    /* Mobile stage tabs — hidden on desktop */
+    .pipeline-stage-tabs { display: none; }
+
+    @media (max-width: 767px) {
+      /* Stage tab strip */
+      .pipeline-stage-tabs {
+        display: flex; gap: 8px;
+        padding: 8px 16px 10px;
+        overflow-x: auto; scrollbar-width: none;
+      }
+      .pipeline-stage-tabs::-webkit-scrollbar { display: none; }
+      .pipeline-stage-tab {
+        flex-shrink: 0; cursor: pointer;
+        padding: 6px 14px;
+        border-radius: 99px;
+        font-size: 12px; font-weight: 700;
+        border: 2px solid var(--tab-clr, var(--gray-300));
+        background: transparent;
+        color: var(--tab-clr, var(--gray-500));
+        font-family: var(--font);
+        transition: var(--transition);
+        display: flex; align-items: center; gap: 5px;
+      }
+      .pipeline-stage-tab.active {
+        background: var(--tab-clr, var(--blue-500));
+        color: white;
+      }
+      .pipeline-stage-tab-count {
+        background: rgba(255,255,255,.35);
+        border-radius: 99px;
+        padding: 1px 6px;
+        font-size: 10px;
+      }
+      .pipeline-stage-tab:not(.active) .pipeline-stage-tab-count {
+        background: var(--gray-200);
+        color: var(--gray-600);
+      }
+
+      /* Mobile kanban: vertical single-column */
+      .pipeline-wrapper {
+        display: block !important;
+        overflow-x: hidden !important;
+        padding: 0 12px 80px !important;
+      }
+      .kanban-col {
+        display: none;
+        width: 100% !important;
+        min-width: unset !important;
+        margin-bottom: 12px;
+      }
+      .kanban-col.tab-active { display: flex; }
+      /* When searching, show all stages that have hits */
+      .pipeline-wrapper.is-searching .kanban-col { display: none; }
+      .pipeline-wrapper.is-searching .kanban-col.has-hits { display: flex; }
+      /* Hide per-column add button on mobile — header button is sufficient */
+      .kanban-add-btn { display: none; }
     }
 
     /* Safe area for iPhone notch */
@@ -1505,6 +1578,12 @@
           <button class="btn btn-ghost btn-sm" onclick="openModal('modal-add-lead')">+ ליד</button>
         </div>
       </div>
+      <div class="pipeline-search-wrap">
+        <input type="text" class="pipeline-search-input" id="pipeline-search-input"
+          placeholder="🔍 חיפוש לפי שם, אזור או טלפון..."
+          oninput="Pipeline.search(this.value)">
+      </div>
+      <div class="pipeline-stage-tabs" id="pipeline-stage-tabs"></div>
       <div class="pipeline-wrapper" id="pipeline-board"></div>
     </div>
 
@@ -3890,7 +3969,7 @@ const App = {
     // render
     switch (screen) {
       case 'dashboard':   Dashboard.render(); break;
-      case 'pipeline':    Pipeline.render();  break;
+      case 'pipeline':    Pipeline._query=''; { const psi=document.getElementById('pipeline-search-input'); if(psi) psi.value=''; } Pipeline.render(); break;
       case 'leads':       Leads._query=''; const si=document.getElementById('leads-search'); if(si) si.value=''; Leads.render(); break;
       case 'lead-detail': LeadDetail.render(State.currentLeadId); break;
       case 'properties':  PropertiesScreen.render(); break;
@@ -4181,27 +4260,85 @@ const Dashboard = {
    PIPELINE (KANBAN)
 ═══════════════════════════════════════════ */
 const Pipeline = {
+  _query: '',
+  _activeStage: null,
+
   render() {
+    if (!this._activeStage && State.stages.length) {
+      this._activeStage = State.stages[0].id;
+    }
+    this._renderTabs();
+    const q = this._query.toLowerCase().trim();
     const board = document.getElementById('pipeline-board');
+    board.classList.toggle('is-searching', !!q);
     board.innerHTML = State.stages.map(stage => {
-      const leads = State.leads.filter(l => l.stage === stage.id);
+      let leads = State.leads.filter(l => l.stage === stage.id);
+      const allCount = leads.length;
+      if (q) leads = leads.filter(l =>
+        (l.name||'').toLowerCase().includes(q) ||
+        (l.phone||'').includes(q) ||
+        (l.desired_area||'').toLowerCase().includes(q)
+      );
+      const hasHits = q && leads.length > 0;
+      const isTabActive = !q && this._activeStage === stage.id;
       const totalVal = leads.reduce((s,l) => s + (l.budget_max||0), 0);
+      const classes = ['kanban-col', isTabActive ? 'tab-active' : '', hasHits ? 'has-hits' : ''].filter(Boolean).join(' ');
       return `
-        <div class="kanban-col" style="--col-clr:${stage.color}">
+        <div class="${classes}" style="--col-clr:${stage.color}" data-stage-id="${stage.id}">
           <div class="kanban-col-header">
             <div class="kanban-stage-dot" style="background:${stage.color}"></div>
             <div class="kanban-stage-name" style="color:${stage.color}">${escapeHtml(stage.name)}</div>
-            <div class="kanban-count">${leads.length}</div>
+            <div class="kanban-count">${q ? leads.length + '/' + allCount : leads.length}</div>
           </div>
           ${totalVal ? `<div class="kanban-value">${formatMoney(totalVal)}</div>` : ''}
           <div class="kanban-cards">
-            ${leads.map(l => this.renderCard(l, stage.color)).join('')}
+            ${leads.length
+              ? leads.map(l => this.renderCard(l, stage.color)).join('')
+              : q ? '<div style="padding:14px 10px;text-align:center;color:var(--gray-400);font-size:13px;">אין תוצאות בשלב זה</div>' : ''
+            }
           </div>
           <button class="kanban-add-btn" onclick="openModal('modal-add-lead')">+ הוסף ליד</button>
         </div>
       `;
     }).join('');
+    if (q && !State.leads.some(l => (l.name||'').toLowerCase().includes(q) || (l.phone||'').includes(q) || (l.desired_area||'').toLowerCase().includes(q))) {
+      board.innerHTML = `<div style="padding:40px 20px;text-align:center;color:var(--gray-400);">
+        <div style="font-size:32px;margin-bottom:10px;">🔍</div>
+        <div style="font-weight:700;margin-bottom:6px;">לא נמצאו תוצאות</div>
+        <div style="font-size:13px;">נסה שם אחר, אזור, או מספר טלפון</div>
+      </div>`;
+    }
   },
+
+  _renderTabs() {
+    const el = document.getElementById('pipeline-stage-tabs');
+    if (!el) return;
+    el.innerHTML = State.stages.map(s => {
+      const count = State.leads.filter(l => l.stage === s.id).length;
+      const active = s.id === this._activeStage;
+      return `
+        <button class="pipeline-stage-tab${active ? ' active' : ''}"
+          style="--tab-clr:${s.color}"
+          onclick="Pipeline.setTab('${s.id}')">
+          ${escapeHtml(s.name)}
+          <span class="pipeline-stage-tab-count">${count}</span>
+        </button>`;
+    }).join('');
+  },
+
+  setTab(stageId) {
+    this._activeStage = stageId;
+    this._query = '';
+    const inp = document.getElementById('pipeline-search-input');
+    if (inp) inp.value = '';
+    this.render();
+  },
+
+  search(q) {
+    this._query = q;
+    this.render();
+  },
+
   renderCard(lead, color) {
     const task = State.tasks.find(t => t.lead_id === lead.id && !t.done);
     const isOverdue = task && diffDays(task.due) < 0;
