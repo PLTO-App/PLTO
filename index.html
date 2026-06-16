@@ -865,7 +865,7 @@
     .kpi-card {
       min-width: 140px; flex: 1; background: var(--surface);
       border-radius: var(--radius-lg); padding: 16px 14px;
-      box-shadow: var(--shadow-sm); cursor: default;
+      box-shadow: var(--shadow-sm); cursor: pointer;
       border: 1px solid var(--border); transition: transform 0.18s, box-shadow 0.18s;
       position: relative; overflow: hidden;
     }
@@ -1214,7 +1214,7 @@
 
     /* ── Print / PDF Export ── */
     @media print {
-      #sidebar, #bottom-nav, #fab-speed-dial, #trial-banner, .btn, nav { display: none !important; }
+      #sidebar, #bottom-nav, #fab-btn, #trial-banner, .btn, nav { display: none !important; }
       #main-content { margin: 0 !important; padding: 0 !important; }
       .screen { display: block !important; }
       .screen:not(#screen-analytics) { display: none !important; }
@@ -1322,7 +1322,7 @@
     #bottom-nav {
       padding-bottom: env(safe-area-inset-bottom, 8px);
     }
-    #fab-speed-dial {
+    #fab-btn {
       bottom: calc(72px + env(safe-area-inset-bottom, 0px));
     }
 
@@ -1464,7 +1464,7 @@
       <a class="nav-item" data-screen="analytics" onclick="App.go('analytics')">
         <span class="nav-icon">📈</span> אנליטיקס
       </a>
-      <a class="nav-item" data-screen="calendar" onclick="App.go('calendar')">
+      <a class="nav-item hidden" data-screen="calendar" onclick="App.go('calendar')">
         <span class="nav-icon">📅</span> לוח שנה
       </a>
     </div>
@@ -1537,10 +1537,6 @@
         <div id="dash-ai-briefing-body"></div>
       </div>
       <div class="kpi-row" id="kpi-row"></div>
-      <div style="display:flex;gap:8px;padding:0 20px 14px;justify-content:flex-end;">
-        <button class="btn btn-ghost btn-sm" style="font-size:12px;" onclick="openModal('modal-add-lead')">➕ ליד חדש</button>
-        <button class="btn btn-ghost btn-sm" style="font-size:12px;" onclick="LeadImport.open()">📋 ייבוא לידים</button>
-      </div>
       <div class="section-header">
         <div class="section-title">⚡ משימות דחופות</div>
         <div class="section-link" onclick="App.go('tasks')">כל המשימות</div>
@@ -1578,10 +1574,14 @@
           <button class="btn btn-ghost btn-sm" onclick="openModal('modal-add-lead')">+ ליד</button>
         </div>
       </div>
-      <div class="pipeline-search-wrap">
+      <div class="pipeline-search-wrap" style="position:relative;">
         <input type="text" class="pipeline-search-input" id="pipeline-search-input"
           placeholder="🔍 חיפוש לפי שם, אזור או טלפון..."
-          oninput="Pipeline.search(this.value)">
+          oninput="Pipeline.search(this.value); document.getElementById('pipeline-search-clear').style.display=this.value?'flex':'none';">
+        <button id="pipeline-search-clear"
+          style="display:none;position:absolute;left:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:16px;color:var(--gray-400);cursor:pointer;width:24px;height:24px;align-items:center;justify-content:center;"
+          onclick="document.getElementById('pipeline-search-input').value='';Pipeline.search('');this.style.display='none';"
+          title="נקה חיפוש">×</button>
       </div>
       <div class="pipeline-stage-tabs" id="pipeline-stage-tabs"></div>
       <div class="pipeline-wrapper" id="pipeline-board"></div>
@@ -1628,8 +1628,6 @@
         <div class="filter-chip active" data-filter="all" onclick="Tasks.setFilter('all', this)">הכל</div>
         <div class="filter-chip" data-filter="overdue" onclick="Tasks.setFilter('overdue', this)">🔴 בפיגור</div>
         <div class="filter-chip" data-filter="today" onclick="Tasks.setFilter('today', this)">היום</div>
-        <div class="filter-chip" data-filter="tomorrow" onclick="Tasks.setFilter('tomorrow', this)">מחר</div>
-        <div class="filter-chip" data-filter="week" onclick="Tasks.setFilter('week', this)">השבוע</div>
       </div>
       <div style="padding:0 20px 20px; display:flex; flex-direction:column; gap:8px;" id="tasks-list"></div>
     </div>
@@ -1704,24 +1702,8 @@
     </div>
   </nav>
 
-  <!-- FAB SPEED-DIAL -->
-  <div class="fab-speed-dial" id="fab-speed-dial">
-    <button class="fab-main" id="fab-main-btn" onclick="toggleFAB()" title="פעולות מהירות">+</button>
-    <div class="fab-options" id="fab-options">
-      <button class="fab-option" style="background:#fff;color:var(--navy-600);border:1.5px solid var(--border);" onclick="closeFAB(); LeadImport.open()">
-        <div class="fab-opt-icon">📋</div>
-        ייבוא לידים
-      </button>
-      <button class="fab-option fab-opt-property" onclick="closeFAB(); openModal('modal-add-property')">
-        <div class="fab-opt-icon" id="fab-icon-property">🏠</div>
-        <span id="fab-label-property">נכס חדש</span>
-      </button>
-      <button class="fab-option fab-opt-lead" onclick="closeFAB(); openModal('modal-add-lead')">
-        <div class="fab-opt-icon">➕</div>
-        <span id="fab-label-lead">ליד חדש</span>
-      </button>
-    </div>
-  </div>
+  <!-- FAB -->
+  <button class="fab" id="fab-btn" onclick="openModal('modal-add-lead')" title="ליד חדש">+</button>
 
 </div>
 
@@ -2812,7 +2794,7 @@ const Billing = {
     if (!el) return;
     if (this.isPaid() || State.isDemo) { el.innerHTML = ''; return; }
     const days = this.daysLeft();
-    if (days > 7) { el.innerHTML = ''; return; }
+    if (days > 3) { el.innerHTML = ''; return; }
     const pct = Math.max(4, Math.round(days / 21 * 100));
     const urgMsg = days <= 3
       ? '⚠️ עוד מעט הגישה נעצרת — שמור על הלידים שלך'
@@ -5918,30 +5900,8 @@ async function saveEditLead() {
   }
 }
 
-/* FAB speed-dial toggle */
-function toggleFAB() {
-  const main = document.getElementById('fab-main-btn');
-  const opts = document.getElementById('fab-options');
-  const isOpen = opts.classList.contains('visible');
-  if (isOpen) {
-    main.classList.remove('open');
-    opts.classList.remove('visible');
-  } else {
-    main.classList.add('open');
-    opts.classList.add('visible');
-  }
-}
-
-function closeFAB() {
-  document.getElementById('fab-main-btn').classList.remove('open');
-  document.getElementById('fab-options').classList.remove('visible');
-}
-
-// Close FAB when clicking outside
-document.addEventListener('click', function(e) {
-  const dial = document.getElementById('fab-speed-dial');
-  if (dial && !dial.contains(e.target)) closeFAB();
-});
+function toggleFAB() {}
+function closeFAB() {}
 
 // Back button / popstate support
 window.addEventListener('popstate', function(e) {
