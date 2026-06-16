@@ -2259,7 +2259,7 @@ const DB = {
       sbClient.from('tasks').select('*').eq('tenant_id', this.tenantId).order('due_date'),
       sbClient.from('properties').select('*').eq('tenant_id', this.tenantId).order('created_at'),
       sbClient.from('activities').select('*').eq('tenant_id', this.tenantId).order('created_at', { ascending: false }).limit(50),
-      sbClient.from('tenants').select('id,name,slug,plan,trial_ends_at,make_webhook_url,whatsapp_number').eq('id', this.tenantId).single(),
+      sbClient.from('tenants').select('id,name,slug,plan,trial_ends_at,make_webhook_url,whatsapp_number,industry').eq('id', this.tenantId).single(),
       this.agentId ? sbClient.from('agent_users').select('id,name,email,role').eq('id', this.agentId).maybeSingle() : Promise.resolve({ data: null }),
     ]);
     this.stageMap = {};
@@ -2862,8 +2862,8 @@ const Onboarding = {
       render() {
         const ind = localStorage.getItem('liders_industry') || 'other';
         const defaults = INDUSTRY_LABELS[ind]?.stages || ['פנייה נכנסה','יצרנו קשר','הצעה נשלחה','במשא ומתן','עסקה נסגרה ✓'];
-        // Use existing DB stages if present, otherwise use industry defaults
-        const names = State.stages.length ? State.stages.map(s => s.name) : defaults;
+        // Always show industry-specific defaults in onboarding — user just picked their industry
+        const names = defaults;
         return `
           <div>
             <div style="display:flex;flex-direction:column;gap:6px;" id="ob-stages-list">
