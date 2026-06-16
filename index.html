@@ -1693,6 +1693,10 @@
         <label class="form-label">טלפון *</label>
         <input type="tel" id="new-lead-phone" class="form-input" placeholder="050-0000000" style="direction:ltr;">
       </div>
+      <div class="form-group">
+        <label class="form-label">טלפון נוסף <span style="color:var(--gray-400);font-weight:400;">(אופציונלי)</span></label>
+        <input type="tel" id="new-lead-phone2" class="form-input" placeholder="050-0000000" style="direction:ltr;">
+      </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">מקור</label>
@@ -1885,6 +1889,10 @@
       <div class="form-group">
         <label class="form-label">טלפון *</label>
         <input type="tel" id="edit-lead-phone" class="form-input" placeholder="050-0000000" style="direction:ltr;">
+      </div>
+      <div class="form-group">
+        <label class="form-label">טלפון נוסף <span style="color:var(--gray-400);font-weight:400;">(אופציונלי)</span></label>
+        <input type="tel" id="edit-lead-phone2" class="form-input" placeholder="050-0000000" style="direction:ltr;">
       </div>
       <div class="form-group">
         <label class="form-label">אימייל</label>
@@ -2315,7 +2323,7 @@ const DB = {
         order: s.order_idx, is_terminal: s.is_terminal, _uuid: s.id,
       })),
       leads: (leadsR.data || []).map(l => ({
-        id: l.id, name: l.name, phone: l.phone, email: l.email || '',
+        id: l.id, name: l.name, phone: l.phone, phone2: l.phone2 || '', email: l.email || '',
         stage: this.stageMap[l.pipeline_stage_id] || 's1',
         source: l.source, budget_min: Number(l.budget_min) || 0,
         budget_max: Number(l.budget_max) || 0,
@@ -2350,7 +2358,7 @@ const DB = {
     const firstStageId = this.stageRev['s1'] || Object.values(this.stageRev)[0] || null;
     const { data, error } = await sbClient.from('leads').insert({
       tenant_id: this.tenantId, agent_id: this.agentId,
-      name: lead.name, phone: lead.phone,
+      name: lead.name, phone: lead.phone, phone2: lead.phone2 || null,
       source: lead.source || 'other',
       budget_max: lead.budget_max || null,
       desired_area: lead.desired_area || null,
@@ -2360,7 +2368,7 @@ const DB = {
     }).select().single();
     if (error) throw error;
     return {
-      id: data.id, name: data.name, phone: data.phone, email: data.email || '',
+      id: data.id, name: data.name, phone: data.phone, phone2: data.phone2 || '', email: data.email || '',
       stage: 's1', source: data.source, budget_min: 0,
       budget_max: Number(data.budget_max) || 0,
       desired_area: data.desired_area || '', score: 50,
@@ -4264,13 +4272,14 @@ const LeadDetail = {
           <div class="lead-detail-name">${escapeHtml(lead.name)}</div>
           <div class="score-badge ${scoreClass(lead.score)}" style="width:44px;height:44px;font-size:15px;">${lead.score}</div>
         </div>
-        <div style="font-size:13px; color:var(--navy-200); margin-top:4px;">${escapeHtml(lead.phone)}${lead.email ? ' · ' + escapeHtml(lead.email) : ''}</div>
+        <div style="font-size:13px; color:var(--navy-200); margin-top:4px;">${escapeHtml(lead.phone)}${lead.phone2 ? ' · ' + escapeHtml(lead.phone2) : ''}${lead.email ? ' · ' + escapeHtml(lead.email) : ''}</div>
         <div style="margin-top:12px; display:flex; gap:6px; flex-wrap:wrap;">
           <span class="badge badge-${lead.source}">${escapeHtml(sourceLabel(lead.source))}</span>
           <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:${stage?.color+'33'};color:white;">${escapeHtml(stage?.name||'—')}</span>
         </div>
         <div class="lead-detail-actions">
           <button class="lead-action-btn" data-phone="${escapeHtml(lead.phone)}" onclick="window.open('tel:'+this.dataset.phone)">📞 שיחה</button>
+          ${lead.phone2 ? `<button class="lead-action-btn" data-phone="${escapeHtml(lead.phone2)}" onclick="window.open('tel:'+this.dataset.phone)">📞 טלפון 2</button>` : ''}
           <button class="lead-action-btn" data-phone="${escapeHtml(lead.phone)}" onclick="window.open('https://wa.me/972'+this.dataset.phone.replace(/^0/,'').replace(/-/g,''))">💬 WhatsApp</button>
           <button class="lead-action-btn" onclick="openMoveStage('${lead.id}')">🔄 שנה שלב</button>
           <button class="lead-action-btn" onclick="State.currentLeadId='${lead.id}'; openModal('modal-add-activity')">📝 הוסף</button>
@@ -5453,6 +5462,7 @@ async function addLead() {
   try {
     const lead = await DB.addLead({
       name, phone,
+      phone2: document.getElementById('new-lead-phone2').value.trim() || null,
       source: document.getElementById('new-lead-source').value,
       budget_max: rawBudget,
       desired_area: document.getElementById('new-lead-area').value,
@@ -5464,6 +5474,7 @@ async function addLead() {
     closeModal('modal-add-lead');
     document.getElementById('new-lead-name').value = '';
     document.getElementById('new-lead-phone').value = '';
+    document.getElementById('new-lead-phone2').value = '';
     document.getElementById('new-lead-area').value = '';
     document.getElementById('new-lead-notes').value = '';
     document.getElementById('new-lead-budget').value = '';
@@ -5680,6 +5691,7 @@ function openEditLead(leadId) {
   if (!lead) return;
   document.getElementById('edit-lead-name').value = lead.name || '';
   document.getElementById('edit-lead-phone').value = lead.phone || '';
+  document.getElementById('edit-lead-phone2').value = lead.phone2 || '';
   document.getElementById('edit-lead-email').value = lead.email || '';
   document.getElementById('edit-lead-budget-min').value = lead.budget_min || '';
   document.getElementById('edit-lead-budget-max').value = lead.budget_max || '';
@@ -5705,6 +5717,7 @@ async function saveEditLead() {
   const patch = {
     name,
     phone,
+    phone2: document.getElementById('edit-lead-phone2').value.trim() || null,
     email: document.getElementById('edit-lead-email').value.trim() || null,
     budget_min: rawBudgetMin,
     budget_max: rawBudgetMax,
@@ -5717,6 +5730,7 @@ async function saveEditLead() {
     Object.assign(lead, {
       name: patch.name,
       phone: patch.phone,
+      phone2: patch.phone2 || '',
       email: patch.email || '',
       budget_min: patch.budget_min || 0,
       budget_max: patch.budget_max || 0,
