@@ -11,7 +11,7 @@ BEGIN
   SELECT id INTO v_stage FROM pipeline_stages
   WHERE tenant_id = v_tenant ORDER BY order_idx LIMIT 1;
 
-  INSERT INTO leads (tenant_id, stage_id, name, phone, email, source, budget_max, desired_area, notes, created_at)
+  INSERT INTO leads (tenant_id, pipeline_stage_id, name, phone, email, source, budget_max, desired_area, notes, created_at)
   VALUES
     (v_tenant, v_stage, 'רונית ומשה כהן',     '054-2341789', 'ronit.cohen82@gmail.com',       'DEMO_TEST', 2800000, 'רמת גן — שיכון ותיקין',           'זוג נשוי עם 3 ילדים (8/11/14). מחפשים 5 חדרים מינימום, קומה לא גבוהה בגלל הילדים. הדירה הנוכחית שלהם ברחוב ביאליק נמכרת — כבר בחתימות. חייבים להיכנס תוך 4 חודשים. משה דורש חניה כפולה, רונית רוצה מרפסת גדולה. תקציב גמיש ב-200K אם הנכס מושלם.', now()),
     (v_tenant, v_stage, 'אלי שוחט',           '052-8876543', 'eli.shochat@hotmail.com',        'DEMO_TEST', 1650000, 'נתניה — אגמים / עיר ימים',         'רווק בן 34, ראשון שלו. מחפש 4 חדרים עם נוף לים — זה קריטי. עובד מהבית (הייטק) אז צריך חדר עבודה שקט. תקציב כולל משכנתא 70%. חוזר מכנס בחו"ל ב-20 לחודש — לפגישה רק אחרי.', now()),
