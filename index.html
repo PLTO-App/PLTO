@@ -2223,6 +2223,35 @@ const DB = {
     } catch(_e) { /* non-fatal — localStorage is source of truth */ }
   },
 
+  async updateStageNames(names) {
+    if (State.isDemo || !this.tenantId) return;
+    const existing = [...State.stages].sort((a,b) => (a.order_idx||0) - (b.order_idx||0));
+    const COLORS = ['#94A3B8','#3B82F6','#8B5CF6','#F59E0B','#10B981','#EF4444','#6366F1','#EC4899'];
+    for (let i = 0; i < names.length; i++) {
+      if (i < existing.length) {
+        await sbClient.from('pipeline_stages')
+          .update({ name: names[i] })
+          .eq('id', existing[i].id);
+        existing[i].name = names[i];
+      } else {
+        const { data } = await sbClient.from('pipeline_stages').insert({
+          tenant_id: this.tenantId,
+          name: names[i],
+          color: COLORS[i % COLORS.length],
+          order_idx: i + 1,
+          is_terminal: false,
+          is_won: false,
+        }).select().single();
+        if (data) {
+          existing.push(data);
+          this.stageMap[data.id]  = data.name;
+          this.stageRev[data.name] = data.id;
+        }
+      }
+    }
+    State.stages = existing;
+  },
+
   async loadAll() {
     const [stagesR, leadsR, tasksR, propsR, actsR, tenantR, agentR] = await Promise.all([
       sbClient.from('pipeline_stages').select('*').eq('tenant_id', this.tenantId).order('order_idx'),
@@ -2829,24 +2858,26 @@ const Onboarding = {
     },
     {
       title: 'שלבי פייפליין',
-      subtitle: 'אלו שלבים עוברים הלידים שלך?',
+      subtitle: 'ערוך את השמות כרצונך — מותאמים לתחום שלך',
       render() {
-        const stages = State.stages.length ? State.stages : [
-          { name: 'ליד חדש' }, { name: 'בקשר' }, { name: 'ביקור נקבע' },
-          { name: 'הצעה הוגשה' }, { name: 'סגירה' },
-        ];
+        const ind = localStorage.getItem('liders_industry') || 'other';
+        const defaults = INDUSTRY_LABELS[ind]?.stages || ['פנייה נכנסה','יצרנו קשר','הצעה נשלחה','במשא ומתן','עסקה נסגרה ✓'];
+        // Use existing DB stages if present, otherwise use industry defaults
+        const names = State.stages.length ? State.stages.map(s => s.name) : defaults;
         return `
           <div>
-            <p style="color:var(--gray-500);font-size:0.85rem;margin-bottom:12px;">אלו שלבי הפייפליין המוגדרים. ניתן לשנות בהגדרות.</p>
-            <div style="display:flex;flex-direction:column;gap:8px;" id="ob-stages-list">
-              ${stages.map((s, i) => `
-                <div style="display:flex;align-items:center;gap:10px;background:var(--bg-app);border-radius:8px;padding:10px 12px;">
-                  <span style="background:var(--navy-500);color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;">${i+1}</span>
-                  <span>${escapeHtml(s.name)}</span>
-                </div>
-              `).join('')}
+            <div style="display:flex;flex-direction:column;gap:6px;" id="ob-stages-list">
+              ${names.map((name, i) => Onboarding._stageRow(name, i, names.length)).join('')}
             </div>
+            <button onclick="Onboarding._addStageRow()" class="btn btn-ghost btn-sm w-full" style="margin-top:10px;">+ הוסף שלב</button>
           </div>`;
+      },
+      validate() {
+        const inputs = document.querySelectorAll('#ob-stages-list .stage-name-input');
+        const names = [...inputs].map(i => i.value.trim()).filter(Boolean);
+        if (names.length < 2) { toast('נדרשים לפחות 2 שלבים', 'error'); return false; }
+        Onboarding._data.stageNames = names;
+        return true;
       },
     },
     {
@@ -2905,12 +2936,38 @@ const Onboarding = {
   ],
   _data: {},
 
+  _stageRow(name, i, total) {
+    const canDel = total > 2;
+    return `<div class="ob-stage-row" style="display:flex;align-items:center;gap:8px;">
+      <span style="background:var(--navy-500);color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">${i+1}</span>
+      <input class="form-input stage-name-input" value="${escapeHtml(name)}" placeholder="שם השלב" style="flex:1;padding:8px 10px;font-size:13px;">
+      ${canDel ? `<button onclick="this.closest('.ob-stage-row').remove();Onboarding._renumberStages()" style="background:none;border:none;color:var(--gray-400);font-size:18px;cursor:pointer;padding:0 4px;">×</button>` : '<span style="width:26px;"></span>'}
+    </div>`;
+  },
+
+  _addStageRow() {
+    const list = document.getElementById('ob-stages-list');
+    if (!list) return;
+    const count = list.querySelectorAll('.ob-stage-row').length;
+    if (count >= 8) { toast('מקסימום 8 שלבים', 'error'); return; }
+    const div = document.createElement('div');
+    div.innerHTML = this._stageRow('', count, count + 1);
+    list.appendChild(div.firstElementChild);
+    this._renumberStages();
+  },
+
+  _renumberStages() {
+    document.querySelectorAll('#ob-stages-list .ob-stage-row').forEach((row, i) => {
+      const badge = row.querySelector('span');
+      if (badge) badge.textContent = i + 1;
+      const delBtn = row.querySelector('button');
+      const rows = document.querySelectorAll('#ob-stages-list .ob-stage-row').length;
+      if (delBtn) delBtn.style.display = rows > 2 ? '' : 'none';
+    });
+  },
+
   _selectIndustry(id) {
     localStorage.setItem('liders_industry', id);
-    document.querySelectorAll('.ind-card').forEach(el => {
-      el.classList.toggle('selected', el.onclick?.toString().includes(`'${id}'`) || el.getAttribute('onclick')?.includes(`'${id}'`));
-    });
-    // Re-render all cards to reflect selection
     document.querySelectorAll('.ind-card').forEach(el => {
       const onclick = el.getAttribute('onclick') || '';
       const cardId = (onclick.match(/'([^']+)'/) || [])[1];
@@ -2949,6 +3006,10 @@ const Onboarding = {
       // Save industry to Supabase so it survives logout/login on any device
       const ind = localStorage.getItem('liders_industry') || 'other';
       DB.updateIndustry(ind);
+      // Save customized stage names to Supabase
+      if (this._data.stageNames?.length) {
+        DB.updateStageNames(this._data.stageNames).catch(() => {});
+      }
       if (this._data.agencyName) {
         localStorage.setItem('liders_agency_name', this._data.agencyName);
         // Persist for real (this used to be localStorage-only — cosmetic).
@@ -4693,13 +4754,25 @@ const Settings = {
           </div>
           <div class="settings-arrow">›</div>
         </div>
-        <div class="settings-row">
-          <div class="settings-row-icon">📋</div>
-          <div class="settings-row-body">
-            <div class="settings-row-label">שלבי הפייפליין</div>
-            <div class="settings-row-sub">${State.stages.length} שלבים מוגדרים</div>
+        <div class="settings-row" style="flex-direction:column;align-items:stretch;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+            <div class="settings-row-icon">📋</div>
+            <div class="settings-row-body" style="flex:1;">
+              <div class="settings-row-label">שלבי הפייפליין</div>
+              <div class="settings-row-sub">${State.stages.length} שלבים · ניתן לערוך ולהוסיף</div>
+            </div>
           </div>
-          <div class="settings-arrow">›</div>
+          <div id="settings-stages-list" style="display:flex;flex-direction:column;gap:6px;">
+            ${State.stages.map((s,i) => `
+              <div class="ob-stage-row" style="display:flex;align-items:center;gap:8px;">
+                <span style="background:${s.color};color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">${i+1}</span>
+                <input class="form-input stage-name-input" value="${escapeHtml(s.name)}" style="flex:1;padding:7px 10px;font-size:13px;">
+              </div>`).join('')}
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <button class="btn btn-ghost btn-sm" onclick="Settings.addStage()">+ שלב</button>
+            <button class="btn btn-primary btn-sm" style="flex:1;" onclick="Settings.saveStages()">שמור שלבים</button>
+          </div>
         </div>
         <div class="settings-row">
           <div class="settings-row-icon">👥</div>
@@ -4873,6 +4946,32 @@ const Settings = {
     App._applyIndustryLabels();
     Settings.render();
     toast('✅ תחום עודכן ל-' + (getLabel('pipeline') || ind), 'success');
+  },
+  addStage() {
+    const list = document.getElementById('settings-stages-list');
+    if (!list) return;
+    const count = list.querySelectorAll('.ob-stage-row').length;
+    if (count >= 8) { toast('מקסימום 8 שלבים', 'error'); return; }
+    const row = document.createElement('div');
+    row.className = 'ob-stage-row';
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;';
+    row.innerHTML = `<span style="background:var(--navy-400);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">${count+1}</span>
+      <input class="form-input stage-name-input" placeholder="שם השלב החדש" style="flex:1;padding:7px 10px;font-size:13px;">`;
+    list.appendChild(row);
+    row.querySelector('input').focus();
+  },
+  async saveStages() {
+    if (demoGuard()) return;
+    const inputs = document.querySelectorAll('#settings-stages-list .stage-name-input');
+    const names = [...inputs].map(i => i.value.trim()).filter(Boolean);
+    if (names.length < 2) { toast('נדרשים לפחות 2 שלבים', 'error'); return; }
+    try {
+      await DB.updateStageNames(names);
+      Settings.render();
+      toast('✅ שלבי הפייפליין עודכנו', 'success');
+    } catch(e) {
+      toast('שגיאה: ' + e.message, 'error');
+    }
   },
   editName() {
     if (demoGuard()) return;
