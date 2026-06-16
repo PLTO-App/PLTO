@@ -240,36 +240,6 @@
       box-shadow: var(--shadow-sm); border: 1px solid var(--border);
     }
 
-    /* KPI Card */
-    .kpi-card {
-      background: var(--surface); border-radius: var(--radius-lg);
-      padding: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border);
-      display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 140px;
-    }
-    .kpi-label { font-size: 12px; color: var(--gray-500); font-weight: 500; }
-    .kpi-value { font-size: 26px; font-weight: 800; color: var(--gray-900); line-height: 1; }
-    .kpi-sub   { font-size: 12px; color: var(--gray-400); }
-    .kpi-icon  {
-      width: 36px; height: 36px; border-radius: var(--radius-md);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; margin-bottom: 4px;
-    }
-
-    /* Lead Pipeline Card */
-    .lead-card {
-      background: var(--surface); border-radius: var(--radius-md);
-      padding: 12px; box-shadow: var(--shadow-sm); border: 1px solid var(--border);
-      cursor: pointer; transition: var(--transition);
-      position: relative; overflow: hidden;
-    }
-    .lead-card::before {
-      content: ''; position: absolute; top: 0; right: 0;
-      width: 3px; height: 100%; background: var(--stage-color, var(--gray-300));
-    }
-    .lead-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--navy-200); }
-    .lead-card-name { font-size: 14px; font-weight: 700; color: var(--gray-900); }
-    .lead-card-meta { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
-    .lead-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
 
     /* Property Card */
     .property-card {
@@ -1140,6 +1110,39 @@
     }
 
     /* ═══════════════════════════════════════
+       CALENDAR SCREEN
+    ═══════════════════════════════════════ */
+    .cal-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px 12px; }
+    .cal-month-title { font-size:18px; font-weight:800; color:var(--gray-900); }
+    .cal-nav-btn { background:var(--gray-100); border:none; border-radius:var(--radius-md); width:36px; height:36px; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s; }
+    .cal-nav-btn:hover { background:var(--gray-200); }
+    .cal-today-btn { background:var(--navy-50); border:1.5px solid var(--navy-200); color:var(--navy-500); border-radius:var(--radius-md); padding:6px 14px; font-size:13px; font-weight:700; cursor:pointer; }
+    .cal-day-labels { display:grid; grid-template-columns:repeat(7,1fr); padding:0 12px; }
+    .cal-day-label { text-align:center; font-size:11px; font-weight:700; color:var(--gray-400); padding:4px 0; }
+    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; padding:0 12px 12px; }
+    .cal-cell {
+      min-height:68px; background:var(--surface); border-radius:var(--radius-md);
+      border:1px solid var(--border); padding:4px; cursor:pointer;
+      transition:box-shadow 0.15s, border-color 0.15s;
+    }
+    .cal-cell:hover { box-shadow:var(--shadow-sm); border-color:var(--navy-200); }
+    .cal-cell.other-month { background:var(--gray-50); opacity:0.5; cursor:default; }
+    .cal-cell.today { border-color:var(--navy-400); border-width:2px; }
+    .cal-cell.today .cal-day-num { background:var(--navy-500); color:white; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; }
+    .cal-day-num { font-size:12px; font-weight:700; color:var(--gray-700); margin-bottom:3px; width:22px; height:22px; display:flex; align-items:center; justify-content:center; }
+    .cal-dot { font-size:10px; border-radius:3px; padding:1px 4px; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:600; }
+    .cal-dot-task { background:var(--blue-100); color:var(--blue-500); }
+    .cal-dot-overdue { background:var(--red-100); color:var(--red-600); }
+    .cal-dot-followup { background:var(--purple-100); color:var(--purple-500); }
+    .cal-day-panel { padding:16px 20px 20px; }
+    .cal-day-panel-title { font-size:15px; font-weight:800; color:var(--gray-800); margin-bottom:12px; }
+    .cal-event-item { display:flex; align-items:flex-start; gap:10px; padding:10px 14px; background:var(--surface); border-radius:var(--radius-md); border:1px solid var(--border); margin-bottom:8px; }
+    .cal-event-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:4px; }
+    .cal-cell.selected { border-color:var(--gold-400); border-width:2px; background:var(--gold-100); }
+    .cal-event-name { font-size:13px; font-weight:700; color:var(--gray-900); }
+    .cal-event-sub { font-size:11px; color:var(--gray-500); margin-top:2px; }
+
+    /* ═══════════════════════════════════════
        ANALYTICS SCREEN
     ═══════════════════════════════════════ */
     .analytics-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
@@ -1155,50 +1158,6 @@
       font-size: 14px; font-weight: 800; color: var(--gray-800); margin-bottom: 14px;
     }
 
-    /* ═══════════════════════════════════════
-       FAB SPEED-DIAL
-    ═══════════════════════════════════════ */
-    .fab-speed-dial {
-      position: fixed; bottom: calc(var(--bottom-nav-h) + 16px); left: 20px;
-      z-index: 100; display: flex; flex-direction: column-reverse; align-items: center; gap: 10px;
-    }
-    @media (min-width: 768px) {
-      .fab-speed-dial { bottom: 24px; left: 24px; }
-    }
-    .fab-main {
-      width: 56px; height: 56px; border-radius: var(--radius-full);
-      background: linear-gradient(135deg, var(--gold-400), var(--gold-600));
-      color: var(--white); font-size: 24px; font-weight: 300;
-      box-shadow: var(--shadow-xl); border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .fab-main:hover { transform: scale(1.08); }
-    .fab-main:active { transform: scale(0.96); }
-    .fab-main.open { transform: rotate(45deg); }
-    .fab-options {
-      display: flex; flex-direction: column-reverse; gap: 8px;
-      align-items: center;
-      transition: opacity 0.2s ease, transform 0.2s ease;
-      opacity: 0; transform: translateY(8px); pointer-events: none;
-    }
-    .fab-options.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
-    .fab-option {
-      display: flex; align-items: center; gap: 10px;
-      background: var(--surface); border: none; cursor: pointer;
-      border-radius: var(--radius-full); box-shadow: var(--shadow-md);
-      padding: 8px 16px 8px 12px; font-size: 13px; font-weight: 700;
-      color: var(--gray-800); white-space: nowrap;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-    .fab-option:hover { transform: scale(1.04); box-shadow: var(--shadow-lg); }
-    .fab-option .fab-opt-icon {
-      width: 32px; height: 32px; border-radius: var(--radius-full);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px; flex-shrink: 0;
-    }
-    .fab-opt-lead .fab-opt-icon { background: var(--navy-50); }
-    .fab-opt-property .fab-opt-icon { background: var(--green-100); }
 
     /* ── Voice recording button ── */
     .btn.recording {
@@ -1464,7 +1423,7 @@
       <a class="nav-item" data-screen="analytics" onclick="App.go('analytics')">
         <span class="nav-icon">📈</span> אנליטיקס
       </a>
-      <a class="nav-item hidden" data-screen="calendar" onclick="App.go('calendar')">
+      <a class="nav-item" data-screen="calendar" onclick="App.go('calendar')">
         <span class="nav-icon">📅</span> לוח שנה
       </a>
     </div>
@@ -1634,15 +1593,25 @@
 
     <!-- ── CALENDAR ── -->
     <div id="screen-calendar" class="screen hidden">
-      <div class="screen-header"><div class="screen-title">📅 לוח שנה</div></div>
-      <div class="screen-body">
-        <div class="empty-state">
-          <div class="empty-icon">📅</div>
-          <div class="empty-title">חיבור ל-Google Calendar</div>
-          <div class="empty-sub">בקרוב — ביקורים ופגישות יסונכרנו אוטומטית</div>
-          <button class="btn btn-primary mt-4" style="opacity:0.6;" disabled>חבר Google Calendar</button>
+      <div class="cal-header">
+        <button class="cal-nav-btn" onclick="Calendar.prevMonth()">›</button>
+        <div>
+          <div class="cal-month-title" id="cal-month-label"></div>
+          <button class="cal-today-btn" onclick="Calendar.goToday()" style="margin-top:4px;">היום</button>
         </div>
+        <button class="cal-nav-btn" onclick="Calendar.nextMonth()">‹</button>
       </div>
+      <div class="cal-day-labels">
+        <div class="cal-day-label">א׳</div>
+        <div class="cal-day-label">ב׳</div>
+        <div class="cal-day-label">ג׳</div>
+        <div class="cal-day-label">ד׳</div>
+        <div class="cal-day-label">ה׳</div>
+        <div class="cal-day-label">ו׳</div>
+        <div class="cal-day-label">ש׳</div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div id="cal-day-detail" class="cal-day-panel" style="display:none;"></div>
     </div>
 
     <!-- ── ANALYTICS ── -->
@@ -3957,6 +3926,7 @@ const App = {
       case 'properties':  PropertiesScreen.render(); break;
       case 'tasks':       Tasks.render();     break;
       case 'analytics':   Analytics.render(); break;
+      case 'calendar':    Calendar.render(); break;
       case 'settings':    Settings.render();  break;
     }
     window.scrollTo(0, 0);
@@ -4938,6 +4908,146 @@ const Analytics = {
 };
 
 /* ═══════════════════════════════════════════
+   CALENDAR SCREEN
+═══════════════════════════════════════════ */
+const Calendar = {
+  _year: null,
+  _month: null,
+  _selectedDate: null,
+
+  render() {
+    const now = new Date();
+    if (this._year === null) { this._year = now.getFullYear(); this._month = now.getMonth(); }
+    this._drawGrid();
+  },
+
+  goToday() {
+    const now = new Date();
+    this._year = now.getFullYear();
+    this._month = now.getMonth();
+    this._selectedDate = null;
+    this._drawGrid();
+    document.getElementById('cal-day-detail').style.display = 'none';
+  },
+
+  prevMonth() {
+    this._month--;
+    if (this._month < 0) { this._month = 11; this._year--; }
+    this._selectedDate = null;
+    this._drawGrid();
+    document.getElementById('cal-day-detail').style.display = 'none';
+  },
+
+  nextMonth() {
+    this._month++;
+    if (this._month > 11) { this._month = 0; this._year++; }
+    this._selectedDate = null;
+    this._drawGrid();
+    document.getElementById('cal-day-detail').style.display = 'none';
+  },
+
+  _eventsForDate(dateStr) {
+    const tasks = (State.tasks || []).filter(t => t.due && t.due.startsWith(dateStr));
+    const followups = (State.leads || []).filter(l => l.next_followup && l.next_followup.startsWith(dateStr));
+    return { tasks, followups };
+  },
+
+  _drawGrid() {
+    const MONTHS_HE = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+    const lbl = document.getElementById('cal-month-label');
+    if (lbl) lbl.textContent = MONTHS_HE[this._month] + ' ' + this._year;
+
+    const firstDay = new Date(this._year, this._month, 1);
+    const lastDay  = new Date(this._year, this._month + 1, 0);
+    const todayStr = new Date().toISOString().slice(0, 10);
+
+    // Sunday=0, adjust so Sunday (index 0) is first column
+    let startDow = firstDay.getDay(); // 0=Sun
+    const cells = [];
+
+    // Fill leading empty cells from previous month
+    for (let i = 0; i < startDow; i++) {
+      const d = new Date(this._year, this._month, -startDow + 1 + i);
+      cells.push({ date: d, otherMonth: true });
+    }
+    // Fill current month days
+    for (let d = 1; d <= lastDay.getDate(); d++) {
+      cells.push({ date: new Date(this._year, this._month, d), otherMonth: false });
+    }
+    // Fill trailing empty cells
+    const remaining = 7 - (cells.length % 7);
+    if (remaining < 7) {
+      for (let i = 1; i <= remaining; i++) {
+        cells.push({ date: new Date(this._year, this._month + 1, i), otherMonth: true });
+      }
+    }
+
+    const grid = document.getElementById('cal-grid');
+    if (!grid) return;
+    grid.innerHTML = cells.map(cell => {
+      const dateStr = cell.date.toISOString().slice(0, 10);
+      const { tasks, followups } = this._eventsForDate(dateStr);
+      const isToday = dateStr === todayStr;
+      const isSelected = dateStr === this._selectedDate;
+      const overdueTask = tasks.filter(t => !t.done && dateStr < todayStr);
+      const upcomingTask = tasks.filter(t => !t.done && dateStr >= todayStr);
+
+      let dots = '';
+      if (overdueTask.length) dots += `<div class="cal-dot cal-dot-overdue">⚠ ${overdueTask[0].title || 'משימה'}</div>`;
+      if (upcomingTask.length) dots += `<div class="cal-dot cal-dot-task">✓ ${upcomingTask[0].title || 'משימה'}</div>`;
+      if (followups.length) dots += `<div class="cal-dot cal-dot-followup">👤 ${followups[0].name}</div>`;
+      if ((overdueTask.length + upcomingTask.length + followups.length) > 2) {
+        const more = overdueTask.length + upcomingTask.length + followups.length - 2;
+        dots += `<div class="cal-dot" style="color:var(--gray-400);">+${more} נוספים</div>`;
+      }
+
+      const cellClass = ['cal-cell', cell.otherMonth ? 'other-month' : '', isToday ? 'today' : '', isSelected ? 'selected' : ''].filter(Boolean).join(' ');
+      const onclick = cell.otherMonth ? '' : `onclick="Calendar.selectDay('${dateStr}')"`;
+      return `<div class="${cellClass}" ${onclick}>
+        <div class="cal-day-num">${cell.date.getDate()}</div>
+        ${dots}
+      </div>`;
+    }).join('');
+  },
+
+  selectDay(dateStr) {
+    this._selectedDate = dateStr;
+    this._drawGrid();
+    const { tasks, followups } = this._eventsForDate(dateStr);
+    const panel = document.getElementById('cal-day-detail');
+    if (!panel) return;
+
+    const heDate = new Date(dateStr + 'T12:00:00').toLocaleDateString('he-IL', { weekday:'long', day:'numeric', month:'long' });
+    let html = `<div class="cal-day-panel-title">📅 ${heDate}</div>`;
+
+    const allItems = [
+      ...tasks.map(t => ({ type:'task', name: t.title || 'משימה', sub: t.done ? '✅ הושלם' : (t.due < new Date().toISOString().slice(0,10) ? '⚠ בפיגור' : 'פתוח'), color: t.done ? '#16A34A' : (t.due < new Date().toISOString().slice(0,10) ? '#DC2626' : '#2563EB') })),
+      ...followups.map(l => ({ type:'followup', name: l.name, sub: 'מעקב מתוכנן', color: '#7C3AED' })),
+    ];
+
+    if (!allItems.length) {
+      html += `<div style="color:var(--gray-400);font-size:13px;text-align:center;padding:20px 0;">אין אירועים ביום זה</div>`;
+      html += `<button class="btn btn-ghost btn-sm w-full" onclick="openModal('modal-add-task')">+ הוסף משימה</button>`;
+    } else {
+      html += allItems.map(item => `
+        <div class="cal-event-item">
+          <div class="cal-event-dot" style="background:${item.color};"></div>
+          <div>
+            <div class="cal-event-name">${escapeHtml(item.name)}</div>
+            <div class="cal-event-sub">${item.sub}</div>
+          </div>
+        </div>
+      `).join('');
+      html += `<button class="btn btn-ghost btn-sm w-full" style="margin-top:8px;" onclick="openModal('modal-add-task')">+ הוסף משימה</button>`;
+    }
+
+    panel.innerHTML = html;
+    panel.style.display = '';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  },
+};
+
+/* ═══════════════════════════════════════════
    SETTINGS SCREEN
 ═══════════════════════════════════════════ */
 const Settings = {
@@ -5900,8 +6010,6 @@ async function saveEditLead() {
   }
 }
 
-function toggleFAB() {}
-function closeFAB() {}
 
 // Back button / popstate support
 window.addEventListener('popstate', function(e) {
