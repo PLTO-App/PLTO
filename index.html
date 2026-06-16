@@ -2215,6 +2215,14 @@ const DB = {
     if (error) throw error;
   },
 
+  async updateIndustry(ind) {
+    if (State.isDemo || !this.tenantId) return;
+    try {
+      await sbClient.from('tenants').update({ industry: ind }).eq('id', this.tenantId);
+      if (State.tenant) State.tenant.industry = ind;
+    } catch(_e) { /* non-fatal — localStorage is source of truth */ }
+  },
+
   async loadAll() {
     const [stagesR, leadsR, tasksR, propsR, actsR, tenantR, agentR] = await Promise.all([
       sbClient.from('pipeline_stages').select('*').eq('tenant_id', this.tenantId).order('order_idx'),
@@ -2938,6 +2946,9 @@ const Onboarding = {
     if (s.validate && !s.validate()) return;
     if (this._step === this._steps.length - 1) {
       localStorage.setItem('onboarding_done', '1');
+      // Save industry to Supabase so it survives logout/login on any device
+      const ind = localStorage.getItem('liders_industry') || 'other';
+      DB.updateIndustry(ind);
       if (this._data.agencyName) {
         localStorage.setItem('liders_agency_name', this._data.agencyName);
         // Persist for real (this used to be localStorage-only — cosmetic).
@@ -3668,6 +3679,13 @@ const App = {
     document.getElementById('sidebar-agent-initials').textContent = State.agent.initials;
     document.getElementById('sidebar-agent-role').textContent  = State.agent.role;
     Billing.renderTrialBanner();
+    // Restore industry from Supabase so it survives logout — if tenant.industry
+    // matches one of our known IDs, apply it and mark onboarding as done
+    const savedInd = State.tenant?.industry;
+    if (savedInd && INDUSTRY_LABELS[savedInd]) {
+      localStorage.setItem('liders_industry', savedInd);
+      localStorage.setItem('onboarding_done', '1');
+    }
     this._applyIndustryLabels();
     history.pushState({ screen: 'dashboard' }, '', location.pathname + '?s=dashboard');
     this.go('dashboard');
@@ -4693,6 +4711,36 @@ const Settings = {
         </div>
       </div>
       <div class="settings-section">
+        <div class="settings-section-title">תחום העסק</div>
+        ${(() => {
+          const IND_META = {
+            construction:{ icon:'🏗️', label:'קונסטרקשן' },
+            realestate:  { icon:'🏠', label:'נדל"ן' },
+            sales:       { icon:'💼', label:'מכירות B2B' },
+            ecommerce:   { icon:'🛒', label:'חנות אונליין' },
+            beauty:      { icon:'💅', label:'יופי ובריאות' },
+            services:    { icon:'⚙️', label:'שירות ותמיכה' },
+            other:       { icon:'🎯', label:'אחר' },
+          };
+          const cur = localStorage.getItem('liders_industry') || 'other';
+          const curMeta = IND_META[cur] || IND_META.other;
+          const grid = Object.entries(IND_META).map(([id, m]) => `
+            <div onclick="Settings.setIndustry('${id}')"
+                 style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;
+                        border-radius:8px;border:2px solid ${cur===id?'var(--navy-500)':'var(--border)'};
+                        background:${cur===id?'var(--navy-50)':'var(--gray-50)'};cursor:pointer;font-size:11px;font-weight:700;">
+              <span style="font-size:22px;">${m.icon}</span>${m.label}
+            </div>`).join('');
+          return `
+            <div style="padding:12px 16px 0;">
+              <div style="font-size:13px;color:var(--gray-500);margin-bottom:10px;">
+                תחום נוכחי: <strong>${curMeta.icon} ${curMeta.label}</strong>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">${grid}</div>
+            </div>`;
+        })()}
+      </div>
+      <div class="settings-section">
         <div class="settings-section-title">חיבורים</div>
         <div class="settings-row" style="flex-direction:column; align-items:stretch;">
           <div style="display:flex; align-items:center; gap:12px;">
@@ -4817,6 +4865,14 @@ const Settings = {
         </div>
       </div>
     `;
+  },
+  async setIndustry(ind) {
+    if (!INDUSTRY_LABELS[ind]) return;
+    localStorage.setItem('liders_industry', ind);
+    await DB.updateIndustry(ind);
+    App._applyIndustryLabels();
+    Settings.render();
+    toast('✅ תחום עודכן ל-' + (getLabel('pipeline') || ind), 'success');
   },
   editName() {
     if (demoGuard()) return;
