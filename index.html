@@ -2158,6 +2158,28 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════
+     MODAL: WELCOME MESSAGE (shown once)
+═══════════════════════════════════════ -->
+<div id="modal-welcome" class="modal-overlay hidden">
+  <div class="modal" style="max-width:420px;text-align:center;">
+    <div class="modal-handle"></div>
+    <div style="padding:32px 24px 8px;">
+      <div style="font-size:48px;margin-bottom:16px;">👋</div>
+      <h2 style="margin:0 0 12px;font-size:1.3rem;color:var(--navy-700);font-weight:800;">ברוך הבא ל-Liders CRM</h2>
+      <p style="color:var(--gray-600);font-size:0.95rem;line-height:1.75;margin:0;">
+        בניגוד לרוב, אין פה אף אחד שיחכה לך בקצה השני עם תסריט מכירה.<br>
+        <strong>21 יום לגלות אם המערכת מתאימה לך.</strong><br><br>
+        אהבת? נשמח לעמוד לשירותך.<br>
+        לא אהבת? נשמח לקבל את הפידבק שלך שיעזור לנו להשתפר.
+      </p>
+    </div>
+    <div class="modal-footer" style="justify-content:center;padding-top:20px;">
+      <button class="btn btn-primary" style="min-width:160px;" onclick="WelcomeMsg.dismiss()">בואו נתחיל ✨</button>
+    </div>
+  </div>
+</div>
+
 <!-- Onboarding Wizard -->
 <div class="modal-overlay hidden" id="modal-onboarding">
   <div class="modal" style="max-width:520px;">
@@ -3989,6 +4011,8 @@ const App = {
     this.updateBadges();
     // Show onboarding wizard for new users (not in demo)
     if (!State.isDemo) setTimeout(() => Onboarding.show(), 800);
+    // Show welcome message once (not in demo, not during onboarding)
+    if (!State.isDemo) WelcomeMsg.show();
     // Show billing reminder for days 7-1 (not in demo)
     if (!State.isDemo) setTimeout(() => Billing.showDailyReminder(), 1500);
   },
@@ -5444,6 +5468,13 @@ const Settings = {
       </div>` : ''}
       <div class="settings-section">
         <div class="settings-section-title">אחר</div>
+        <div class="settings-row" onclick="WelcomeMsg.reset()" style="cursor:pointer;">
+          <div class="settings-row-icon">👋</div>
+          <div class="settings-row-body">
+            <div class="settings-row-label">הצג מסך פתיחה מחדש</div>
+            <div class="settings-row-sub">יופיע בכניסה הבאה למערכת</div>
+          </div>
+        </div>
         <div class="settings-row" onclick="App.logout()">
           <div class="settings-row-icon">🚪</div>
           <div class="settings-row-body">
@@ -6225,6 +6256,25 @@ window.DB         = DB;
 window.Voice      = Voice;
 window.Onboarding = Onboarding;
 window.Analytics  = Analytics;
+
+const WelcomeMsg = {
+  _KEY: 'liders_welcome_seen',
+  show() {
+    if (localStorage.getItem(this._KEY) === '1') return;
+    setTimeout(() => {
+      document.getElementById('modal-welcome').classList.remove('hidden');
+    }, 1200);
+  },
+  dismiss() {
+    localStorage.setItem(this._KEY, '1');
+    document.getElementById('modal-welcome').classList.add('hidden');
+  },
+  reset() {
+    localStorage.removeItem(this._KEY);
+    toast('✅ מסך הפתיחה יוצג בכניסה הבאה', 'success');
+  }
+};
+window.WelcomeMsg = WelcomeMsg;
 window.LeadDocs   = LeadDocs;
 
 // Bind login buttons — uses both click and pointerdown for maximum mobile compatibility
