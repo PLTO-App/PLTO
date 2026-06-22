@@ -21,6 +21,7 @@
       "mcp__f474d5bb__get_publishable_keys",
       "mcp__f474d5bb-dc13-43f0-9b18-e6b36914e689__execute_sql",
       "mcp__f474d5bb-dc13-43f0-9b18-e6b36914e689__apply_migration",
+      "mcp__f474d5bb-dc13-43f0-9b18-e6b36914e689__deploy_edge_function",
       "mcp__f474d5bb-dc13-43f0-9b18-e6b36914e689__list_tables",
       "mcp__f474d5bb-dc13-43f0-9b18-e6b36914e689__list_migrations",
       "mcp__f474d5bb-dc13-43f0-9b18-e6b36914e689__get_advisors",
