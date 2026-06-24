@@ -7226,6 +7226,7 @@ sbClient.auth.onAuthStateChange((event, session) => {
 
 // Expose globals for inline onclick handlers (mobile browser compatibility)
 window.App        = App;
+window.State      = State;
 window.DB         = DB;
 window.Voice      = Voice;
 window.Onboarding = Onboarding;
@@ -7233,6 +7234,7 @@ window.Analytics  = Analytics;
 window.LeadDocs   = LeadDocs;
 window.Gamify     = Gamify;
 window.Tools      = Tools;
+window.LeadImport = LeadImport;
 
 // Bind login buttons — uses both click and pointerdown for maximum mobile compatibility
 (function bindLoginButtons() {
