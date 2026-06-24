@@ -3084,7 +3084,7 @@ const Onboarding = {
       render() {
         const ind = localStorage.getItem('liders_industry') || 'other';
         const defaults = INDUSTRY_LABELS[ind]?.stages || ['פנייה נכנסה','יצרנו קשר','הצעה נשלחה','במשא ומתן','עסקה נסגרה ✓'];
-        const industryChanged = Onboarding._data.prevIndustry && Onboarding._data.prevIndustry !== ind;
+        const industryChanged = Onboarding._data.prevIndustry !== ind;
         const existing = (State.stages || []).map(s => s.name).filter(Boolean);
         // If industry changed → show new defaults. Otherwise → keep existing stages.
         const names = (!industryChanged && existing.length) ? existing : defaults;
