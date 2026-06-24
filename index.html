@@ -3972,10 +3972,9 @@ const App = {
     if (savedInd && INDUSTRY_LABELS[savedInd]) {
       localStorage.setItem('liders_industry', savedInd);
     }
-    // Skip onboarding for existing tenants (created > 30 min ago).
-    // New users will see it because their tenant was just created this session.
-    const tenantAge = Date.now() - new Date(State.tenant?.created_at || 0).getTime();
-    if (savedInd || tenantAge > 30 * 60 * 1000) {
+    // Skip onboarding only if industry was already chosen (saved in Supabase).
+    // New users with no industry set will always see the wizard, regardless of account age.
+    if (savedInd) {
       localStorage.setItem('onboarding_done', '1');
     }
     // Restore custom label overrides from localStorage
