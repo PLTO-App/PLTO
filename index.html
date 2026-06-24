@@ -481,7 +481,7 @@
     .bottom-nav-item {
       flex: 1; display: flex; flex-direction: column; align-items: center;
       gap: 3px; padding: 8px 0; cursor: pointer; color: var(--gray-400);
-      transition: var(--transition); font-size: 10px; font-weight: 600;
+      transition: var(--transition); font-size: 11px; font-weight: 600;
     }
     .bottom-nav-item .bni-icon { font-size: 20px; transition: var(--transition); }
     .bottom-nav-item.active { color: var(--navy-500); }
@@ -641,20 +641,6 @@
       flex-shrink: 0; width: 240px; display: flex; flex-direction: column; gap: 8px;
     }
     @media (max-width: 767px) { .kanban-col { width: 210px; } }
-    .kanban-col-header {
-      display: flex; align-items: center; gap: 8px; padding: 8px 12px;
-      background: var(--surface); border-radius: var(--radius-md);
-      border: 1px solid var(--border); box-shadow: var(--shadow-sm);
-    }
-    .kanban-stage-dot {
-      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
-    }
-    .kanban-stage-name { font-size: 13px; font-weight: 700; flex: 1; }
-    .kanban-count {
-      font-size: 11px; font-weight: 700; color: var(--gray-500);
-      background: var(--gray-100); padding: 2px 7px; border-radius: var(--radius-full);
-    }
-    .kanban-cards { display: flex; flex-direction: column; gap: 8px; }
     .kanban-add-btn {
       display: flex; align-items: center; gap: 6px; padding: 8px 12px;
       background: transparent; border: 1.5px dashed var(--gray-300);
@@ -880,6 +866,7 @@
     .kanban-col-header {
       display: flex; align-items: center; gap: 8px;
       padding: 12px 14px 10px;
+      background: var(--gray-50);
       background: linear-gradient(135deg, color-mix(in srgb, var(--col-clr) 12%, white) 0%, white 100%);
       border-bottom: 2px solid var(--col-clr);
     }
@@ -1085,6 +1072,15 @@
       border: 1px solid rgba(124,58,237,0.2);
       border-radius: var(--radius-md); padding: 14px;
     }
+    .dash-import-banner {
+      margin: 0 20px 14px;
+      background: linear-gradient(135deg, var(--navy-50), var(--blue-100));
+      border: 1.5px solid var(--navy-200);
+      border-radius: var(--radius-lg);
+      padding: 16px 18px;
+    }
+    .dash-import-banner-title { font-weight: 700; font-size: 14px; color: var(--navy-700); }
+    .dash-import-banner-sub   { font-size: 12px; color: var(--blue-500); margin-top: 2px; }
     .ai-card-title {
       font-size: 12px; font-weight: 700; color: var(--purple-500);
       margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
@@ -1270,7 +1266,7 @@
       padding: 8px 6px; text-align: center;
     }
     .gamify-stat-val { font-size: 1.3rem; font-weight: 900; color: var(--gold-300); }
-    .gamify-stat-label { font-size: 10px; color: rgba(255,255,255,.45); margin-top: 2px; }
+    .gamify-stat-label { font-size: 11px; color: rgba(255,255,255,.60); margin-top: 2px; }
     .gamify-achievements { display: flex; gap: 6px; flex-wrap: wrap; }
     .gamify-badge {
       background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15);
@@ -1439,7 +1435,7 @@
     /* Pipeline search bar */
     .pipeline-search-wrap {
       padding: 8px 16px 4px;
-      background: var(--bg);
+      background: var(--bg-app);
       position: sticky;
       top: 0;
       z-index: 10;
@@ -1622,7 +1618,7 @@
       </button>
       <div style="text-align:center;margin-top:10px;">
         <button id="btn-login-demo" type="button"
-          style="background:none;border:none;color:var(--gray-400);font-size:12px;cursor:pointer;text-decoration:underline;font-family:inherit;padding:4px;touch-action:manipulation;">
+          style="background:none;border:none;color:var(--gray-500);font-size:13px;cursor:pointer;text-decoration:underline;font-family:inherit;padding:4px;touch-action:manipulation;">
           רוצה לראות דמו קצר קודם?
         </button>
       </div>
@@ -1700,9 +1696,9 @@
   <!-- MAIN CONTENT -->
   <main id="main-content">
     <!-- DEMO BANNER -->
-    <div id="demo-banner" class="hidden" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;">
+    <div id="demo-banner" class="hidden" style="background:linear-gradient(135deg,var(--gold-400),var(--gold-600));color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;">
       <span>⚡ מצב דמו — הנתונים לא נשמרים ולא מחוברים לענן</span>
-      <button onclick="document.getElementById('screen-login').classList.remove('hidden');document.getElementById('app-shell').classList.add('hidden');State.isDemo=false;" style="background:#fff;color:#d97706;border:none;border-radius:8px;padding:5px 14px;font-weight:800;font-size:12px;cursor:pointer;">
+      <button onclick="document.getElementById('screen-login').classList.remove('hidden');document.getElementById('app-shell').classList.add('hidden');State.isDemo=false;" style="background:#fff;color:var(--gold-600);border:none;border-radius:8px;padding:5px 14px;font-weight:800;font-size:12px;cursor:pointer;">
         הרשם / התחבר →
       </button>
     </div>
@@ -1754,7 +1750,38 @@
 
       <div id="dash-trial-card"></div>
 
-      <!-- GAMIFICATION WIDGET -->
+      <!-- KPI CARDS — primary data, top position -->
+      <div class="kpi-row" id="kpi-row"></div>
+
+      <!-- URGENT TASKS — actionable items -->
+      <div class="section-header">
+        <div class="section-title">⚡ משימות דחופות</div>
+        <div class="section-link" onclick="App.go('tasks')">כל המשימות</div>
+      </div>
+      <div class="tasks-list" id="dash-tasks"></div>
+
+      <!-- HOT LEADS -->
+      <div class="section-header" style="margin-top:16px;">
+        <div class="section-title">🔥 לידים חמים</div>
+        <div class="section-link" onclick="App.go('pipeline')">כל הפייפליין</div>
+      </div>
+      <div id="dash-hot-leads" style="padding:0 20px 4px;display:flex;flex-direction:column;gap:8px;"></div>
+
+      <!-- IMPORT BANNER (1–4 leads) -->
+      <div id="dash-import-banner" class="hidden dash-import-banner">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+          <span style="font-size:28px;">📋</span>
+          <div>
+            <div class="dash-import-banner-title">יש לך רשימת לידים?</div>
+            <div class="dash-import-banner-sub">ייבא ישירות מ-Excel / CSV / יד2</div>
+          </div>
+        </div>
+        <button class="btn btn-primary w-full" onclick="LeadImport.open()" style="padding:11px;">
+          📁 ייבוא לידים מקובץ
+        </button>
+      </div>
+
+      <!-- GAMIFICATION WIDGET — motivational, secondary position -->
       <div class="gamify-widget" id="gamify-widget">
         <div class="gamify-top">
           <div class="gamify-avatar" id="gamify-avatar">🌱</div>
@@ -1792,32 +1819,13 @@
         </div>
       </div>
 
+      <!-- AI BRIEFING -->
       <div class="ai-card" id="dash-ai-briefing" style="margin: 0 20px 14px;">
         <div class="ai-card-title">✨ עוזר AI אישי — תדרוך יומי על המערכת</div>
-        <div id="dash-ai-briefing-body"></div>
+        <div id="dash-ai-briefing-body" style="min-height:40px;"></div>
       </div>
-      <div id="dash-import-banner" class="hidden" style="margin:0 20px 14px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1.5px solid #93c5fd;border-radius:16px;padding:16px 18px;">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-          <span style="font-size:28px;">📋</span>
-          <div>
-            <div style="font-weight:700;font-size:14px;color:#1e3a5f;">יש לך רשימת לידים?</div>
-            <div style="font-size:12px;color:#3b82f6;margin-top:2px;">ייבא ישירות מ-Excel / CSV / יד2</div>
-          </div>
-        </div>
-        <button class="btn btn-primary w-full" onclick="LeadImport.open()" style="padding:11px;">
-          📁 ייבוא לידים מקובץ
-        </button>
-      </div>
-      <div class="kpi-row" id="kpi-row"></div>
-      <div class="section-header">
-        <div class="section-title">⚡ משימות דחופות</div>
-        <div class="section-link" onclick="App.go('tasks')">כל המשימות</div>
-      </div>
-      <div class="tasks-list" id="dash-tasks"></div>
-      <div class="chart-card" id="dash-chart-container" style="display:none;">
-        <div class="chart-card-title">📊 שווי צינור לפי שלב</div>
-        <canvas id="pipeline-chart" height="140"></canvas>
-      </div>
+
+      <!-- COLD LEADS & CHART -->
       <div class="dash-section" style="display:none;">
         <div class="section-header" style="margin-top:16px;">
           <div class="section-title">❄️ לידים קפואים — 14+ יום ללא קשר</div>
@@ -1825,11 +1833,11 @@
         </div>
         <div id="dash-cold-leads"></div>
       </div>
-      <div class="section-header" style="margin-top:16px;">
-        <div class="section-title">🔥 לידים חמים</div>
-        <div class="section-link" onclick="App.go('pipeline')">כל הפייפליין</div>
+      <div class="chart-card" id="dash-chart-container" style="display:none;">
+        <div class="chart-card-title">📊 שווי צינור לפי שלב</div>
+        <canvas id="pipeline-chart" height="140"></canvas>
       </div>
-      <div id="dash-hot-leads" style="padding:0 20px 4px;display:flex;flex-direction:column;gap:8px;"></div>
+
       <div class="section-header mt-4">
         <div class="section-title">🕐 פעילות אחרונה</div>
       </div>
@@ -1843,7 +1851,7 @@
         <div class="flex gap-2">
           <button class="btn btn-ghost btn-sm" onclick="Settings.openPipelineStages()" title="ערוך שמות שלבים">✏️ שלבים</button>
           <button class="btn btn-ghost btn-sm" onclick="LeadImport.open()">📋 ייבוא</button>
-          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-add-lead')">+ ליד</button>
+          <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-lead')">+ ליד</button>
         </div>
       </div>
       <div class="pipeline-search-wrap" style="position:relative;">
@@ -2711,6 +2719,8 @@ function sourceLabel(s) {
   const m = { yad2:'יד2', madlan:'מדלן', facebook:'פייסבוק', referral:'הפניה', website:'אתר', call:'שיחה', other:'אחר' };
   return m[s] || s;
 }
+const VALID_SOURCES = ['yad2','madlan','facebook','referral','website','call','other'];
+function safeSource(s) { return VALID_SOURCES.includes(s) ? s : 'other'; }
 function typeEmoji(t) {
   const m = { call:'📞', whatsapp:'💬', email:'📧', showing:'🏠', meeting:'🤝', note:'📝', stage_change:'🔄', task_done:'✅', other:'⚡' };
   return m[t] || '⚡';
@@ -3463,14 +3473,14 @@ const Billing = {
       + (url.includes('?') ? '&' : '?')
       + 'client_reference_id=' + encodeURIComponent(tenantId)
       + '&prefilled_email='    + encodeURIComponent(email);
-    window.open(fullUrl, '_blank');
+    window.open(fullUrl, '_blank', 'noopener,noreferrer');
   },
   openPortal() {
     if (this.PORTAL_URL.includes('REPLACE')) {
       toast('🔧 הגדר Customer Portal URL ב-Billing.PORTAL_URL', 'error');
       return;
     }
-    window.open(this.PORTAL_URL, '_blank');
+    window.open(this.PORTAL_URL, '_blank', 'noopener,noreferrer');
   },
   planLabel() {
     const p = State.tenant?.plan;
@@ -4546,6 +4556,7 @@ const LeadDocs = {
   },
 
   async upload(leadId, input) {
+    if (demoGuard()) return;
     const file = input.files?.[0];
     if (!file) return;
     input.value = '';
@@ -4576,6 +4587,7 @@ const LeadDocs = {
   },
 
   async sendEmail(docId, leadId) {
+    if (demoGuard()) return;
     const doc  = this._cache[leadId]?.find(d => d.id === docId);
     const lead = State.leads.find(l => l.id === leadId);
     if (!doc || !lead) return;
@@ -4600,6 +4612,7 @@ const LeadDocs = {
   },
 
   async delete(docId, leadId) {
+    if (demoGuard()) return;
     if (!confirm('למחוק את המסמך?')) return;
     try {
       await sbClient.from('lead_documents').delete().eq('id', docId);
@@ -5479,7 +5492,7 @@ const Pipeline = {
           <div class="score-badge ${scoreClass(lead.score)}">${lead.score}</div>
         </div>
         <div class="lead-card-footer" style="margin-top:8px;">
-          <span class="badge badge-${lead.source}">${escapeHtml(sourceLabel(lead.source))}</span>
+          <span class="badge badge-${safeSource(lead.source)}">${escapeHtml(sourceLabel(lead.source))}</span>
           ${task ? `<span style="font-size:11px; color:${isOverdue?'var(--red-600)':isToday?'var(--orange-500)':'var(--gray-400)'}; font-weight:600;">
             ${typeEmoji(task.type)} ${formatRelDate(task.due)}
           </span>` : ''}
@@ -5566,7 +5579,7 @@ const LeadDetail = {
         </div>
         <div style="font-size:13px; color:var(--navy-200); margin-top:4px;">${escapeHtml(lead.phone)}${lead.phone2 ? ' · ' + escapeHtml(lead.phone2) : ''}${lead.email ? ' · ' + escapeHtml(lead.email) : ''}</div>
         <div style="margin-top:12px; display:flex; gap:6px; flex-wrap:wrap;">
-          <span class="badge badge-${lead.source}">${escapeHtml(sourceLabel(lead.source))}</span>
+          <span class="badge badge-${safeSource(lead.source)}">${escapeHtml(sourceLabel(lead.source))}</span>
           <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:${stage?.color+'33'};color:white;">${escapeHtml(stage?.name||'—')}</span>
         </div>
         <div class="lead-detail-actions">
@@ -6730,21 +6743,22 @@ const LeadImport = {
           sourceCol = colFor('source'), budgetCol = colFor('budget_max'),
           areaCol = colFor('desired_area'), notesCol = colFor('notes');
 
+    const stripFormula = s => s.replace(/^[=+\-@\t\r]+/, '');
     const out = [];
     for (const row of this._rows) {
-      const name = (row[nameCol] || '').trim();
-      const phone = (row[phoneCol] || '').trim();
+      const name = stripFormula((row[nameCol] || '').trim());
+      const phone = (row[phoneCol] || '').trim().replace(/[^\d+\-() ]/g, '');
       if (!name || !phone) continue;
       let source = (row[sourceCol] || '').trim().toLowerCase();
       if (!VALID_SOURCES.includes(source)) source = 'other';
       const budgetDigits = (row[budgetCol] || '').replace(/[^\d]/g, '');
       out.push({
         name, phone,
-        email: emailCol >= 0 ? (row[emailCol] || '').trim() : '',
+        email: emailCol >= 0 ? stripFormula((row[emailCol] || '').trim()) : '',
         source,
         budget_max: budgetDigits ? parseInt(budgetDigits, 10) : null,
-        desired_area: areaCol >= 0 ? (row[areaCol] || '').trim() : '',
-        notes: notesCol >= 0 ? (row[notesCol] || '').trim() : '',
+        desired_area: areaCol >= 0 ? stripFormula((row[areaCol] || '').trim()) : '',
+        notes: notesCol >= 0 ? stripFormula((row[notesCol] || '').trim()) : '',
       });
     }
     return out;
@@ -6948,6 +6962,7 @@ async function addActivity() {
 }
 
 async function moveLead(leadId, stageId) {
+  if (demoGuard()) return;
   const lead = State.leads.find(l => l.id === leadId);
   const stage = State.stages.find(s => s.id === stageId);
   if (!lead || !stage || lead.stage === stageId) return;
