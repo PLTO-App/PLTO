@@ -5296,20 +5296,19 @@ const Settings = {
           };
           const cur = localStorage.getItem('liders_industry') || 'other';
           const curMeta = IND_META[cur] || IND_META.other;
-          const grid = Object.entries(IND_META).map(([id, m]) => `
-            <div onclick="Settings.setIndustry('${id}')"
-                 style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;
-                        border-radius:8px;border:2px solid ${cur===id?'var(--navy-500)':'var(--border)'};
-                        background:${cur===id?'var(--navy-50)':'var(--gray-50)'};cursor:pointer;font-size:11px;font-weight:700;">
-              <span style="font-size:22px;">${m.icon}</span>${m.label}
-            </div>`).join('');
           return `
             <div style="padding:12px 16px 0;">
-              <div style="font-size:13px;color:var(--gray-500);margin-bottom:10px;">
-                תחום נוכחי: <strong>${curMeta.icon} ${curMeta.label}</strong>
+              <div onclick="Settings.resetOnboarding()" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--gray-50);cursor:pointer;margin-bottom:14px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="font-size:22px;">${curMeta.icon}</span>
+                  <div>
+                    <div style="font-size:13px;font-weight:700;color:var(--gray-800);">${curMeta.label}</div>
+                    <div style="font-size:11px;color:var(--gray-500);">תחום נוכחי — לחץ לשינוי</div>
+                  </div>
+                </div>
+                <span style="font-size:18px;color:var(--gray-400);">›</span>
               </div>
-              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">${grid}</div>
-              <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+              <div style="padding-top:2px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
                 <div>
                   <div style="font-size:13px;font-weight:600;color:var(--gray-700);">📧 שפת מיילים ללקוחות</div>
                   <div style="font-size:11px;color:var(--gray-500);margin-top:2px;">השפה בה ישלחו מיילים ל-leads שלך</div>
