@@ -3783,34 +3783,30 @@ const Onboarding = {
       title: 'ספר לנו עליך 👋',
       subtitle: 'נגדיר את הפרופיל האישי והעסקי שלך',
       render() {
-        const agentVal  = State.agent?.name || '';
-        const agencyVal = State.tenant?.name || '';
-        const phoneVal  = State.tenant?.whatsapp_number || localStorage.getItem('whatsapp_number') || localStorage.getItem('liders_agency_phone') || '';
-        const emailVal  = State.agent?.email || '';
         const industry = localStorage.getItem('liders_industry') || 'other';
-        const placeholder = industry === 'realestate'  ? 'לידרס נדל"ן — תל אביב'
-          : industry === 'construction' ? 'לידרס קבלנות — תל אביב'
-          : industry === 'interior'     ? 'לידרס עיצוב פנים — תל אביב'
-          : industry === 'photography'  ? 'לידרס צילום נכסים — תל אביב'
-          : industry === 'mortgage'     ? 'לידרס משכנתאות — תל אביב'
-          : industry === 'appraiser'    ? 'לידרס שמאות — תל אביב'
-          : 'שם העסק שלי';
+        const bizPlaceholder = industry === 'realestate'  ? 'Liders נדל"ן — תל אביב'
+          : industry === 'construction' ? 'Liders קבלנות — תל אביב'
+          : industry === 'interior'     ? 'Liders עיצוב פנים — תל אביב'
+          : industry === 'photography'  ? 'Liders צילום — תל אביב'
+          : industry === 'mortgage'     ? 'Liders משכנתאות — תל אביב'
+          : industry === 'appraiser'    ? 'Liders שמאות — תל אביב'
+          : 'Liders — שם העסק שלי';
         return `
           <div style="padding:8px 0;">
             <label class="form-label">שם מלא שלך *</label>
-            <input class="form-input" id="ob-agent-name" placeholder="ישראל ישראלי" value="${escapeHtml(agentVal)}" style="font-size:1.05rem;">
+            <input class="form-input" id="ob-agent-name" placeholder="ישראל ישראלי" style="font-size:1.05rem;">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;">
               <div>
                 <label class="form-label">טלפון / WhatsApp</label>
-                <input class="form-input" id="ob-agency-phone" type="tel" inputmode="tel" dir="ltr" placeholder="050-0000000" value="${escapeHtml(phoneVal)}" style="font-size:1rem;">
+                <input class="form-input" id="ob-agency-phone" type="tel" inputmode="tel" dir="ltr" placeholder="050-0000000" style="font-size:1rem;">
               </div>
               <div>
                 <label class="form-label">אימייל</label>
-                <input class="form-input" id="ob-agency-email" type="email" inputmode="email" dir="ltr" placeholder="you@example.com" value="${escapeHtml(emailVal)}" style="font-size:1rem;">
+                <input class="form-input" id="ob-agency-email" type="email" inputmode="email" dir="ltr" placeholder="you@example.com" style="font-size:1rem;">
               </div>
             </div>
             <label class="form-label" style="margin-top:16px;">שם העסק *</label>
-            <input class="form-input" id="ob-agency-name" placeholder='${placeholder}' value="${escapeHtml(agencyVal)}" style="font-size:1.05rem;">
+            <input class="form-input" id="ob-agency-name" placeholder='${bizPlaceholder}' style="font-size:1.05rem;">
             <label class="form-label" style="margin-top:16px;">עיר / אזור עיקרי</label>
             <input class="form-input" id="ob-agency-city" placeholder="תל אביב">
           </div>`;
