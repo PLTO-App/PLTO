@@ -6087,8 +6087,8 @@ const LeadDetail = {
           <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:${stage?.color+'33'};color:white;">${escapeHtml(stage?.name||'—')}</span>
         </div>
         <div class="lead-detail-actions">
-          <button class="lead-action-btn" data-phone="${escapeHtml(lead.phone)}" onclick="window.open('tel:'+this.dataset.phone)">📞 שיחה</button>
-          ${lead.phone2 ? `<button class="lead-action-btn" data-phone="${escapeHtml(lead.phone2)}" onclick="window.open('tel:'+this.dataset.phone)">📞 טלפון 2</button>` : ''}
+          <button class="lead-action-btn" data-phone="${escapeHtml(lead.phone)}" onclick="if(State.isDemo){toast('⚡ מצב דמו — בגרסה האמיתית ייחייג ללקוח','warning');}else{window.open('tel:'+this.dataset.phone);}">📞 שיחה</button>
+          ${lead.phone2 ? `<button class="lead-action-btn" data-phone="${escapeHtml(lead.phone2)}" onclick="if(State.isDemo){toast('⚡ מצב דמו — בגרסה האמיתית ייחייג ללקוח','warning');}else{window.open('tel:'+this.dataset.phone);}">📞 טלפון 2</button>` : ''}
           <button class="lead-action-btn" data-phone="${escapeHtml(lead.phone)}" onclick="window.open('https://wa.me/972'+this.dataset.phone.replace(/^0/,'').replace(/-/g,''))">💬 WhatsApp</button>
           <button class="lead-action-btn" onclick="openMoveStage('${lead.id}')">🔄 שנה שלב</button>
           <button class="lead-action-btn" onclick="State.currentLeadId='${lead.id}'; openModal('modal-add-activity')">📝 הוסף</button>
