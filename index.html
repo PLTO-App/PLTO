@@ -493,6 +493,10 @@
     ═══════════════════════════════════════ */
     #app-shell {
       display: flex; min-height: 100dvh;
+      -webkit-user-select: none; user-select: none;
+    }
+    #app-shell input, #app-shell textarea, #app-shell [contenteditable] {
+      -webkit-user-select: text; user-select: text;
     }
     #main-content {
       flex: 1; padding-bottom: var(--bottom-nav-h);
@@ -1522,8 +1526,12 @@
     }
 
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.js"
+          integrity="sha384-nD3dwv4+ZqdYnmZKe/249ImlV04om7xTCcsoSeQYI+RO+XlKPoqAWaJR1M5SJH9p"
+          crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"
+          integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ"
+          crossorigin="anonymous"></script>
   <script>
     // Error catcher — runs before main script so syntax/runtime errors in main script are visible
     window.onerror = function(msg, src, line) {
@@ -1616,13 +1624,17 @@
       <button id="btn-login-email" type="button" class="btn btn-primary w-full" style="padding:13px; font-size:15px; touch-action:manipulation;">
         כניסה למערכת
       </button>
-      <div style="text-align:center;margin-top:10px;">
+      <button id="btn-signup-email" type="button" class="btn w-full"
+        style="padding:12px; font-size:14px; touch-action:manipulation; background:var(--gray-100); color:var(--navy-700); border:1.5px solid var(--border); border-radius:var(--radius-lg);">
+        משתמש חדש? התחל ניסיון חינמי 30 יום
+      </button>
+      <div style="text-align:center;margin-top:6px;">
         <button id="btn-login-demo" type="button"
           style="background:none;border:none;color:var(--gray-500);font-size:13px;cursor:pointer;text-decoration:underline;font-family:inherit;padding:4px;touch-action:manipulation;">
           רוצה לראות דמו קצר קודם?
         </button>
       </div>
-      <p style="text-align:center;font-size:0.78rem;color:var(--gray-400);margin-top:16px;">
+      <p style="text-align:center;font-size:0.78rem;color:var(--gray-400);margin-top:12px;">
         בהרשמה אתה מסכים ל<span onclick="openModal('modal-privacy')" style="color:var(--blue-400);cursor:pointer;text-decoration:underline;">תנאי השימוש ומדיניות הפרטיות</span>
       </p>
     </div>
@@ -2802,9 +2814,10 @@ const DB = {
   agentId: null,
 
   async signIn(email, password) {
-    let { data, error } = await sbClient.auth.signInWithPassword({ email, password });
-    if (error) ({ data, error } = await sbClient.auth.signUp({ email, password }));
-    return { data, error };
+    return sbClient.auth.signInWithPassword({ email, password });
+  },
+  async signUp(email, password) {
+    return sbClient.auth.signUp({ email, password });
   },
 
   async signOut() { await sbClient.auth.signOut(); },
@@ -4879,7 +4892,14 @@ const App = {
     const password = document.getElementById('login-password').value.trim();
     if (!email) { toast('נא הכנס אימייל', 'error'); return; }
     if (!password) { toast('נא הכנס סיסמה', 'error'); return; }
-    await this._authAndEnter(email, password);
+    await this._authAndEnter(email, password, false);
+  },
+  async signupWithEmail() {
+    const email    = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value.trim();
+    if (!email) { toast('נא הכנס אימייל', 'error'); return; }
+    if (password.length < 8) { toast('סיסמה חייבת לפחות 8 תווים', 'error'); return; }
+    await this._authAndEnter(email, password, true);
   },
   async forgotPassword() {
     const email = document.getElementById('login-email').value.trim();
@@ -4917,24 +4937,30 @@ const App = {
       if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
     }
   },
-  async _authAndEnter(email, password) {
-    const btn = document.querySelector('#screen-login .btn-primary');
-    const overlay = document.getElementById('loading-overlay');
-    if (btn) { btn.disabled = true; btn.textContent = 'מתחבר...'; }
+  async _authAndEnter(email, password, isSignup = false) {
+    const loginBtn  = document.getElementById('btn-login-email');
+    const signupBtn = document.getElementById('btn-signup-email');
+    const overlay   = document.getElementById('loading-overlay');
+    if (loginBtn)  { loginBtn.disabled  = true; loginBtn.textContent  = isSignup ? 'כניסה...' : 'מתחבר...'; }
+    if (signupBtn) { signupBtn.disabled = true; }
     try {
-      const { data, error } = await DB.signIn(email, password);
+      const { data, error } = isSignup
+        ? await DB.signUp(email, password)
+        : await DB.signIn(email, password);
       if (error || !data?.user) {
         const msg = error?.message || '';
-        const hint = msg.includes('confirm') || msg.includes('email')
+        const hint = isSignup
+          ? (msg.includes('already') || msg.includes('registered') ? 'אימייל זה רשום כבר — נסה להתחבר' : 'שגיאת הרשמה: ' + msg)
+          : msg.includes('confirm') || msg.includes('email')
           ? 'נא אשר את האימייל שנשלח אליך ואז נסה שוב'
-          : msg.includes('Invalid') || msg.includes('credentials')
+          : msg.includes('Invalid') || msg.includes('credentials') || msg.includes('invalid')
           ? 'סיסמה או אימייל שגויים'
           : 'שגיאת התחברות — נסה שנית';
         toast(hint, 'error');
         return;
       }
       if (!data?.session) {
-        toast('נשלח אימייל אישור — אשר ואז התחבר שוב', 'error');
+        toast('📧 נשלח אימייל אישור — אשר ואז התחבר שוב', 'success');
         return;
       }
       // show loading overlay while fetching data
@@ -4969,7 +4995,8 @@ const App = {
       toast('שגיאה: ' + e.message, 'error');
       overlay.classList.add('hidden');
     } finally {
-      if (btn) { btn.disabled = false; btn.textContent = 'כניסה למערכת'; }
+      if (loginBtn)  { loginBtn.disabled  = false; loginBtn.textContent  = 'כניסה למערכת'; }
+      if (signupBtn) { signupBtn.disabled = false; signupBtn.textContent = 'משתמש חדש? התחל ניסיון חינמי 30 יום'; }
     }
   },
   _showApp() {
@@ -7270,6 +7297,7 @@ window.LeadImport = LeadImport;
     el.addEventListener('click', guarded);
   }
   bind('btn-login-email',  function(){ App.loginWithEmail(); });
+  bind('btn-signup-email', function(){ App.signupWithEmail(); });
   bind('btn-login-demo',   function(){ App.loginDemo(); });
   bind('btn-login-google', function(){ App.loginWithGoogle(); });
 })();

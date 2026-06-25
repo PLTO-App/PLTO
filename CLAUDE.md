@@ -1,5 +1,16 @@
 # CLAUDE.md — Liders CRM
 
+## 🔒 כשמעדכנים חבילות CDN — חובה לעדכן SRI
+
+כאשר מעדכנים את Supabase או Chart.js:
+1. `cd /tmp/sri_work && npm install @supabase/supabase-js@<VER> chart.js@<VER>`
+2. חשב hash: `cat node_modules/@supabase/supabase-js/dist/umd/supabase.js | openssl dgst -sha384 -binary | openssl base64 -A`
+3. עדכן את `integrity="sha384-..."` ב-index.html (שתי שורות בתחילת ה-`<body>` תחת CSS)
+
+גרסאות נוכחיות: supabase-js@**2.108.2**, chart.js@**4.5.1**
+
+---
+
 ## 🚨 LAUNCH BLOCKER — חובה להזכיר בכל שיחה
 
 > **Stripe Live Mode ממתין לאישור עסקי**

@@ -431,6 +431,7 @@ const ctx = await browser.newContext({
 });
 
 // Intercept CDN scripts and replace with mocks
+// Note: integrity attributes are stripped at HTML level (see route below) so SRI won't block mocks
 await ctx.route('**cdn.jsdelivr.net**supabase**', async route => {
   await route.fulfill({ contentType: 'application/javascript; charset=utf-8', body: SUPABASE_MOCK_JS });
 });
@@ -439,6 +440,15 @@ await ctx.route('**cdn.jsdelivr.net**chart.js**', async route => {
     window.Chart=function(){this.destroy=function(){};this.data={datasets:[]};this.update=function(){};};
     window.Chart.register=function(){};
   `});
+});
+// Strip integrity/crossorigin from script tags so SRI doesn't reject mocked CDN responses
+await ctx.route('**localhost**', async route => {
+  if (!route.request().url().endsWith('/') && !route.request().url().endsWith('/index.html')) {
+    return route.continue();
+  }
+  const resp = await route.fetch();
+  const body = (await resp.text()).replace(/\s+integrity="[^"]*"/g, '').replace(/\s+crossorigin="[^"]*"/g, '');
+  await route.fulfill({ response: resp, body });
 });
 
 page = await ctx.newPage();
