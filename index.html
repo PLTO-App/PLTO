@@ -1622,6 +1622,45 @@
       bottom: calc(72px + env(safe-area-inset-bottom, 0px));
     }
 
+  /* ═══════════════════════════════════════
+     PIN LOCK SCREEN
+  ═══════════════════════════════════════ */
+  #screen-lock {
+    position: fixed; inset: 0; z-index: 9999;
+    background: linear-gradient(160deg, #0F1F3D 0%, #1a3260 100%);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 40px 20px; direction: rtl;
+  }
+  .lock-dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.35);
+    transition: all 0.15s ease;
+    background: transparent;
+  }
+  .lock-dot.filled {
+    background: white; border-color: white; transform: scale(1.15);
+  }
+  .pin-key {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: white; font-size: 22px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: background 0.1s; line-height: 1; gap: 1px; -webkit-tap-highlight-color: transparent;
+  }
+  .pin-key:active, .pin-key:focus { background: rgba(255,255,255,0.22); outline: none; }
+  .pin-key .pin-sub { font-size: 8px; font-weight: 400; opacity: 0.55; letter-spacing: 1px; }
+  .pin-key.pin-del { background: transparent; border-color: transparent; font-size: 20px; }
+  .pin-key.pin-del:active { background: rgba(255,255,255,0.1); }
+  @keyframes lock-shake {
+    0%,100% { transform: translateX(0); }
+    20%,60%  { transform: translateX(-10px); }
+    40%,80%  { transform: translateX(10px); }
+  }
+  .lock-shake { animation: lock-shake 0.4s; }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.js"
           integrity="sha384-nD3dwv4+ZqdYnmZKe/249ImlV04om7xTCcsoSeQYI+RO+XlKPoqAWaJR1M5SJH9p"
@@ -1798,6 +1837,9 @@
       </div>
       <a class="nav-item mt-2" data-screen="settings" onclick="App.go('settings')">
         <span class="nav-icon">⚙️</span> הגדרות
+      </a>
+      <a class="nav-item" id="sidebar-lock-btn" onclick="AppLock.lock()" style="display:none;">
+        <span class="nav-icon">🔒</span> נעל מסך
       </a>
       <a class="nav-item" onclick="App.logout()">
         <span class="nav-icon">🚪</span> יציאה
@@ -2861,6 +2903,59 @@
       <p style="margin-top:8px;font-size:0.82rem;">
         <a href="/privacy-policy.html" target="_blank" style="color:var(--blue-500);">לצפייה בדף המדיניות המלא ←</a>
       </p>
+    </div>
+  </div>
+</div>
+
+<!-- PIN LOCK SCREEN -->
+<div id="screen-lock" class="hidden">
+  <div style="text-align:center; margin-bottom:36px;">
+    <div style="font-size:52px; margin-bottom:14px;">🔒</div>
+    <div style="font-size:26px; font-weight:900; color:white; letter-spacing:1px;">Liders CRM</div>
+    <div style="font-size:14px; color:rgba(255,255,255,0.5); margin-top:6px;">הכנס קוד PIN לכניסה</div>
+  </div>
+  <div id="lock-dots" style="display:flex; gap:18px; margin-bottom:44px;">
+    <div class="lock-dot"></div>
+    <div class="lock-dot"></div>
+    <div class="lock-dot"></div>
+    <div class="lock-dot"></div>
+  </div>
+  <div style="display:grid; grid-template-columns:repeat(3,72px); gap:14px; direction:ltr;">
+    <button class="pin-key" onclick="AppLock.digit(1)">1<span class="pin-sub"></span></button>
+    <button class="pin-key" onclick="AppLock.digit(2)">2<span class="pin-sub">ABC</span></button>
+    <button class="pin-key" onclick="AppLock.digit(3)">3<span class="pin-sub">DEF</span></button>
+    <button class="pin-key" onclick="AppLock.digit(4)">4<span class="pin-sub">GHI</span></button>
+    <button class="pin-key" onclick="AppLock.digit(5)">5<span class="pin-sub">JKL</span></button>
+    <button class="pin-key" onclick="AppLock.digit(6)">6<span class="pin-sub">MNO</span></button>
+    <button class="pin-key" onclick="AppLock.digit(7)">7<span class="pin-sub">PQRS</span></button>
+    <button class="pin-key" onclick="AppLock.digit(8)">8<span class="pin-sub">TUV</span></button>
+    <button class="pin-key" onclick="AppLock.digit(9)">9<span class="pin-sub">WXYZ</span></button>
+    <button class="pin-key pin-del" onclick="AppLock.digit(0)" style="font-size:22px;font-weight:700;">0</button>
+    <button class="pin-key pin-del" onclick="AppLock.backspace()">⌫</button>
+    <div></div>
+  </div>
+  <button onclick="App.logout()" style="margin-top:36px; background:none; border:none; color:rgba(255,255,255,0.35); font-size:13px; cursor:pointer; font-family:inherit;">שכחתי קוד — יציאה</button>
+</div>
+
+<!-- PIN Setup Modal -->
+<div class="modal-overlay hidden" id="modal-pin-setup">
+  <div class="modal" style="max-width:340px;">
+    <div class="modal-header">
+      <div class="modal-title" id="pin-setup-title">בחר קוד PIN (4 ספרות)</div>
+      <button class="modal-close" onclick="document.getElementById('modal-pin-setup').classList.add('hidden')">×</button>
+    </div>
+    <div class="modal-body" style="padding:24px 20px;">
+      <p style="color:var(--gray-500);font-size:0.88rem;margin-bottom:16px;line-height:1.6;">
+        הקוד ישמר רק במכשיר זה ויידרש בכל כניסה לאפליקציה.
+      </p>
+      <input id="pin-setup-input" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4"
+        placeholder="• • • •" class="form-input"
+        style="font-size:2rem; letter-spacing:12px; text-align:center; dir:ltr;"
+        onkeydown="if(event.key==='Enter')AppLock.confirmSetup()">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-pin-setup').classList.add('hidden')">ביטול</button>
+      <button class="btn btn-primary" onclick="AppLock.confirmSetup()">אישור ←</button>
     </div>
   </div>
 </div>
@@ -5568,6 +5663,10 @@ const App = {
     if (!State.isDemo) setTimeout(() => Onboarding.show(), 800);
     // Show billing reminder for days 7-1 (not in demo)
     if (!State.isDemo) setTimeout(() => Billing.showDailyReminder(), 1500);
+    // Init PIN lock
+    AppLock._updateLockBtn();
+    AppLock.initListeners();
+    AppLock.startTimer();
   },
   _applyIndustryLabels() {
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
@@ -6792,6 +6891,140 @@ const Calendar = {
 };
 
 /* ═══════════════════════════════════════════
+   APP LOCK (PIN)
+═══════════════════════════════════════════ */
+const AppLock = {
+  _timer: null,
+  _pin: '',
+  _setupStep: 0,
+  _setupPin: '',
+
+  isEnabled() { return !!localStorage.getItem('liders_pin_hash'); },
+  getTimeoutMs() { return parseInt(localStorage.getItem('liders_lock_mins') || '5') * 60 * 1000; },
+
+  async _hash(pin) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('lcrm_' + pin));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  },
+
+  async setup(pin) {
+    localStorage.setItem('liders_pin_hash', await this._hash(pin));
+    this._updateLockBtn();
+    this.startTimer();
+  },
+
+  disable() {
+    localStorage.removeItem('liders_pin_hash');
+    this._clearTimer();
+    this._updateLockBtn();
+    if (State.screen === 'settings') Settings.render();
+    toast('🔓 נעילת PIN בוטלה', 'success');
+  },
+
+  lock() {
+    if (!this.isEnabled()) return;
+    this._pin = '';
+    this._renderDots();
+    document.getElementById('screen-lock').classList.remove('hidden');
+    this._clearTimer();
+  },
+
+  async _tryUnlock() {
+    const hash = await this._hash(this._pin);
+    if (hash === localStorage.getItem('liders_pin_hash')) {
+      document.getElementById('screen-lock').classList.add('hidden');
+      this._pin = '';
+      this._renderDots();
+      this.startTimer();
+    } else {
+      const dots = document.getElementById('lock-dots');
+      dots.classList.add('lock-shake');
+      setTimeout(() => dots.classList.remove('lock-shake'), 450);
+      this._pin = '';
+      setTimeout(() => this._renderDots(), 50);
+    }
+  },
+
+  digit(d) {
+    if (this._pin.length >= 4) return;
+    this._pin += String(d);
+    this._renderDots();
+    if (this._pin.length === 4) setTimeout(() => this._tryUnlock(), 130);
+  },
+
+  backspace() { this._pin = this._pin.slice(0, -1); this._renderDots(); },
+
+  _renderDots() {
+    document.querySelectorAll('#lock-dots .lock-dot').forEach((dot, i) =>
+      dot.classList.toggle('filled', i < this._pin.length)
+    );
+  },
+
+  startTimer() {
+    this._clearTimer();
+    if (!this.isEnabled()) return;
+    this._timer = setTimeout(() => this.lock(), this.getTimeoutMs());
+  },
+
+  _clearTimer() { if (this._timer) { clearTimeout(this._timer); this._timer = null; } },
+
+  resetTimer() { if (this.isEnabled()) this.startTimer(); },
+
+  _updateLockBtn() {
+    const btn = document.getElementById('sidebar-lock-btn');
+    if (btn) btn.style.display = this.isEnabled() ? '' : 'none';
+  },
+
+  initListeners() {
+    ['touchstart','mousedown','keydown'].forEach(e =>
+      document.addEventListener(e, () => this.resetTimer(), { passive: true })
+    );
+  },
+
+  /* ── PIN Setup flow ── */
+  startSetup() {
+    if (demoGuard()) return;
+    this._setupStep = 1;
+    this._setupPin = '';
+    this._showSetupModal();
+  },
+
+  _showSetupModal() {
+    const title = this._setupStep === 1 ? 'בחר קוד PIN (4 ספרות)' : 'אשר את הקוד שוב';
+    document.getElementById('pin-setup-title').textContent = title;
+    const inp = document.getElementById('pin-setup-input');
+    inp.value = '';
+    document.getElementById('modal-pin-setup').classList.remove('hidden');
+    setTimeout(() => inp.focus(), 100);
+  },
+
+  async confirmSetup() {
+    const val = document.getElementById('pin-setup-input').value.trim();
+    if (!/^\d{4}$/.test(val)) { toast('יש להכניס בדיוק 4 ספרות', 'error'); return; }
+    if (this._setupStep === 1) {
+      this._setupPin = val;
+      this._setupStep = 2;
+      this._showSetupModal();
+    } else {
+      if (val !== this._setupPin) {
+        toast('הקודים לא תואמים — נסה שוב', 'error');
+        this._setupStep = 1; this._setupPin = '';
+        this._showSetupModal(); return;
+      }
+      await this.setup(val);
+      document.getElementById('modal-pin-setup').classList.add('hidden');
+      toast('🔒 נעילת PIN הופעלה', 'success');
+      if (State.screen === 'settings') Settings.render();
+    }
+  },
+
+  setLockMins(mins) {
+    localStorage.setItem('liders_lock_mins', mins);
+    this.startTimer();
+  },
+};
+
+/* ═══════════════════════════════════════════
    SETTINGS SCREEN
 ═══════════════════════════════════════════ */
 const Settings = {
@@ -6815,6 +7048,47 @@ const Settings = {
           </div>
           <div class="settings-arrow">›</div>
         </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-title">🔒 אבטחה</div>
+        ${AppLock.isEnabled() ? `
+        <div class="settings-row" onclick="AppLock.lock()" style="cursor:pointer;">
+          <div class="settings-row-icon">🔒</div>
+          <div class="settings-row-body">
+            <div class="settings-row-label">נעל עכשיו</div>
+            <div class="settings-row-sub">PIN פעיל — לחץ לנעילה מיידית</div>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-icon">⏱️</div>
+          <div class="settings-row-body">
+            <div class="settings-row-label">נעל אוטומטית אחרי</div>
+          </div>
+          <select onchange="AppLock.setLockMins(this.value)"
+            style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:14px;background:var(--bg-card);font-family:inherit;cursor:pointer;">
+            ${['1','5','15','30'].map(m => `<option value="${m}" ${(localStorage.getItem('liders_lock_mins')||'5')===m?'selected':''}>${m} דקות</option>`).join('')}
+          </select>
+        </div>
+        <div class="settings-row" onclick="AppLock.startSetup()" style="cursor:pointer;">
+          <div class="settings-row-icon">🔄</div>
+          <div class="settings-row-body"><div class="settings-row-label">שנה קוד PIN</div></div>
+          <div class="settings-arrow">›</div>
+        </div>
+        <div class="settings-row" onclick="if(confirm('לבטל את נעילת ה-PIN?'))AppLock.disable();" style="cursor:pointer;">
+          <div class="settings-row-icon">🔓</div>
+          <div class="settings-row-body"><div class="settings-row-label" style="color:var(--red-500);">כבה נעילת PIN</div></div>
+          <div class="settings-arrow">›</div>
+        </div>
+        ` : `
+        <div class="settings-row" onclick="AppLock.startSetup()" style="cursor:pointer;">
+          <div class="settings-row-icon">🔒</div>
+          <div class="settings-row-body">
+            <div class="settings-row-label">הגדר נעילת PIN</div>
+            <div class="settings-row-sub">הגן על הנתונים שלך עם קוד 4 ספרות</div>
+          </div>
+          <div class="settings-arrow">›</div>
+        </div>
+        `}
       </div>
       <div class="settings-section">
         <div class="settings-section-title">הסוכנות</div>
