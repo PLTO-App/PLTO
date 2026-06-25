@@ -2615,6 +2615,98 @@
   </div>
 </div>
 
+<!-- Edit Property Modal -->
+<div id="modal-edit-property" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-edit-property')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">✏️ עריכת נכס</div>
+      <button class="modal-close" onclick="closeModal('modal-edit-property')">×</button>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div class="form-group">
+        <label class="form-label">כותרת הנכס *</label>
+        <input type="text" id="edit-prop-title" class="form-input">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">סוג נכס</label>
+          <select id="edit-prop-type" class="form-input">
+            <option value="apartment">דירה</option>
+            <option value="house">בית פרטי</option>
+            <option value="penthouse">פנטהאוז</option>
+            <option value="commercial">מסחרי</option>
+            <option value="land">מגרש</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">סטטוס</label>
+          <select id="edit-prop-status" class="form-input">
+            <option value="available">זמין</option>
+            <option value="under_offer">בהצעה</option>
+            <option value="sold">נמכר</option>
+            <option value="rented">מושכר</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">מחיר (₪) *</label>
+        <input type="number" id="edit-prop-price" class="form-input" min="0">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">חדרים</label>
+          <input type="number" id="edit-prop-rooms" class="form-input" step="0.5" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">שטח (מ"ר)</label>
+          <input type="number" id="edit-prop-area" class="form-input" min="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">קומה</label>
+          <input type="number" id="edit-prop-floor" class="form-input" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">עיר</label>
+          <input type="text" id="edit-prop-city" class="form-input">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">כתובת</label>
+        <input type="text" id="edit-prop-address" class="form-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">תיאור</label>
+        <textarea id="edit-prop-description" class="form-input form-textarea"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">תמונת נכס</label>
+        <div id="edit-prop-current-img" style="display:none; margin-bottom:8px; border-radius:var(--radius-lg); overflow:hidden;">
+          <img id="edit-prop-img-display" src="" alt="תמונה נוכחית" style="width:100%; max-height:160px; object-fit:cover;">
+        </div>
+        <div class="prop-img-upload-zone" style="margin-top:4px;">
+          <input type="file" id="edit-prop-image" accept="image/jpeg,image/png,image/webp,image/heic" onchange="previewEditPropImage(this)">
+          <div id="edit-prop-upload-placeholder">
+            <div style="font-size:24px; margin-bottom:4px;">📷</div>
+            <div style="font-size:13px; font-weight:600; color:var(--gray-600);">החלף תמונה</div>
+            <div style="font-size:11px; color:var(--gray-400); margin-top:2px;">JPG, PNG, WEBP עד 10MB</div>
+          </div>
+        </div>
+        <img id="edit-prop-img-preview" class="prop-img-preview" src="" alt="תצוגה מקדימה">
+      </div>
+    </div>
+    <div class="modal-footer" style="flex-direction:column; gap:8px;">
+      <div style="display:flex; gap:8px; width:100%;">
+        <button class="btn btn-ghost" onclick="closeModal('modal-edit-property')">ביטול</button>
+        <button id="edit-prop-save-btn" class="btn btn-primary" style="flex:1;" onclick="saveEditProperty()">שמור שינויים</button>
+      </div>
+      <button class="btn btn-ghost" style="width:100%; color:var(--red-500); font-size:13px;" onclick="deleteProperty()">🗑 מחק נכס</button>
+    </div>
+  </div>
+</div>
+
 <!-- Privacy Policy & Terms Modal -->
 <div id="modal-privacy" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-privacy')">
   <div class="modal" style="max-height:85vh;overflow-y:auto;">
@@ -3061,6 +3153,29 @@ const DB = {
       neighborhood: '', description: data.description || '',
       image_url: data.image_url || null,
     };
+  },
+
+  async updateProperty(propId, updates) {
+    const { error } = await sbClient.from('properties').update({
+      title: updates.title,
+      type: updates.type,
+      status: updates.status,
+      price: updates.price,
+      rooms: updates.rooms,
+      area_sqm: updates.area,
+      floor: updates.floor,
+      address: updates.address,
+      city: updates.city,
+      description: updates.description,
+      ...(updates.image_url !== undefined ? { image_url: updates.image_url } : {}),
+    }).eq('id', propId).eq('tenant_id', this.tenantId);
+    if (error) throw error;
+  },
+
+  async deleteProperty(propId) {
+    const { error } = await sbClient.from('properties').delete()
+      .eq('id', propId).eq('tenant_id', this.tenantId);
+    if (error) throw error;
   },
 
   async moveLead(leadId, shortStageId) {
@@ -5868,7 +5983,7 @@ const PropertiesScreen = {
     const statusBadge = { available:'זמין', under_offer:'הצעה', sold:'נמכר', rented:'מושכר' };
     const statusClass = { available:'badge-status-available', under_offer:'badge-status-offer', sold:'badge-status-sold' };
     document.getElementById('properties-grid').innerHTML = State.properties.map(p => `
-      <div class="property-card" onclick="toast('מסך פרטי נכס בפיתוח — בקרוב 🏠', 'info')">
+      <div class="property-card" onclick="openEditProperty('${p.id}')">
         <div class="property-photo">${p.image_url ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.title)}" loading="lazy">` : '🏠'}</div>
         <div class="property-body">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;">
@@ -7129,6 +7244,107 @@ async function addProperty() {
     toast('שגיאה בשמירה: ' + e.message, 'error');
   } finally {
     if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'שמור נכס'; }
+  }
+}
+
+function openEditProperty(propId) {
+  const p = State.properties.find(x => x.id === propId);
+  if (!p) return;
+  State.currentPropId = propId;
+  document.getElementById('edit-prop-title').value       = p.title || '';
+  document.getElementById('edit-prop-type').value        = p.type  || 'apartment';
+  document.getElementById('edit-prop-status').value      = p.status || 'available';
+  document.getElementById('edit-prop-price').value       = p.price  || '';
+  document.getElementById('edit-prop-rooms').value       = p.rooms  || '';
+  document.getElementById('edit-prop-area').value        = p.area   || '';
+  document.getElementById('edit-prop-floor').value       = p.floor  || '';
+  document.getElementById('edit-prop-address').value     = p.address || '';
+  document.getElementById('edit-prop-city').value        = p.city   || '';
+  document.getElementById('edit-prop-description').value = p.description || '';
+  // Show current image if exists
+  const currentImgDiv = document.getElementById('edit-prop-current-img');
+  const imgDisplay    = document.getElementById('edit-prop-img-display');
+  if (p.image_url) {
+    imgDisplay.src = p.image_url;
+    currentImgDiv.style.display = 'block';
+  } else {
+    currentImgDiv.style.display = 'none';
+    imgDisplay.src = '';
+  }
+  // Reset new image upload
+  const fileInput = document.getElementById('edit-prop-image');
+  if (fileInput) fileInput.value = '';
+  const preview = document.getElementById('edit-prop-img-preview');
+  if (preview) { preview.src = ''; preview.classList.remove('visible'); }
+  openModal('modal-edit-property');
+}
+
+function previewEditPropImage(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { toast('הקובץ גדול מדי (מקס׳ 10MB)', 'error'); input.value = ''; return; }
+  const preview = document.getElementById('edit-prop-img-preview');
+  const reader = new FileReader();
+  reader.onload = e => { preview.src = e.target.result; preview.classList.add('visible'); };
+  reader.readAsDataURL(file);
+}
+
+async function saveEditProperty() {
+  if (demoGuard()) return;
+  const propId = State.currentPropId;
+  const prop = State.properties.find(x => x.id === propId);
+  if (!prop) return;
+  const title = document.getElementById('edit-prop-title').value.trim();
+  const price = parseFloat(document.getElementById('edit-prop-price').value) || 0;
+  if (!title) { toast('נא הכנס כותרת לנכס', 'error'); return; }
+  if (!price) { toast('נא הכנס מחיר', 'error'); return; }
+  const saveBtn = document.getElementById('edit-prop-save-btn');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'שומר...'; }
+  try {
+    const updates = {
+      title,
+      type:        document.getElementById('edit-prop-type').value,
+      status:      document.getElementById('edit-prop-status').value,
+      price,
+      rooms:       parseFloat(document.getElementById('edit-prop-rooms').value) || null,
+      area:        parseFloat(document.getElementById('edit-prop-area').value) || null,
+      floor:       parseInt(document.getElementById('edit-prop-floor').value) || null,
+      address:     document.getElementById('edit-prop-address').value.trim(),
+      city:        document.getElementById('edit-prop-city').value.trim(),
+      description: document.getElementById('edit-prop-description').value.trim(),
+    };
+    const imageFile = document.getElementById('edit-prop-image').files[0] || null;
+    if (imageFile) {
+      const imageUrl = await uploadPropertyImage(imageFile, propId);
+      await sbClient.from('properties').update({ image_url: imageUrl }).eq('id', propId);
+      updates.image_url = imageUrl;
+    }
+    await DB.updateProperty(propId, updates);
+    Object.assign(prop, updates);
+    closeModal('modal-edit-property');
+    toast('✅ הנכס עודכן בהצלחה', 'success');
+    if (State.screen === 'properties') PropertiesScreen.render();
+  } catch(e) {
+    toast('שגיאה בשמירה: ' + e.message, 'error');
+  } finally {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'שמור שינויים'; }
+  }
+}
+
+async function deleteProperty() {
+  if (demoGuard()) return;
+  const propId = State.currentPropId;
+  const prop = State.properties.find(x => x.id === propId);
+  if (!prop) return;
+  if (!confirm(`למחוק את הנכס "${prop.title}"?`)) return;
+  try {
+    await DB.deleteProperty(propId);
+    State.properties = State.properties.filter(x => x.id !== propId);
+    closeModal('modal-edit-property');
+    toast('🗑 הנכס נמחק', 'success');
+    if (State.screen === 'properties') PropertiesScreen.render();
+  } catch(e) {
+    toast('שגיאה במחיקה: ' + e.message, 'error');
   }
 }
 
