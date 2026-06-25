@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Liders CRM — הפלטפורמה שהופכת לידים לעסקאות</title>
-  <meta name="description" content="מערכת CRM לסוכני נדל״ן עם סוכן AI שמנהל את הפייפליין בשבילך. 21 יום חינם, ללא כרטיס אשראי.">
+  <meta name="description" content="מערכת CRM לסוכני נדל״ן עם סוכן AI שמנהל את הפייפליין בשבילך. 30 יום חינם, ללא כרטיס אשראי.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
@@ -793,6 +793,113 @@
     }
 
     /* ══════════════════════════════
+       שירותי שיווק
+    ══════════════════════════════ */
+    .marketing-section {
+      background: linear-gradient(160deg, #FFFBEB 0%, #FFF7ED 100%);
+      border-top: 4px solid var(--gold);
+      border-bottom: 4px solid var(--gold);
+    }
+    .marketing-banner {
+      background: var(--white);
+      border: 2px solid var(--gold);
+      border-radius: 24px;
+      padding: 36px 32px;
+      max-width: 760px;
+      margin: 0 auto;
+      box-shadow: 0 8px 40px rgba(245,158,11,0.15);
+      text-align: center;
+    }
+    .mb-badge {
+      display: inline-block;
+      background: var(--gold);
+      color: var(--white);
+      font-size: 13px;
+      font-weight: 800;
+      padding: 6px 18px;
+      border-radius: 99px;
+      margin-bottom: 16px;
+      letter-spacing: 0.02em;
+    }
+    .mb-title {
+      font-size: clamp(20px, 3.5vw, 30px);
+      font-weight: 900;
+      color: var(--navy);
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+    .mb-desc {
+      font-size: 16px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 560px;
+      margin: 0 auto 28px;
+    }
+    .mb-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+      text-align: right;
+    }
+    .mb-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: #FFFBEB;
+      border: 1px solid rgba(245,158,11,0.25);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .mbf-icon {
+      font-size: 22px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .mb-feature strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 3px;
+    }
+    .mb-feature span {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .btn-marketing {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--gold), #F97316);
+      color: var(--white);
+      border: none;
+      padding: 16px 36px;
+      border-radius: 99px;
+      font-family: 'Heebo', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      box-shadow: 0 8px 28px rgba(245,158,11,0.35);
+    }
+    .btn-marketing:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(245,158,11,0.45); }
+    .plan-addon {
+      margin: 12px 0 16px;
+      background: #FFFBEB;
+      border: 1.5px dashed var(--gold);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #92400E;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .plan-addon strong { color: #B45309; font-size: 14px; }
+
+    /* ══════════════════════════════
        אנימציות כניסה
     ══════════════════════════════ */
     .fade-up {
@@ -829,7 +936,7 @@
   </p>
 
   <div class="hero-actions">
-    <a href="https://liders-crm.com" class="btn-primary">התחל 21 יום בחינם</a>
+    <a href="https://liders-crm.com" class="btn-primary">התחל 30 יום בחינם</a>
     <a href="#demo" class="btn-ghost">תראה לי איך זה עובד</a>
   </div>
   <p class="hero-micro">ללא כרטיס אשראי. ללא התחייבות. כן ממש.</p>
@@ -902,7 +1009,7 @@
 <div class="stats-bar">
   <div class="stats-inner">
     <div class="stat-item">
-      <div class="stat-num">21<span> יום</span></div>
+      <div class="stat-num">30<span> יום</span></div>
       <div class="stat-label">ניסיון חינם מלא</div>
     </div>
     <div class="stat-item">
@@ -1100,15 +1207,16 @@
       <div class="plan-card fade-up">
         <div class="plan-name">Solo</div>
         <div class="plan-desc">לסוכן עצמאי</div>
-        <div class="plan-price">₪149<small>/חודש</small></div>
+        <div class="plan-price">₪150<small>/חודש</small></div>
         <div class="plan-limit">1 סוכן · עד 200 לידים</div>
         <ul class="plan-features">
           <li>לוח Kanban מלא</li>
           <li>תזכורות WhatsApp</li>
           <li>ציון AI לכל ליד</li>
           <li>אפליקציה למובייל</li>
-          <li>21 יום ניסיון חינם</li>
+          <li>30 יום ניסיון חינם</li>
         </ul>
+        <div class="plan-addon">✨ <span>+ <strong>₪100/חודש</strong> — שירותי שיווק מלאים</span></div>
         <a href="https://liders-crm.com" class="plan-btn outline">התחל בחינם</a>
       </div>
 
@@ -1116,7 +1224,7 @@
         <div class="plan-popular">⭐ הכי פופולרי</div>
         <div class="plan-name">צוות</div>
         <div class="plan-desc">לצוות קטן</div>
-        <div class="plan-price">₪299<small>/חודש</small></div>
+        <div class="plan-price">₪300<small>/חודש</small></div>
         <div class="plan-limit">5 סוכנים · עד 1,000 לידים</div>
         <ul class="plan-features">
           <li>כל מה שב Solo</li>
@@ -1124,13 +1232,14 @@
           <li>אנליטיקס צוות</li>
           <li>דוחות ביצועים</li>
         </ul>
+        <div class="plan-addon">✨ <span>+ <strong>₪100/חודש</strong> — שירותי שיווק מלאים</span></div>
         <a href="https://liders-crm.com" class="plan-btn primary">בחר צוות</a>
       </div>
 
       <div class="plan-card fade-up">
         <div class="plan-name">סוכנות</div>
         <div class="plan-desc">לסוכנות נדל"ן</div>
-        <div class="plan-price">₪549<small>/חודש</small></div>
+        <div class="plan-price">₪550<small>/חודש</small></div>
         <div class="plan-limit">סוכנים ולידים ללא הגבלה</div>
         <ul class="plan-features">
           <li>כל מה שב צוות</li>
@@ -1138,21 +1247,73 @@
           <li>לידים ללא הגבלה</li>
           <li>תמיכה עדיפות</li>
         </ul>
+        <div class="plan-addon">✨ <span>+ <strong>₪100/חודש</strong> — שירותי שיווק מלאים</span></div>
         <a href="https://liders-crm.com" class="plan-btn outline">בחר סוכנות</a>
       </div>
     </div>
 
-    <p class="pricing-note">חבילת Solo כוללת 21 יום ניסיון חינם מלא. ביטול בכל עת. ללא קנסות וללא שאלות.</p>
+    <p class="pricing-note">כל החבילות כוללות 30 יום ניסיון חינם מלא. ביטול בכל עת. ללא קנסות וללא שאלות.</p>
+  </div>
+</section>
+
+<!-- שירותי שיווק -->
+<section class="section marketing-section">
+  <div class="section-inner">
+    <p class="section-label fade-up" style="color:#B45309;">✨ הצעה מיוחדת</p>
+    <h2 class="section-title fade-up">שירותי שיווק שסוגרים את הפינה</h2>
+    <p class="section-sub fade-up">לא רק CRM. אנחנו כותבים את המסר, מעצבים את התוכן, ואתה מגיע לפגישה עם לקוח שכבר מחכה לך.</p>
+
+    <div class="marketing-banner fade-up">
+      <div class="mb-badge">תוספת של ₪100 בלבד לחודש · על כל חבילה</div>
+      <h3 class="mb-title">שירות שיווק מלא — הודעה מיוחדת לכל לקוח</h3>
+      <p class="mb-desc">
+        תהליך עסקי שלם מהרגע הראשון ועד המפתח. הודעות מותאמות אישית לכל ליד, מסרים מקצועיים שמייצגים אותך, ותוכן שיווקי שגורם ללקוחות לזכור אותך.
+      </p>
+
+      <div class="mb-features">
+        <div class="mb-feature">
+          <span class="mbf-icon">✍️</span>
+          <div>
+            <strong>הודעה מיוחדת לכל לקוח</strong>
+            <span>נכתבת בשבילך — מותאמת אישית לכל ליד ולכל שלב בפייפליין</span>
+          </div>
+        </div>
+        <div class="mb-feature">
+          <span class="mbf-icon">📱</span>
+          <div>
+            <strong>תבניות WhatsApp מקצועיות</strong>
+            <span>ממסר ראשוני ועד הצעת מחיר — מסרים שפותחים דלתות</span>
+          </div>
+        </div>
+        <div class="mb-feature">
+          <span class="mbf-icon">🎯</span>
+          <div>
+            <strong>תוכן שיווקי חודשי</strong>
+            <span>פוסטים, עדכוני נכסים, וסטטוסים לסושיאל שמייצרים לידים חדשים</span>
+          </div>
+        </div>
+        <div class="mb-feature">
+          <span class="mbf-icon">🔄</span>
+          <div>
+            <strong>תהליך עסקי מכוסה לחלוטין</strong>
+            <span>מהפנייה הראשונה ועד חתימת החוזה — כל נקודת מגע מטופלת</span>
+          </div>
+        </div>
+      </div>
+
+      <a href="https://liders-crm.com" class="btn-marketing">הוסף שירותי שיווק לחבילה שלי →</a>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:14px;">ניתן להוסיף בכל עת · ביטול ללא קנסות</p>
+    </div>
   </div>
 </section>
 
 <!-- סגירה -->
 <section class="closing">
   <h2>הליד הבא שלך<br>כבר <span class="gold">מחכה.</span></h2>
-  <p>אם לא אהבת אחרי 21 יום, לפחות הפייפליין שלך יהיה מסודר.</p>
+  <p>אם לא אהבת אחרי 30 יום, לפחות הפייפליין שלך יהיה מסודר.</p>
   <div class="closing-actions">
     <a href="https://liders-crm.com" class="btn-primary" style="font-size:18px;padding:18px 48px;">מתחיל עכשיו, בחינם</a>
-    <p class="closing-micro">ללא כרטיס אשראי · ללא התחייבות · ניסיון מלא 21 יום</p>
+    <p class="closing-micro">ללא כרטיס אשראי · ללא התחייבות · ניסיון מלא 30 יום</p>
   </div>
 </section>
 
