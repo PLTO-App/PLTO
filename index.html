@@ -4308,8 +4308,10 @@ const Onboarding = {
           { id: 'interior',     icon: '🎨', label: 'מעצב פנים' },
           { id: 'photography',  icon: '📸', label: 'צלם נכסים' },
           { id: 'mortgage',     icon: '💰', label: 'יועץ משכנתאות' },
-          { id: 'appraiser',    icon: '📋', label: 'שמאי' },
-          { id: 'other',        icon: '🎯', label: 'אחר' },
+          { id: 'appraiser',         icon: '📋', label: 'שמאי' },
+          { id: 'realestate_lawyer', icon: '⚖️', label: 'עו"ד נדל"ן' },
+          { id: 'architect',         icon: '📐', label: 'אדריכל' },
+          { id: 'other',             icon: '🎯', label: 'אחר' },
         ];
         const current = localStorage.getItem('liders_industry') || '';
         return `
@@ -4340,7 +4342,9 @@ const Onboarding = {
           : industry === 'interior'     ? 'Liders עיצוב פנים — תל אביב'
           : industry === 'photography'  ? 'Liders צילום — תל אביב'
           : industry === 'mortgage'     ? 'Liders משכנתאות — תל אביב'
-          : industry === 'appraiser'    ? 'Liders שמאות — תל אביב'
+          : industry === 'appraiser'         ? 'Liders שמאות — תל אביב'
+          : industry === 'realestate_lawyer' ? 'Liders משפטי נדל"ן — תל אביב'
+          : industry === 'architect'         ? 'Liders אדריכלות — תל אביב'
           : 'Liders — שם העסק שלי';
         return `
           <div style="padding:8px 0;">
@@ -4708,6 +4712,20 @@ const INDUSTRY_LABELS = {
     stages:['הזמנה התקבלה','ביקור נקבע','ביקור בוצע','דוח בהכנה','שומה הושלמה ✓'],
     notesPlaceholder:'הערות — סוג נכס, מיקום, שנת בנייה, מטרת השומה (בנק, מכירה, ירושה)...',
   },
+  realestate_lawyer: {
+    lead:'לקוח', leads:'לקוחות', property:'תיק', properties:'תיקים', deal:'עסקה', client:'לקוח', meeting:'פגישת ייעוץ', agent:'עו"ד',
+    addLead:'לקוח חדש', allLeads:'כל הלקוחות', pipeline:'פייפליין תיקים', propertiesIcon:'⚖️',
+    matchTab:'תיקים פעילים', docLabel:'מסמכים',
+    stages:['פנייה נכנסה','ייעוץ ראשוני','בדיקת נאותות','חוזה בניסוח','עסקה נסגרה ✓'],
+    notesPlaceholder:'הערות — סוג עסקה (רכישה/מכירה/השכרה), שמות הצדדים, ערך הנכס, מצב רישומי, הערות אזהרה, מועד חזוי לחתימה...',
+  },
+  architect: {
+    lead:'לקוח', leads:'לקוחות', property:'פרויקט', properties:'פרויקטים', deal:'פרויקט', client:'לקוח', meeting:'סיור ראשוני', agent:'אדריכל',
+    addLead:'לקוח חדש', allLeads:'כל הלקוחות', pipeline:'פייפליין פרויקטים', propertiesIcon:'📐',
+    matchTab:'פרויקטים פעילים', docLabel:'תוכניות',
+    stages:['פנייה נכנסה','סיור ראשוני','הצעת אדריכל','אישור תוכניות','פרויקט הושלם ✓'],
+    notesPlaceholder:'הערות — סוג פרויקט (בנייה חדשה/תוספת/שיפוץ), שטח במ"ר, ייעוד, תקציב, ועדת תכנון, מגבלות בנייה...',
+  },
   other: {
     lead:'ליד', leads:'לידים', property:'נכס', properties:'נכסים', deal:'עסקה', client:'לקוח', meeting:'פגישה', agent:'סוכן',
     addLead:'ליד חדש', allLeads:'כל הלידים', pipeline:'פייפליין לידים', propertiesIcon:'🎯',
@@ -4784,7 +4802,9 @@ const AI = {
       interior:     'מעצב פנים עם ניסיון בפרויקטי נדל"ן ומגורים',
       photography:  'צלם נכסים מקצועי המתמחה בצילום נדל"ן',
       mortgage:     'יועץ משכנתאות מוסמך עם ניסיון בהשוואת מסלולים',
-      appraiser:    'שמאי מקרקעין מוסמך',
+      appraiser:          'שמאי מקרקעין מוסמך',
+      realestate_lawyer:  'עורך דין המתמחה בדיני מקרקעין, עסקאות נדל"ן וניסוח חוזים',
+      architect:          'אדריכל מוסמך עם ניסיון בתכנון, היתרי בנייה וניהול פרויקטים',
     };
     return map[ind] || 'מומחה מכירות ופיתוח עסקי';
   },
@@ -8008,8 +8028,10 @@ const Settings = {
             interior:    { icon:'🎨', label:'מעצב פנים' },
             photography: { icon:'📸', label:'צלם נכסים' },
             mortgage:    { icon:'💰', label:'יועץ משכנתאות' },
-            appraiser:   { icon:'📋', label:'שמאי' },
-            other:       { icon:'🎯', label:'אחר' },
+            appraiser:          { icon:'📋', label:'שמאי' },
+            realestate_lawyer:  { icon:'⚖️', label:'עו"ד נדל"ן' },
+            architect:          { icon:'📐', label:'אדריכל' },
+            other:              { icon:'🎯', label:'אחר' },
           };
           const cur = localStorage.getItem('liders_industry') || 'other';
           const curMeta = IND_META[cur] || IND_META.other;
