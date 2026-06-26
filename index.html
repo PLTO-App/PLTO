@@ -199,6 +199,41 @@
       .fab { bottom: 24px; left: 24px; }
     }
 
+    /* ── SUPPORT FAB & MODAL ── */
+    .support-fab {
+      position: fixed; bottom: calc(var(--bottom-nav-h) + 16px); right: 20px;
+      width: 48px; height: 48px; border-radius: var(--radius-full);
+      background: linear-gradient(135deg, #2563EB, #1d4ed8);
+      color: #fff; font-size: 20px;
+      box-shadow: 0 4px 18px rgba(37,99,235,.45); z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      transition: var(--transition);
+    }
+    .support-fab:hover { transform: scale(1.08); }
+    .support-fab:active { transform: scale(0.96); }
+    .support-fab .support-badge {
+      position: absolute; top: -4px; left: -4px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--red-500); color: #fff; font-size: 9px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid var(--white);
+    }
+    @media (min-width: 768px) { .support-fab { bottom: 24px; right: 24px; } }
+    .support-modal-body { padding: 0 16px 32px; }
+    .support-ai-bubble {
+      background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+      border: 1px solid #93C5FD; border-radius: 12px;
+      padding: 14px; font-size: 13px; line-height: 1.6; color: #1E40AF; margin-top: 12px;
+    }
+    .support-history-item {
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 12px; margin-top: 10px;
+    }
+    .support-history-item .sh-msg { font-size: 13px; color: var(--gray-700); line-height: 1.5; }
+    .support-history-item .sh-ai  { font-size: 12px; color: var(--blue-600); margin-top: 6px; font-style: italic; }
+    .support-history-item .sh-adm { font-size: 12px; color: #15803d; margin-top: 6px; font-weight: 700; }
+    .support-history-item .sh-meta{ font-size: 11px; color: var(--gray-400); margin-top: 4px; }
+
     /* ═══════════════════════════════════════
        BADGES
     ═══════════════════════════════════════ */
@@ -3152,6 +3187,11 @@
   <!-- FAB -->
   <button class="fab" id="fab-btn" onclick="openModal('modal-add-lead')" title="ליד חדש">+</button>
 
+  <!-- Support FAB — hidden until logged in -->
+  <button class="support-fab hidden" id="support-fab-btn" onclick="Support.open()" title="שלח פנייה לתמיכה">
+    💬
+  </button>
+
 </div>
 
 <!-- ═══════════════════════════════════════
@@ -3240,6 +3280,33 @@
     <button class="call-result-btn" style="background:#DCFCE7;color:#166534;font-size:15px;" onclick="addLead()">💾 &nbsp;שמור ליד עכשיו</button>
     <button class="call-result-btn" style="background:#DBEAFE;color:#1D4ED8;font-size:15px;" onclick="closeDiscardSheet()">← &nbsp;חזור לטופס</button>
     <button class="call-result-btn" style="background:#FEE2E2;color:#991B1B;font-size:15px;" onclick="discardAndClose()">🗑 &nbsp;מחק ויצא בלי לשמור</button>
+  </div>
+</div>
+
+<!-- ── Support Modal ── -->
+<div id="modal-support" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-support')">
+  <div class="modal-sheet" style="padding:0;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#1d4ed8,#2563EB);padding:18px 16px 14px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:16px;font-weight:800;color:#fff;">💬 תמיכה טכנית</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:2px;">AI עונה מיד · האדמין בלופ</div>
+      </div>
+      <button onclick="closeModal('modal-support')" style="background:rgba(255,255,255,.15);border:none;width:32px;height:32px;border-radius:50%;font-size:16px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <div class="support-modal-body" style="padding:16px 16px 32px;max-height:70vh;overflow-y:auto;">
+      <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px;">תאר את הבעיה — ה-AI שלנו יענה מיד, ונקבל התראה לטיפול.</p>
+      <textarea id="support-msg-input"
+        placeholder="מה הבעיה? כתוב כמה שיותר פרטים..."
+        style="width:100%;height:96px;border:1.5px solid var(--border);border-radius:var(--radius-md);padding:10px 12px;font-size:13px;font-family:inherit;resize:none;direction:rtl;color:var(--gray-900);background:var(--surface);transition:border-color .15s;"
+        onfocus="this.style.borderColor='var(--blue-400)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+      <button id="support-submit-btn" onclick="Support.submit()" class="btn btn-primary" style="width:100%;margin-top:10px;">🚀 שלח לתמיכה</button>
+      <div id="support-ai-response" class="hidden"></div>
+
+      <div style="margin-top:22px;">
+        <div style="font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">פניות קודמות</div>
+        <div id="support-history-list"><div style="color:var(--gray-400);font-size:12px;text-align:center;padding:8px;">טוען...</div></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -10488,6 +10555,7 @@ sbClient.auth.onAuthStateChange((event, session) => {
           if (t?.whatsapp_number)  localStorage.setItem('whatsapp_number',  t.whatsapp_number);
           State.isNewTenant = isNew;
           App._showApp();
+          document.getElementById('support-fab-btn')?.classList.remove('hidden');
           setTimeout(() => Gamify.init(), 800);
           overlay.classList.add('fade-out');
           setTimeout(() => overlay.classList.add('hidden'), 520);
@@ -10504,6 +10572,7 @@ sbClient.auth.onAuthStateChange((event, session) => {
     if (appShell && !appShell.classList.contains('hidden')) {
       appShell.classList.add('hidden');
       document.getElementById('screen-login')?.classList.remove('hidden');
+      document.getElementById('support-fab-btn')?.classList.add('hidden');
       sessionStorage.removeItem('liders_auth_active');
       State.isDemo = false;
       DB.tenantId  = null;
@@ -11162,6 +11231,114 @@ const DemoSaveHook = {
   },
 };
 window.DemoSaveHook = DemoSaveHook;
+
+/* ═══════════════════════════════════════════
+   SUPPORT SYSTEM
+═══════════════════════════════════════════ */
+const Support = {
+  _busy: false,
+
+  open() {
+    if (State.isDemo) { toast('⚡ מצב דמו — התחבר כדי לפנות לתמיכה', 'warning'); return; }
+    const inp = document.getElementById('support-msg-input');
+    const aiEl = document.getElementById('support-ai-response');
+    const btn  = document.getElementById('support-submit-btn');
+    if (inp)  inp.value = '';
+    if (aiEl) { aiEl.className = 'hidden'; aiEl.innerHTML = ''; }
+    if (btn)  { btn.textContent = '🚀 שלח לתמיכה'; btn.disabled = false; }
+    this.loadHistory();
+    openModal('modal-support');
+  },
+
+  async loadHistory() {
+    const el = document.getElementById('support-history-list');
+    if (!el) return;
+    el.innerHTML = '<div style="color:var(--gray-400);font-size:12px;text-align:center;padding:8px;">טוען...</div>';
+    try {
+      const { data, error } = await sbClient.from('support_tickets')
+        .select('id,message,ai_response,admin_response,status,created_at')
+        .order('created_at', { ascending: false }).limit(10);
+      if (error || !data?.length) {
+        el.innerHTML = '<div style="color:var(--gray-400);font-size:12px;text-align:center;padding:8px;">אין פניות קודמות</div>';
+        return;
+      }
+      const statusLabel = { open: '🟡 ממתין לתגובה', ai_handled: '🤖 AI ענה', admin_replied: '✅ האדמין ענה', resolved: '✔ טופל' };
+      el.innerHTML = data.map(t => `
+        <div class="support-history-item">
+          <div class="sh-msg">📝 ${escapeHtml(t.message)}</div>
+          ${t.ai_response ? `<div class="sh-ai">🤖 ${escapeHtml(t.ai_response.slice(0,200))}${t.ai_response.length>200?'...':''}</div>` : ''}
+          ${t.admin_response ? `<div class="sh-adm">👤 ${escapeHtml(t.admin_response)}</div>` : ''}
+          <div class="sh-meta">${statusLabel[t.status]||t.status} · ${new Date(t.created_at).toLocaleDateString('he-IL')}</div>
+        </div>`).join('');
+    } catch(e) {
+      el.innerHTML = '<div style="color:var(--gray-400);font-size:12px;text-align:center;padding:8px;">שגיאה בטעינה</div>';
+    }
+  },
+
+  async submit() {
+    if (this._busy) return;
+    const msg = (document.getElementById('support-msg-input')?.value || '').trim();
+    if (!msg) { toast('נא לכתוב הודעה', 'warning'); return; }
+    this._busy = true;
+    const btn  = document.getElementById('support-submit-btn');
+    const aiEl = document.getElementById('support-ai-response');
+    btn.textContent = '⏳ שולח...'; btn.disabled = true;
+
+    try {
+      const tenantName = State.tenant?.name || '';
+      const agentName  = State.agent?.name  || '';
+      const agentEmail = State.agent?.email || '';
+
+      // 1. Insert ticket
+      const { data: ticket, error: insErr } = await sbClient.from('support_tickets')
+        .insert({ tenant_id: DB.tenantId, tenant_name: tenantName, agent_name: agentName, agent_email: agentEmail, message: msg })
+        .select().single();
+      if (insErr) throw insErr;
+
+      // 2. AI instant response
+      btn.textContent = '🤖 AI מנתח...';
+      let aiText = '';
+      try {
+        const { data: fn } = await sbClient.functions.invoke('ai-proxy', {
+          body: {
+            system: 'אתה נציג תמיכה טכנית של Liders CRM — מערכת CRM לסוכני נדל"ן ישראלים. ענה בעברית בצורה קצרה, ברורה וידידותית (עד 120 מילים). אם אינך יכול לפתור, כתוב שהאדמין יחזור בהקדם.',
+            messages: [{ role: 'user', content: msg }]
+          }
+        });
+        aiText = fn?.content || '';
+      } catch(_) {}
+
+      // 3. Save AI response
+      if (aiText) {
+        await sbClient.from('support_tickets')
+          .update({ ai_response: aiText, status: 'ai_handled' }).eq('id', ticket.id);
+      }
+
+      // 4. Webhook — notify admin via Make.com
+      fetch('https://hook.eu1.make.com/f0nzngm6gdokri5naqu7enbay538ay8i', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'support_ticket', ticket_id: ticket.id,
+          tenant_name: tenantName, agent_name: agentName, agent_email: agentEmail,
+          message: msg, ai_response: aiText })
+      }).catch(() => {});
+
+      // 5. Show in UI
+      aiEl.className = 'support-ai-bubble';
+      aiEl.innerHTML = aiText
+        ? `<strong>🤖 תגובה אוטומטית:</strong><br>${escapeHtml(aiText).replace(/\n/g,'<br>')}`
+        : `<strong>✅ הפנייה נשלחה!</strong><br>האדמין יחזור אליך בהקדם.`;
+      document.getElementById('support-msg-input').value = '';
+      btn.textContent = '✅ נשלח';
+      this.loadHistory();
+    } catch(e) {
+      toast('שגיאה בשליחה: ' + e.message, 'error');
+      btn.textContent = '🚀 שלח לתמיכה'; btn.disabled = false;
+    } finally {
+      this._busy = false;
+    }
+  },
+};
+window.Support = Support;
 
 </script>
 </body>

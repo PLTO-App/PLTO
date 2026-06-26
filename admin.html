@@ -583,6 +583,7 @@
     <button class="nav-tab" onclick="switchTab('accounts')">לקוחות פלטפורמה</button>
     <button class="nav-tab" onclick="switchTab('invoices')">חשבוניות ותשלומים</button>
     <button class="nav-tab" onclick="switchTab('saas')">לקוחות SaaS 🔴</button>
+    <button class="nav-tab" onclick="switchTab('support')" id="nav-support">🎫 תמיכה <span id="support-open-count" style="display:none;background:var(--red);color:#fff;border-radius:99px;font-size:10px;padding:1px 6px;margin-right:4px;"></span></button>
   </div>
 
   <!-- Main Content -->
@@ -734,6 +735,36 @@
       </div>
     </div>
 
+    <!-- ── SUPPORT ── -->
+    <div id="section-support" class="section">
+      <div class="section-header">
+        <h2>🎫 פניות תמיכה</h2>
+        <div class="header-actions">
+          <button class="btn-outline btn-sm" onclick="loadSupportTickets()">🔄 רענן</button>
+        </div>
+      </div>
+      <div id="support-stats-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>לקוח</th>
+              <th>סוכן</th>
+              <th>הודעה</th>
+              <th>תגובת AI</th>
+              <th>תגובת אדמין</th>
+              <th>סטטוס</th>
+              <th>תאריך</th>
+              <th>פעולה</th>
+            </tr>
+          </thead>
+          <tbody id="support-tbody">
+            <tr><td colspan="8"><div class="empty-state"><p>טוען...</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </div><!-- /main -->
 </div><!-- /app-shell -->
 
@@ -857,6 +888,41 @@
 </div>
 
 <!-- Toast -->
+<!-- Support Reply Modal -->
+<div class="modal-overlay hidden" id="modal-support-reply">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>💬 מענה לפנייה</h3>
+      <button class="modal-close" onclick="closeModal('modal-support-reply')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="reply-ticket-id">
+      <div class="modal-form-group" style="margin-bottom:10px;">
+        <label style="font-size:12px;color:var(--text-muted);">הודעת הלקוח</label>
+        <div id="reply-original-msg" style="background:var(--surface2);border-radius:var(--radius);padding:10px;font-size:13px;color:var(--text-muted);margin-top:4px;max-height:80px;overflow-y:auto;"></div>
+      </div>
+      <div class="modal-form-group" style="margin-bottom:10px;">
+        <label style="font-size:12px;color:var(--text-muted);">תגובת AI</label>
+        <div id="reply-ai-msg" style="background:var(--surface2);border-radius:var(--radius);padding:10px;font-size:13px;color:var(--blue);margin-top:4px;max-height:80px;overflow-y:auto;font-style:italic;"></div>
+      </div>
+      <div class="modal-form-group">
+        <label>תגובתך (תישלח ללקוח)</label>
+        <textarea id="reply-text" placeholder="כתוב תגובה ללקוח..." style="height:90px;width:100%;resize:none;"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+          <input type="checkbox" id="reply-resolve" style="cursor:pointer;">
+          סמן כטופל
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline btn-sm" onclick="closeModal('modal-support-reply')">ביטול</button>
+      <button class="btn-primary btn-sm" onclick="submitSupportReply()">✉️ שלח תגובה</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -868,7 +934,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const ADMIN_EMAILS = ['liders.crm@gmail.com', 'elgrablidudu@gmail.com'];
-const TABS = ['dashboard', 'accounts', 'invoices', 'saas'];
+const TABS = ['dashboard', 'accounts', 'invoices', 'saas', 'support'];
 
 /* ── UTILS ── */
 function esc(s) {
@@ -959,6 +1025,7 @@ function switchTab(tab) {
   if (tab === 'accounts') loadAccounts();
   if (tab === 'invoices') loadInvoices();
   if (tab === 'saas')     loadSaasTenants();
+  if (tab === 'support')  loadSupportTickets();
 }
 
 /* ── DATA STATE ── */
@@ -972,6 +1039,7 @@ async function loadAll() {
     loadAccounts(),
     loadInvoices(),
     loadSaasTenants(),
+    loadSupportTickets(),
   ]);
   renderDashboard();
 }
@@ -1374,6 +1442,111 @@ sb.auth.onAuthStateChange((event, session) => {
     showAuth();
   }
 });
+
+/* ═══════════════════════════════════════════
+   SUPPORT TICKETS
+═══════════════════════════════════════════ */
+let allSupportTickets = [];
+
+async function loadSupportTickets() {
+  const tbody = document.getElementById('support-tbody');
+  tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="spinner"></div></div></td></tr>';
+  const { data, error } = await sb.rpc('get_support_tickets_admin');
+  if (error) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><p style="color:var(--red)">שגיאה: ${esc(error.message)}</p></div></td></tr>`;
+    return;
+  }
+  allSupportTickets = data || [];
+  renderSupportStats(allSupportTickets);
+  renderSupportTable(allSupportTickets);
+}
+
+function renderSupportStats(tickets) {
+  const el = document.getElementById('support-stats-row');
+  const open    = tickets.filter(t => t.status === 'open').length;
+  const aiDone  = tickets.filter(t => t.status === 'ai_handled').length;
+  const replied = tickets.filter(t => t.status === 'admin_replied').length;
+  const resolved= tickets.filter(t => t.status === 'resolved').length;
+  el.innerHTML = `
+    <div class="stat-card red"  ><div class="stat-label">ממתינים</div><div class="stat-value">${open}</div></div>
+    <div class="stat-card blue" ><div class="stat-label">AI ענה</div><div class="stat-value">${aiDone}</div></div>
+    <div class="stat-card gold" ><div class="stat-label">מוענו</div><div class="stat-value">${replied}</div></div>
+    <div class="stat-card green"><div class="stat-label">טופלו</div><div class="stat-value">${resolved}</div></div>
+  `;
+  // Badge on tab
+  const badge = document.getElementById('support-open-count');
+  if (badge) {
+    const pending = open + aiDone;
+    badge.textContent = pending;
+    badge.style.display = pending ? 'inline' : 'none';
+  }
+}
+
+function renderSupportTable(tickets) {
+  const tbody = document.getElementById('support-tbody');
+  if (!tickets.length) {
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">🎫</div><p>אין פניות תמיכה</p></div></td></tr>';
+    return;
+  }
+  const statusBadge = {
+    open:          '<span class="badge badge-dim" style="background:#7f1d1d22;color:#ef4444;">🟡 ממתין</span>',
+    ai_handled:    '<span class="badge badge-blue">🤖 AI ענה</span>',
+    admin_replied: '<span class="badge badge-gold">✅ מוענה</span>',
+    resolved:      '<span class="badge badge-green">✔ טופל</span>',
+  };
+  tbody.innerHTML = tickets.map(t => `
+    <tr>
+      <td><strong>${esc(t.tenant_name||'—')}</strong></td>
+      <td style="font-size:.82rem;color:var(--text-muted)">${esc(t.agent_name||'—')}<br><span style="font-size:.75rem;color:var(--text-dim)">${esc(t.agent_email||'')}</span></td>
+      <td style="max-width:180px;font-size:.82rem;">${esc((t.message||'').slice(0,100))}${(t.message||'').length>100?'…':''}</td>
+      <td style="max-width:160px;font-size:.8rem;color:var(--blue);font-style:italic;">${t.ai_response ? esc(t.ai_response.slice(0,80))+'…' : '<span style="color:var(--text-dim)">—</span>'}</td>
+      <td style="max-width:160px;font-size:.82rem;color:var(--green);">${t.admin_response ? esc(t.admin_response.slice(0,80))+'…' : '<span style="color:var(--text-dim)">—</span>'}</td>
+      <td>${statusBadge[t.status]||esc(t.status)}</td>
+      <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${t.created_at ? new Date(t.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(t.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '—'}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-icon" title="ענה" onclick="openSupportReply('${t.id}')" style="color:var(--blue);font-size:.8rem;">✉️ ענה</button>
+          ${t.status !== 'resolved' ? `<button class="btn-icon" title="סמן כטופל" onclick="resolveSupportTicket('${t.id}')" style="color:var(--green);font-size:.8rem;">✔</button>` : ''}
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function openSupportReply(ticketId) {
+  const t = allSupportTickets.find(x => x.id === ticketId);
+  if (!t) return;
+  document.getElementById('reply-ticket-id').value = ticketId;
+  document.getElementById('reply-original-msg').textContent = t.message || '';
+  document.getElementById('reply-ai-msg').textContent = t.ai_response || '(אין תגובת AI)';
+  document.getElementById('reply-text').value = '';
+  document.getElementById('reply-resolve').checked = false;
+  openModal('modal-support-reply');
+}
+
+async function submitSupportReply() {
+  const ticketId = document.getElementById('reply-ticket-id').value;
+  const text     = (document.getElementById('reply-text').value || '').trim();
+  const resolve  = document.getElementById('reply-resolve').checked;
+  if (!text) { toast('נא לכתוב תגובה', 'error'); return; }
+  const newStatus = resolve ? 'resolved' : 'admin_replied';
+  const { error } = await sb.rpc('admin_reply_support', {
+    p_ticket_id: ticketId, p_response: text, p_status: newStatus
+  });
+  if (error) { toast('שגיאה: ' + error.message, 'error'); return; }
+  toast('✅ התגובה נשלחה', 'success');
+  closeModal('modal-support-reply');
+  loadSupportTickets();
+}
+
+async function resolveSupportTicket(ticketId) {
+  if (!confirm('לסמן פנייה זו כטופלה?')) return;
+  const { error } = await sb.rpc('admin_reply_support', {
+    p_ticket_id: ticketId, p_response: 'טופל', p_status: 'resolved'
+  });
+  if (error) { toast('שגיאה: ' + error.message, 'error'); return; }
+  toast('✔ סומן כטופל', 'success');
+  loadSupportTickets();
+}
 </script>
 </body>
 </html>
