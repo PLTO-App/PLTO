@@ -1823,6 +1823,78 @@
   }
   .lock-shake { animation: lock-shake 0.4s; }
 
+  /* ── Onboarding Rocket Launch ──────────────────── */
+  #ob-launch-overlay {
+    position: fixed; inset: 0; z-index: 99999;
+    background: radial-gradient(ellipse at 50% 95%, #0e2156 0%, #020c20 70%);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.45s ease;
+    overflow: hidden;
+  }
+  #ob-launch-overlay.active { opacity: 1; pointer-events: all; }
+  .ob-rocket-stack {
+    display: flex; flex-direction: column; align-items: center;
+    animation: ob-liftoff 2.8s cubic-bezier(0.22, 1, 0.36, 1) 0.4s forwards;
+    opacity: 0;
+  }
+  .ob-rocket-emoji { font-size: 88px; line-height: 1;
+    filter: drop-shadow(0 0 28px rgba(255,140,30,0.95)); }
+  .ob-rocket-fire  { font-size: 56px; margin-top: -22px;
+    animation: ob-fire 0.12s ease infinite alternate; }
+  .ob-rocket-trail {
+    width: 6px; height: 80px; margin-top: -6px;
+    background: linear-gradient(to bottom, rgba(255,180,50,.7), transparent);
+    border-radius: 3px;
+  }
+  .ob-launch-msg {
+    position: absolute; top: 58%;
+    color: rgba(255,255,255,0.92); font-size: 1.2rem; font-weight: 800;
+    letter-spacing: 0.01em; text-align: center;
+    opacity: 0; animation: ob-msg-in 0.5s 1.0s ease forwards;
+  }
+  .ob-launch-star {
+    position: absolute; border-radius: 50%; background: white;
+    animation: ob-twinkle ease-in-out infinite alternate;
+  }
+  .ob-launch-streak {
+    position: absolute; border-radius: 99px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.25), rgba(255,255,255,0));
+    animation: ob-streak linear forwards;
+  }
+
+  @keyframes ob-liftoff {
+    0%   { transform: translateY(60px) scale(0.85); opacity: 0; }
+    12%  { opacity: 1; transform: translateY(30px) scale(1); }
+    35%  { transform: translateY(-5vh) scale(1.06); }
+    100% { transform: translateY(-115vh) scale(0.4); opacity: 0; }
+  }
+  @keyframes ob-fire {
+    from { transform: scaleX(0.88) scaleY(0.94); }
+    to   { transform: scaleX(1.12) scaleY(1.06) translateY(-4px); }
+  }
+  @keyframes ob-msg-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes ob-twinkle {
+    from { opacity: 0.15; transform: scale(0.7); }
+    to   { opacity: 1;    transform: scale(1.3); }
+  }
+  @keyframes ob-streak {
+    from { opacity: 0; transform: translateY(-60px); }
+    40%  { opacity: 1; }
+    to   { opacity: 0; transform: translateY(110vh); }
+  }
+
+  /* ── Gamify Widget — prominent entrance ─────────── */
+  @keyframes gamify-pop {
+    from { opacity: 0; transform: translateY(22px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .gamify-widget { animation: gamify-pop 0.65s cubic-bezier(0.34, 1.45, 0.64, 1) both; }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.js"
           integrity="sha384-nD3dwv4+ZqdYnmZKe/249ImlV04om7xTCcsoSeQYI+RO+XlKPoqAWaJR1M5SJH9p"
@@ -2034,49 +2106,12 @@
         <div class="dashboard-date" id="dash-date"></div>
       </div>
 
-      <!-- GETTING STARTED — shown only while the tenant has zero leads -->
-      <div class="card" id="dash-getting-started" style="margin:0 20px 16px; display:none;">
-        <div style="text-align:center; padding:6px 4px;">
-          <div style="font-size:40px; margin-bottom:8px;">🚀</div>
-          <div style="font-weight:800; font-size:1.05rem; margin-bottom:4px;">בוא נתחיל לבנות את הפייפליין שלך</div>
-          <div style="color:var(--gray-500); font-size:0.85rem; line-height:1.6; margin-bottom:16px;">
-            עדיין אין לך לידים במערכת — זה הזמן להוסיף את הראשון, או לייבא רשימה קיימת בלחיצה אחת.
-          </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-            <button class="btn btn-primary" onclick="openModal('modal-add-lead')">➕ הוסף ליד ראשון</button>
-            <button class="btn btn-ghost" onclick="LeadImport.open()">📋 ייבוא רשימת לידים מקובץ</button>
-          </div>
-          <div style="margin-top:18px; display:flex; flex-direction:column; gap:8px; text-align:right;">
-            <div style="display:flex; align-items:center; gap:10px; background:var(--bg-app); padding:10px 14px; border-radius:8px; font-size:13px;">
-              <span>1️⃣</span><span>הוסף לידים — ידנית, אחד-אחד, או בבת אחת מקובץ קיים</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:10px; background:var(--bg-app); padding:10px 14px; border-radius:8px; font-size:13px;">
-              <span>2️⃣</span><span>גרור אותם בין שלבי הפייפליין במסך "פייפליין לידים" כדי לעקוב אחרי כל עסקה</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:10px; background:var(--bg-app); padding:10px 14px; border-radius:8px; font-size:13px;">
-              <span>3️⃣</span><span>קבל תזכורות אוטומטיות וניתוח AI שיעזרו לך לסגור עוד עסקאות</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="dash-trial-card"></div>
-
-      <!-- AI BRIEFING — first thing the agent sees -->
-      <div class="ai-card" id="dash-ai-briefing" style="margin: 0 20px 14px;">
-        <div class="ai-card-title">✨ עוזר AI אישי — תדרוך יומי על המערכת</div>
-        <div id="dash-ai-briefing-body" style="min-height:40px;"></div>
-      </div>
-
-      <!-- KPI CARDS — primary data -->
-      <div class="kpi-row" id="kpi-row"></div>
-
-      <!-- GAMIFICATION WIDGET — motivation & XP progress -->
+      <!-- GAMIFICATION WIDGET — motivation & XP progress — prominent at top -->
       <div class="gamify-widget" id="gamify-widget">
         <div class="gamify-top">
           <div class="gamify-avatar" id="gamify-avatar">🌱</div>
           <div>
-            <div class="gamify-level-name" id="gamify-level-name">מתחיל</div>
+            <div class="gamify-level-name" id="gamify-level-name">ניצן</div>
             <div class="gamify-streak" id="gamify-streak">🔥 0 ימים רצופים</div>
           </div>
         </div>
@@ -2118,6 +2153,43 @@
           <div class="gamify-daily-done" id="gamify-daily-check"></div>
         </div>
       </div>
+
+      <!-- GETTING STARTED — shown only while the tenant has zero leads -->
+      <div class="card" id="dash-getting-started" style="margin:0 20px 16px; display:none;">
+        <div style="text-align:center; padding:6px 4px;">
+          <div style="font-size:40px; margin-bottom:8px;">🚀</div>
+          <div style="font-weight:800; font-size:1.05rem; margin-bottom:4px;">בוא נתחיל לבנות את הפייפליין שלך</div>
+          <div style="color:var(--gray-500); font-size:0.85rem; line-height:1.6; margin-bottom:16px;">
+            עדיין אין לך לידים במערכת — זה הזמן להוסיף את הראשון, או לייבא רשימה קיימת בלחיצה אחת.
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+            <button class="btn btn-primary" onclick="openModal('modal-add-lead')">➕ הוסף ליד ראשון</button>
+            <button class="btn btn-ghost" onclick="LeadImport.open()">📋 ייבוא רשימת לידים מקובץ</button>
+          </div>
+          <div style="margin-top:18px; display:flex; flex-direction:column; gap:8px; text-align:right;">
+            <div style="display:flex; align-items:center; gap:10px; background:var(--bg-app); padding:10px 14px; border-radius:8px; font-size:13px;">
+              <span>1️⃣</span><span>הוסף לידים — ידנית, אחד-אחד, או בבת אחת מקובץ קיים</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; background:var(--bg-app); padding:10px 14px; border-radius:8px; font-size:13px;">
+              <span>2️⃣</span><span>גרור אותם בין שלבי הפייפליין במסך "פייפליין לידים" כדי לעקוב אחרי כל עסקה</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; background:var(--bg-app); padding:10px 14px; border-radius:8px; font-size:13px;">
+              <span>3️⃣</span><span>קבל תזכורות אוטומטיות וניתוח AI שיעזרו לך לסגור עוד עסקאות</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="dash-trial-card"></div>
+
+      <!-- AI BRIEFING — first thing the agent sees -->
+      <div class="ai-card" id="dash-ai-briefing" style="margin: 0 20px 14px;">
+        <div class="ai-card-title">✨ עוזר AI אישי — תדרוך יומי על המערכת</div>
+        <div id="dash-ai-briefing-body" style="min-height:40px;"></div>
+      </div>
+
+      <!-- KPI CARDS — primary data -->
+      <div class="kpi-row" id="kpi-row"></div>
 
       <!-- QUICK FEATURES ROW -->
       <div class="dash-features-row" id="dash-features-row">
@@ -2631,6 +2703,17 @@
     <button class="milestone-claim-btn" onclick="Gamify.claimMilestone()">🎁 מימוש הפרס →</button>
     <button class="milestone-close-btn" onclick="Gamify.closeMilestone()">בהמשך</button>
   </div>
+</div>
+
+<!-- ONBOARDING ROCKET LAUNCH OVERLAY -->
+<div id="ob-launch-overlay">
+  <div id="ob-stars-wrap" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;"></div>
+  <div class="ob-rocket-stack">
+    <div class="ob-rocket-emoji">🚀</div>
+    <div class="ob-rocket-fire">🔥</div>
+    <div class="ob-rocket-trail"></div>
+  </div>
+  <div class="ob-launch-msg">ממריאים לעבר העסקה הבאה! 🌟</div>
 </div>
 
 <!-- MORTGAGE CALCULATOR MODAL -->
@@ -4354,50 +4437,24 @@ const Onboarding = {
       },
     },
     {
-      title: 'הכל מוכן! 🚀',
-      subtitle: 'המערכת שלך מוכנה לעבודה',
+      title: 'הכל מוכן! 🎉',
+      subtitle: 'המערכת שלך מוכנה — מוכנ להמריא?',
       render() {
         return `
-          <div style="text-align:center;padding:8px 0;">
-            <div style="font-size:56px;margin-bottom:12px;">🎉</div>
-            <p style="font-size:0.95rem;line-height:1.7;color:var(--gray-500);margin-bottom:20px;">
-              <strong style="color:var(--gray-900);">הגדרת הסוכנות הושלמה בהצלחה!</strong><br>
-              בחר איפה תרצה להתחיל:
+          <div style="text-align:center;padding:16px 0 8px;">
+            <div style="font-size:72px;margin-bottom:6px;filter:drop-shadow(0 4px 16px rgba(37,99,235,0.35));">🚀</div>
+            <p style="font-size:1rem;line-height:1.7;color:var(--gray-500);margin-bottom:28px;">
+              <strong style="color:var(--gray-900);font-size:1.05rem;">הגדרת הסוכנות הושלמה בהצלחה!</strong><br>
+              הכל מוכן ומחכה לך — לחץ על הכפתור ונמריא יחד 🌟
             </p>
-            <div style="display:flex;flex-direction:column;gap:10px;text-align:right;">
-              <button onclick="Onboarding._pendingAction='dashboard';Onboarding.next();"
-                style="display:flex;align-items:center;gap:12px;background:var(--navy-500);color:white;border:none;border-radius:10px;padding:14px 16px;cursor:pointer;font-size:0.95rem;font-weight:600;font-family:inherit;width:100%;text-align:right;">
-                <span style="font-size:1.3rem;">🏠</span>
-                <div>
-                  <div>עבור ללוח הבית</div>
-                  <div style="font-size:0.85rem;font-weight:400;opacity:0.85;">סקירה מלאה של מה שמחכה לך</div>
-                </div>
-              </button>
-              <button onclick="Onboarding._pendingAction='addlead';Onboarding.next();"
-                style="display:flex;align-items:center;gap:12px;background:var(--blue-500);color:white;border:none;border-radius:10px;padding:14px 16px;cursor:pointer;font-size:0.95rem;font-weight:600;font-family:inherit;width:100%;text-align:right;">
-                <span style="font-size:1.3rem;">➕</span>
-                <div>
-                  <div>הוסף את הליד הראשון</div>
-                  <div style="font-size:0.85rem;font-weight:400;opacity:0.85;">התחל לבנות את הפייפליין שלך</div>
-                </div>
-              </button>
-              <button onclick="Onboarding._pendingAction='pipeline';Onboarding.next();"
-                style="display:flex;align-items:center;gap:12px;background:var(--bg-app);color:var(--gray-900);border:1px solid var(--gray-200);border-radius:10px;padding:14px 16px;cursor:pointer;font-size:0.95rem;font-weight:600;font-family:inherit;width:100%;text-align:right;">
-                <span style="font-size:1.3rem;">📊</span>
-                <div>
-                  <div>ראה את הפייפליין</div>
-                  <div style="font-size:0.85rem;font-weight:400;color:var(--gray-500);">סקירה של כל השלבים</div>
-                </div>
-              </button>
-              <button onclick="Onboarding._pendingAction='settings';Onboarding.next();"
-                style="display:flex;align-items:center;gap:12px;background:var(--bg-app);color:var(--gray-900);border:1px solid var(--gray-200);border-radius:10px;padding:14px 16px;cursor:pointer;font-size:0.95rem;font-weight:600;font-family:inherit;width:100%;text-align:right;">
-                <span style="font-size:1.3rem;">⚙️</span>
-                <div>
-                  <div>חבר WhatsApp אוטומציות</div>
-                  <div style="font-size:0.85rem;font-weight:400;color:var(--gray-500);">הגדר Make.com ועוד</div>
-                </div>
-              </button>
-            </div>
+            <button onclick="Onboarding._launchRocket()"
+              style="width:100%;padding:20px 24px;background:linear-gradient(135deg,#0F1F3D 0%,#2563EB 100%);color:white;border:none;border-radius:18px;cursor:pointer;font-size:1.15rem;font-weight:800;font-family:inherit;box-shadow:0 8px 28px rgba(37,99,235,0.45);transition:transform 0.18s,box-shadow 0.18s;letter-spacing:0.01em;"
+              onmousedown="this.style.transform='scale(0.97)'"
+              onmouseup="this.style.transform=''"
+              ontouchstart="this.style.transform='scale(0.97)'"
+              ontouchend="this.style.transform=''">
+              🚀 שגר אותי למערכת!
+            </button>
           </div>`;
       },
     },
@@ -4556,6 +4613,52 @@ const Onboarding = {
 
   back() {
     if (this._step > 0) { this._step--; this._renderStep(); }
+  },
+
+  _launchRocket() {
+    this._pendingAction = 'dashboard';
+    const overlay = document.getElementById('ob-launch-overlay');
+    const starsWrap = document.getElementById('ob-stars-wrap');
+
+    // Generate background stars
+    if (starsWrap && !starsWrap._populated) {
+      starsWrap._populated = true;
+      for (let i = 0; i < 80; i++) {
+        const s = document.createElement('div');
+        s.className = 'ob-launch-star';
+        const sz = Math.random() * 2.5 + 0.8;
+        s.style.cssText = `
+          width:${sz}px; height:${sz}px;
+          left:${Math.random() * 100}%; top:${Math.random() * 100}%;
+          animation-duration:${1.5 + Math.random() * 2.5}s;
+          animation-delay:${Math.random() * 3}s;
+        `;
+        starsWrap.appendChild(s);
+      }
+      // Speed streaks — vertical light lines
+      for (let i = 0; i < 18; i++) {
+        const streak = document.createElement('div');
+        streak.className = 'ob-launch-streak';
+        const w = Math.random() * 1.5 + 0.5;
+        const h = Math.random() * 80 + 30;
+        streak.style.cssText = `
+          width:${w}px; height:${h}px;
+          left:${Math.random() * 100}%; top:-${h}px;
+          opacity:${0.2 + Math.random() * 0.4};
+          animation-duration:${0.6 + Math.random() * 0.8}s;
+          animation-delay:${0.3 + Math.random() * 1.5}s;
+        `;
+        starsWrap.appendChild(streak);
+      }
+    }
+
+    if (overlay) overlay.classList.add('active');
+
+    // After rocket animation completes → trigger the rest of Onboarding.next()
+    setTimeout(() => {
+      if (overlay) overlay.classList.remove('active');
+      this.next();
+    }, 2800);
   },
 };
 
