@@ -1044,6 +1044,57 @@
     }
 
     /* ═══════════════════════════════════════
+       LOGIN FEATURE TILES
+    ═══════════════════════════════════════ */
+    .login-features {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+      margin: 18px 0 20px;
+    }
+    .login-feature-tile {
+      background: var(--gray-50); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 11px;
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; color: var(--navy-700); font-weight: 600; line-height: 1.25;
+    }
+    .login-feature-tile .ft-icon { font-size: 18px; flex-shrink: 0; }
+
+    /* ═══════════════════════════════════════
+       SETUP / LOADING SCREEN (post-onboarding)
+    ═══════════════════════════════════════ */
+    #screen-setup {
+      position: fixed; inset: 0; z-index: 9997;
+      background: linear-gradient(145deg, #0F1F3D 0%, #1a3260 55%, #1c4080 100%);
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center; padding: 32px;
+    }
+    #screen-setup.hidden { display: none; }
+    .setup-logo {
+      font-size: 40px; font-weight: 900; color: white; letter-spacing: -1px;
+      margin-bottom: 6px;
+    }
+    .setup-logo span { color: #D4A82A; }
+    .setup-subtitle {
+      font-size: 17px; font-weight: 500; color: rgba(255,255,255,0.85);
+      margin-bottom: 32px;
+    }
+    .setup-bar-wrap {
+      width: 220px; height: 5px; background: rgba(255,255,255,0.15);
+      border-radius: 3px; overflow: hidden; margin-bottom: 32px;
+    }
+    #setup-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #D4A82A, #f0c84a);
+      width: 0%; border-radius: 3px;
+      transition: width 4.8s cubic-bezier(0.1, 0.9, 0.2, 1);
+    }
+    .setup-step-item {
+      display: flex; align-items: center; gap: 10px;
+      color: rgba(255,255,255,0.9); font-size: 14px;
+      opacity: 0; animation: fadeIn 0.5s ease forwards;
+    }
+    .setup-step-item .si-icon { font-size: 18px; }
+
+    /* ═══════════════════════════════════════
        PAYWALL TRIAL NOTE
     ═══════════════════════════════════════ */
     .paywall-trial-note {
@@ -1703,11 +1754,14 @@
     <div class="login-logo">
       <div class="login-logo-text">Liders<span>.</span></div>
       <div class="login-tagline">הפלטפורמה שהופכת לידים לעסקאות</div>
-      <div class="login-sub">
-        <span>✅ ניהול לידים</span>
-        <span>⚡ סגירת עסקאות</span>
-        <span>📈 צמיחה</span>
-      </div>
+    </div>
+    <div class="login-features">
+      <div class="login-feature-tile"><span class="ft-icon">📋</span>פייפליין מכירות</div>
+      <div class="login-feature-tile"><span class="ft-icon">📊</span>לוח מחוונים</div>
+      <div class="login-feature-tile"><span class="ft-icon">💬</span>התראות WhatsApp</div>
+      <div class="login-feature-tile"><span class="ft-icon">✅</span>ניהול משימות</div>
+      <div class="login-feature-tile"><span class="ft-icon">📅</span>יומן אירועים</div>
+      <div class="login-feature-tile"><span class="ft-icon">🔒</span>אבטחה מלאה</div>
     </div>
     <div class="login-trial-badge" style="margin-bottom:4px;">
       🎁 30 ימי ניסיון חינמי — בלי כרטיס אשראי!
@@ -1761,6 +1815,17 @@
       </p>
     </div>
   </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SETUP / LOADING SCREEN
+═══════════════════════════════════════ -->
+<div id="screen-setup" class="hidden">
+  <div style="font-size:54px;margin-bottom:20px;">⚙️</div>
+  <div class="setup-logo">Liders<span>.</span></div>
+  <div class="setup-subtitle">מכין עבורך את המערכת כעת</div>
+  <div class="setup-bar-wrap"><div id="setup-bar"></div></div>
+  <div id="setup-steps" style="display:flex;flex-direction:column;gap:12px;min-width:230px;"></div>
 </div>
 
 <!-- ═══════════════════════════════════════
@@ -4142,10 +4207,36 @@ const Onboarding = {
     if (s.validate && !s.validate()) return;
     if (this._step === this._steps.length - 1) {
       localStorage.setItem('onboarding_done', '1');
-      // Save industry to Supabase so it survives logout/login on any device
+
+      // Hide onboarding modal and show setup loading screen
+      document.getElementById('modal-onboarding').classList.add('hidden');
+      const setupEl = document.getElementById('screen-setup');
+      if (setupEl) {
+        setupEl.classList.remove('hidden');
+        setTimeout(() => { const b = document.getElementById('setup-bar'); if (b) b.style.width = '100%'; }, 80);
+        const stepsEl = document.getElementById('setup-steps');
+        if (stepsEl) {
+          stepsEl.innerHTML = '';
+          [
+            { icon: '📋', text: 'בונה את הפייפליין שלך...' },
+            { icon: '👤', text: 'שומר פרטי חשבון...' },
+            { icon: '🎯', text: 'מכוון המערכת לסוג העסק...' },
+            { icon: '🚀', text: 'הכל מוכן — בוא נתחיל!' },
+          ].forEach((item, i) => {
+            setTimeout(() => {
+              const d = document.createElement('div');
+              d.className = 'setup-step-item';
+              d.innerHTML = `<span class="si-icon">${item.icon}</span><span>${item.text}</span>`;
+              stepsEl.appendChild(d);
+            }, i * 1000);
+          });
+        }
+      }
+      const minDelay = new Promise(resolve => setTimeout(resolve, 4800));
+
+      // Run all saves
       const ind = localStorage.getItem('liders_industry') || 'other';
       DB.updateIndustry(ind);
-      // Save stages if: new user, user edited them, OR industry changed (new defaults)
       const industryChanged = this._data.prevIndustry !== ind;
       if (this._data.stageNames?.length && (!State.stages?.length || this._data.stagesEdited || industryChanged)) {
         DB.updateStageNames(this._data.stageNames).catch(() => {});
@@ -4160,14 +4251,12 @@ const Onboarding = {
       }
       if (this._data.agencyName) {
         localStorage.setItem('liders_agency_name', this._data.agencyName);
-        // Persist for real (this used to be localStorage-only — cosmetic).
-        // Non-fatal: the wizard still completes even if the write fails.
         try {
           await DB.updateTenantProfile(this._data.agencyName, this._data.agencyPhone, this._data.agencyCity);
           if (State.tenant) State.tenant.name = this._data.agencyName;
           const sidebarName = document.getElementById('sidebar-tenant-name');
           if (sidebarName) sidebarName.textContent = this._data.agencyName;
-        } catch (e) { /* keep going — profile can still be edited later in settings */ }
+        } catch (e) { /* non-fatal */ }
       }
       if (this._data.agencyPhone) {
         localStorage.setItem('liders_agency_phone', this._data.agencyPhone);
@@ -4176,7 +4265,10 @@ const Onboarding = {
       }
       if (this._data.agencyEmail) localStorage.setItem('liders_agency_email', this._data.agencyEmail);
       if (this._data.agencyCity)  localStorage.setItem('liders_agency_city',  this._data.agencyCity);
-      document.getElementById('modal-onboarding').classList.add('hidden');
+
+      // Wait for minimum display time, then transition to app
+      await minDelay;
+      if (setupEl) setupEl.classList.add('hidden');
       toast('🎉 ברוך הבא ל-Liders!', 'success');
       const action = this._pendingAction;
       this._pendingAction = null;
