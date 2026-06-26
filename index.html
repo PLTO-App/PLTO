@@ -1640,6 +1640,31 @@
     }
     .prop-share-btn:active { transform: scale(0.96); }
 
+    /* Gamify prizes grid */
+    .gamify-prizes-title { font-size: 10px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: rgba(255,255,255,.4); margin: 14px 0 8px; }
+    .gamify-prizes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .gamify-prize-card { background: rgba(255,255,255,.07); border-radius: 10px; padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; border: 1px solid transparent; transition: all .2s; }
+    .gamify-prize-card.prize-locked { opacity: .45; }
+    .gamify-prize-card.prize-reached { border-color: rgba(240,192,64,.6); background: rgba(240,192,64,.12); cursor: pointer; animation: prize-pulse 2s infinite; }
+    .gamify-prize-card.prize-claimed { border-color: rgba(34,197,94,.4); background: rgba(34,197,94,.07); }
+    @keyframes prize-pulse { 0%,100%{ box-shadow:0 0 0 0 rgba(240,192,64,.3) } 50%{ box-shadow:0 0 0 5px rgba(240,192,64,0) } }
+    .gamify-prize-icon { font-size: 22px; line-height: 1.1; }
+    .gamify-prize-name { font-size: 11px; font-weight: 700; color: rgba(255,255,255,.85); line-height: 1.3; margin-top: 2px; }
+    .gamify-prize-xp-tag { font-size: 10px; color: rgba(255,255,255,.35); }
+    .gamify-prize-reached-tag { font-size: 10px; color: #F0C040; font-weight: 700; }
+    .gamify-prize-claimed-tag { font-size: 10px; color: #4ade80; font-weight: 700; }
+
+    /* Quick features row */
+    .dash-features-row { display: flex; gap: 8px; overflow-x: auto; padding: 0 20px 4px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+    .dash-features-row::-webkit-scrollbar { display: none; }
+    .dash-feat-tile { flex: 0 0 auto; scroll-snap-align: start; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 68px; cursor: pointer; transition: .15s; }
+    .dash-feat-tile:active { transform: scale(0.95); background: var(--blue-50); }
+    .dash-feat-tile-icon { font-size: 22px; }
+    .dash-feat-tile-label { font-size: 10px; font-weight: 700; color: var(--gray-600); text-align: center; white-space: nowrap; }
+
+    /* Activity collapsible */
+    .activity-toggle-btn { display: block; width: 100%; text-align: center; padding: 10px; color: var(--blue-500); font-size: 13px; font-weight: 600; cursor: pointer; border-top: 1px solid var(--border); margin-top: 4px; background: none; border-right: none; border-left: none; border-bottom: none; font-family: inherit; }
+
     /* ── Print / PDF Export ── */
     @media print {
       #sidebar, #bottom-nav, #fab-btn, #trial-banner, .btn, nav { display: none !important; }
@@ -2064,6 +2089,9 @@
           <div class="gamify-milestone-bar"><div class="gamify-milestone-fill" id="gamify-ms-fill" style="width:0%"></div></div>
           <div class="gamify-milestone-xp"><span id="gamify-ms-cur">0 XP</span><span id="gamify-ms-next">—</span></div>
         </div>
+        <!-- Prizes showcase -->
+        <div class="gamify-prizes-title">🏆 פרסים שמחכים לך</div>
+        <div class="gamify-prizes-grid" id="gamify-prizes-grid"></div>
         <div class="gamify-stats">
           <div class="gamify-stat">
             <div class="gamify-stat-val" id="gamify-leads-count">0</div>
@@ -2083,6 +2111,34 @@
           <div class="gamify-daily-icon">⚡</div>
           <div class="gamify-daily-text" id="gamify-daily-text">טוען אתגר יומי...</div>
           <div class="gamify-daily-done" id="gamify-daily-check"></div>
+        </div>
+      </div>
+
+      <!-- QUICK FEATURES ROW -->
+      <div class="dash-features-row" id="dash-features-row">
+        <div class="dash-feat-tile" onclick="MortgageCalc.open()">
+          <div class="dash-feat-tile-icon">🧮</div>
+          <div class="dash-feat-tile-label">מחשבון<br>משכנתא</div>
+        </div>
+        <div class="dash-feat-tile" onclick="App.go('tools')">
+          <div class="dash-feat-tile-icon">🤖</div>
+          <div class="dash-feat-tile-label">כלי AI</div>
+        </div>
+        <div class="dash-feat-tile" onclick="App.go('properties')">
+          <div class="dash-feat-tile-icon">🏠</div>
+          <div class="dash-feat-tile-label">נכסים</div>
+        </div>
+        <div class="dash-feat-tile" onclick="App.go('analytics')">
+          <div class="dash-feat-tile-icon">📊</div>
+          <div class="dash-feat-tile-label">ניתוח<br>נתונים</div>
+        </div>
+        <div class="dash-feat-tile" onclick="App.go('pipeline')">
+          <div class="dash-feat-tile-icon">📋</div>
+          <div class="dash-feat-tile-label">פייפליין</div>
+        </div>
+        <div class="dash-feat-tile" onclick="openModal('modal-add-lead')">
+          <div class="dash-feat-tile-icon">➕</div>
+          <div class="dash-feat-tile-label">ליד חדש</div>
         </div>
       </div>
 
@@ -2129,6 +2185,7 @@
 
       <div class="section-header mt-4">
         <div class="section-title">🕐 פעילות אחרונה</div>
+        <div class="section-link" onclick="openModal('modal-add-activity')">+ הוסף</div>
       </div>
       <div class="activity-list" id="dash-activity"></div>
     </div>
@@ -5407,6 +5464,30 @@ const Gamify = {
         msBar.style.display = 'none';
       }
     }
+
+    // Prizes grid
+    const prizesGrid = document.getElementById('gamify-prizes-grid');
+    if (prizesGrid) {
+      prizesGrid.innerHTML = this.MILESTONES.map(m => {
+        const isClaimed = claimed.has(m.xp);
+        const isReached = !isClaimed && d.xp >= m.xp;
+        const isLocked  = !isClaimed && !isReached;
+        const cls = isClaimed ? 'prize-claimed' : isReached ? 'prize-reached' : 'prize-locked';
+        const tag = isClaimed
+          ? `<span class="gamify-prize-claimed-tag">✅ מומש</span>`
+          : isReached
+          ? `<span class="gamify-prize-reached-tag">🎁 זמין!</span>`
+          : `<span class="gamify-prize-xp-tag">${m.xp.toLocaleString('he-IL')} XP</span>`;
+        const clickAttr = isReached
+          ? `onclick="Gamify.showMilestone(Gamify.MILESTONES.find(x=>x.xp===${m.xp}))" style="cursor:pointer;"`
+          : '';
+        return `<div class="gamify-prize-card ${cls}" ${clickAttr}>
+          <div class="gamify-prize-icon">${m.icon}</div>
+          <div class="gamify-prize-name">${m.name}</div>
+          ${tag}
+        </div>`;
+      }).join('');
+    }
   },
 
   CHALLENGE_ACTIONS: {
@@ -6151,6 +6232,7 @@ const App = {
 ═══════════════════════════════════════════ */
 const Dashboard = {
   render() {
+    this._activityExpanded = false;
     document.getElementById('dash-agent-name').textContent = (State.agent?.name || 'ברוך הבא').split(' ')[0];
     document.getElementById('dash-date').textContent = hebrewDate();
     const gs = document.getElementById('dash-getting-started');
@@ -6257,21 +6339,30 @@ const Dashboard = {
     }
     el.innerHTML = urgent.map(t => renderTaskItem(t)).join('');
   },
+  _activityExpanded: false,
   renderActivity() {
     const el = document.getElementById('dash-activity');
-    const recent = [...State.activities].sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).slice(0,6);
-    el.innerHTML = recent.map(a => {
+    const all = [...State.activities].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+    const limit   = this._activityExpanded ? all.length : 3;
+    const shown   = all.slice(0, limit);
+    const hidden  = all.length - limit;
+    const renderItem = a => {
       const lead = State.leads.find(l => l.id === a.lead_id);
-      return `
-        <div class="activity-item">
-          <div class="activity-icon">${typeEmoji(a.type)}</div>
-          <div>
-            <div class="activity-text">${escapeHtml(a.content)}</div>
-            <div class="activity-sub">${lead ? escapeHtml(lead.name) + ' · ' : ''}${formatRelDate(a.created_at)}</div>
-          </div>
+      return `<div class="activity-item">
+        <div class="activity-icon">${typeEmoji(a.type)}</div>
+        <div>
+          <div class="activity-text">${escapeHtml(a.content)}</div>
+          <div class="activity-sub">${lead ? escapeHtml(lead.name) + ' · ' : ''}${formatRelDate(a.created_at)}</div>
         </div>
-      `;
-    }).join('');
+      </div>`;
+    };
+    let html = shown.map(renderItem).join('');
+    if (!this._activityExpanded && hidden > 0) {
+      html += `<button class="activity-toggle-btn" onclick="Dashboard._activityExpanded=true;Dashboard.renderActivity();">▼ הצג עוד ${hidden} פעילויות</button>`;
+    } else if (this._activityExpanded && all.length > 3) {
+      html += `<button class="activity-toggle-btn" onclick="Dashboard._activityExpanded=false;Dashboard.renderActivity();">▲ הסתר</button>`;
+    }
+    el.innerHTML = html;
   },
 
   renderColdLeads() {
