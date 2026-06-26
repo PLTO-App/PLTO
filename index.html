@@ -1451,6 +1451,31 @@
       background: #F59E0B; color: white; border: none; padding: 12px; border-radius: 10px;
       font-family: 'Heebo',sans-serif; font-size: 14px; font-weight: 800; cursor: pointer;
     }
+    /* Value strip */
+    .mktg-value-strip {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0; background: var(--navy-900); border-radius: var(--radius-md);
+      margin: 0 20px 16px; padding: 14px 20px; overflow: hidden;
+    }
+    .mktg-value-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .mktg-value-num  { font-size: 20px; font-weight: 900; color: #F59E0B; line-height: 1; }
+    .mktg-value-lbl  { font-size: 10px; color: rgba(255,255,255,.6); text-align: center; }
+    .mktg-value-divider { width: 1px; height: 36px; background: rgba(255,255,255,.12); flex-shrink: 0; margin: 0 12px; }
+    /* Contract value rows inside mktg-card */
+    .mktg-contract-value-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 4px; }
+    .mktg-cv-item { font-size: 12px; color: var(--gray-600); display: flex; align-items: flex-start; gap: 6px; }
+    /* ROI card */
+    .mktg-roi-card {
+      margin: 0 20px 20px;
+      background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+      border: 1px solid #BAE6FD; border-radius: var(--radius-lg); padding: 20px;
+    }
+    .mktg-roi-title { font-size: 15px; font-weight: 900; color: var(--navy-700); margin-bottom: 14px; text-align: center; }
+    .mktg-roi-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .mktg-roi-item  { display: flex; gap: 10px; align-items: flex-start; }
+    .mktg-roi-icon  { font-size: 22px; flex-shrink: 0; }
+    .mktg-roi-text  { font-size: 12px; color: var(--gray-700); line-height: 1.5; }
+    .mktg-roi-text strong { color: var(--navy-700); }
 
     /* ═══════════════════════════════════════
        GAMIFICATION SYSTEM
@@ -5853,23 +5878,35 @@ const Marketing = {
       el.innerHTML = `
         <div class="marketing-header-strip">
           <div class="marketing-addon-badge">⭐ תוספת פרימיום</div>
-          <h2>📣 שירותי שיווק</h2>
-          <p>כלים מקצועיים ליצירת תוכן שיווקי — ישירות מתוך ה-CRM</p>
+          <h2>📣 שיווק + חוזים דיגיטליים</h2>
+          <p>מההצעה המיוחדת ועד לחתימה — הכל מתוך המערכת, בלי לצאת החוצה</p>
         </div>
+
+        <!-- Value strip — locked -->
+        <div class="mktg-value-strip">
+          <div class="mktg-value-item"><span class="mktg-value-num">3 שעות</span><span class="mktg-value-lbl">חסכון ממוצע לעסקה</span></div>
+          <div class="mktg-value-divider"></div>
+          <div class="mktg-value-item"><span class="mktg-value-num">דקות</span><span class="mktg-value-lbl">מהצעה לחוזה חתום</span></div>
+          <div class="mktg-value-divider"></div>
+          <div class="mktg-value-item"><span class="mktg-value-num">100%</span><span class="mktg-value-lbl">מקצועי ומרשים</span></div>
+        </div>
+
         <div class="mktg-locked">
           <div class="mktg-locked-icon">🔒</div>
-          <h3>תוסף שיווק — ₪100 לחודש</h3>
-          <p>גישה לכלים מקצועיים שיעזרו לך ליצור הצעות מיוחדות, פוסטים לסושיאל וקמפיינים ללקוחות — הכל מתוך המערכת, בלי לצאת החוצה.</p>
+          <h3>תוסף שיווק + חוזים — ₪100 לחודש</h3>
+          <p>כל מה שצריך כדי לסגור עסקה מהר יותר: מהצעה שיווקית אישית ועד חוזה דיגיטלי חתום — ישירות מהמערכת, ללא כלים חיצוניים.</p>
           <ul class="mktg-locked-features">
-            <li>✨ מחולל הצעה אישית ללקוח — מבוסס AI</li>
-            <li>📸 יוצר פוסטים לסושיאל — מבוסס AI</li>
-            <li>📢 מחולל קמפיין WhatsApp — מבוסס AI</li>
+            <li>✨ הצעה שיווקית אישית ללקוח — מבוסס AI</li>
+            <li>📸 פוסטים לאינסטגרם / פייסבוק — מבוסס AI</li>
+            <li>📢 קמפיין WhatsApp לרשימת לקוחות — מבוסס AI</li>
+            <li>📜 חוזה תיווך דיגיטלי — שלח לחתימה בוואטסאפ</li>
+            <li>✍️ חתימה דיגיטלית מאובטחת — תקפה משפטית</li>
             <li>🌟 שירות בנייה מלא ע"י צוות Liders</li>
           </ul>
           <button class="mktg-upgrade-btn" onclick="toast('לשדרוג פנה אלינו — biz@liders-crm.com','info')">
-            הוסף שירותי שיווק — ₪100/חודש
+            הוסף עכשיו — ₪100/חודש בלבד
           </button>
-          <p class="mktg-upgrade-micro">ניתן להוסיף בכל עת · ביטול ללא קנסות</p>
+          <p class="mktg-upgrade-micro">ניתן להוסיף בכל עת · ביטול ללא קנסות · ניסיון חינמי 7 ימים</p>
         </div>`;
       return;
     }
@@ -5890,9 +5927,19 @@ const Marketing = {
     el.innerHTML = `
       <div class="marketing-header-strip">
         <div class="marketing-addon-badge">${isAddon ? '✅ תוסף פעיל' : '🎁 ניסיון חינמי'}</div>
-        <h2>📣 שירותי שיווק</h2>
-        <p>צור תוכן שיווקי מקצועי ישירות מהמערכת — בשניות</p>
+        <h2>📣 שיווק + חוזים דיגיטליים</h2>
+        <p>מההצעה המיוחדת ועד לחתימה — הכל מתוך המערכת, בשניות</p>
       </div>
+
+      <!-- Value strip -->
+      <div class="mktg-value-strip">
+        <div class="mktg-value-item"><span class="mktg-value-num">3 שע׳</span><span class="mktg-value-lbl">חסכון ממוצע לעסקה</span></div>
+        <div class="mktg-value-divider"></div>
+        <div class="mktg-value-item"><span class="mktg-value-num">דקות</span><span class="mktg-value-lbl">מהצעה לחוזה חתום</span></div>
+        <div class="mktg-value-divider"></div>
+        <div class="mktg-value-item"><span class="mktg-value-num">100%</span><span class="mktg-value-lbl">דיגיטלי ומקצועי</span></div>
+      </div>
+
       ${trialBanner}
       ${usageLabel ? `<div style="font-size:0.8rem;color:var(--gray-500);text-align:center;margin-bottom:10px;"><span class="mktg-usage-counter">${usageLabel}</span></div>` : ''}
       <div class="mktg-grid">
@@ -5997,6 +6044,64 @@ const Marketing = {
           </div>
         </div>
 
+        <!-- כלי 4: חוזה דיגיטלי + חתימה -->
+        <div class="mktg-card">
+          <div class="mktg-card-head">
+            <div class="mktg-card-icon mktg-icon-orange">📜</div>
+            <div>
+              <div class="mktg-card-title">חוזה דיגיטלי + חתימה</div>
+              <div class="mktg-card-sub">שלח ללקוח לחתימה בוואטסאפ — בדקה אחת ✍️</div>
+            </div>
+          </div>
+          <div class="mktg-card-body">
+            <div class="mktg-contract-value-row">
+              <div class="mktg-cv-item">⏱️ <strong>חוסך 2-3 שעות</strong> לעסקה</div>
+              <div class="mktg-cv-item">✅ <strong>תקף משפטית</strong> — חוק חתימה אלקטרונית</div>
+              <div class="mktg-cv-item">📱 הלקוח חותם <strong>מהטלפון</strong> — בלי להגיע למשרד</div>
+            </div>
+            <div>
+              <label class="tool-label">בחר ליד לשליחת חוזה</label>
+              <select class="form-input" id="mktg-contract-lead">${leadOptions || '<option>אין לידים עדיין</option>'}</select>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="tool-btn tool-btn-primary" style="flex:1;"
+                      onclick="Marketing.openContractForLead()">
+                📜 צור וזה לחתימה
+              </button>
+              <button class="tool-btn" style="flex:0 0 auto;padding:0 14px;"
+                      onclick="App.go('pipeline')" title="לכל הלידים">
+                ↗
+              </button>
+            </div>
+            <div style="font-size:11px;color:var(--gray-400);text-align:center;line-height:1.6;">
+              תבנית הסכם תיווך סטנדרטית כולה בעברית · ניתן גם להעלות חוזה מעו"ד
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ערך עסקי — מה התוסף הזה שווה לך? -->
+      <div class="mktg-roi-card">
+        <div class="mktg-roi-title">💡 מה הפיצ'ר הזה שווה לך?</div>
+        <div class="mktg-roi-grid">
+          <div class="mktg-roi-item">
+            <div class="mktg-roi-icon">⏰</div>
+            <div class="mktg-roi-text"><strong>חוסך 3+ שעות</strong><br>לא צריך נסיעה ללקוח לחתימה</div>
+          </div>
+          <div class="mktg-roi-item">
+            <div class="mktg-roi-icon">🚀</div>
+            <div class="mktg-roi-text"><strong>סוגר עסקאות מהר יותר</strong><br>הלקוח חותם מהרגע שלו, בלי לחכות</div>
+          </div>
+          <div class="mktg-roi-item">
+            <div class="mktg-roi-icon">🎯</div>
+            <div class="mktg-roi-text"><strong>פחות עסקאות שנופלות</strong><br>ביורוקרטיה מינימלית = פחות ויתורים</div>
+          </div>
+          <div class="mktg-roi-item">
+            <div class="mktg-roi-icon">💼</div>
+            <div class="mktg-roi-text"><strong>נראה מקצועי יותר</strong><br>לקוחות מרגישים שעובדים עם הטובים</div>
+          </div>
+        </div>
       </div>
 
       <!-- שירות מלא -->
@@ -6176,6 +6281,25 @@ ${prop.description ? `תיאור: ${prop.description.slice(0,150)}` : ''}
     const text = document.getElementById(outId)?.textContent;
     if (!text) return;
     navigator.clipboard.writeText(text).then(() => toast('הועתק ✓', 'success'));
+  },
+
+  /* ── Open contract creation for a lead (from marketing screen) ── */
+  openContractForLead() {
+    const sel = document.getElementById('mktg-contract-lead');
+    const leadId = sel?.value;
+    if (!leadId) { toast('בחר ליד תחילה', 'warning'); return; }
+    const lead = State.leads.find(l => l.id === leadId);
+    if (!lead) return;
+    // Navigate to pipeline and open lead detail on contracts tab
+    App.go('pipeline');
+    setTimeout(() => {
+      Pipeline.openLead(leadId);
+      setTimeout(() => {
+        const tabBtn = [...document.querySelectorAll('.tab-btn')].find(b => b.textContent.includes('חוזים'));
+        if (tabBtn) { tabBtn.click(); }
+        ContractEngine.openCreate(leadId);
+      }, 500);
+    }, 200);
   },
 
   toggleFsForm() {
