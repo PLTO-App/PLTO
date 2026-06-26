@@ -219,6 +219,24 @@
       border: 2px solid var(--white);
     }
     @media (min-width: 768px) { .support-fab { bottom: 24px; right: 24px; } }
+
+    /* ── QUICKLOG MODAL ── */
+    .ql-lead-pick-row {
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 12px; margin-bottom: 8px; cursor: pointer;
+      display: flex; gap: 10px; align-items: center; transition: border-color .15s;
+    }
+    .ql-lead-pick-row:hover { border-color: var(--blue-400); background: var(--blue-50); }
+    .ql-section-label {
+      font-size: 11px; font-weight: 700; color: var(--gray-400);
+      text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px;
+    }
+    .ql-preview-box {
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 12px; margin-bottom: 12px; font-size: 13px; line-height: 1.6;
+    }
+    .ql-update-box { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+    .ql-next-box   { background: #fff7ed; border-color: #fdba74; color: #c2410c; }
     .support-modal-body { padding: 0 16px 32px; }
     .support-ai-bubble {
       background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
@@ -2572,6 +2590,10 @@
 
       <!-- QUICK FEATURES ROW -->
       <div class="dash-features-row" id="dash-features-row">
+        <div class="dash-feat-tile" style="background:linear-gradient(135deg,#0F1F3D,#1a3a6a);color:#fff;border-color:transparent;" onclick="QuickLog.open()">
+          <div class="dash-feat-tile-icon">⚡</div>
+          <div class="dash-feat-tile-label" style="color:#fff;">יומן<br>מהיר AI</div>
+        </div>
         <div class="dash-feat-tile dash-feat-tile-pro" onclick="App.go('pro')">
           <div class="dash-feat-tile-icon">✨</div>
           <div class="dash-feat-tile-label">פיצ'רים<br>PRO</div>
@@ -3306,6 +3328,73 @@
         <div style="font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">פניות קודמות</div>
         <div id="support-history-list"><div style="color:var(--gray-400);font-size:12px;text-align:center;padding:8px;">טוען...</div></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── QuickLog AI Modal ── -->
+<div id="modal-quicklog" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-quicklog')">
+  <div class="modal-sheet" style="padding:0;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#0F1F3D,#1a3a6a);padding:18px 16px 14px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:16px;font-weight:800;color:#fff;">⚡ יומן מהיר AI</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:2px;">כתוב בחופשיות — AI יסדר ויכניס לליד</div>
+      </div>
+      <button onclick="closeModal('modal-quicklog')" style="background:rgba(255,255,255,.15);border:none;width:32px;height:32px;border-radius:50%;font-size:16px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <div style="padding:16px 16px 32px;max-height:74vh;overflow-y:auto;">
+
+      <!-- State: input -->
+      <div id="ql-state-input">
+        <p style="font-size:13px;color:var(--gray-500);margin-bottom:10px;">כתוב מה היה בשיחה/פגישה — שם הלקוח, מה דיברתם, עדכונים חשובים. AI יסדר ויכניס לליד הנכון.</p>
+        <textarea id="ql-input"
+          placeholder='לדוגמה: "שוחחתי עם אבי לוי, הצעתי לו נכסים לפי האיזור שביקש. מוכן להעלות טיפה בתקציב אם תבוא עסקה טובה..."'
+          style="width:100%;height:128px;border:1.5px solid var(--border);border-radius:var(--radius-md);padding:10px 12px;font-size:13px;font-family:inherit;resize:none;direction:rtl;color:var(--gray-900);background:var(--surface);transition:border-color .15s;"
+          onfocus="this.style.borderColor='var(--blue-400)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+        <button onclick="QuickLog.process()" class="btn btn-primary" style="width:100%;margin-top:10px;">🤖 AI יעבד את הרשומה</button>
+      </div>
+
+      <!-- State: loading -->
+      <div id="ql-state-loading" class="hidden" style="text-align:center;padding:40px 0;">
+        <div style="font-size:36px;">🤖</div>
+        <div style="margin-top:10px;font-size:14px;color:var(--gray-500);">AI מנתח את הרשומה...</div>
+        <div style="margin-top:6px;font-size:12px;color:var(--gray-400);">מזהה ליד, מסכם, מחלץ עדכונים</div>
+      </div>
+
+      <!-- State: multiple leads — pick -->
+      <div id="ql-state-pick" class="hidden">
+        <div style="font-size:14px;font-weight:700;margin-bottom:4px;">🔍 נמצאו כמה לידים תואמים</div>
+        <div style="font-size:12px;color:var(--gray-500);margin-bottom:12px;">בחר את הלקוח הנכון:</div>
+        <div id="ql-pick-list"></div>
+        <button onclick="QuickLog._resetToInput()" class="btn btn-ghost" style="width:100%;margin-top:10px;font-size:13px;">← חזרה לעריכה</button>
+      </div>
+
+      <!-- State: confirm -->
+      <div id="ql-state-confirm" class="hidden">
+        <div class="ql-section-label">ליד שזוהה</div>
+        <div id="ql-lead-preview" class="ql-preview-box" style="border-color:var(--blue-200);background:var(--blue-50);"></div>
+
+        <div class="ql-section-label">תיעוד שיתווסף</div>
+        <div id="ql-activity-preview" class="ql-preview-box"></div>
+
+        <div id="ql-updates-preview" class="ql-preview-box ql-update-box hidden"></div>
+        <div id="ql-next-action"      class="ql-preview-box ql-next-box hidden"></div>
+
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <button onclick="QuickLog._resetToInput()" class="btn btn-ghost" style="flex:1;font-size:13px;">✏️ ערוך</button>
+          <button onclick="QuickLog.confirm()" class="btn btn-primary" style="flex:2;font-size:13px;">✅ אישור — שמור בליד</button>
+        </div>
+      </div>
+
+      <!-- State: done -->
+      <div id="ql-state-done" class="hidden" style="text-align:center;padding:28px 0;">
+        <div style="font-size:48px;">✅</div>
+        <div style="font-size:16px;font-weight:800;margin-top:10px;">נרשם בהצלחה!</div>
+        <div id="ql-done-msg" style="font-size:13px;color:var(--gray-500);margin-top:6px;"></div>
+        <button onclick="QuickLog.openNew()" class="btn btn-primary" style="margin-top:18px;width:100%;">⚡ רישום נוסף</button>
+        <button onclick="closeModal('modal-quicklog')" class="btn btn-ghost" style="margin-top:8px;width:100%;font-size:13px;">סגור</button>
+      </div>
+
     </div>
   </div>
 </div>
@@ -11339,6 +11428,187 @@ const Support = {
   },
 };
 window.Support = Support;
+
+/* ═══════════════════════════════════════════
+   QUICKLOG — AI free-text → lead activity
+═══════════════════════════════════════════ */
+const QuickLog = {
+  _parsed: null,
+  _leadId: null,
+
+  open() {
+    if (demoGuard()) return;
+    this._resetToInput(true);
+    openModal('modal-quicklog');
+  },
+
+  openNew() { this._resetToInput(true); },
+
+  _setState(s) {
+    ['input','loading','pick','confirm','done'].forEach(name => {
+      document.getElementById('ql-state-' + name)?.classList.toggle('hidden', name !== s);
+    });
+  },
+
+  _resetToInput(clearText) {
+    this._parsed = null;
+    this._leadId = null;
+    if (clearText) {
+      const inp = document.getElementById('ql-input');
+      if (inp) inp.value = '';
+    }
+    this._setState('input');
+  },
+
+  async process() {
+    const text = (document.getElementById('ql-input')?.value || '').trim();
+    if (text.length < 10) { toast('נא לכתוב לפחות משפט אחד על השיחה', 'warning'); return; }
+    this._setState('loading');
+
+    try {
+      const { data: fn, error: fnErr } = await sbClient.functions.invoke('ai-proxy', {
+        body: {
+          system: `אתה עוזר CRM לסוכן נדל"ן ישראלי. נתח את הרשומה והחזר JSON בלבד — ללא markdown, ללא הסבר, רק JSON תקין.
+
+מבנה נדרש:
+{
+  "lead_name": "שם מלא של הלקוח שהוזכר",
+  "activity_type": "call" | "meeting" | "note" | "email",
+  "activity_summary": "תקציר מקצועי של מה שקרה, 2-3 משפטים בעברית",
+  "next_action": "הצעד הבא המומלץ, משפט אחד בעברית, או null",
+  "updates": {
+    "budget_max": מספר בשקלים אם הוזכר עדכון תקציב מקסימלי אחרת null,
+    "notes": "מידע נוסף לשדה הערות אם רלוונטי אחרת null"
+  }
+}`,
+          messages: [{ role: 'user', content: text }]
+        }
+      });
+      if (fnErr) throw fnErr;
+
+      const raw = (fn?.content || '').replace(/```json?\n?/g,'').replace(/```/g,'').trim();
+      this._parsed = JSON.parse(raw);
+
+      const name = (this._parsed.lead_name || '').toLowerCase().trim();
+      if (!name || name.length < 2) {
+        toast('לא זוהה שם לקוח בטקסט — כתוב שם ברור', 'warning');
+        this._setState('input'); return;
+      }
+
+      const matches = State.leads.filter(l => {
+        const n = (l.name || '').toLowerCase();
+        return name.split(' ').filter(p => p.length > 1).some(p => n.includes(p));
+      });
+
+      if (matches.length === 0) {
+        toast(`לא נמצא ליד בשם "${this._parsed.lead_name}" — בדוק את השם`, 'warning');
+        this._setState('input'); return;
+      }
+      if (matches.length === 1) {
+        this._leadId = matches[0].id;
+        this._showConfirm(matches[0]);
+      } else {
+        this._showPicker(matches);
+      }
+
+    } catch(e) {
+      toast('שגיאה בניתוח AI: ' + (e.message || e), 'error');
+      this._setState('input');
+    }
+  },
+
+  _showPicker(leads) {
+    document.getElementById('ql-pick-list').innerHTML = leads.map(l => {
+      const s = State.stages.find(st => st.id === l.stage);
+      return `<div class="ql-lead-pick-row" onclick="QuickLog._pickLead('${l.id}')">
+        <div class="score-badge ${scoreClass(l.score)}" style="width:36px;height:36px;font-size:12px;flex-shrink:0;">${l.score}</div>
+        <div>
+          <div style="font-weight:700;font-size:14px;">${escapeHtml(l.name)}</div>
+          <div style="font-size:12px;color:var(--gray-500);">${escapeHtml(l.phone)} · ${s ? escapeHtml(s.name) : '—'}</div>
+        </div>
+      </div>`;
+    }).join('');
+    this._setState('pick');
+  },
+
+  _pickLead(id) {
+    this._leadId = id;
+    this._showConfirm(State.leads.find(l => l.id === id));
+  },
+
+  _showConfirm(lead) {
+    const s = State.stages.find(st => st.id === lead.stage);
+    document.getElementById('ql-lead-preview').innerHTML = `
+      <div style="display:flex;gap:10px;align-items:center;">
+        <div class="score-badge ${scoreClass(lead.score)}" style="width:36px;height:36px;font-size:12px;flex-shrink:0;">${lead.score}</div>
+        <div>
+          <div style="font-weight:800;font-size:15px;">${escapeHtml(lead.name)}</div>
+          <div style="font-size:12px;color:var(--gray-500);">${escapeHtml(lead.phone)} · ${s ? escapeHtml(s.name) : '—'}</div>
+        </div>
+      </div>`;
+
+    const icons = { call:'📞', meeting:'🤝', note:'📝', email:'✉️' };
+    document.getElementById('ql-activity-preview').innerHTML =
+      `${icons[this._parsed.activity_type]||'📝'} ${escapeHtml(this._parsed.activity_summary)}`;
+
+    const upd = this._parsed.updates || {};
+    const updEl = document.getElementById('ql-updates-preview');
+    const lines = [];
+    if (upd.budget_max) lines.push(`💰 תקציב מקסימלי → ${formatMoney(upd.budget_max)}`);
+    if (upd.notes)      lines.push(`📋 הערה: "${escapeHtml(upd.notes)}"`);
+    if (lines.length) {
+      updEl.innerHTML = '<strong>עדכונים שיבוצעו:</strong><br>' + lines.join('<br>');
+      updEl.classList.remove('hidden');
+    } else updEl.classList.add('hidden');
+
+    const nextEl = document.getElementById('ql-next-action');
+    if (this._parsed.next_action) {
+      nextEl.innerHTML = `🎯 <strong>הצעד הבא:</strong> ${escapeHtml(this._parsed.next_action)}`;
+      nextEl.classList.remove('hidden');
+    } else nextEl.classList.add('hidden');
+
+    this._setState('confirm');
+  },
+
+  async confirm() {
+    if (!this._leadId || !this._parsed) return;
+    const lead = State.leads.find(l => l.id === this._leadId);
+    if (!lead) return;
+
+    try {
+      const typeMap = { call:'call', meeting:'note', note:'note', email:'email' };
+      const content = this._parsed.activity_summary +
+        (this._parsed.next_action ? `\n🎯 הצעד הבא: ${this._parsed.next_action}` : '');
+
+      const act = await DB.addActivity({ lead_id: this._leadId, type: typeMap[this._parsed.activity_type]||'note', content });
+      State.activities.unshift(act);
+
+      const upd = this._parsed.updates || {};
+      const patch = {};
+      if (upd.budget_max) patch.budget_max = Number(upd.budget_max);
+      if (upd.notes) patch.notes = lead.notes ? lead.notes + '\n' + upd.notes : upd.notes;
+      if (Object.keys(patch).length) {
+        await DB.updateLead(this._leadId, patch);
+        const idx = State.leads.findIndex(l => l.id === this._leadId);
+        if (idx >= 0) Object.assign(State.leads[idx], patch);
+      }
+
+      lead.last_contact = today();
+      try { Gamify.event('log_activity'); } catch(_) {}
+
+      document.getElementById('ql-done-msg').textContent = `הרשומה נוספה ל"${lead.name}"`;
+      this._setState('done');
+
+      if (State.screen === 'lead-detail' && State.currentLeadId === this._leadId)
+        LeadDetail.render(this._leadId);
+      else if (State.screen === 'pipeline') Pipeline.render();
+
+    } catch(e) {
+      toast('שגיאה בשמירה: ' + e.message, 'error');
+    }
+  },
+};
+window.QuickLog = QuickLog;
 
 </script>
 </body>
