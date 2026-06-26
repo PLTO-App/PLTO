@@ -2613,10 +2613,10 @@
 <div class="levelup-overlay" id="levelup-overlay" onclick="Gamify.closeLevelUp()">
   <div class="levelup-card" onclick="event.stopPropagation()">
     <div class="levelup-icon" id="levelup-icon">⭐</div>
-    <div class="levelup-label">עלית רמה!</div>
-    <div class="levelup-name" id="levelup-name">מקצוען</div>
-    <div class="levelup-sub" id="levelup-sub">כל הכבוד — אתה הולך וגדל!</div>
-    <button class="levelup-btn" onclick="Gamify.closeLevelUp()">🚀 המשך</button>
+    <div class="levelup-label">עלייה ברמה!</div>
+    <div class="levelup-name" id="levelup-name">מנוסה</div>
+    <div class="levelup-sub" id="levelup-sub">כל הכבוד — הביצועים שלך ממשיכים לזנק!</div>
+    <button class="levelup-btn" onclick="Gamify.closeLevelUp()">🚀 קדימה!</button>
   </div>
 </div>
 
@@ -2628,8 +2628,8 @@
     <div class="milestone-xp-badge" id="milestone-xp-badge">0 XP</div>
     <div class="milestone-prize-name" id="milestone-prize-name">פרס</div>
     <div class="milestone-prize-desc" id="milestone-prize-desc"></div>
-    <button class="milestone-claim-btn" onclick="Gamify.claimMilestone()">🎁 מימש את הפרס →</button>
-    <button class="milestone-close-btn" onclick="Gamify.closeMilestone()">אמשיך אחר כך</button>
+    <button class="milestone-claim-btn" onclick="Gamify.claimMilestone()">🎁 מימוש הפרס →</button>
+    <button class="milestone-close-btn" onclick="Gamify.closeMilestone()">בהמשך</button>
   </div>
 </div>
 
@@ -5403,9 +5403,9 @@ ${prop.description ? `תיאור: ${prop.description.slice(0,150)}` : ''}
 ═══════════════════════════════════════════ */
 const Gamify = {
   LEVELS: [
-    { min:    0, name: 'מתחיל',    icon: '🌱', next: 200  },
-    { min:  200, name: 'סוכן',     icon: '📋', next: 600  },
-    { min:  600, name: 'מקצוען',   icon: '⭐', next: 1200 },
+    { min:    0, name: 'ניצן',     icon: '🌱', next: 200  },
+    { min:  200, name: 'עולה',     icon: '📋', next: 600  },
+    { min:  600, name: 'מנוסה',    icon: '⭐', next: 1200 },
     { min: 1200, name: 'מומחה',    icon: '🏆', next: 2500 },
     { min: 2500, name: 'אגדה',     icon: '👑', next: 99999 },
   ],
@@ -5420,27 +5420,27 @@ const Gamify = {
     rescue_cold:   60,
   },
   ACHIEVEMENTS: [
-    { id:'first_lead',   icon:'🎯', name:'ליד ראשון',        desc:'הוסף את הליד הראשון',          xp:50,  check: d => d.leadsAdded >= 1   },
-    { id:'leads_5',      icon:'📊', name:'5 לידים',           desc:'5 לידים במערכת',               xp:75,  check: d => d.leadsAdded >= 5   },
-    { id:'leads_20',     icon:'🚀', name:'20 לידים',          desc:'20 לידים במערכת',              xp:150, check: d => d.leadsAdded >= 20  },
-    { id:'first_deal',   icon:'🤝', name:'עסקה ראשונה',       desc:'סגור עסקה ראשונה',             xp:200, check: d => d.dealsClosed >= 1  },
-    { id:'deals_5',      icon:'💰', name:'5 עסקאות',          desc:'5 עסקאות שנסגרו',             xp:300, check: d => d.dealsClosed >= 5  },
-    { id:'tasks_10',     icon:'✅', name:'מסיים משימות',      desc:'10 משימות הושלמו',            xp:100, check: d => d.tasksCompleted >= 10 },
-    { id:'streak_3',     icon:'🔥', name:'3 ימים רצופים',     desc:'3 ימים רצופים במערכת',        xp:75,  check: d => d.streak >= 3      },
-    { id:'streak_7',     icon:'⚡', name:'שבוע רצוף',         desc:'7 ימים רצופים',               xp:150, check: d => d.streak >= 7      },
-    { id:'streak_30',    icon:'💎', name:'חודש רצוף',         desc:'30 ימים רצופים — מדהים!',     xp:500, check: d => d.streak >= 30     },
-    { id:'ai_master',    icon:'🤖', name:'מאסטר AI',          desc:'השתמשת ב-AI 10 פעמים',        xp:100, check: d => d.aiUses >= 10     },
-    { id:'pipeline_100k',icon:'💼', name:'פייפליין 100K',      desc:'שווי פייפליין עולה על 100K ₪', xp:200, check: d => (State.leads?.filter(l=>l.stage!=='s5').reduce((s,l)=>s+(l.budget_max||0),0)||0) >= 100000 },
+    { id:'first_lead',   icon:'🎯', name:'ליד ראשון',        desc:'הליד הראשון נוסף למערכת',            xp:50,  check: d => d.leadsAdded >= 1   },
+    { id:'leads_5',      icon:'📊', name:'5 לידים',           desc:'5 לידים פעילים במערכת',              xp:75,  check: d => d.leadsAdded >= 5   },
+    { id:'leads_20',     icon:'🚀', name:'20 לידים',          desc:'20 לידים חיים במערכת',               xp:150, check: d => d.leadsAdded >= 20  },
+    { id:'first_deal',   icon:'🤝', name:'עסקה ראשונה',       desc:'העסקה הראשונה נסגרה בהצלחה',        xp:200, check: d => d.dealsClosed >= 1  },
+    { id:'deals_5',      icon:'💰', name:'5 עסקאות',          desc:'5 עסקאות שנסגרו',                   xp:300, check: d => d.dealsClosed >= 5  },
+    { id:'tasks_10',     icon:'✅', name:'מסיים משימות',      desc:'10 משימות הושלמו בהצלחה',           xp:100, check: d => d.tasksCompleted >= 10 },
+    { id:'streak_3',     icon:'🔥', name:'3 ימים רצופים',     desc:'3 ימים רצופים במערכת',              xp:75,  check: d => d.streak >= 3      },
+    { id:'streak_7',     icon:'⚡', name:'שבוע רצוף',         desc:'7 ימים רצופים — יוצא מן הכלל',     xp:150, check: d => d.streak >= 7      },
+    { id:'streak_30',    icon:'💎', name:'חודש רצוף',         desc:'30 ימים רצופים — זה מדהים!',       xp:500, check: d => d.streak >= 30     },
+    { id:'ai_master',    icon:'🤖', name:'מאסטר AI',          desc:'שימוש ב-AI ב-10 הזדמנויות שונות', xp:100, check: d => d.aiUses >= 10     },
+    { id:'pipeline_100k',icon:'💼', name:'פייפליין 100K',      desc:'שווי הפייפליין עבר את ה-100K ₪',   xp:200, check: d => (State.leads?.filter(l=>l.stage!=='s5').reduce((s,l)=>s+(l.budget_max||0),0)||0) >= 100000 },
   ],
   DAILY_CHALLENGES: [
-    'פנה ל-3 לידים שלא דיברת איתם השבוע',
-    'עדכן שלב של ליד אחד לפחות',
-    'הוסף ליד חדש למערכת',
-    'השלם 2 משימות פתוחות',
-    'השתמש ב-AI לכתיבת הודעת פולואפ',
-    'בדוק אם יש לידים קפואים וצור איתם קשר',
-    'הוסף הערה לפגישה שהייתה לך',
-    'תכנן 3 פולואפים לשבוע הבא',
+    'ניצור קשר עם 3 לידים שלא קיבלו מענה השבוע',
+    'נעדכן את השלב של ליד אחד לפחות',
+    'נוסיף ליד חדש למערכת',
+    'נסגור 2 משימות פתוחות היום',
+    'נכתוב הודעת פולואפ חכמה בעזרת ה-AI',
+    'נבדוק לידים קפואים ונחזיר אותם לפעולה',
+    'נתעד את הפגישה האחרונה — נוסיף הערה ב-CRM',
+    'נתכנן 3 פולואפים לשבוע הבא',
   ],
 
   MILESTONES: [
@@ -5612,7 +5612,7 @@ const Gamify = {
   showLevelUp(level) {
     document.getElementById('levelup-icon').textContent = level.icon;
     document.getElementById('levelup-name').textContent = level.name;
-    document.getElementById('levelup-sub').textContent  = `ברכות! הגעת לרמה "${level.name}" — המשך כך 💪`;
+    document.getElementById('levelup-sub').textContent  = `ברכות! הגעת לרמה "${level.name}" — ממשיכים לנצח! 💪`;
     document.getElementById('levelup-overlay').classList.add('show');
   },
 
@@ -5762,14 +5762,14 @@ const Gamify = {
   },
 
   CHALLENGE_ACTIONS: {
-    'פנה ל-3 לידים שלא דיברת איתם השבוע': () => App.go('pipeline'),
-    'עדכן שלב של ליד אחד לפחות':           () => App.go('pipeline'),
-    'הוסף ליד חדש למערכת':                  () => openModal('modal-add-lead'),
-    'השלם 2 משימות פתוחות':                 () => App.go('tasks'),
-    'השתמש ב-AI לכתיבת הודעת פולואפ':      () => App.go('tools'),
-    'בדוק אם יש לידים קפואים וצור איתם קשר': () => App.go('pipeline'),
-    'הוסף הערה לפגישה שהייתה לך':           () => Gamify.openQuickNote(),
-    'תכנן 3 פולואפים לשבוע הבא':            () => App.go('pipeline'),
+    'ניצור קשר עם 3 לידים שלא קיבלו מענה השבוע':    () => App.go('pipeline'),
+    'נעדכן את השלב של ליד אחד לפחות':               () => App.go('pipeline'),
+    'נוסיף ליד חדש למערכת':                          () => openModal('modal-add-lead'),
+    'נסגור 2 משימות פתוחות היום':                    () => App.go('tasks'),
+    'נכתוב הודעת פולואפ חכמה בעזרת ה-AI':           () => App.go('tools'),
+    'נבדוק לידים קפואים ונחזיר אותם לפעולה':         () => App.go('pipeline'),
+    'נתעד את הפגישה האחרונה — נוסיף הערה ב-CRM':    () => Gamify.openQuickNote(),
+    'נתכנן 3 פולואפים לשבוע הבא':                    () => App.go('pipeline'),
   },
 
   dailyAction() {
@@ -5783,7 +5783,7 @@ const Gamify = {
   openQuickNote() {
     const leads = State.leads || [];
     if (!leads.length) {
-      toast('עדיין אין לידים — הוסף ליד ראשון', 'info');
+      toast('עדיין אין לידים — נוסיף את הראשון', 'info');
       openModal('modal-add-lead');
       return;
     }
