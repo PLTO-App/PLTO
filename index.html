@@ -1478,6 +1478,59 @@
     .mktg-roi-text strong { color: var(--navy-700); }
 
     /* ═══════════════════════════════════════
+       MORNING MOTIVATION AGENT
+    ═══════════════════════════════════════ */
+    #motivation-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(10,20,45,.82); backdrop-filter: blur(6px);
+      display: flex; align-items: flex-end; justify-content: center;
+      padding: 0 0 env(safe-area-inset-bottom,0);
+      animation: motivFadeIn .3s ease;
+    }
+    @keyframes motivFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .motiv-card {
+      background: linear-gradient(160deg, #0F1F3D 0%, #1a3a6b 60%, #0F1F3D 100%);
+      border-radius: 28px 28px 0 0;
+      padding: 28px 24px 32px;
+      width: 100%; max-width: 480px;
+      color: #fff;
+      animation: motivSlideUp .4s cubic-bezier(.34,1.56,.64,1);
+      position: relative; overflow: hidden;
+    }
+    @keyframes motivSlideUp { from { transform: translateY(60px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .motiv-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 80% 20%, rgba(245,158,11,.12) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .motiv-emoji-row { text-align: center; font-size: 52px; margin-bottom: 6px; line-height: 1; }
+    .motiv-greeting  { text-align: center; font-size: 13px; color: rgba(255,255,255,.5); margin-bottom: 4px; letter-spacing: .5px; }
+    .motiv-name      { text-align: center; font-size: 26px; font-weight: 900; color: #F59E0B; margin-bottom: 16px; line-height: 1.1; }
+    .motiv-msg       { font-size: 15px; line-height: 1.75; color: rgba(255,255,255,.88); text-align: center; margin-bottom: 22px; }
+    .motiv-stats     {
+      display: flex; gap: 0; background: rgba(255,255,255,.07); border-radius: 14px;
+      padding: 12px 0; margin-bottom: 22px;
+    }
+    .motiv-stat      { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .motiv-stat-val  { font-size: 22px; font-weight: 900; color: #F59E0B; line-height: 1; }
+    .motiv-stat-lbl  { font-size: 10px; color: rgba(255,255,255,.45); }
+    .motiv-stat-div  { width: 1px; background: rgba(255,255,255,.1); margin: 4px 0; }
+    .motiv-cta       {
+      width: 100%; padding: 16px; border-radius: 14px; border: none; cursor: pointer;
+      font-family: 'Heebo', sans-serif; font-size: 17px; font-weight: 900;
+      background: linear-gradient(90deg, #F59E0B, #D97706); color: white;
+      box-shadow: 0 8px 24px rgba(245,158,11,.4);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .motiv-cta:active { transform: scale(.96); box-shadow: 0 4px 12px rgba(245,158,11,.35); }
+    .motiv-skip      {
+      display: block; text-align: center; margin-top: 12px;
+      font-size: 12px; color: rgba(255,255,255,.3); cursor: pointer;
+      text-decoration: underline; background: none; border: none;
+      font-family: 'Heebo', sans-serif; width: 100%;
+    }
+
+    /* ═══════════════════════════════════════
        GAMIFICATION SYSTEM
     ═══════════════════════════════════════ */
     /* Sidebar level badge */
@@ -7675,6 +7728,8 @@ const App = {
     if (!State.isDemo) setTimeout(() => Onboarding.show(), 800);
     // Show billing reminder for days 7-1 (not in demo)
     if (!State.isDemo) setTimeout(() => Billing.showDailyReminder(), 1500);
+    // Morning motivation agent — once per day
+    setTimeout(() => MotivationAgent.show(), 2400);
     // Init PIN lock
     AppLock._updateLockBtn();
     AppLock.initListeners();
@@ -7793,6 +7848,96 @@ const App = {
     document.getElementById('nav-badge-pipeline').textContent = pipelineActive || '';
     document.getElementById('nav-badge-pipeline').style.display = pipelineActive ? '' : 'none';
   }
+};
+
+/* ═══════════════════════════════════════════
+   MOTIVATION AGENT — בוקר טוב סוכן מספר 1!
+═══════════════════════════════════════════ */
+const MotivationAgent = {
+  _KEY_PFX: 'liders_motiv_',
+
+  /* ── Decide whether to show today ── */
+  show() {
+    const today = new Date().toISOString().slice(0, 10);
+    if (localStorage.getItem(this._KEY_PFX + today)) return;
+    if (!localStorage.getItem('onboarding_done')) return; // skip during wizard
+    localStorage.setItem(this._KEY_PFX + today, '1');
+    setTimeout(() => this._render(), 1800);
+  },
+
+  /* ── Build and inject overlay ── */
+  _render() {
+    const name   = (State.agent?.name || 'חבר').split(' ')[0];
+    const hour   = new Date().getHours();
+    const greeting = hour < 12 ? 'בוקר טוב' : hour < 17 ? 'צהריים טובים' : 'ערב טוב';
+
+    // Stats
+    const openLeads  = (State.leads || []).filter(l => l.stage !== '5').length;
+    const doneTasks  = (State.tasks || []).filter(t => t.done).length;
+    const todayTasks = (State.tasks || []).filter(t => !t.done).length;
+    const level      = Gamify?.currentLevel?.()?.name || 'סוכן';
+
+    // Message pool — sounds like a real person, not an AI
+    const msgs = [
+      `יאללה ${name}! 🔥 שוק הנדל"ן לא מחכה לאף אחד — אבל מי שזזה ראשון, סוגר ראשון. בוא נזוז!`,
+      `שמע ${name}, 💪 לא כולם מסוגלים לעשות מה שאתה עושה כל יום. להחזיק בעשרות לקוחות, להיות על הקו — זה לא פשוט. כוכב.`,
+      `${name} הגיע! 🦁 יש לך ${openLeads} עסקאות פתוחות שמחכות לך. אחת מהן — היא העסקה שלך. בוא נמצא אותה היום.`,
+      `קפה ☕ מוח 🧠 ורצון לסגור עסקה 🎯 — ${name}, כל מה שצריך כבר אצלך. אז בוא נגרום לזה לקרות!`,
+      `${name}! 🔔 יש לידים שמחכים לטלפון שלך כבר כמה ימים. הם לא מכירים אחרים — אבל לא יחכו לנצח. זמן לפעול!`,
+      `הי ${name} 😎 יום חדש, הזדמנויות חדשות. העסקה שתסגר היום אולי כבר יושבת לך בפייפליין. לפעמים זה רק שיחת טלפון אחת.`,
+      `${name} — 🎯 הידעת שסוכנים גדולים לא מחכים שהלידים יגיעו? הם יוצרים קשר. הם יוזמים. הם עושים. כמוך בדיוק.`,
+      `בוא ניתן יחד בראש ${name}! 👊 ${openLeads} עסקאות פתוחות, ${todayTasks} משימות להיום — נשמע כמו יום עמוס. בדיוק כמו שאוהבים.`,
+      `${name} שלנו 🌟 שמע, אחד המסרים הכי גדולים בנדל"ן: המגע האנושי. אתה מספק את זה. אל תשכח את זה היום.`,
+      `בנאדם! 🚀 ${name} — העסקה הגדולה שלך עדיין מחכה לך. אולי היא בדיוק אחד הלידים שיש לך עכשיו. כדאי לבדוק.`,
+      `יאללה ${name}, אין לנו כל היום! ⚡ סדרי את המשימות, תתקשר ל-2 לידים שלא דיברת איתם — ותראה מה קורה עד הערב.`,
+      `${name} 🤜 בשוק הזה, מי שמתמיד — מנצח. פשוט. אתה כאן, אתה פועל. זה כבר 90% מהעבודה. בוא נעשה את ה-10% האחרים.`,
+    ];
+
+    const emojis = ['⚡','🔥','🎯','🚀','💥','🦁','👊','🏆','🌟','⭐','💼','🎪'];
+    const day = new Date().getDay();
+    const msg   = msgs[day % msgs.length];
+    const emoji = emojis[day % emojis.length];
+
+    const el = document.createElement('div');
+    el.id = 'motivation-overlay';
+    el.innerHTML = `
+      <div class="motiv-card">
+        <div class="motiv-emoji-row">${emoji}</div>
+        <div class="motiv-greeting">${greeting},</div>
+        <div class="motiv-name">${escapeHtml(name)}!</div>
+        <div class="motiv-msg">${msg}</div>
+        <div class="motiv-stats">
+          <div class="motiv-stat">
+            <span class="motiv-stat-val">${openLeads}</span>
+            <span class="motiv-stat-lbl">עסקאות פתוחות</span>
+          </div>
+          <div class="motiv-stat-div"></div>
+          <div class="motiv-stat">
+            <span class="motiv-stat-val">${todayTasks}</span>
+            <span class="motiv-stat-lbl">משימות ממתינות</span>
+          </div>
+          <div class="motiv-stat-div"></div>
+          <div class="motiv-stat">
+            <span class="motiv-stat-val">${escapeHtml(level)}</span>
+            <span class="motiv-stat-lbl">הרמה שלך</span>
+          </div>
+        </div>
+        <button class="motiv-cta" onclick="MotivationAgent.dismiss()">
+          בוא נפגוש את היום! 🚀
+        </button>
+        <button class="motiv-skip" onclick="MotivationAgent.dismiss()">דלג</button>
+      </div>`;
+    document.body.appendChild(el);
+    el.addEventListener('click', e => { if (e.target === el) this.dismiss(); });
+  },
+
+  dismiss() {
+    const el = document.getElementById('motivation-overlay');
+    if (!el) return;
+    el.style.transition = 'opacity .25s';
+    el.style.opacity = '0';
+    setTimeout(() => el.remove(), 250);
+  },
 };
 
 /* ═══════════════════════════════════════════
@@ -10652,8 +10797,9 @@ window.Voice      = Voice;
 window.Onboarding = Onboarding;
 window.Analytics  = Analytics;
 window.LeadDocs        = LeadDocs;
-window.ContractEngine  = ContractEngine;
-window.Gamify          = Gamify;
+window.ContractEngine    = ContractEngine;
+window.MotivationAgent   = MotivationAgent;
+window.Gamify            = Gamify;
 window.Tools      = Tools;
 window.LeadImport = LeadImport;
 
