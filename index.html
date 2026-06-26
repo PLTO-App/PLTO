@@ -1895,6 +1895,23 @@
   }
   .gamify-widget { animation: gamify-pop 0.65s cubic-bezier(0.34, 1.45, 0.64, 1) both; }
 
+  /* ── Stale lead badge ───────────────────── */
+  .stale-badge { font-size:10px; padding:2px 6px; border-radius:99px; background:#FEF3C7; color:#92400E; font-weight:700; white-space:nowrap; }
+
+  /* ── Card WhatsApp mini-button ──────────── */
+  .card-wa-btn { display:inline-flex; align-items:center; justify-content:center; padding:3px 9px; border-radius:8px; font-size:11px; font-weight:700; background:#DCFCE7; color:#166534; cursor:pointer; user-select:none; transition:background 0.15s; }
+  .card-wa-btn:active { background:#BBF7D0; }
+
+  /* ── Quick call-result bottom sheet ─────── */
+  .call-sheet { position:fixed; inset:0; z-index:9990; display:flex; align-items:flex-end; background:rgba(0,0,0,0.45); opacity:0; pointer-events:none; transition:opacity 0.2s; }
+  .call-sheet.active { opacity:1; pointer-events:all; }
+  .call-sheet-inner { width:100%; background:white; border-radius:20px 20px 0 0; padding:20px 16px 36px; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.34,1.45,0.64,1); }
+  .call-sheet.active .call-sheet-inner { transform:translateY(0); }
+  .call-result-btn { width:100%; padding:14px 16px; border-radius:12px; font-size:15px; font-weight:700; margin-bottom:10px; border:none; cursor:pointer; text-align:right; direction:rtl; }
+
+  /* ── Smart WA modal ─────────────────────── */
+  .smart-wa-modal { max-width:420px; border-radius:20px 20px 0 0; padding:0; }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.js"
           integrity="sha384-nD3dwv4+ZqdYnmZKe/249ImlV04om7xTCcsoSeQYI+RO+XlKPoqAWaJR1M5SJH9p"
@@ -2706,6 +2723,28 @@
 </div>
 
 <!-- ONBOARDING ROCKET LAUNCH OVERLAY -->
+<!-- ── Quick call-result bottom sheet ── -->
+<div class="call-sheet" id="call-result-sheet" onclick="if(event.target===this)CallLog.hide()">
+  <div class="call-sheet-inner">
+    <div style="text-align:center;font-size:16px;font-weight:800;color:var(--navy);margin-bottom:18px;">מה היה התוצאה?</div>
+    <button class="call-result-btn" style="background:#DCFCE7;color:#166534;" onclick="CallLog.log('talked')">✅ &nbsp;שוחח/שוחחנו — הכל טוב</button>
+    <button class="call-result-btn" style="background:#DBEAFE;color:#1D4ED8;" onclick="CallLog.log('meeting')">📅 &nbsp;קבענו פגישה</button>
+    <button class="call-result-btn" style="background:#FEE2E2;color:#991B1B;" onclick="CallLog.log('no_answer')">❌ &nbsp;לא ענה / לא זמין</button>
+    <button class="call-result-btn" style="background:var(--gray-100);color:var(--gray-500);font-weight:600;" onclick="CallLog.hide()">ביטול</button>
+  </div>
+</div>
+
+<!-- ── Smart WhatsApp AI modal ── -->
+<div id="modal-smart-wa" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-smart-wa')">
+  <div class="modal-sheet smart-wa-modal">
+    <div class="modal-header" style="padding:16px 16px 12px;">
+      <span style="font-weight:800;">✨ הודעת WhatsApp חכמה</span>
+      <button class="modal-close" onclick="closeModal('modal-smart-wa')">✕</button>
+    </div>
+    <div id="smart-wa-content" style="padding:0 16px 24px;min-height:120px;"></div>
+  </div>
+</div>
+
 <div id="ob-launch-overlay">
   <div id="ob-stars-wrap" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;"></div>
   <div class="ob-rocket-stack">
@@ -5548,6 +5587,85 @@ ${prop.description ? `תיאור: ${prop.description.slice(0,150)}` : ''}
 };
 
 /* ═══════════════════════════════════════════
+   CALL LOG — quick call result tracking
+═══════════════════════════════════════════ */
+const CallLog = {
+  _leadId: null,
+  show(leadId, phone) {
+    this._leadId = leadId;
+    document.getElementById('call-result-sheet')?.classList.add('active');
+    window.open('tel:' + phone);
+  },
+  hide() {
+    document.getElementById('call-result-sheet')?.classList.remove('active');
+    this._leadId = null;
+  },
+  async log(type) {
+    const leadId = this._leadId;
+    this.hide();
+    if (!leadId) return;
+    const textMap = {
+      talked:    'שוחח עם הלקוח — שיחה חיובית',
+      meeting:   'שוחח עם הלקוח — קבענו פגישה',
+      no_answer: 'ניסיתי להתקשר — לא ענה',
+    };
+    const content = textMap[type] || 'שיחת טלפון';
+    if (State.isDemo) { toast('📞 ' + content, 'success'); return; }
+    try {
+      const act = await DB.addActivity({ content, lead_id: leadId, type: 'call' });
+      State.activities.unshift(act);
+      const lead = State.leads.find(l => l.id === leadId);
+      if (lead) lead.last_contact = today();
+      toast('📞 ' + content, 'success');
+      Gamify.event('log_activity');
+      if (State.screen === 'lead-detail') LeadDetail.render(leadId);
+    } catch(e) { toast('שגיאה: ' + e.message, 'error'); }
+  },
+};
+
+/* ═══════════════════════════════════════════
+   SMART WHATSAPP — AI-generated messages (Marketing Addon)
+═══════════════════════════════════════════ */
+const SmartWA = {
+  async open(leadId) {
+    if (!Marketing.hasMktgAccess()) {
+      toast('✨ כלי זה זמין בתוספת השיווק', 'warning');
+      return;
+    }
+    State.currentLeadId = leadId;
+    openModal('modal-smart-wa');
+    const container = document.getElementById('smart-wa-content');
+    container.innerHTML = '<div class="ai-thinking" style="padding:20px;text-align:center;">✨ מייצר הודעה מותאמת אישית...</div>';
+    try {
+      const lead = State.leads.find(l => l.id === leadId);
+      if (!lead) throw new Error('ליד לא נמצא');
+      const stage = State.stages.find(s => s.id === lead.stage);
+      const msg = await AI.call([{
+        role: 'user',
+        content: `אתה ${AI._industryRole()} ישראלי.
+כתוב הודעת WhatsApp קצרה (3-4 שורות) ללקוח בשם ${lead.name}.
+שלב נוכחי בפייפליין: ${stage?.name || 'פנייה נכנסה'}.
+${lead.notes ? 'הערות על הלקוח: ' + lead.notes : ''}
+${lead.desired_area ? 'אזור/פרויקט: ' + lead.desired_area : ''}
+ההודעה תהיה אישית, חמה, טבעית בעברית. ללא emoji מיותרים. מזמינה לתגובה.`,
+      }], 200, { type: 'marketing' });
+      const phone = (lead.phone || '').replace(/^0/, '').replace(/-/g, '');
+      const waUrl = 'https://wa.me/972' + phone + '?text=' + encodeURIComponent(msg);
+      container.innerHTML = `
+        <div style="background:var(--gray-50);border-radius:12px;padding:14px;font-size:14px;line-height:1.7;color:var(--gray-800);white-space:pre-wrap;direction:rtl;text-align:right;margin-bottom:14px;">${escapeHtml(msg)}</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <button class="btn" style="flex:1;border:1px solid var(--border);" onclick="navigator.clipboard.writeText(this.dataset.msg);toast('✅ הועתק','success')" data-msg="${escapeHtml(msg)}">📋 העתק</button>
+          <button class="btn" style="flex:1;background:#25D366;color:white;border:none;" onclick="window.open('${escapeHtml(waUrl)}')">📤 שלח ב-WA</button>
+        </div>
+        <button class="btn btn-ghost" style="width:100%;font-size:13px;" onclick="SmartWA.open('${leadId}')">🔄 ייצר הודעה אחרת</button>
+      `;
+    } catch(e) {
+      container.innerHTML = `<div style="text-align:center;padding:20px;color:var(--gray-500);">⚠️ ${escapeHtml(e.message)}</div>`;
+    }
+  },
+};
+
+/* ═══════════════════════════════════════════
    GAMIFICATION MODULE
 ═══════════════════════════════════════════ */
 const Gamify = {
@@ -6930,6 +7048,42 @@ const Dashboard = {
 /* ═══════════════════════════════════════════
    PIPELINE (KANBAN)
 ═══════════════════════════════════════════ */
+/* ── Stale lead helper ───────────────────────────── */
+function isLeadStale(lead) {
+  if (!lead) return false;
+  const ind = localStorage.getItem('liders_industry') || 'other';
+  const thresholds = {
+    realestate:7, construction:14, interior:10, photography:5,
+    mortgage:7, appraiser:10, realestate_lawyer:10, architect:14, other:10
+  };
+  const days = thresholds[ind] || 10;
+  const lastStageChange = (State.activities || [])
+    .filter(a => a.lead_id === lead.id && a.type === 'stage_change')
+    .sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0];
+  const refDate = lastStageChange ? lastStageChange.created_at : lead.created_at;
+  if (!refDate) return false;
+  return diffDays(refDate) < -days;
+}
+
+/* ── Industry-specific empty-column tip ─────────── */
+function pipelineEmptyTip(stageIdx) {
+  if (stageIdx !== 0) return '';
+  const ind = localStorage.getItem('liders_industry') || 'other';
+  const tips = {
+    realestate:        '💡 רוב הקונות מגיעות מהפניות — שלח הודעה ל-3 לקוחות ישנים השבוע',
+    construction:      '💡 80% מהג\'ובים מגיעים מהפניות — שלח הודעה ל-3 לקוחות ישנים',
+    interior:          '💡 פרסם תמונה מפרויקט אחרון באינסטגרם — לידים מגיעים מ-portfolio',
+    photography:       '💡 צור חבילת "צילום + וידאו" במחיר מיוחד לפרסום השבוע',
+    mortgage:          '💡 שלח דוח ריבית עדכני ל-5 לקוחות ישנים — רבים זכאים למחזור',
+    appraiser:         '💡 זמן טוב לשלוח דוח שוק לרשת הקשרים שלך',
+    realestate_lawyer: '💡 רוב התיקים מגיעים מסוכנים ומתווכים — יצרת קשר עם 2 סוכנים השבוע?',
+    architect:         '💡 שתף פרויקט אחרון בלינקדאין — לידים מגיעים מ-portfolio מקצועי',
+    other:             '💡 הוסף את הליד הראשון שלך כדי להתחיל',
+  };
+  const tip = tips[ind] || tips.other;
+  return `<div style="padding:14px 10px;text-align:center;color:var(--gray-400);font-size:12px;border:1px dashed var(--border);border-radius:10px;margin:8px 4px;line-height:1.5;">${tip}</div>`;
+}
+
 const Pipeline = {
   _query: '',
   _activeStage: null,
@@ -6942,7 +7096,7 @@ const Pipeline = {
     const q = this._query.toLowerCase().trim();
     const board = document.getElementById('pipeline-board');
     board.classList.toggle('is-searching', !!q);
-    board.innerHTML = State.stages.map(stage => {
+    board.innerHTML = State.stages.map((stage, stageIdx) => {
       let leads = State.leads.filter(l => l.stage === stage.id);
       const allCount = leads.length;
       if (q) leads = leads.filter(l =>
@@ -6965,7 +7119,9 @@ const Pipeline = {
           <div class="kanban-cards">
             ${leads.length
               ? leads.map(l => this.renderCard(l, stage.color)).join('')
-              : q ? '<div style="padding:14px 10px;text-align:center;color:var(--gray-400);font-size:13px;">אין תוצאות בשלב זה</div>' : ''
+              : q
+                ? '<div style="padding:14px 10px;text-align:center;color:var(--gray-400);font-size:13px;">אין תוצאות בשלב זה</div>'
+                : pipelineEmptyTip(stageIdx)
             }
           </div>
           <button class="kanban-add-btn" onclick="openModal('modal-add-lead')">+ הוסף ליד</button>
@@ -7015,6 +7171,8 @@ const Pipeline = {
     const isOverdue = task && diffDays(task.due) < 0;
     const isToday = task && diffDays(task.due) === 0;
     const initials = escapeHtml(lead.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase());
+    const stale = isLeadStale(lead);
+    const waPhone = (lead.phone||'').replace(/^0/,'').replace(/-/g,'');
     return `
       <div class="lead-card" style="--stage-color:${color}"
            onclick="App.go('lead-detail', {currentLeadId:'${lead.id}'})">
@@ -7028,10 +7186,12 @@ const Pipeline = {
           <div class="score-badge ${scoreClass(lead.score)}">${lead.score}</div>
         </div>
         <div class="lead-card-footer" style="margin-top:8px;">
-          <span class="badge badge-${safeSource(lead.source)}">${escapeHtml(sourceLabel(lead.source))}</span>
-          ${task ? `<span style="font-size:11px; color:${isOverdue?'var(--red-600)':isToday?'var(--orange-500)':'var(--gray-400)'}; font-weight:600;">
-            ${typeEmoji(task.type)} ${formatRelDate(task.due)}
-          </span>` : ''}
+          <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+            <span class="badge badge-${safeSource(lead.source)}">${escapeHtml(sourceLabel(lead.source))}</span>
+            ${stale ? '<span class="stale-badge">⏰ ממתין</span>' : ''}
+            ${task ? `<span style="font-size:11px; color:${isOverdue?'var(--red-600)':isToday?'var(--orange-500)':'var(--gray-400)'}; font-weight:600;">${typeEmoji(task.type)} ${formatRelDate(task.due)}</span>` : ''}
+          </div>
+          ${waPhone ? `<span class="card-wa-btn" onclick="event.stopPropagation();window.open('https://wa.me/972${waPhone}')">💬 WA</span>` : ''}
         </div>
       </div>
     `;
@@ -7119,9 +7279,10 @@ const LeadDetail = {
           <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:${stage?.color+'33'};color:white;">${escapeHtml(stage?.name||'—')}</span>
         </div>
         <div class="lead-detail-actions">
-          <button class="lead-action-btn" data-phone="${escapeHtml(lead.phone)}" onclick="if(State.isDemo){toast('⚡ מצב דמו — בגרסה האמיתית ייחייג ללקוח','warning');}else{window.open('tel:'+this.dataset.phone);}">📞 שיחה</button>
-          ${lead.phone2 ? `<button class="lead-action-btn" data-phone="${escapeHtml(lead.phone2)}" onclick="if(State.isDemo){toast('⚡ מצב דמו — בגרסה האמיתית ייחייג ללקוח','warning');}else{window.open('tel:'+this.dataset.phone);}">📞 טלפון 2</button>` : ''}
+          <button class="lead-action-btn" data-phone="${escapeHtml(lead.phone)}" onclick="if(State.isDemo){toast('⚡ מצב דמו — בגרסה האמיתית ייחייג ללקוח','warning');}else{CallLog.show('${lead.id}',this.dataset.phone);}">📞 שיחה</button>
+          ${lead.phone2 ? `<button class="lead-action-btn" data-phone="${escapeHtml(lead.phone2)}" onclick="if(State.isDemo){toast('⚡ מצב דמו — בגרסה האמיתית ייחייג ללקוח','warning');}else{CallLog.show('${lead.id}',this.dataset.phone);}">📞 טלפון 2</button>` : ''}
           <button class="lead-action-btn" data-phone="${escapeHtml(lead.phone)}" onclick="window.open('https://wa.me/972'+this.dataset.phone.replace(/^0/,'').replace(/-/g,''))">💬 WhatsApp</button>
+          ${Marketing.hasMktgAccess() ? `<button class="lead-action-btn" style="background:linear-gradient(135deg,#7C3AED,#2563EB);color:white;" onclick="SmartWA.open('${lead.id}')">✨ WA חכם</button>` : ''}
           <button class="lead-action-btn" onclick="openMoveStage('${lead.id}')">🔄 שנה שלב</button>
           <button class="lead-action-btn" onclick="State.currentLeadId='${lead.id}'; openModal('modal-add-activity')">📝 הוסף</button>
           <button class="lead-action-btn" onclick="openEditLead('${lead.id}')">✏️ עריכה</button>
