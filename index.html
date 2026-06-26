@@ -1912,6 +1912,12 @@
   /* ── Smart WA modal ─────────────────────── */
   .smart-wa-modal { max-width:420px; border-radius:20px 20px 0 0; padding:0; }
 
+  /* ── Demo Lock ── */
+  .demo-lock-overlay { position:fixed; inset:0; z-index:9999; background:rgba(15,31,61,0.92); display:flex; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(6px); }
+  .demo-lock-box { background:#fff; border-radius:24px; padding:28px 20px 24px; max-width:340px; width:100%; text-align:center; box-shadow:0 24px 64px rgba(0,0,0,0.4); }
+  .demo-lock-features { text-align:right; background:var(--gray-50); border-radius:12px; padding:12px 14px; margin:14px 0 18px; list-style:none; }
+  .demo-lock-features li { font-size:13px; color:var(--gray-700); padding:3px 0; }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.js"
           integrity="sha384-nD3dwv4+ZqdYnmZKe/249ImlV04om7xTCcsoSeQYI+RO+XlKPoqAWaJR1M5SJH9p"
@@ -2771,6 +2777,24 @@
   </div>
 </div>
 
+<!-- ── Demo Lock Modal ── -->
+<div id="modal-demo-lock" class="demo-lock-overlay hidden">
+  <div class="demo-lock-box">
+    <div style="font-size:52px;margin-bottom:10px;">🔒</div>
+    <div style="font-size:19px;font-weight:900;color:var(--navy);margin-bottom:8px;">פיצ'ר זה נעול בדמו</div>
+    <div style="font-size:13px;color:var(--gray-500);margin-bottom:4px;line-height:1.6;">פתח חשבון ניסיון חינמי ל-30 יום<br>וקבל גישה מלאה לכל הכלים</div>
+    <ul class="demo-lock-features">
+      <li>✅ ניהול לידים ופייפליין מלא</li>
+      <li>✅ משימות, לוח שנה ואנליטיקה</li>
+      <li>✅ יומן שיחות ו-WhatsApp מהיר</li>
+      <li>✅ סוכן AI ותיקי נכסים</li>
+      <li>✅ ייצוא נתונים וכלים מקצועיים</li>
+    </ul>
+    <button onclick="DemoLock.signup()" style="width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,var(--navy),#2563EB);color:white;font-size:15px;font-weight:800;border:none;cursor:pointer;margin-bottom:10px;">🚀 פתח חשבון ניסיון — חינם</button>
+    <button onclick="DemoLock.hide()" style="width:100%;padding:10px;border-radius:12px;background:var(--gray-100);color:var(--gray-500);font-size:13px;font-weight:600;border:none;cursor:pointer;">המשך לסייר בדמו</button>
+  </div>
+</div>
+
 <div id="ob-launch-overlay">
   <div id="ob-stars-wrap" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;"></div>
   <div class="ob-rocket-stack">
@@ -3345,6 +3369,27 @@
 
       <p><strong>הגבלת אחריות</strong><br>
       Liders לא תישא באחריות לנזקים עקיפים, אובדן רווחים, או אובדן נתונים הנובעים משימוש בשירות.</p>
+
+      <p><strong>דין חל</strong><br>
+      השירות כפוף לחוקי מדינת ישראל, כולל חוק הגנת הפרטיות, תשמ"א-1981 ותקנות אבטחת המידע.</p>
+
+      <h3 style="margin:20px 0 8px;font-size:1rem;color:var(--navy-700);">3. בעלות על תוכן ונתונים — חשוב לקרוא</h3>
+
+      <p style="background:#FEF3C7;border-right:4px solid #F59E0B;padding:10px 12px;border-radius:8px;margin-bottom:12px;">
+        <strong>⚠️ הבהרה משפטית:</strong> כל הנתונים, הלידים, ההערות, ופלטי הבינה המלאכותית שנוצרו בתוך המערכת — מאוחסנים על שרתי Liders CRM.
+      </p>
+
+      <p><strong>בעלות על תוכן שנוצר ב-AI</strong><br>
+      תוצרי הבינה המלאכותית (הצעות שיווק, הודעות WhatsApp, תוכן שנוצר ע"י הסוכן) שמיוצרים בתוך המערכת הינם רכוש Liders CRM ומוצגים למשתמש לשימוש במסגרת המנוי בלבד.</p>
+
+      <p><strong>מה קורה בסיום מנוי</strong><br>
+      ביטול מנוי אינו מוחק את הנתונים אוטומטית — הנתונים נשמרים עד 30 יום לאחר הביטול. במהלך תקופה זו ניתן לייצא את הנתונים האישיים (לידים, עסקאות, הערות) על-ידי פנייה ל-<a href="mailto:liders.crm@gmail.com" style="color:var(--blue-500);">liders.crm@gmail.com</a>. לאחר 30 יום הנתונים נמחקים לצמיתות.</p>
+
+      <p><strong>תוכן שנשאר בשרתים</strong><br>
+      נתונים שהוזנו למערכת (שמות לקוחות, מספרי טלפון, ערכי עסקאות, הערות מקצועיות) מאוחסנים על שרתי הפלטפורמה. בניגוד לנתונים האישיים, תוכן שנוצר ע"י AI ושימש לשיפור המערכת עשוי להישמר בצורה אנונימית.</p>
+
+      <p><strong>הסכמה מפורשת</strong><br>
+      שימוש במערכת — לרבות בתקופת הניסיון החינמי — מהווה הסכמה מפורשת ומלאה לתנאים אלו. אם אינך מסכים, אנא הפסק את השימוש ופנה אלינו למחיקת נתוניך.</p>
 
       <p><strong>דין חל</strong><br>
       השירות כפוף לחוקי מדינת ישראל, כולל חוק הגנת הפרטיות, תשמ"א-1981 ותקנות אבטחת המידע.</p>
@@ -6022,6 +6067,42 @@ const Gamify = {
     const gateEl   = document.getElementById('gamify-activation-gate');
     const mainEl   = document.getElementById('gamify-main');
 
+    // Demo: show locked teaser — motivation without real data
+    if (State.isDemo) {
+      if (gateEl) gateEl.style.display = 'none';
+      if (mainEl) mainEl.style.display = '';
+      const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+      set('gamify-avatar', '🌱');
+      set('gamify-level-name', 'רמה: מתחיל');
+      set('gamify-streak', '🔥 0 ימים רצופים');
+      set('gamify-xp-cur', '0 XP');
+      set('gamify-xp-next', 'פתח חשבון וצבור XP →');
+      document.getElementById('gamify-xp-fill')?.style.setProperty('width', '5%');
+      set('gamify-leads-count', '—');
+      set('gamify-closed-count', '—');
+      set('gamify-tasks-count', '—');
+      const badgesEl = document.getElementById('gamify-badges-row');
+      if (badgesEl) badgesEl.innerHTML = this.ACHIEVEMENTS.slice(0, 6).map(a =>
+        `<div class="gamify-badge locked" title="${a.desc}">${a.icon} ${a.name}</div>`).join('');
+      const dailyEl = document.getElementById('gamify-daily');
+      if (dailyEl) { dailyEl.classList.remove('done-today'); dailyEl.onclick = () => DemoLock.showPrompt(); }
+      set('gamify-daily-text', 'הצטרף כדי לקבל אתגרים יומיים וXP');
+      const checkEl = document.getElementById('gamify-daily-check');
+      if (checkEl) { checkEl.textContent = '🔒'; checkEl.style.cssText = 'font-size:1.1rem;'; }
+      const msBar = document.getElementById('gamify-milestone-bar');
+      if (msBar) msBar.style.display = 'none';
+      const prizesGrid = document.getElementById('gamify-prizes-grid');
+      if (prizesGrid) prizesGrid.innerHTML = this.MILESTONES.slice(0, 3).map(m =>
+        `<div class="gamify-prize-card prize-locked" onclick="DemoLock.showPrompt()" style="cursor:pointer;filter:blur(1.5px);">
+          <div class="gamify-prize-icon">${m.icon}</div>
+          <div class="gamify-prize-name">${m.name}</div>
+          <span class="gamify-prize-xp-tag">🔒 נעול</span>
+        </div>`).join('');
+      const mktgTeaserEl = document.getElementById('gamify-mktg-teaser');
+      if (mktgTeaserEl) mktgTeaserEl.style.display = 'none';
+      return;
+    }
+
     // Gate: < 5 leads → show activation prompt
     if (leadCount < 5) {
       if (gateEl) gateEl.style.display = '';
@@ -6611,6 +6692,26 @@ const Voice = {
 /* ═══════════════════════════════════════════
    APP CONTROLLER
 ═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════════
+   DEMO LOCK
+═══════════════════════════════════════════ */
+const DemoLock = {
+  showPrompt() {
+    const el = document.getElementById('modal-demo-lock');
+    if (el) { el.classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
+  },
+  hide() {
+    const el = document.getElementById('modal-demo-lock');
+    if (el) { el.classList.add('hidden'); document.body.style.overflow = ''; }
+  },
+  signup() {
+    this.hide();
+    document.getElementById('app-shell')?.classList.add('hidden');
+    document.getElementById('screen-login')?.classList.remove('hidden');
+    State.isDemo = false;
+  },
+};
+
 const App = {
   async loginWithEmail() {
     const email    = document.getElementById('login-email').value.trim();
@@ -6839,6 +6940,11 @@ const App = {
     document.getElementById('screen-login').classList.remove('hidden');
   },
   go(screen, params = {}) {
+    // Demo: allow only dashboard, pipeline and marketing (as teasers); block all else
+    if (State.isDemo) {
+      const DEMO_PASS = new Set(['dashboard', 'pipeline', 'marketing', 'login']);
+      if (!DEMO_PASS.has(screen)) { DemoLock.showPrompt(); return; }
+    }
     Object.assign(State, params);
     State.screen = screen;
     // push browser history state for back-button support
