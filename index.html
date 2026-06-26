@@ -2455,6 +2455,70 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
+  /* ═══════════════════════════════════════
+     CONTRACTS MODULE
+  ═══════════════════════════════════════ */
+  .contract-row {
+    background: white; border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: 14px; display: flex; align-items: center; gap: 12px;
+    transition: box-shadow 0.15s;
+  }
+  .contract-row:hover { box-shadow: var(--shadow-sm); }
+  .contract-icon {
+    width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+    background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+  }
+  .contract-status {
+    display: inline-flex; align-items: center; gap: 4px; font-size: 11px;
+    font-weight: 700; border-radius: 99px; padding: 2px 9px;
+  }
+  .cs-draft    { background: var(--gray-100); color: var(--gray-500); }
+  .cs-sent     { background: #FEF3C7; color: #92400E; }
+  .cs-viewed   { background: #EFF6FF; color: #1D4ED8; }
+  .cs-signed   { background: #DCFCE7; color: #166534; }
+  .cs-cancelled{ background: #FEE2E2; color: var(--red-600); }
+  .contract-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .ca-btn {
+    font-size: 11px; font-weight: 700; padding: 5px 10px;
+    border-radius: 7px; cursor: pointer; border: 1px solid var(--border);
+    background: var(--gray-50); color: var(--gray-700); font-family: inherit;
+    transition: all 0.12s; -webkit-tap-highlight-color: transparent;
+  }
+  .ca-btn:hover  { background: var(--navy-50); border-color: var(--navy-200); color: var(--navy-600); }
+  .ca-btn:active { transform: scale(0.94); }
+  .ca-btn.send   { background: #F0FDF4; border-color: #86EFAC; color: #16A34A; }
+  .ca-btn.delete { background: #FFF5F5; border-color: #FECACA; color: var(--red-600); }
+
+  /* Contract template preview inside modal/print */
+  .contract-preview {
+    font-family: 'Heebo', sans-serif; font-size: 13px; line-height: 1.9;
+    color: #1a1a1a; max-width: 700px; margin: 0 auto;
+  }
+  .contract-preview h1 { font-size: 20px; font-weight: 900; text-align: center;
+    margin-bottom: 4px; color: var(--navy); }
+  .contract-preview .contract-sub { text-align: center; color: var(--gray-400);
+    font-size: 12px; margin-bottom: 24px; }
+  .contract-preview h3 { font-size: 14px; font-weight: 800; color: var(--navy);
+    border-bottom: 2px solid var(--gray-100); padding-bottom: 5px; margin: 20px 0 10px; }
+  .contract-preview .party-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .contract-preview .party-box  { background: var(--gray-50); border-radius: 10px; padding: 12px 14px; font-size: 12px; }
+  .contract-preview .party-box strong { display: block; font-size: 13px; margin-bottom: 5px; color: var(--gray-900); }
+  .contract-preview ol { padding-right: 20px; }
+  .contract-preview ol li { margin-bottom: 10px; }
+  .contract-preview .highlight-clause {
+    background: #EFF6FF; border-right: 3px solid var(--navy-400);
+    padding: 10px 14px; margin: 10px 0; border-radius: 0 10px 10px 0;
+    font-weight: 700; color: var(--navy-600);
+  }
+  .contract-preview .sig-area { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 40px; }
+  .contract-preview .sig-box  { border-top: 2px solid var(--gray-300); padding-top: 8px;
+    text-align: center; font-size: 12px; color: var(--gray-500); }
+  @media print {
+    .contract-preview { font-size: 12pt; }
+    .contract-preview h1 { font-size: 16pt; }
+  }
+
   /* ── Lead Card — stage progress bar ── */
   .lead-stage-bar {
     height: 3px; border-radius: 99px;
@@ -3618,6 +3682,59 @@
   </div>
 </div>
 
+
+<!-- ═══════════════════════════════════════
+     MODAL: CREATE CONTRACT
+═══════════════════════════════════════ -->
+<div id="modal-contract-create" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-contract-create')">
+  <div class="modal" style="max-height:90vh;overflow-y:auto;">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">📜 יצירת חוזה</div>
+      <button class="modal-close" onclick="closeModal('modal-contract-create')">×</button>
+    </div>
+
+    <!-- Template type selector -->
+    <div style="display:flex;gap:10px;margin-bottom:16px;">
+      <button id="ctype-standard" class="btn btn-primary" style="flex:1;font-size:13px;"
+              onclick="ContractEngine._selectType('standard')">
+        📋 הסכם סטנדרטי
+      </button>
+      <button id="ctype-custom" class="btn btn-ghost" style="flex:1;font-size:13px;"
+              onclick="ContractEngine._selectType('custom')">
+        📁 העלה חוזה PDF
+      </button>
+    </div>
+
+    <!-- Standard template preview -->
+    <div id="contract-standard-panel">
+      <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-md);padding:16px;font-size:12px;line-height:1.8;color:var(--gray-700);max-height:320px;overflow-y:auto;direction:rtl;"
+           id="contract-preview-body"></div>
+      <p style="font-size:11px;color:var(--orange-500);margin-top:8px;text-align:center;">
+        ⚠️ תבנית לדוגמה בלבד — יש להיוועץ בעורך דין לפני שימוש
+      </p>
+    </div>
+
+    <!-- Custom upload panel -->
+    <div id="contract-custom-panel" style="display:none;">
+      <label class="btn btn-ghost w-full" style="cursor:pointer;justify-content:center;display:flex;gap:8px;align-items:center;">
+        <input type="file" id="contract-file-input" accept=".pdf,.doc,.docx"
+               onchange="ContractEngine._handleFileSelect(this)">
+        📁 בחר קובץ (PDF / Word)
+      </label>
+      <div id="contract-file-name" style="font-size:12px;color:var(--gray-500);text-align:center;margin-top:6px;"></div>
+      <p style="font-size:11px;color:var(--gray-400);text-align:center;margin-top:4px;">עד 10MB · PDF / Word בלבד</p>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-contract-create')">ביטול</button>
+      <button class="btn btn-primary" style="flex:1;" id="btn-confirm-contract"
+              onclick="ContractEngine.confirmCreate()">
+        ✅ צור חוזה
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- ═══════════════════════════════════════
      MODAL: EDIT LEAD
@@ -6583,6 +6700,331 @@ const Gamify = {
 };
 
 /* ═══════════════════════════════════════════
+   CONTRACTS MODULE — יצירת חוזים + חתימה דיגיטלית
+═══════════════════════════════════════════ */
+const ContractEngine = {
+  _cache: {},   // leadId → contracts[]
+  _STATUS_LABEL: { draft:'טיוטה', sent:'נשלח', viewed:'נצפה', signed:'נחתם ✅', cancelled:'בוטל' },
+  _STATUS_CLASS: { draft:'cs-draft', sent:'cs-sent', viewed:'cs-viewed', signed:'cs-signed', cancelled:'cs-cancelled' },
+
+  /* ── Render tab content ── */
+  async render(leadId) {
+    const el = document.getElementById('tab-contracts');
+    if (!el) return;
+    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--gray-400);">טוען חוזים...</div>';
+    const contracts = await this._load(leadId);
+    el.innerHTML = `
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <button class="btn btn-primary btn-sm" style="flex:1;font-size:12px;"
+                onclick="ContractEngine.openCreate('${leadId}')">
+          📜 תבנית סטנדרטית
+        </button>
+        <label class="btn btn-ghost btn-sm" style="flex:1;font-size:12px;cursor:pointer;justify-content:center;">
+          📤 העלה חוזה מעו"ד
+          <input type="file" accept=".pdf,.doc,.docx" style="display:none"
+                 onchange="ContractEngine.uploadCustom('${leadId}',this)">
+        </label>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;" id="contracts-list-${leadId}">
+        ${contracts.length ? contracts.map(c => this._renderRow(c)).join('') : this._empty()}
+      </div>
+    `;
+  },
+
+  _empty() {
+    return `<div style="padding:32px;text-align:center;color:var(--gray-400);">
+      <div style="font-size:36px;margin-bottom:8px;">📄</div>
+      <div style="font-weight:700;margin-bottom:4px;">אין חוזים עדיין</div>
+      <div style="font-size:12px;">צור חוזה חדש מהתבנית הסטנדרטית<br>או העלה חוזה שהעו"ד הכין</div>
+    </div>`;
+  },
+
+  _renderRow(c) {
+    const statLbl = this._STATUS_LABEL[c.status] || c.status;
+    const statCls = this._STATUS_CLASS[c.status] || 'cs-draft';
+    const date    = c.created_at ? new Date(c.created_at).toLocaleDateString('he-IL') : '';
+    const icon    = c.template_type === 'custom' ? '📂' : '📜';
+    const canSend = c.status === 'draft' || c.status === 'sent';
+    return `
+      <div class="contract-row" id="ctr-${c.id}">
+        <div class="contract-icon">${icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:800;font-size:13px;color:var(--gray-900);">${escapeHtml(c.title)}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap;">
+            <span class="contract-status ${statCls}">${statLbl}</span>
+            <span style="font-size:11px;color:var(--gray-400);">${date}</span>
+            ${c.signer_name ? `<span style="font-size:11px;color:var(--green-600);">✍️ ${escapeHtml(c.signer_name)}</span>` : ''}
+          </div>
+          <div class="contract-actions">
+            ${canSend ? `<button class="ca-btn send" onclick="ContractEngine.sendForSig('${c.id}','${c.lead_id}')">📱 שלח לחתימה</button>` : ''}
+            ${c.template_type === 'standard' ? `<button class="ca-btn" onclick="ContractEngine.print('${c.id}')">🖨️ הדפס</button>` : ''}
+            ${c.file_url ? `<button class="ca-btn" onclick="window.open('${c.file_url}')">👁️ צפה</button>` : ''}
+            <button class="ca-btn" onclick="ContractEngine.copySignLink('${c.signing_token}')">🔗 קישור</button>
+            <button class="ca-btn delete" onclick="ContractEngine.remove('${c.id}','${c.lead_id}')">🗑️</button>
+          </div>
+        </div>
+      </div>`;
+  },
+
+  /* ── Open create modal ── */
+  openCreate(leadId) {
+    const lead = State.leads.find(l => l.id === leadId);
+    if (!lead) return;
+    const html  = this._buildContractHTML(lead);
+    const modal = document.getElementById('modal-contract-create');
+    document.getElementById('contract-preview-body').innerHTML = html;
+    modal.dataset.leadId = leadId;
+    modal.dataset.html   = encodeURIComponent(html);
+    modal.dataset.type   = 'standard';
+    this._selectType('standard');
+    openModal('modal-contract-create');
+  },
+
+  async confirmCreate() {
+    if (demoGuard()) return;
+    const modal  = document.getElementById('modal-contract-create');
+    const leadId = modal.dataset.leadId;
+    const type   = modal.dataset.type || 'standard';
+
+    if (type === 'custom') {
+      const input = document.getElementById('contract-file-input');
+      if (!input?.files?.length) { toast('יש לבחור קובץ', 'warning'); return; }
+      closeModal('modal-contract-create');
+      await this.uploadCustom(leadId, input);
+      return;
+    }
+
+    const html   = decodeURIComponent(modal.dataset.html);
+    const lead   = State.leads.find(l => l.id === leadId);
+    const title  = `הסכם תיווך — ${lead?.name || ''}`;
+    try {
+      const { data, error } = await sbClient.from('contracts')
+        .insert({ tenant_id: State.tenant?.db_id, lead_id: leadId, title, template_type: 'standard', content_html: html })
+        .select().single();
+      if (error) throw error;
+      toast('📄 החוזה נוצר בהצלחה', 'success');
+      closeModal('modal-contract-create');
+      await this.render(leadId);
+    } catch(e) { toast('שגיאה: ' + e.message, 'error'); }
+  },
+
+  /* ── Upload custom PDF ── */
+  async uploadCustom(leadId, input) {
+    if (demoGuard()) { input.value = ''; return; }
+    const file = input.files?.[0];
+    if (!file) return;
+    input.value = '';
+    toast('⏳ מעלה קובץ...', 'info');
+    try {
+      const path = `${State.tenant?.db_id}/${leadId}/${Date.now()}_${file.name}`;
+      const { error: upErr } = await sbClient.storage.from('contracts').upload(path, file);
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = sbClient.storage.from('contracts').getPublicUrl(path);
+      const lead  = State.leads.find(l => l.id === leadId);
+      const title = `חוזה מעו"ד — ${lead?.name || file.name}`;
+      const { error } = await sbClient.from('contracts')
+        .insert({ tenant_id: State.tenant?.db_id, lead_id: leadId, title, template_type: 'custom', file_url: publicUrl });
+      if (error) throw error;
+      toast('📂 הקובץ הועלה בהצלחה', 'success');
+      await this.render(leadId);
+    } catch(e) { toast('שגיאה בהעלאה: ' + e.message, 'error'); }
+  },
+
+  /* ── Send for signature via WhatsApp ── */
+  async sendForSig(contractId, leadId) {
+    if (demoGuard()) return;
+    const { data: c, error } = await sbClient.from('contracts')
+      .update({ status: 'sent' }).eq('id', contractId).select().single();
+    if (error) { toast('שגיאה: ' + error.message, 'error'); return; }
+
+    const lead    = State.leads.find(l => l.id === leadId);
+    const sigUrl  = this._sigUrl(c.signing_token);
+    const phone   = (lead?.phone || '').replace(/\D/g, '').replace(/^0/, '');
+    const msg     = encodeURIComponent(
+      `שלום ${lead?.name || ''} 👋\n\nמצורף חוזה התיווך שלנו לחתימה דיגיטלית.\n\n📄 ${c.title}\n\n` +
+      `לחץ/י על הקישור הבא לקריאת המסמך וחתימה:\n${sigUrl}\n\n` +
+      `החתימה מאובטחת ובעלת תוקף משפטי.`
+    );
+    if (phone) {
+      window.open(`https://wa.me/972${phone}?text=${msg}`, '_blank');
+      toast('📱 WhatsApp נפתח עם הקישור לחתימה', 'success');
+    } else {
+      this.copySignLink(c.signing_token);
+    }
+    await this.render(leadId);
+  },
+
+  /* ── Print standard contract ── */
+  print(contractId) {
+    const row  = document.getElementById(`ctr-${contractId}`);
+    const html = row?.dataset?.html;
+    const w    = window.open('', '_blank');
+    if (!w) { toast('אפשר חלונות קופצים בדפדפן', 'warning'); return; }
+    w.document.write(`<!DOCTYPE html><html lang="he" dir="rtl"><head>
+      <meta charset="UTF-8">
+      <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet">
+      <title>הסכם תיווך</title>
+      <style>body{font-family:Heebo,sans-serif;padding:30px 40px;direction:rtl;}</style>
+    </head><body>${html || document.getElementById('contract-preview-body')?.innerHTML || ''}</body></html>`);
+    w.document.close(); w.print();
+  },
+
+  /* ── Copy signing link ── */
+  copySignLink(token) {
+    const url = this._sigUrl(token);
+    navigator.clipboard?.writeText(url).then(() => toast('🔗 הקישור הועתק', 'success'))
+      .catch(() => toast(`🔗 ${url}`, 'info'));
+  },
+
+  /* ── Delete ── */
+  async remove(contractId, leadId) {
+    if (!confirm('למחוק את החוזה?')) return;
+    if (demoGuard()) return;
+    await sbClient.from('contracts').delete().eq('id', contractId);
+    document.getElementById(`ctr-${contractId}`)?.remove();
+    toast('🗑️ החוזה נמחק', 'success');
+  },
+
+  /* ── Load from Supabase ── */
+  async _load(leadId) {
+    if (State.isDemo) return [];
+    try {
+      const { data } = await sbClient.from('contracts')
+        .select('*').eq('lead_id', leadId).order('created_at', { ascending: false });
+      return data || [];
+    } catch { return []; }
+  },
+
+  _sigUrl(token) {
+    return `${location.origin}/sign.html?token=${token}`;
+  },
+
+  /* ── Modal: switch template type ── */
+  _selectType(type) {
+    const std = document.getElementById('contract-standard-panel');
+    const cst = document.getElementById('contract-custom-panel');
+    const btnStd = document.getElementById('ctype-standard');
+    const btnCst = document.getElementById('ctype-custom');
+    if (type === 'standard') {
+      std.style.display = ''; cst.style.display = 'none';
+      btnStd.className = 'btn btn-primary'; btnCst.className = 'btn btn-ghost';
+    } else {
+      std.style.display = 'none'; cst.style.display = '';
+      btnStd.className = 'btn btn-ghost'; btnCst.className = 'btn btn-primary';
+    }
+    document.getElementById('modal-contract-create').dataset.type = type;
+  },
+
+  /* ── Modal: file selected for custom upload ── */
+  _handleFileSelect(input) {
+    const name = input.files?.[0]?.name || '';
+    const el = document.getElementById('contract-file-name');
+    if (el) el.textContent = name ? `📄 ${name}` : '';
+  },
+
+  /* ══════════════════════════════════════════
+     הסכם תיווך — תבנית סטנדרטית
+     (בהשראת נוסח מקובל — לאישור עו"ד לפני שימוש)
+  ══════════════════════════════════════════ */
+  _buildContractHTML(lead) {
+    const tenant   = State.tenant || {};
+    const agent    = State.agent  || {};
+    const today    = new Date().toLocaleDateString('he-IL', { year:'numeric', month:'long', day:'numeric' });
+    const endDate  = new Date(Date.now() + 90 * 864e5).toLocaleDateString('he-IL', { year:'numeric', month:'long', day:'numeric' });
+    const contractNum = Math.floor(Math.random() * 9000 + 1000);
+    const bMin     = lead.budget_min ? Number(lead.budget_min).toLocaleString('he-IL') : '—';
+    const bMax     = lead.budget_max ? Number(lead.budget_max).toLocaleString('he-IL') : '—';
+    return `
+<div class="contract-preview">
+  <h1>הסכם תיווך במקרקעין</h1>
+  <div class="contract-sub">מס׳ ${contractNum} · נערך ב-${today}</div>
+
+  <h3>א. צדדי ההסכם</h3>
+  <div class="party-grid">
+    <div class="party-box">
+      <strong>המתווך:</strong>
+      <p>${escapeHtml(tenant.name || agent.name || 'לידרס נדל"ן')}</p>
+      <p>טלפון: ${escapeHtml(agent.phone || '—')}</p>
+      <p>אימייל: ${escapeHtml(agent.email || '—')}</p>
+      <p>רישיון תיווך: ___________</p>
+    </div>
+    <div class="party-box">
+      <strong>הלקוח:</strong>
+      <p>${escapeHtml(lead.name)}</p>
+      <p>ת.ז.: ___________________</p>
+      <p>טלפון: ${escapeHtml(lead.phone || '—')}</p>
+      <p>אימייל: ${escapeHtml(lead.email || '—')}</p>
+    </div>
+  </div>
+
+  <h3>ב. הנכס המבוקש</h3>
+  <p>
+    סוג נכס: <strong>${escapeHtml(lead.rooms || '?')} חדרים</strong> ·
+    אזור: <strong>${escapeHtml(lead.desired_area || '—')}</strong> ·
+    תקציב: <strong>₪${bMin} – ₪${bMax}</strong>
+  </p>
+
+  <h3>ג. שכר תיווך</h3>
+  <div class="highlight-clause">
+    שכר התיווך יהיה <strong>2% (שניים אחוז) ממחיר הנכס הסופי + מע"מ כחוק</strong>,
+    וישולם ביום חתימת חוזה המכר/השכירות.
+  </div>
+  <ol>
+    <li>שכר התיווך ישולם למתווך גם אם העסקה תסתיים עם נכס שהוצג על ידיו,
+        בתוך 12 חודשים ממועד הצגתו, גם לאחר סיום הסכם זה.</li>
+    <li>במקרה של ביטול עסקה לאחר חתימת חוזה מכר מחמת אשמת הלקוח —
+        שכר התיווך יישמר במלואו.</li>
+  </ol>
+
+  <h3>ד. תקופת ההסכם ובלעדיות</h3>
+  <ol>
+    <li>הסכם זה ייכנס לתוקף ביום חתימתו וישמש למשך <strong>90 (תשעים) יום</strong>,
+        דהיינו עד <strong>${endDate}</strong>.</li>
+    <li>הסכם זה הינו <strong>בלעדי</strong>: הלקוח לא יפנה במהלך תקופה זו למתווך אחר
+        לצורך איתור נכס מהסוג המפורט לעיל.</li>
+    <li>ניתן להאריך את ההסכם בהסכמה בכתב של שני הצדדים.</li>
+  </ol>
+
+  <h3>ה. הצהרות הלקוח</h3>
+  <ol>
+    <li>הלקוח מצהיר שאינו מחויב כלפי מתווך אחר לנכסים שיוצגו לו במסגרת הסכם זה.</li>
+    <li>הלקוח מצהיר שיידע את המתווך על כל פנייה ישירה לבעל נכס שהוצג לו.</li>
+    <li>הלקוח מאשר קבלת הסבר מפורט על תנאי הסכם זה ושכר התיווך.</li>
+  </ol>
+
+  <h3>ו. שירותי המתווך</h3>
+  <ol>
+    <li>המתווך מתחייב לאתר נכסים המתאימים לדרישות הלקוח ולארגן ביקורים.</li>
+    <li>המתווך ילווה את הלקוח בשלבי המשא ומתן עד לחתימת חוזה סופי.</li>
+    <li>המתווך יפעל בנאמנות ובמקצועיות לטובת הלקוח.</li>
+  </ol>
+
+  <h3>ז. כללי</h3>
+  <p style="font-size:12px;color:#666;line-height:1.8;">
+    הסכם זה כפוף לחוק המתווכים במקרקעין, תשנ"ו-1996 ולכל דין אחר הרלוונטי.
+    הדין החל על הסכם זה הינו דין מדינת ישראל. כל שינוי בהסכם יהיה בכתב ובחתימת שני הצדדים.
+    <br><br>
+    <strong>⚠️ הבהרה:</strong> תבנית זו הוכנה לנוחות בלבד ואינה מהווה ייעוץ משפטי.
+    מומלץ לאמת את ההסכם עם עורך דין לפני שימוש בו.
+  </p>
+
+  <div class="sig-area">
+    <div class="sig-box">
+      המתווך<br><br><br>
+      <strong>${escapeHtml(agent.name || '—')}</strong><br>
+      תאריך: ___________
+    </div>
+    <div class="sig-box">
+      הלקוח<br><br><br>
+      <strong>${escapeHtml(lead.name)}</strong><br>
+      תאריך: ___________
+    </div>
+  </div>
+</div>`;
+  },
+};
+
+/* ═══════════════════════════════════════════
    LEAD DOCUMENTS MODULE
 ═══════════════════════════════════════════ */
 const LeadDocs = {
@@ -7909,6 +8351,7 @@ const LeadDetail = {
           <button class="tab-btn" onclick="switchTab(this,'tab-tasks')">משימות (${tasks.filter(t=>!t.done).length})</button>
           <button class="tab-btn" onclick="switchTab(this,'tab-match')">${getLabel('matchTab')} (${matchProps.length})</button>
           <button class="tab-btn" onclick="switchTab(this,'tab-docs'); LeadDocs.load('${lead.id}')">📄 ${getLabel('docLabel')}</button>
+          <button class="tab-btn" onclick="switchTab(this,'tab-contracts'); ContractEngine.render('${lead.id}')">📜 חוזים</button>
           <button class="tab-btn" onclick="switchTab(this,'tab-ai')">🤖 AI</button>
         </div>
 
@@ -8004,6 +8447,11 @@ const LeadDetail = {
             📎 העלה מסמך (PDF / Word / תמונה)
           </label>
           <p style="font-size:11px;color:var(--gray-400);text-align:center;margin-top:6px;">עד 10MB לקובץ</p>
+        </div>
+
+        <!-- CONTRACTS TAB -->
+        <div class="tab-content" id="tab-contracts">
+          <div id="contracts-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
         </div>
 
         <!-- AI TAB -->
@@ -10079,8 +10527,9 @@ window.DB         = DB;
 window.Voice      = Voice;
 window.Onboarding = Onboarding;
 window.Analytics  = Analytics;
-window.LeadDocs   = LeadDocs;
-window.Gamify     = Gamify;
+window.LeadDocs        = LeadDocs;
+window.ContractEngine  = ContractEngine;
+window.Gamify          = Gamify;
 window.Tools      = Tools;
 window.LeadImport = LeadImport;
 

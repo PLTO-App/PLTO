@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#0F1F3D">
+  <title>חתימה על מסמך — לידרס</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0F1F3D; --navy-600: #1e3a5f; --navy-400: #2563EB;
+      --gold: #C49A2A; --gold-light: #FEF3C7;
+      --green: #16A34A; --green-light: #F0FDF4;
+      --red: #DC2626; --red-light: #FEF2F2;
+      --gray-50: #F8FAFC; --gray-100: #F1F5F9; --gray-200: #E2E8F0;
+      --gray-400: #94A3B8; --gray-500: #64748B; --gray-700: #334155; --gray-900: #0F172A;
+      --border: #E2E8F0; --radius: 16px; --radius-sm: 10px;
+    }
+    html, body { height: 100%; font-family: 'Heebo', sans-serif; background: var(--gray-50); color: var(--gray-900); }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      background: var(--navy); color: white; padding: 14px 20px;
+      display: flex; align-items: center; gap: 12px;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    }
+    .topbar-logo { font-size: 22px; font-weight: 900; color: var(--gold); letter-spacing: -0.5px; }
+    .topbar-sub  { font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 1px; }
+    .topbar-secure { margin-right: auto; background: rgba(22,163,74,0.2); color: #86EFAC;
+      font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 99px;
+      display: flex; align-items: center; gap: 4px; }
+
+    /* ── STEP PROGRESS ── */
+    .step-bar { display: flex; align-items: center; padding: 14px 20px; background: white;
+      border-bottom: 1px solid var(--border); gap: 4px; }
+    .step-dot  { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0;
+      transition: all 0.3s; }
+    .step-dot.done    { background: var(--green); color: white; }
+    .step-dot.active  { background: var(--navy-400); color: white; box-shadow: 0 0 0 4px rgba(37,99,235,0.18); }
+    .step-dot.pending { background: var(--gray-200); color: var(--gray-400); }
+    .step-line { flex: 1; height: 2px; background: var(--gray-200); border-radius: 99px; }
+    .step-line.done { background: var(--green); }
+    .step-label { font-size: 10px; color: var(--gray-400); text-align: center; margin-top: 3px; }
+
+    /* ── SCREENS ── */
+    .screen { display: none; flex-direction: column; min-height: calc(100vh - 120px); padding: 20px; }
+    .screen.active { display: flex; }
+
+    /* ── LOADING ── */
+    #scr-loading { align-items: center; justify-content: center; gap: 16px; }
+    .spinner { width: 48px; height: 48px; border: 4px solid var(--gray-200);
+      border-top-color: var(--navy-400); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── ERROR ── */
+    #scr-error { align-items: center; justify-content: center; gap: 12px; text-align: center; }
+    .error-icon { font-size: 64px; }
+
+    /* ── DISCLAIMER ── */
+    #scr-disclaimer { gap: 16px; max-width: 640px; margin: 0 auto; width: 100%; }
+    .card { background: white; border-radius: var(--radius); border: 1px solid var(--border);
+      padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+    .card-title { font-size: 18px; font-weight: 900; color: var(--gray-900); margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px; }
+    .disclaimer-text { font-size: 13px; color: var(--gray-700); line-height: 1.8; }
+    .disclaimer-text strong { color: var(--gray-900); }
+    .disclaimer-box { background: var(--gold-light); border: 1px solid #FDE68A;
+      border-radius: var(--radius-sm); padding: 14px 16px; font-size: 12px;
+      color: #78350F; line-height: 1.7; }
+    .check-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0;
+      border-bottom: 1px solid var(--border); cursor: pointer; }
+    .check-row:last-child { border-bottom: none; }
+    .check-row input[type=checkbox] { width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px;
+      accent-color: var(--navy-400); cursor: pointer; }
+    .check-label { font-size: 13px; color: var(--gray-700); line-height: 1.5; }
+
+    /* ── CONTRACT ── */
+    #scr-contract { gap: 16px; max-width: 700px; margin: 0 auto; width: 100%; }
+    .contract-frame { background: white; border-radius: var(--radius); border: 1px solid var(--border);
+      padding: 32px 24px; font-size: 13px; line-height: 1.9; color: var(--gray-800);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .contract-frame iframe { width: 100%; min-height: 70vh; border: none; }
+    .contract-header { text-align: center; margin-bottom: 28px; }
+    .contract-header h1 { font-size: 20px; font-weight: 900; color: var(--navy); margin-bottom: 4px; }
+    .contract-header .contract-num { font-size: 12px; color: var(--gray-400); }
+    .contract-section { margin-bottom: 20px; }
+    .contract-section h3 { font-size: 14px; font-weight: 800; color: var(--navy);
+      margin-bottom: 8px; padding-bottom: 6px; border-bottom: 2px solid var(--gray-100); }
+    .contract-parties { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 480px) { .contract-parties { grid-template-columns: 1fr; } }
+    .party-box { background: var(--gray-50); border-radius: var(--radius-sm);
+      padding: 12px 14px; font-size: 12px; }
+    .party-box strong { font-size: 13px; font-weight: 800; color: var(--gray-900); display: block; margin-bottom: 6px; }
+    .party-box p { color: var(--gray-600); margin: 2px 0; }
+    ol.contract-list { padding-right: 18px; }
+    ol.contract-list li { margin-bottom: 10px; }
+    .contract-highlight { background: #EFF6FF; border-right: 3px solid var(--navy-400);
+      padding: 10px 14px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-weight: 700; color: var(--navy-600); margin: 10px 0; }
+
+    /* ── SIGNATURE ── */
+    #scr-sign { gap: 16px; max-width: 540px; margin: 0 auto; width: 100%; }
+    .sig-instruction { text-align: center; padding: 8px 0; }
+    .sig-instruction h2 { font-size: 20px; font-weight: 900; margin-bottom: 6px; }
+    .sig-instruction p  { font-size: 13px; color: var(--gray-500); }
+    .sig-canvas-wrap {
+      background: white; border: 2px dashed var(--navy-400); border-radius: var(--radius);
+      position: relative; overflow: hidden; touch-action: none;
+      box-shadow: 0 4px 20px rgba(37,99,235,0.12);
+    }
+    #sig-canvas { width: 100%; display: block; cursor: crosshair; }
+    .sig-placeholder { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+      font-size: 12px; color: var(--gray-300); white-space: nowrap; pointer-events: none;
+      transition: opacity 0.2s; }
+    .sig-placeholder.hidden { opacity: 0; }
+    .sig-actions { display: flex; gap: 10px; }
+    .btn { display: flex; align-items: center; justify-content: center; gap: 6px;
+      border: none; border-radius: var(--radius-sm); padding: 14px 20px;
+      font-family: 'Heebo', sans-serif; font-size: 14px; font-weight: 800;
+      cursor: pointer; transition: all 0.18s; -webkit-tap-highlight-color: transparent; }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary { background: var(--navy); color: white; flex: 2; }
+    .btn-primary:hover { background: var(--navy-600); }
+    .btn-primary:disabled { background: var(--gray-400); cursor: not-allowed; transform: none; }
+    .btn-ghost  { background: var(--gray-100); color: var(--gray-600); flex: 1; }
+    .btn-ghost:hover { background: var(--gray-200); }
+    .btn-green  { background: var(--green); color: white; width: 100%; font-size: 16px; padding: 16px; }
+    .btn-green:hover { background: #15803D; }
+    .btn-green:disabled { background: var(--gray-400); cursor: not-allowed; transform: none; }
+    .signer-name-wrap { display: flex; flex-direction: column; gap: 6px; }
+    .signer-name-wrap label { font-size: 13px; font-weight: 700; color: var(--gray-700); }
+    .signer-name-wrap input { border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+      padding: 12px 14px; font-family: 'Heebo', sans-serif; font-size: 14px; width: 100%;
+      outline: none; transition: border-color 0.15s; }
+    .signer-name-wrap input:focus { border-color: var(--navy-400); }
+    .legal-note { font-size: 11px; color: var(--gray-400); line-height: 1.6; text-align: center; }
+
+    /* ── DONE ── */
+    #scr-done { align-items: center; justify-content: center; gap: 20px; text-align: center; }
+    .done-icon { font-size: 72px; animation: pop 0.5s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+    .done-title { font-size: 26px; font-weight: 900; color: var(--green); }
+    .done-sub   { font-size: 14px; color: var(--gray-500); max-width: 300px; line-height: 1.6; }
+    .done-meta  { background: var(--green-light); border: 1px solid #BBF7D0;
+      border-radius: var(--radius); padding: 14px 20px; font-size: 13px; color: var(--green);
+      font-weight: 700; text-align: center; width: 100%; max-width: 320px; }
+
+    /* ── NAV FOOTER ── */
+    .nav-footer { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; max-width: 640px; margin: 0 auto; width: 100%; }
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div>
+    <div class="topbar-logo">לידרס</div>
+    <div class="topbar-sub">מערכת ניהול עסקאות</div>
+  </div>
+  <div class="topbar-secure">🔒 חיבור מאובטח</div>
+</header>
+
+<!-- STEP BAR -->
+<div class="step-bar" id="step-bar">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+    <div class="step-dot active" id="dot-1">1</div>
+    <div class="step-label">גילוי נאות</div>
+  </div>
+  <div class="step-line" id="line-1"></div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+    <div class="step-dot pending" id="dot-2">2</div>
+    <div class="step-label">קריאת המסמך</div>
+  </div>
+  <div class="step-line" id="line-2"></div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+    <div class="step-dot pending" id="dot-3">3</div>
+    <div class="step-label">חתימה</div>
+  </div>
+  <div class="step-line" id="line-3"></div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+    <div class="step-dot pending" id="dot-4">✓</div>
+    <div class="step-label">אישור</div>
+  </div>
+</div>
+
+<!-- ══ SCREEN: LOADING ══ -->
+<div class="screen active" id="scr-loading">
+  <div class="spinner"></div>
+  <div style="font-size:15px;color:var(--gray-500);font-weight:600;">טוען את המסמך...</div>
+</div>
+
+<!-- ══ SCREEN: ERROR ══ -->
+<div class="screen" id="scr-error">
+  <div class="error-icon" id="err-icon">⚠️</div>
+  <div style="font-size:20px;font-weight:800;" id="err-title">שגיאה בטעינת המסמך</div>
+  <div style="font-size:14px;color:var(--gray-500);max-width:300px;line-height:1.6;" id="err-msg">
+    הקישור אינו תקף או שפג תוקפו. אנא פנה לסוכן שלך לקבלת קישור חדש.
+  </div>
+</div>
+
+<!-- ══ SCREEN: DISCLAIMER ══ -->
+<div class="screen" id="scr-disclaimer">
+  <div class="card">
+    <div class="card-title">⚖️ גילוי נאות לפני חתימה</div>
+    <div class="disclaimer-text">
+      <strong>מסמך זה הינו מסמך משפטי מחייב.</strong>
+      לפני שתחתום, קרא את המסמך בעיון ווודא שאתה מסכים לכל תנאיו.
+    </div>
+    <div class="disclaimer-box" style="margin: 14px 0;">
+      📌 <strong>הסכם תיווך — הבהרה חשובה:</strong><br>
+      חתימה על הסכם תיווך מחייבת אותך לשלם שכר תיווך למתווך אם תיסגר עסקה
+      בתיווכו — גם אם הנכס יימצא בדרך אחרת בתקופת הבלעדיות.<br><br>
+      שכר התיווך המקובל הוא <strong>2% ממחיר הנכס + מע"מ</strong>.<br><br>
+      מומלץ להתייעץ עם עורך דין לפני החתימה.
+    </div>
+    <div class="disclaimer-text" style="color:var(--gray-500);font-size:12px;">
+      חתימה דיגיטלית זו מהווה <strong>חתימה אלקטרונית</strong> בהתאם לחוק חתימה אלקטרונית
+      תשס"א-2001 ותקנותיו. היא בעלת תוקף משפטי זהה לחתימה בכתב יד לעסקאות בין צדדים מסכימים.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="font-size:15px;">✅ אני מצהיר/ה:</div>
+    <div id="checks-container">
+      <label class="check-row">
+        <input type="checkbox" class="disc-check" onchange="updateDisclaimerBtn()">
+        <span class="check-label">קראתי את המסמך במלואו והבנתי את תוכנו</span>
+      </label>
+      <label class="check-row">
+        <input type="checkbox" class="disc-check" onchange="updateDisclaimerBtn()">
+        <span class="check-label">אני מסכים/ה לכל תנאי ההסכם כפי שמפורטים במסמך</span>
+      </label>
+      <label class="check-row">
+        <input type="checkbox" class="disc-check" onchange="updateDisclaimerBtn()">
+        <span class="check-label">אני מבין/ה שחתימתי הדיגיטלית תהיה בעלת תוקף משפטי מחייב</span>
+      </label>
+      <label class="check-row">
+        <input type="checkbox" class="disc-check" onchange="updateDisclaimerBtn()">
+        <span class="check-label">ידוע לי שאוכל לפנות לעורך דין לפני החתימה ובחרתי להמשיך</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="nav-footer" style="padding:0;">
+    <button class="btn btn-primary" id="btn-to-contract" onclick="goStep(2)" disabled>
+      📄 המשך לקריאת המסמך
+    </button>
+    <div class="legal-note">קריאת המסמך מחייבת לפני החתימה</div>
+  </div>
+</div>
+
+<!-- ══ SCREEN: CONTRACT ══ -->
+<div class="screen" id="scr-contract">
+  <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:var(--radius-sm);
+              padding:10px 14px;font-size:12px;color:#1D4ED8;font-weight:600;margin-bottom:4px;">
+    📖 קרא את כל המסמך לפני שתמשיך לחתימה
+  </div>
+  <div class="contract-frame" id="contract-body">
+    <!-- Filled dynamically -->
+  </div>
+  <div class="nav-footer" style="padding:0;">
+    <button class="btn btn-green" onclick="goStep(3)">✍️ המשך לחתימה</button>
+    <button class="btn btn-ghost" onclick="goStep(1)">← חזרה</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN: SIGNATURE ══ -->
+<div class="screen" id="scr-sign">
+  <div class="sig-instruction">
+    <h2>✍️ חתום/י כאן</h2>
+    <p>השתמש/י באצבע או בעט כדי לחתום בתיבה למטה</p>
+  </div>
+
+  <div class="signer-name-wrap">
+    <label>שם מלא (לאישור זהות)</label>
+    <input type="text" id="signer-name-input" placeholder="שם פרטי ושם משפחה" autocomplete="name"
+           oninput="validateSign()">
+  </div>
+
+  <div class="sig-canvas-wrap" id="sig-wrap">
+    <canvas id="sig-canvas" height="200"></canvas>
+    <div class="sig-placeholder" id="sig-placeholder">חתום/י כאן ↑</div>
+  </div>
+
+  <div class="sig-actions">
+    <button class="btn btn-ghost" onclick="clearSig()">🗑️ נקה</button>
+    <button class="btn btn-primary" id="btn-submit" onclick="submitSignature()" disabled>
+      ✅ אני חותם/ת
+    </button>
+  </div>
+
+  <div class="legal-note">
+    בלחיצה על "אני חותם/ת" אתה מאשר שקראת את המסמך, מסכים לתנאיו,
+    וחתימתך הדיגיטלית מחייבת אותך משפטית.<br>
+    תאריך ושעת החתימה נרשמים אוטומטית לצורכי אימות.
+  </div>
+
+  <button class="btn btn-ghost" onclick="goStep(2)" style="margin-top:4px;">← חזרה למסמך</button>
+</div>
+
+<!-- ══ SCREEN: DONE ══ -->
+<div class="screen" id="scr-done">
+  <div class="done-icon">✅</div>
+  <div class="done-title">נחתם בהצלחה!</div>
+  <div class="done-sub">החוזה נחתם ונשמר. הסוכן שלך יקבל התראה בקרוב.</div>
+  <div class="done-meta" id="done-meta">
+    <!-- Filled dynamically -->
+  </div>
+  <div class="legal-note" style="max-width:320px;">
+    שמור/י צילום מסך לתיעוד. העתק החוזה נשמר במערכת הסוכן.
+  </div>
+</div>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.js"
+        integrity="sha384-nD3dwv4+ZqdYnmZKe/249ImlV04om7xTCcsoSeQYI+RO+XlKPoqAWaJR1M5SJH9p"
+        crossorigin="anonymous"></script>
+
+<script>
+/* ── CONFIG ── */
+const SB_URL = 'https://scyfywvzoogfrlalgftv.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjeWZ5d3Z6b29nZnJsYWxnZnR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MDA3MzAsImV4cCI6MjA5NjA3NjczMH0._D8ho0Yj8fEk7nd6-vmkjKkKyjfvHDmSq9Y8h5XzQCM';
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+/* ── STATE ── */
+let contract = null;
+let sigCanvas, sigCtx, isDrawing = false, hasSig = false;
+
+/* ── INIT ── */
+window.addEventListener('load', async () => {
+  const token = new URLSearchParams(window.location.search).get('token');
+  if (!token) { showError('קישור לא תקין', 'הקישור שקיבלת אינו מכיל את הפרטים הנדרשים.'); return; }
+
+  const { data, error } = await sb.from('contracts')
+    .select('*').eq('signing_token', token).single();
+
+  if (error || !data) {
+    showError('מסמך לא נמצא', 'הקישור אינו תקף או שפג תוקפו. פנה לסוכן לקבלת קישור חדש.');
+    return;
+  }
+  if (data.status === 'signed') {
+    showError('✅ מסמך כבר נחתם', `המסמך "${data.title}" נחתם ב-${formatDate(data.signed_at)}. אין צורך בפעולה נוספת.`, 'done');
+    return;
+  }
+  if (data.status === 'cancelled') {
+    showError('❌ מסמך בוטל', 'מסמך זה בוטל. פנה לסוכן לפרטים.', 'cancelled');
+    return;
+  }
+
+  contract = data;
+
+  // Mark as viewed
+  await sb.from('contracts').update({ status: 'viewed' }).eq('id', data.id);
+
+  // Fill contract content
+  if (data.template_type === 'custom' && data.file_url) {
+    document.getElementById('contract-body').innerHTML =
+      `<iframe src="${data.file_url}" title="חוזה"></iframe>`;
+  } else {
+    document.getElementById('contract-body').innerHTML = data.content_html || '<p>לא נמצא תוכן מסמך.</p>';
+  }
+
+  // Init signature canvas
+  initCanvas();
+
+  // Show disclaimer step
+  show('scr-disclaimer');
+  hide('scr-loading');
+});
+
+/* ── STEPS ── */
+function goStep(n) {
+  ['scr-disclaimer','scr-contract','scr-sign','scr-done'].forEach((id, i) => {
+    document.getElementById(id).classList.toggle('active', i + 1 === n);
+  });
+  // Update step dots
+  for (let i = 1; i <= 4; i++) {
+    const dot  = document.getElementById(`dot-${i}`);
+    const line = i < 4 ? document.getElementById(`line-${i}`) : null;
+    dot.className  = 'step-dot ' + (i < n ? 'done' : i === n ? 'active' : 'pending');
+    if (line) line.className = 'step-line' + (i < n ? ' done' : '');
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ── DISCLAIMER ── */
+function updateDisclaimerBtn() {
+  const all = [...document.querySelectorAll('.disc-check')].every(c => c.checked);
+  document.getElementById('btn-to-contract').disabled = !all;
+}
+
+/* ── CANVAS SIGNATURE ── */
+function initCanvas() {
+  sigCanvas = document.getElementById('sig-canvas');
+  sigCtx    = sigCanvas.getContext('2d');
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  const opts = { passive: false };
+  sigCanvas.addEventListener('mousedown',  startDraw);
+  sigCanvas.addEventListener('mousemove',  draw);
+  sigCanvas.addEventListener('mouseup',    endDraw);
+  sigCanvas.addEventListener('mouseleave', endDraw);
+  sigCanvas.addEventListener('touchstart', e => { e.preventDefault(); startDraw(e.touches[0]); }, opts);
+  sigCanvas.addEventListener('touchmove',  e => { e.preventDefault(); draw(e.touches[0]); }, opts);
+  sigCanvas.addEventListener('touchend',   e => { e.preventDefault(); endDraw(); }, opts);
+}
+
+function resizeCanvas() {
+  const wrap = document.getElementById('sig-wrap');
+  const w    = wrap.clientWidth;
+  sigCanvas.width  = w;
+  sigCanvas.height = 200;
+}
+
+function getPos(e) {
+  const r = sigCanvas.getBoundingClientRect();
+  return { x: (e.clientX || e.pageX) - r.left, y: (e.clientY || e.pageY) - r.top };
+}
+
+function startDraw(e) {
+  isDrawing = true;
+  const p = getPos(e);
+  sigCtx.beginPath();
+  sigCtx.moveTo(p.x, p.y);
+  sigCtx.lineWidth   = 2.5;
+  sigCtx.lineCap     = 'round';
+  sigCtx.lineJoin    = 'round';
+  sigCtx.strokeStyle = '#0F1F3D';
+}
+
+function draw(e) {
+  if (!isDrawing) return;
+  const p = getPos(e);
+  sigCtx.lineTo(p.x, p.y);
+  sigCtx.stroke();
+  if (!hasSig) {
+    hasSig = true;
+    document.getElementById('sig-placeholder').classList.add('hidden');
+    validateSign();
+  }
+}
+
+function endDraw() { isDrawing = false; }
+
+function clearSig() {
+  sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+  hasSig = false;
+  document.getElementById('sig-placeholder').classList.remove('hidden');
+  validateSign();
+}
+
+function validateSign() {
+  const name = document.getElementById('signer-name-input').value.trim();
+  document.getElementById('btn-submit').disabled = !(hasSig && name.length >= 2);
+}
+
+/* ── SUBMIT ── */
+async function submitSignature() {
+  const btn  = document.getElementById('btn-submit');
+  const name = document.getElementById('signer-name-input').value.trim();
+  if (!hasSig || !name) return;
+
+  btn.disabled = true;
+  btn.textContent = 'שומר...';
+
+  const sigData  = sigCanvas.toDataURL('image/png');
+  const signedAt = new Date().toISOString();
+
+  try {
+    const { error } = await sb.from('contracts').update({
+      status:         'signed',
+      signed_at:      signedAt,
+      signer_name:    name,
+      signature_data: sigData,
+    }).eq('id', contract.id);
+
+    if (error) throw error;
+
+    document.getElementById('done-meta').innerHTML =
+      `✅ חתום על ידי: <strong>${name}</strong><br>` +
+      `📅 תאריך: <strong>${formatDate(signedAt)}</strong><br>` +
+      `🔐 מסמך: <strong>${contract.title}</strong>`;
+
+    goStep(4);
+  } catch (err) {
+    alert('שגיאה בשמירת החתימה: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = '✅ אני חותם/ת';
+  }
+}
+
+/* ── HELPERS ── */
+function show(id) { document.getElementById(id).classList.add('active'); }
+function hide(id) { document.getElementById(id).classList.remove('active'); }
+
+function showError(title, msg, type = 'error') {
+  hide('scr-loading');
+  document.getElementById('err-icon').textContent  = type === 'done' ? '✅' : type === 'cancelled' ? '🚫' : '⚠️';
+  document.getElementById('err-title').textContent = title;
+  document.getElementById('err-msg').textContent   = msg;
+  show('scr-error');
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('he-IL', { year:'numeric', month:'long', day:'numeric',
+    hour:'2-digit', minute:'2-digit' });
+}
+</script>
+</body>
+</html>
