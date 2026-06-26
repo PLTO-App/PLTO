@@ -7545,7 +7545,7 @@ const App = {
   go(screen, params = {}) {
     // Demo: allow only dashboard, pipeline and marketing (as teasers); block all else
     if (State.isDemo) {
-      const DEMO_PASS = new Set(['dashboard', 'pipeline', 'marketing', 'login']);
+      const DEMO_PASS = new Set(['dashboard', 'pipeline', 'marketing', 'login', 'pro', 'analytics']);
       if (!DEMO_PASS.has(screen)) { DemoLock.showPrompt(); return; }
     }
     Object.assign(State, params);
@@ -10352,6 +10352,7 @@ window.LeadDocs   = LeadDocs;
 window.Gamify     = Gamify;
 window.Tools      = Tools;
 window.LeadImport = LeadImport;
+window.DemoLock   = DemoLock;
 
 // Bind login buttons — uses both click and pointerdown for maximum mobile compatibility
 (function bindLoginButtons() {
@@ -10936,6 +10937,7 @@ const ProHub = {
     openModal('modal-pro-locked');
   },
 };
+window.ProHub = ProHub;
 
 /* ═══════════════════════════════════════════
    DEMO SAVE HOOK — sticky retention bar
@@ -10987,6 +10989,7 @@ const DemoSaveHook = {
     e.returnValue = '';
   },
 };
+window.DemoSaveHook = DemoSaveHook;
 
 </script>
 </body>
