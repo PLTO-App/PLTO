@@ -2125,49 +2125,75 @@
 
       <!-- GAMIFICATION WIDGET — motivation & XP progress — prominent at top -->
       <div class="gamify-widget" id="gamify-widget">
-        <div class="gamify-top">
-          <div class="gamify-avatar" id="gamify-avatar">🌱</div>
-          <div>
-            <div class="gamify-level-name" id="gamify-level-name">ניצן</div>
-            <div class="gamify-streak" id="gamify-streak">🔥 0 ימים רצופים</div>
+        <!-- ── Activation gate: shown when < 5 leads ── -->
+        <div id="gamify-activation-gate" style="display:none;text-align:center;padding:4px 0 8px;">
+          <div style="font-size:38px;margin-bottom:8px;">📊</div>
+          <div style="font-weight:800;font-size:15px;color:var(--navy);margin-bottom:6px;">הביצועים שלך מחכים לך</div>
+          <div style="font-size:13px;color:var(--gray-500);margin-bottom:14px;line-height:1.6;">הוסף לפחות <strong>5 לידים</strong> כדי לראות<br>את הסטטיסטיקות שלך</div>
+          <div style="background:var(--gray-100);border-radius:99px;height:10px;margin-bottom:6px;overflow:hidden;">
+            <div id="gamify-act-bar" style="background:var(--blue);height:10px;border-radius:99px;width:0%;transition:width 0.5s;"></div>
+          </div>
+          <div id="gamify-act-count" style="font-size:12px;color:var(--gray-400);margin-bottom:16px;">0/5 לידים</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button class="btn btn-primary" style="font-size:13px;" onclick="openModal('modal-add-lead')">➕ הוסף ליד ידנית</button>
+            <button class="btn btn-ghost" style="font-size:13px;" onclick="LeadImport.open()">📋 ייבוא מאקסל / CSV</button>
+            <button class="btn btn-ghost" style="font-size:13px;" onclick="App.go('settings')">🔗 חבר טופס לידים אוטומטי</button>
           </div>
         </div>
-        <div class="gamify-xp-area">
-          <div class="gamify-xp-label">
-            <span id="gamify-xp-cur">0 XP</span>
-            <span id="gamify-xp-next">לרמה הבאה: 200 XP</span>
+        <!-- ── Regular gamify content: shown when 5+ leads ── -->
+        <div id="gamify-main">
+          <div class="gamify-top">
+            <div class="gamify-avatar" id="gamify-avatar">🌱</div>
+            <div>
+              <div class="gamify-level-name" id="gamify-level-name">ניצן</div>
+              <div class="gamify-streak" id="gamify-streak">🔥 0 ימים רצופים</div>
+            </div>
           </div>
-          <div class="gamify-bar"><div class="gamify-fill" id="gamify-xp-fill" style="width:0%"></div></div>
-        </div>
-        <!-- Next milestone progress -->
-        <div class="gamify-milestone" id="gamify-milestone-bar" style="display:none;">
-          <div class="gamify-milestone-label">🎁 פרס הבא</div>
-          <div class="gamify-milestone-name" id="gamify-ms-name">—</div>
-          <div class="gamify-milestone-bar"><div class="gamify-milestone-fill" id="gamify-ms-fill" style="width:0%"></div></div>
-          <div class="gamify-milestone-xp"><span id="gamify-ms-cur">0 XP</span><span id="gamify-ms-next">—</span></div>
-        </div>
-        <!-- Prizes showcase -->
-        <div class="gamify-prizes-title">🏆 פרסים שמחכים לך</div>
-        <div class="gamify-prizes-grid" id="gamify-prizes-grid"></div>
-        <div class="gamify-stats">
-          <div class="gamify-stat">
-            <div class="gamify-stat-val" id="gamify-leads-count">0</div>
-            <div class="gamify-stat-label">לידים</div>
+          <div class="gamify-xp-area">
+            <div class="gamify-xp-label">
+              <span id="gamify-xp-cur">0 XP</span>
+              <span id="gamify-xp-next">לרמה הבאה: 200 XP</span>
+            </div>
+            <div class="gamify-bar"><div class="gamify-fill" id="gamify-xp-fill" style="width:0%"></div></div>
           </div>
-          <div class="gamify-stat">
-            <div class="gamify-stat-val" id="gamify-closed-count">0</div>
-            <div class="gamify-stat-label">עסקאות שנסגרו</div>
+          <!-- Next milestone progress -->
+          <div class="gamify-milestone" id="gamify-milestone-bar" style="display:none;">
+            <div class="gamify-milestone-label">🎁 פרס הבא</div>
+            <div class="gamify-milestone-name" id="gamify-ms-name">—</div>
+            <div class="gamify-milestone-bar"><div class="gamify-milestone-fill" id="gamify-ms-fill" style="width:0%"></div></div>
+            <div class="gamify-milestone-xp"><span id="gamify-ms-cur">0 XP</span><span id="gamify-ms-next">—</span></div>
           </div>
-          <div class="gamify-stat">
-            <div class="gamify-stat-val" id="gamify-tasks-count">0</div>
-            <div class="gamify-stat-label">משימות שבוצעו</div>
+          <!-- Prizes showcase -->
+          <div class="gamify-prizes-title">🏆 פרסים שמחכים לך</div>
+          <div class="gamify-prizes-grid" id="gamify-prizes-grid"></div>
+          <div class="gamify-stats">
+            <div class="gamify-stat">
+              <div class="gamify-stat-val" id="gamify-leads-count">0</div>
+              <div class="gamify-stat-label">לידים</div>
+            </div>
+            <div class="gamify-stat">
+              <div class="gamify-stat-val" id="gamify-closed-count">0</div>
+              <div class="gamify-stat-label">עסקאות שנסגרו</div>
+            </div>
+            <div class="gamify-stat">
+              <div class="gamify-stat-val" id="gamify-tasks-count">0</div>
+              <div class="gamify-stat-label">משימות שבוצעו</div>
+            </div>
           </div>
-        </div>
-        <div class="gamify-achievements" id="gamify-badges-row"></div>
-        <div class="gamify-daily-challenge" id="gamify-daily" onclick="Gamify.dailyAction()">
-          <div class="gamify-daily-icon">⚡</div>
-          <div class="gamify-daily-text" id="gamify-daily-text">טוען אתגר יומי...</div>
-          <div class="gamify-daily-done" id="gamify-daily-check"></div>
+          <div class="gamify-achievements" id="gamify-badges-row"></div>
+          <!-- Marketing unlock XP teaser -->
+          <div id="gamify-mktg-teaser" style="display:none;margin-top:10px;background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(37,99,235,0.08));border-radius:12px;padding:10px 12px;">
+            <div style="font-size:12px;font-weight:700;color:#7C3AED;margin-bottom:6px;">✨ חבילת שיווק AI — נפתחת חינם</div>
+            <div style="background:rgba(124,58,237,0.15);border-radius:99px;height:7px;margin-bottom:4px;overflow:hidden;">
+              <div id="gamify-mktg-bar" style="background:linear-gradient(90deg,#7C3AED,#2563EB);height:7px;border-radius:99px;width:0%;transition:width 0.6s;"></div>
+            </div>
+            <div id="gamify-mktg-label" style="font-size:11px;color:var(--gray-500);"></div>
+          </div>
+          <div class="gamify-daily-challenge" id="gamify-daily" onclick="Gamify.dailyAction()">
+            <div class="gamify-daily-icon">⚡</div>
+            <div class="gamify-daily-text" id="gamify-daily-text">טוען אתגר יומי...</div>
+            <div class="gamify-daily-done" id="gamify-daily-check"></div>
+          </div>
         </div>
       </div>
 
@@ -5231,27 +5257,69 @@ const Marketing = {
             <p class="mktg-upgrade-micro">ללא כרטיס אשראי · ביטול בכל עת</p>
           </div>`;
       } else {
-        el.innerHTML = `
-          <div class="marketing-header-strip">
-            <div class="marketing-addon-badge">⭐ תוספת פרימיום</div>
-            <h2>📣 שירותי שיווק</h2>
-            <p>כלים מקצועיים ליצירת תוכן שיווקי — ישירות מתוך ה-CRM</p>
-          </div>
-          <div class="mktg-locked">
-            <div class="mktg-locked-icon">🔒</div>
-            <h3>תוסף שיווק — ₪100 לחודש</h3>
-            <p>גישה לכלים מקצועיים שיעזרו לך ליצור הצעות מיוחדות, פוסטים לסושיאל וקמפיינים ללקוחות — הכל מתוך המערכת, בלי לצאת החוצה.</p>
-            <ul class="mktg-locked-features">
-              <li>✨ מחולל הצעה אישית ללקוח — מבוסס AI</li>
-              <li>📸 יוצר פוסטים לסושיאל — מבוסס AI</li>
-              <li>📢 מחולל קמפיין WhatsApp — מבוסס AI</li>
-              <li>🌟 שירות בנייה מלא ע"י צוות Liders</li>
-            </ul>
-            <button class="mktg-upgrade-btn" onclick="toast('לשדרוג פנה אלינו — biz@liders-crm.com','info')">
-              הוסף שירותי שיווק — ₪100/חודש
-            </button>
-            <p class="mktg-upgrade-micro">ניתן להוסיף בכל עת · ביטול ללא קנסות</p>
-          </div>`;
+        const leadCount = (State.leads || []).length;
+        const xpThreshold = this._mktgXpThreshold();
+        const currentXp  = Gamify.get().xp || 0;
+        const hasLeadForm = !!(State.tenant?.make_webhook_url || localStorage.getItem('make_webhook_url'));
+
+        if (leadCount < 10) {
+          // Gate 1: not enough leads yet
+          const need = 10 - leadCount;
+          const pct  = Math.round((leadCount / 10) * 100);
+          el.innerHTML = `
+            <div class="marketing-header-strip">
+              <div class="marketing-addon-badge">⭐ כלי שיווק AI</div>
+              <h2>📣 שיווק חכם</h2>
+              <p>כלים מקצועיים ליצירת תוכן שיווקי — ישירות מתוך ה-CRM</p>
+            </div>
+            <div class="mktg-locked">
+              <div class="mktg-locked-icon">⚡</div>
+              <h3>עוד ${need} לידים ותגיע לשם</h3>
+              <p>כדי להפעיל את כלי השיווק צריך לפחות <strong>10 לידים</strong> פעילים במערכת.<br>
+                 ככה המערכת תוכל לבנות עבורך הצעות מותאמות אישית.</p>
+              <div style="background:var(--gray-100);border-radius:99px;height:12px;margin:14px 0 6px;overflow:hidden;">
+                <div style="background:linear-gradient(90deg,#7C3AED,#2563EB);height:12px;border-radius:99px;width:${pct}%;transition:width 0.6s;"></div>
+              </div>
+              <div style="font-size:13px;color:var(--gray-400);margin-bottom:20px;">${leadCount}/10 לידים</div>
+              <ul class="mktg-locked-features">
+                <li>✨ מחולל הצעה אישית ללקוח — AI</li>
+                <li>📸 יוצר פוסטים לסושיאל — AI</li>
+                <li>📢 מחולל קמפיין WhatsApp — AI</li>
+                <li>💬 הודעת WA חכמה לכל ליד</li>
+              </ul>
+              <button class="mktg-upgrade-btn" onclick="openModal('modal-add-lead')">➕ הוסף ליד ידנית</button>
+              <button class="mktg-upgrade-btn" style="background:var(--gray-100);color:var(--navy);margin-top:8px;" onclick="LeadImport.open()">📋 ייבוא מאקסל / CSV</button>
+              ${!hasLeadForm ? `<button class="mktg-upgrade-btn" style="background:var(--gray-100);color:var(--navy);margin-top:8px;" onclick="App.go('settings')">🔗 חבר טופס לידים אוטומטי</button>` : ''}
+            </div>`;
+        } else {
+          // Gate 2: enough leads, but XP not there yet — show progress + paid option
+          const xpPct = Math.min(100, Math.round((currentXp / xpThreshold) * 100));
+          const xpLeft = Math.max(0, xpThreshold - currentXp);
+          el.innerHTML = `
+            <div class="marketing-header-strip">
+              <div class="marketing-addon-badge">⭐ כלי שיווק AI</div>
+              <h2>📣 שיווק חכם</h2>
+              <p>כלים מקצועיים ליצירת תוכן שיווקי — ישירות מתוך ה-CRM</p>
+            </div>
+            <div class="mktg-locked">
+              <div class="mktg-locked-icon">🎯</div>
+              <h3>קרוב! עוד ${xpLeft.toLocaleString('he-IL')} XP</h3>
+              <p>השתמש במערכת ותצבור XP — בהגיעך ל-${xpThreshold.toLocaleString('he-IL')} XP חבילת השיווק<br>
+                 <strong>נפתחת אוטומטית בחינם לתמיד</strong>${hasLeadForm ? '' : '. חבר טופס לידים וחסוך 300 XP!'}</p>
+              <div style="background:var(--gray-100);border-radius:99px;height:12px;margin:14px 0 6px;overflow:hidden;">
+                <div style="background:linear-gradient(90deg,#7C3AED,#2563EB);height:12px;border-radius:99px;width:${xpPct}%;transition:width 0.6s;"></div>
+              </div>
+              <div style="font-size:13px;color:var(--gray-400);margin-bottom:8px;">${currentXp.toLocaleString('he-IL')} / ${xpThreshold.toLocaleString('he-IL')} XP</div>
+              ${!hasLeadForm ? `<button class="btn btn-ghost" style="width:100%;margin-bottom:14px;font-size:13px;" onclick="App.go('settings')">🔗 חבר טופס לידים — חסוך 300 XP</button>` : ''}
+              <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:8px;">
+                <div style="font-size:13px;color:var(--gray-500);margin-bottom:10px;">או פתח גישה מיידית:</div>
+                <button class="mktg-upgrade-btn" onclick="toast('לשדרוג פנה אלינו — biz@liders-crm.com','info')">
+                  🚀 שיווק AI עכשיו — ₪100/חודש
+                </button>
+                <p class="mktg-upgrade-micro">ניתן להוסיף בכל עת · ביטול ללא קנסות</p>
+              </div>
+            </div>`;
+        }
       }
       return;
     }
@@ -5513,7 +5581,19 @@ ${prop.description ? `תיאור: ${prop.description.slice(0,150)}` : ''}
   hasMktgAccess() {
     if (State.isDemo) return false;
     if (State.tenant?.marketing_addon === true) return true;
-    return this.trialDaysLeft() > 0;
+    if (this.trialDaysLeft() > 0) return true;
+    // After trial: need 10+ leads
+    const leadCount = (State.leads || []).length;
+    if (leadCount < 10) return false;
+    // XP threshold — lower if lead-form (Make.com webhook) is connected
+    const hasLeadForm = !!(State.tenant?.make_webhook_url || localStorage.getItem('make_webhook_url'));
+    const xpThreshold = hasLeadForm ? 1200 : 1500;
+    return (Gamify.get().xp || 0) >= xpThreshold;
+  },
+
+  _mktgXpThreshold() {
+    const hasLeadForm = !!(State.tenant?.make_webhook_url || localStorage.getItem('make_webhook_url'));
+    return hasLeadForm ? 1200 : 1500;
   },
 
   hasConsent() { return !!localStorage.getItem(this._CONSENT_KEY); },
@@ -5938,6 +6018,24 @@ const Gamify = {
   },
 
   renderWidget() {
+    const leadCount = (State.leads || []).length;
+    const gateEl   = document.getElementById('gamify-activation-gate');
+    const mainEl   = document.getElementById('gamify-main');
+
+    // Gate: < 5 leads → show activation prompt
+    if (leadCount < 5) {
+      if (gateEl) gateEl.style.display = '';
+      if (mainEl) mainEl.style.display = 'none';
+      const pct = Math.round((leadCount / 5) * 100);
+      const barEl   = document.getElementById('gamify-act-bar');
+      const countEl = document.getElementById('gamify-act-count');
+      if (barEl)   barEl.style.width = pct + '%';
+      if (countEl) countEl.textContent = leadCount + '/5 לידים';
+      return;
+    }
+    if (gateEl) gateEl.style.display = 'none';
+    if (mainEl) mainEl.style.display = '';
+
     const d = this.get();
     const lv = this.getLevel(d.xp);
     const prog = this.getProgress(d.xp);
@@ -6025,6 +6123,26 @@ const Gamify = {
           ${tag}
         </div>`;
       }).join('');
+    }
+
+    // Marketing XP unlock teaser
+    const mktgTeaserEl = document.getElementById('gamify-mktg-teaser');
+    if (mktgTeaserEl) {
+      const alreadyHasAccess = Marketing.hasMktgAccess();
+      const xpThreshold = Marketing._mktgXpThreshold();
+      const hasLeadForm = !!(State.tenant?.make_webhook_url || localStorage.getItem('make_webhook_url'));
+      if (!alreadyHasAccess && leadCount >= 10) {
+        mktgTeaserEl.style.display = '';
+        const mktgPct = Math.min(100, Math.round((d.xp / xpThreshold) * 100));
+        const mktgLeft = Math.max(0, xpThreshold - d.xp);
+        const barEl2 = document.getElementById('gamify-mktg-bar');
+        const lblEl2 = document.getElementById('gamify-mktg-label');
+        if (barEl2) barEl2.style.width = mktgPct + '%';
+        if (lblEl2) lblEl2.textContent = `${d.xp.toLocaleString('he-IL')} / ${xpThreshold.toLocaleString('he-IL')} XP`
+          + (hasLeadForm ? '' : ' · חבר טופס לידים וחסוך 300 XP');
+      } else {
+        mktgTeaserEl.style.display = 'none';
+      }
     }
   },
 
