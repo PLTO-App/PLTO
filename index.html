@@ -2708,9 +2708,9 @@
 ═══════════════════════════════════════ -->
 <div id="screen-login">
   <div class="login-card">
-    <div id="ref-welcome-banner" style="display:none;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border-radius:12px;padding:12px 16px;margin-bottom:16px;text-align:center;font-size:13px;font-weight:700;line-height:1.5;">
+    <div id="ref-welcome-banner" style="display:none;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border-radius:12px;padding:12px 16px;margin-bottom:16px;text-align:center;font-size:13px;font-weight:700;line-height:1.6;">
       🎁 הגעת עם קוד המלצה של חבר!<br>
-      <span style="font-weight:400;opacity:.9;">תקבל 20% הנחה על החודש הראשון — ממתין לך בהרשמה</span>
+      <span style="font-weight:400;opacity:.9;">+100 XP בונוס ברוכים הבאים + 20% הנחה על החודש הראשון</span>
     </div>
     <div class="login-logo">
       <div class="login-logo-text">Liders<span>.</span></div>
@@ -3748,7 +3748,7 @@
         <div class="ref-reward-title">מה כל אחד מקבל?</div>
         <div class="ref-reward-row">
           <span class="ref-reward-badge">החבר שלך</span>
-          <span>20% הנחה על החודש הראשון 💸</span>
+          <span>+100 XP בונוס + 20% הנחה על החודש הראשון 💸</span>
         </div>
         <div class="ref-reward-row">
           <span class="ref-reward-badge">אתה</span>
@@ -8845,6 +8845,23 @@ const Referral = {
     }
   },
 
+  // Called after first login — awards 100 welcome XP if user arrived via referral link
+  claimWelcomeBonus() {
+    if (State.isDemo) return;
+    const inboundRef = localStorage.getItem('liders_inbound_ref');
+    if (!inboundRef) return;
+    if (localStorage.getItem('liders_ref_claimed')) return;
+    localStorage.setItem('liders_ref_claimed', '1');
+    const gd = Gamify.get();
+    gd.xp += 100;
+    Gamify.save();
+    Gamify.renderSidebar();
+    Gamify.renderWidget();
+    setTimeout(() => {
+      toast('🎁 +100 XP — בונוס ברוכים הבאים! חבר המליץ עליך ואתה כבר מתחיל עם יתרון 🚀', 'success', 5000);
+    }, 2500);
+  },
+
   // Award XP when a referred friend actually joins and activates — called by admin panel or future Tranzila webhook
   awardReferral() {
     const XP_AWARD = 800;
@@ -12266,7 +12283,7 @@ sbClient.auth.onAuthStateChange((event, session) => {
           State.isNewTenant = isNew;
           App._showApp();
           document.getElementById('support-fab-btn')?.classList.remove('hidden');
-          setTimeout(() => Gamify.init(), 800);
+          setTimeout(() => { Gamify.init(); Referral.claimWelcomeBonus(); }, 800);
           Referral.checkInboundRef();
           overlay.classList.add('fade-out');
           setTimeout(() => overlay.classList.add('hidden'), 520);
