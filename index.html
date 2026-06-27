@@ -2184,6 +2184,161 @@
   }
   .phone-buzz { animation: phoneBuzz 0.52s ease; }
 
+  /* ── Confetti Score Emoji ── */
+  @keyframes emojiScore {
+    0%   { transform: translateX(-50%) translateY(0) scale(0.4) rotate(-25deg); opacity:0; }
+    12%  { opacity:1; }
+    45%  { transform: translateX(-50%) translateY(-160px) scale(1.5) rotate(15deg); opacity:1; }
+    75%  { transform: translateX(-50%) translateY(-280px) scale(1.1) rotate(-5deg); opacity:0.9; }
+    100% { transform: translateX(-50%) translateY(-430px) scale(0.2) rotate(0deg); opacity:0; }
+  }
+  .confetti-score-emoji {
+    position: absolute;
+    font-size: 72px;
+    left: 50%;
+    bottom: 20%;
+    transform: translateX(-50%);
+    animation: emojiScore 2s cubic-bezier(0.22,1,0.36,1) 0.15s forwards;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 24px rgba(0,0,0,0.4));
+  }
+
+  /* ── Motivation Agent ── */
+  .motivation-card {
+    margin: 0 20px 14px;
+    background: linear-gradient(135deg, #0a1628 0%, #0f2040 60%, #1a3a6b 100%);
+    border-radius: 18px; padding: 14px 16px;
+    position: relative; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 6px 24px rgba(15,31,61,0.35);
+  }
+  .motivation-card::before {
+    content:''; position:absolute; top:-30px; right:-20px;
+    width:120px; height:120px; border-radius:50%;
+    background: radial-gradient(circle, rgba(37,99,235,0.25), transparent);
+    pointer-events:none;
+  }
+  .motivation-card-header {
+    display:flex; align-items:center; gap:10px; margin-bottom:10px;
+  }
+  .motivation-card-icon {
+    width:36px; height:36px; border-radius:10px;
+    background: linear-gradient(135deg,#1d4ed8,#2563eb);
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px; flex-shrink:0;
+    box-shadow: 0 3px 10px rgba(37,99,235,0.4);
+  }
+  .motivation-card-title { font-size:13px; font-weight:800; color:#fff; }
+  .motivation-card-sub { font-size:10px; color:rgba(255,255,255,0.45); margin-top:1px; }
+  .motivation-text-area {
+    font-size:13px; color:rgba(255,255,255,0.85); line-height:1.6;
+    margin-bottom:12px; min-height:38px;
+    font-style: italic;
+  }
+  .motivation-text-area.loading { color:rgba(255,255,255,0.35); font-style:normal; }
+  .motivation-card-footer {
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .motivation-btn {
+    background: linear-gradient(135deg,#1d4ed8,#3b82f6);
+    color:#fff; border:none; border-radius:10px;
+    padding:8px 16px; font-size:12px; font-weight:700;
+    cursor:pointer; font-family:inherit; transition:.15s;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.35);
+  }
+  .motivation-btn:active { transform:scale(0.96); }
+  .motivation-btn:disabled { opacity:.5; cursor:default; }
+  .motivation-usage-badge {
+    font-size:10px; color:rgba(255,255,255,0.4); font-weight:600;
+  }
+  .motivation-card-dismiss {
+    position:absolute; top:10px; left:12px;
+    color:rgba(255,255,255,0.25); font-size:16px;
+    cursor:pointer; background:none; border:none; padding:2px 6px;
+    line-height:1;
+  }
+  .motivation-card-dismiss:hover { color:rgba(255,255,255,0.5); }
+
+  /* ── Tutorial Video Button ── */
+  .tutorial-btn {
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:11px; font-weight:700; color:rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15);
+    border-radius:99px; padding:5px 12px; cursor:pointer;
+    margin-top:6px; transition:.15s; text-decoration:none;
+    font-family:inherit;
+  }
+  .tutorial-btn:active { background:rgba(255,255,255,0.14); transform:scale(0.97); }
+
+  /* ── Guided Tour Overlay ── */
+  #tour-overlay {
+    position:fixed; inset:0; z-index:99980;
+    background:rgba(5,15,35,0.78);
+    backdrop-filter:blur(3px);
+    pointer-events:all;
+  }
+  #tour-tooltip {
+    position:fixed; bottom:90px; left:50%;
+    transform:translateX(-50%);
+    z-index:99982;
+    background:#fff; border-radius:22px;
+    padding:22px 20px 18px;
+    width:calc(100% - 36px); max-width:420px;
+    box-shadow:0 24px 64px rgba(0,0,0,0.38);
+    pointer-events:all;
+    animation:tourTooltipIn 0.38s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes tourTooltipIn {
+    from { opacity:0; transform:translateX(-50%) translateY(24px) scale(0.94); }
+    to   { opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+  }
+  .tour-step-emoji { font-size:44px; margin-bottom:10px; text-align:center; }
+  .tour-step-title { font-size:18px; font-weight:900; color:#0F2440; margin-bottom:6px; }
+  .tour-step-text  { font-size:14px; color:#4B5563; line-height:1.65; margin-bottom:18px; }
+  .tour-step-dots  { display:flex; gap:6px; align-items:center; }
+  .tour-dot { width:8px; height:8px; border-radius:50%; background:#E5E7EB; transition:all .25s; }
+  .tour-dot.active { width:20px; border-radius:4px; background:#0F2440; }
+  .tour-next-btn {
+    background:linear-gradient(135deg,#0F2440,#2563EB);
+    color:#fff; border:none; border-radius:13px;
+    padding:12px 26px; font-size:14px; font-weight:800;
+    cursor:pointer; font-family:inherit; transition:.15s;
+    box-shadow: 0 4px 16px rgba(37,99,235,0.3);
+  }
+  .tour-next-btn:active { transform:scale(0.96); }
+  .tour-skip-btn {
+    background:none; color:var(--gray-400); border:none;
+    font-size:12px; cursor:pointer; padding:6px; font-family:inherit;
+  }
+  .tour-highlight-pulse {
+    outline:3px solid #F59E0B !important;
+    outline-offset:4px !important;
+    position:relative !important;
+    z-index:99981 !important;
+    animation:tourHighlight 1.2s ease-in-out infinite !important;
+    border-radius:inherit !important;
+  }
+  @keyframes tourHighlight {
+    0%,100% { outline-color:#F59E0B; box-shadow:0 0 0 0 rgba(245,158,11,0.5); }
+    50%      { outline-color:#FBBF24; box-shadow:0 0 0 8px rgba(245,158,11,0); }
+  }
+
+  /* ── Tutorial modal ── */
+  .tutorial-step-card {
+    display:flex; align-items:flex-start; gap:12px;
+    background:var(--gray-50); border-radius:14px;
+    padding:14px 14px; border:1.5px solid var(--border);
+  }
+  .tutorial-step-num {
+    width:28px; height:28px; border-radius:50%;
+    background:linear-gradient(135deg,#0F2440,#2563EB);
+    color:#fff; font-size:12px; font-weight:900;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; margin-top:1px;
+  }
+  .tutorial-step-title { font-size:14px; font-weight:800; color:var(--navy); margin-bottom:3px; }
+  .tutorial-step-desc  { font-size:12px; color:var(--gray-500); line-height:1.55; }
+
   /* Floating +XP chip */
   @keyframes xpFloatUp {
     0%   { opacity:1; transform: translateY(0)    scale(1); }
@@ -2627,6 +2782,24 @@
       <div class="dashboard-greeting">
         שלום, <span id="dash-agent-name">ישראל</span> 👋
         <div class="dashboard-date" id="dash-date"></div>
+        <button class="tutorial-btn" onclick="TutorialVideo.open()">▶ ראה איך משתמשים במערכת</button>
+      </div>
+
+      <!-- MOTIVATION AGENT — AI motivational boost, up to 5/day -->
+      <div class="motivation-card" id="motivation-card">
+        <button class="motivation-card-dismiss" onclick="document.getElementById('motivation-card').style.display='none'" title="הסתר">×</button>
+        <div class="motivation-card-header">
+          <div class="motivation-card-icon">🚀</div>
+          <div>
+            <div class="motivation-card-title">סוכן מוטיבציה</div>
+            <div class="motivation-card-sub">AI אישי שדוחף אותך קדימה</div>
+          </div>
+        </div>
+        <div class="motivation-text-area" id="motivation-text">לחץ על הכפתור וקבל מסר מוטיבציה אישי לפי הנתונים שלך...</div>
+        <div class="motivation-card-footer">
+          <button class="motivation-btn" id="motivation-btn" onclick="MotivationAgent.generate()">✨ קבל מוטיבציה</button>
+          <span class="motivation-usage-badge" id="motivation-usage"></span>
+        </div>
       </div>
 
       <!-- GAMIFICATION WIDGET — motivation & XP progress — prominent at top -->
@@ -4529,6 +4702,67 @@
   </div>
 </div>
 
+<!-- Tutorial Video Modal -->
+<div class="modal-overlay hidden" id="modal-tutorial">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <h3 style="font-size:18px;font-weight:900;color:var(--navy);">🎬 מדריך שימוש במערכת</h3>
+      <button class="modal-close" onclick="closeModal('modal-tutorial')">×</button>
+    </div>
+    <div class="modal-body" style="padding-top:4px;">
+      <div style="background:linear-gradient(135deg,#0F2440,#1a3a6b);border-radius:14px;padding:20px;text-align:center;margin-bottom:16px;">
+        <div style="font-size:52px;margin-bottom:8px;">🎬</div>
+        <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:6px;">סרטון הדרכה — בקרוב!</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.6;">אנחנו מכינים סרטון שיראה את כל הפיצ׳רים.<br>בינתיים, הנה המדריך המהיר שלנו 👇</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="tutorial-step-card">
+          <div class="tutorial-step-num">1</div>
+          <div>
+            <div class="tutorial-step-title">➕ הוסף ליד חדש</div>
+            <div class="tutorial-step-desc">לחץ על הכפתור הכתום + בפינה הימנית התחתונה. מלא שם, טלפון ושלב הפייפליין.</div>
+          </div>
+        </div>
+        <div class="tutorial-step-card">
+          <div class="tutorial-step-num">2</div>
+          <div>
+            <div class="tutorial-step-title">📋 נהל את הפייפליין</div>
+            <div class="tutorial-step-desc">לשונית "פייפליין" מציגה את כל הלידים לפי שלבים. גרור להעביר שלב או לחץ על ליד לפרטים.</div>
+          </div>
+        </div>
+        <div class="tutorial-step-card">
+          <div class="tutorial-step-num">3</div>
+          <div>
+            <div class="tutorial-step-title">🤝 שיתוף טננט</div>
+            <div class="tutorial-step-desc">לשונית "שיתופי פעולה" — שתף לידים עם סוכנים אחרים ב-Liders ודבר איתם בצ׳אט.</div>
+          </div>
+        </div>
+        <div class="tutorial-step-card">
+          <div class="tutorial-step-num">4</div>
+          <div>
+            <div class="tutorial-step-title">🏦 מחשבון משכנתא</div>
+            <div class="tutorial-step-desc">ב"מרכז כלים" → מחשבון משכנתא — חשב תשלום חודשי מהיר ושתף עם הלקוח.</div>
+          </div>
+        </div>
+        <div class="tutorial-step-card">
+          <div class="tutorial-step-num">5</div>
+          <div>
+            <div class="tutorial-step-title">🤖 שיחה עם סוכני AI</div>
+            <div class="tutorial-step-desc">לשונית "שירותי שיווק" — הסוכן יכתוב לך הצעות מחיר, פוסטים ומסרים ללקוחות.</div>
+          </div>
+        </div>
+        <div class="tutorial-step-card">
+          <div class="tutorial-step-num">6</div>
+          <div>
+            <div class="tutorial-step-title">🏆 צבור XP ורוח פרסים</div>
+            <div class="tutorial-step-desc">כל פעולה מוסיפה XP. הגע ל-500 XP ותזכה באופניים חשמליות בשווי ₪2,000!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Onboarding Wizard -->
 <div class="modal-overlay hidden" id="modal-onboarding">
   <div class="modal" style="max-width:520px;">
@@ -5847,6 +6081,7 @@ const Onboarding = {
       await minDelay;
       if (setupEl) setupEl.classList.add('hidden');
       toast('🎉 ברוך הבא ל-Liders!', 'success');
+      setTimeout(() => GuidedTour.start(), 1800);
       const action = this._pendingAction;
       this._pendingAction = null;
       if (action === 'addlead') {
@@ -6436,12 +6671,12 @@ ${type === 'objection' ? '**תשובות להתנגדויות נפוצות:**\n[
 ═══════════════════════════════════════════ */
 const AiLimits = {
   PLANS: {
-    trial:    { general: 2, marketing: 3,  quicklog: 3,  support: 2  },
-    basic:    { general: 2, marketing: 3,  quicklog: 5,  support: 5  },
-    pro:      { general: 5, marketing: 7,  quicklog: 15, support: 5  },
-    premium:  { general: 10, marketing: 15, quicklog: 30, support: 10 },
-    lifetime: { general: 10, marketing: 15, quicklog: 30, support: 10 },
-    internal: { general: 999, marketing: 999, quicklog: 999, support: 999 },
+    trial:    { general: 2, marketing: 3,  quicklog: 3,  support: 2,  motivation: 3 },
+    basic:    { general: 2, marketing: 3,  quicklog: 5,  support: 5,  motivation: 5 },
+    pro:      { general: 5, marketing: 7,  quicklog: 15, support: 5,  motivation: 5 },
+    premium:  { general: 10, marketing: 15, quicklog: 30, support: 10, motivation: 5 },
+    lifetime: { general: 10, marketing: 15, quicklog: 30, support: 10, motivation: 5 },
+    internal: { general: 999, marketing: 999, quicklog: 999, support: 999, motivation: 999 },
   },
   _ADMIN: ['liders.crm@gmail.com','elgrablidudu@gmail.com'],
   _k: 'liders_ai_v1',
@@ -6450,8 +6685,8 @@ const AiLimits = {
   _get() {
     try {
       const d = JSON.parse(localStorage.getItem(this._k)||'{}');
-      return d.date === this._today() ? d : { date: this._today(), general: 0, marketing: 0, quicklog: 0, support: 0 };
-    } catch { return { date: this._today(), general: 0, marketing: 0, quicklog: 0, support: 0 }; }
+      return d.date === this._today() ? d : { date: this._today(), general: 0, marketing: 0, quicklog: 0, support: 0, motivation: 0 };
+    } catch { return { date: this._today(), general: 0, marketing: 0, quicklog: 0, support: 0, motivation: 0 }; }
   },
   _save(d) { localStorage.setItem(this._k, JSON.stringify(d)); },
   _lim() { return this.PLANS[State.tenant?.plan||'trial'] || this.PLANS.trial; },
@@ -7300,11 +7535,13 @@ const Gamify = {
   ],
 
   MILESTONES: [
-    { xp:  1000, icon: '🌐', name: 'דף נחיתה מקצועי',    desc: 'בניית דף נחיתה ממירה בשבילך — שווי ₪500' },
-    { xp:  2500, icon: '💼', name: 'דף מכירה מקצועי',    desc: 'עמוד מכירה + CTA מותאם לנדל"ן — שווי ₪800' },
-    { xp:  5000, icon: '🏢', name: 'אתר תדמית מלא',      desc: 'אתר תדמית מקצועי + דומיין — שווי ₪2,500' },
-    { xp: 15000, icon: '📣', name: 'חבילת שיווק דיגיטלי', desc: 'ניהול רשתות + קמפיין ממומן — שווי ₪5,000' },
-    { xp: 30000, icon: '✈️', name: 'כרטיס טיסה עסקית',   desc: 'כנס נדל"ן בינלאומי + כרטיס טיסה — שווי ₪10,000' },
+    { xp:   500, icon: '🚲', name: 'אופניים חשמליות',     desc: 'אופניים חשמליות איכותיות — שווי ₪2,000' },
+    { xp:  1000, icon: '⛵', name: 'סירת דינגי',           desc: 'סירת דינגי קטנה לפגאז׳ הרכב עם מנוע — שווי ₪5,000' },
+    { xp:  2500, icon: '🌐', name: 'דף נחיתה מקצועי',    desc: 'בניית דף נחיתה ממירה בשבילך — שווי ₪500' },
+    { xp:  5000, icon: '💼', name: 'דף מכירה מקצועי',    desc: 'עמוד מכירה + CTA מותאם לנדל"ן — שווי ₪800' },
+    { xp: 10000, icon: '🏢', name: 'אתר תדמית מלא',      desc: 'אתר תדמית מקצועי + דומיין — שווי ₪2,500' },
+    { xp: 25000, icon: '📣', name: 'חבילת שיווק דיגיטלי', desc: 'ניהול רשתות + קמפיין ממומן — שווי ₪5,000' },
+    { xp: 50000, icon: '✈️', name: 'כרטיס טיסה עסקית',   desc: 'כנס נדל"ן בינלאומי + כרטיס טיסה — שווי ₪10,000' },
   ],
 
   _d: null,
@@ -7476,24 +7713,30 @@ const Gamify = {
     document.getElementById('levelup-overlay').classList.remove('show');
   },
 
-  confetti() {
+  confetti(type = 'deal') {
     const container = document.getElementById('confetti-container');
     if (!container) return;
-    const colors = ['#C49A2A','#2563EB','#16A34A','#DC2626','#7C3AED','#F59E0B','#ffffff'];
-    for (let i = 0; i < 80; i++) {
+    const colors = ['#C49A2A','#2563EB','#16A34A','#DC2626','#7C3AED','#F59E0B','#ffffff','#FF6B6B','#4ECDC4'];
+    for (let i = 0; i < 110; i++) {
       const el = document.createElement('div');
       el.className = 'confetti-piece';
       el.style.cssText = `
         left: ${Math.random()*100}%;
         background: ${colors[Math.floor(Math.random()*colors.length)]};
-        width: ${6+Math.random()*8}px;
-        height: ${10+Math.random()*10}px;
-        animation-duration: ${1.5+Math.random()*2}s;
-        animation-delay: ${Math.random()*.8}s;
+        width: ${5+Math.random()*11}px;
+        height: ${9+Math.random()*14}px;
+        animation-duration: ${1.4+Math.random()*2.8}s;
+        animation-delay: ${Math.random()*1.1}s;
+        border-radius: ${Math.random()>.45?'50%':'3px'};
+        opacity: ${0.7+Math.random()*.3};
       `;
       container.appendChild(el);
     }
-    setTimeout(() => { container.innerHTML = ''; }, 4000);
+    const scoreEl = document.createElement('div');
+    scoreEl.className = 'confetti-score-emoji';
+    scoreEl.textContent = type === 'milestone' ? '🏆' : '🏀';
+    container.appendChild(scoreEl);
+    setTimeout(() => { container.innerHTML = ''; }, 4800);
   },
 
   getDailyChallenge() {
@@ -7743,6 +7986,7 @@ const Gamify = {
     set('milestone-prize-desc', m.desc);
     this._pendingMilestone = m;
     document.getElementById('milestone-overlay')?.classList.add('show');
+    this.confetti('milestone');
   },
 
   closeMilestone() {
@@ -8359,6 +8603,12 @@ const App = {
     if (!State.isDemo) setTimeout(() => Onboarding.show(), 800);
     // Show billing reminder for days 7-1 (not in demo)
     if (!State.isDemo) setTimeout(() => Billing.showDailyReminder(), 1500);
+    // Init motivation agent UI
+    MotivationAgent.init();
+    // Show guided tour for new users after onboarding is done
+    if (!State.isDemo && localStorage.getItem('onboarding_done') === '1' && !localStorage.getItem('liders_tour_v1')) {
+      setTimeout(() => GuidedTour.start(), 3500);
+    }
     // Init PIN lock
     AppLock._updateLockBtn();
     AppLock.initListeners();
@@ -12502,6 +12752,195 @@ const QuickLog = {
   },
 };
 window.QuickLog = QuickLog;
+
+/* ═══════════════════════════════════════════
+   TUTORIAL VIDEO MODULE
+═══════════════════════════════════════════ */
+const TutorialVideo = {
+  open() { document.getElementById('modal-tutorial')?.classList.remove('hidden'); },
+};
+
+/* ═══════════════════════════════════════════
+   MOTIVATION AGENT MODULE
+═══════════════════════════════════════════ */
+const MotivationAgent = {
+  _quotes: [
+    'כל ליד הוא הזדמנות. כל שיחה היא צעד קדימה. המשך כך! 💪',
+    'עסקאות לא נסגרות בישיבה — הן נסגרות בפעולה. קדימה! 🚀',
+    'המנהלי המצליחים ביותר שמעו "לא" כמה פעמים שאתה — ועדיין המשיכו.',
+    'כל יום שאתה בונה את הפייפליין, אתה בונה את העתיד שלך.',
+    'הצלחה היא הסכום של מאמצים קטנים שחוזרים יום אחרי יום.',
+  ],
+  _updateUI() {
+    const rem = AiLimits.remaining('motivation');
+    const usageEl = document.getElementById('motivation-usage');
+    const btn = document.getElementById('motivation-btn');
+    if (usageEl) usageEl.textContent = `${rem} מסרים נותרו היום`;
+    if (btn) btn.disabled = rem === 0;
+  },
+  async generate() {
+    if (State.isDemo) { toast('סוכן מוטיבציה זמין לאחר פתיחת חשבון', 'info'); return; }
+    if (!AiLimits.hasAiAccess()) { toast('הסוכן זמין בתקופת הניסיון — הירשם בחינם', 'info'); return; }
+    if (!AiLimits.canUse('motivation')) {
+      toast('הגעת למגבלת המוטיבציה היומית — חזור מחר! 🌅', 'info'); return;
+    }
+    const textEl = document.getElementById('motivation-text');
+    const btn = document.getElementById('motivation-btn');
+    if (textEl) { textEl.textContent = 'מייצר מסר אישי...'; textEl.classList.add('loading'); }
+    if (btn) btn.disabled = true;
+    try {
+      const d = Gamify.get();
+      const lv = Gamify.getLevel(d.xp);
+      const name = State.agent?.name?.split(' ')[0] || 'סוכן';
+      const msg = await AI.call([{ role:'user', content:
+        `אתה מאמן מכירות ישראלי אנרגטי. שמך "מוטי". כתוב מסר מוטיבציה קצר, אישי ומדויק (2-3 משפטים בלבד) לסוכן נדל"ן בשם ${name}.
+נתוניו: רמה "${lv.name}" (${d.xp} XP), ${d.leadsAdded} לידים שהוסף, ${d.dealsClosed} עסקאות שנסגרו, ${d.streak || 0} ימים רצופים.
+המסר: ישיר, אנרגטי, בגוף שני זכר. אל תגיד "כמובן" או "בהחלט". אל תתחיל ב"שלום".` }],
+        160, { type: 'motivation' }
+      );
+      if (textEl) { textEl.textContent = msg || this._fallback(); textEl.classList.remove('loading'); }
+      AiLimits.consume('motivation');
+      Gamify.event('use_ai');
+    } catch(e) {
+      if (textEl) { textEl.textContent = this._fallback(); textEl.classList.remove('loading'); }
+    }
+    this._updateUI();
+    if (btn) btn.disabled = false;
+  },
+  _fallback() {
+    return this._quotes[Math.floor(Math.random() * this._quotes.length)];
+  },
+  init() {
+    this._updateUI();
+    // In demo mode, hide motivation card
+    if (State.isDemo) {
+      const card = document.getElementById('motivation-card');
+      if (card) card.style.display = 'none';
+    }
+  },
+};
+
+/* ═══════════════════════════════════════════
+   GUIDED TOUR MODULE — first-time walkthrough
+═══════════════════════════════════════════ */
+const GuidedTour = {
+  _KEY: 'liders_tour_v1',
+  _step: 0,
+  STEPS: [
+    {
+      target: null,
+      emoji: '🎉',
+      title: 'ברוכים הבאים ל-Liders CRM!',
+      text: 'בוא נעשה סיור קצר של 30 שניות כדי שתדע בדיוק מה לעשות ואיפה הכל נמצא.',
+    },
+    {
+      target: '#fab-btn',
+      emoji: '➕',
+      title: 'הוסף ליד חדש',
+      text: 'הכפתור הכתום בפינה הימנית התחתונה הוא המקום להוספת לידים. זה הלב של המערכת!',
+    },
+    {
+      target: '[data-screen="pipeline"]',
+      emoji: '📋',
+      title: 'פייפליין המכירות שלך',
+      text: 'כאן תוכל לראות את כל הלידים מסודרים לפי שלב — מליד חדש ועד עסקה סגורה.',
+    },
+    {
+      target: '#gamify-widget',
+      emoji: '🏆',
+      title: 'צבור XP ורוח פרסים!',
+      text: 'כל פעולה מוסיפה XP. הגע ל-500 XP ותזכה באופניים חשמליות בשווי ₪2,000. רצינו.',
+    },
+    {
+      target: '[data-screen="marketing"]',
+      emoji: '🤖',
+      title: 'סוכני AI לשיווק',
+      text: 'כלי AI שכותבים בשבילך הצעות מחיר, פוסטים לרשתות, ומסרים ללקוחות — תוך שניות.',
+    },
+    {
+      target: null,
+      emoji: '🚀',
+      title: 'כל הכבוד! מוכן להתחיל?',
+      text: 'עכשיו אתה מכיר את המערכת. הוסף את הליד הראשון שלך ותתחיל לצבור XP!',
+      isLast: true,
+    },
+  ],
+
+  shouldShow() {
+    return !localStorage.getItem(this._KEY) && !State.isDemo;
+  },
+
+  start() {
+    if (!this.shouldShow()) return;
+    this._step = 0;
+    this._render();
+  },
+
+  _render() {
+    const step = this.STEPS[this._step];
+    // Remove previous highlight
+    document.querySelectorAll('.tour-highlight-pulse').forEach(el => el.classList.remove('tour-highlight-pulse'));
+
+    // Create/update overlay
+    let overlay = document.getElementById('tour-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'tour-overlay';
+      overlay.addEventListener('click', e => { if (e.target === overlay) {} });
+      document.body.appendChild(overlay);
+    }
+    overlay.style.display = '';
+
+    // Highlight target element
+    if (step.target) {
+      const targetEl = document.querySelector(step.target);
+      if (targetEl) {
+        targetEl.classList.add('tour-highlight-pulse');
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    // Create/update tooltip
+    let tooltip = document.getElementById('tour-tooltip');
+    if (tooltip) tooltip.remove();
+    tooltip = document.createElement('div');
+    tooltip.id = 'tour-tooltip';
+
+    const dots = this.STEPS.map((_, i) =>
+      `<div class="tour-dot ${i === this._step ? 'active' : ''}"></div>`
+    ).join('');
+
+    tooltip.innerHTML = `
+      <div class="tour-step-emoji">${step.emoji}</div>
+      <div class="tour-step-title">${step.title}</div>
+      <div class="tour-step-text">${step.text}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div class="tour-step-dots">${dots}</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="tour-skip-btn" onclick="GuidedTour.done(false)">דלג</button>
+          <button class="tour-next-btn" onclick="GuidedTour._next()">
+            ${step.isLast ? '🚀 בוא נתחיל!' : 'הבא ←'}
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(tooltip);
+  },
+
+  _next() {
+    if (this._step >= this.STEPS.length - 1) { this.done(true); return; }
+    this._step++;
+    this._render();
+  },
+
+  done(completed = true) {
+    localStorage.setItem(this._KEY, '1');
+    document.getElementById('tour-overlay')?.remove();
+    document.getElementById('tour-tooltip')?.remove();
+    document.querySelectorAll('.tour-highlight-pulse').forEach(el => el.classList.remove('tour-highlight-pulse'));
+    if (completed) toast('🎉 מוכן! הוסף את הליד הראשון שלך', 'success');
+  },
+};
 
 </script>
 <!-- ═══ SAVE PROCESSING OVERLAY ═══════════════════════════════ -->
