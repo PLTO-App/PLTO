@@ -1810,6 +1810,33 @@
     .aum-cta-btn:active { transform: scale(.97); }
     .aum-later-btn { display: block; width: 100%; background: none; border: none; color: var(--gray-400); font-size: 13px; cursor: pointer; font-family: inherit; padding: 6px; }
 
+    /* ── REFERRAL SCREEN ── */
+    .ref-header { background: linear-gradient(135deg,#0F1F3D 0%,#1e3a6e 100%); padding: 28px 20px 24px; color: #fff; text-align: center; border-radius: 0 0 24px 24px; margin-bottom: 20px; }
+    .ref-header-icon { font-size: 42px; margin-bottom: 8px; }
+    .ref-header-title { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
+    .ref-header-sub { font-size: 13px; opacity: .8; line-height: 1.5; }
+    .ref-code-card { background: var(--surface); border-radius: 16px; padding: 20px; margin: 0 16px 16px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+    .ref-code-label { font-size: 12px; color: var(--gray-500); font-weight: 600; margin-bottom: 8px; text-align: center; letter-spacing: .5px; }
+    .ref-code-box { display: flex; align-items: center; justify-content: space-between; background: var(--gray-50); border: 2px dashed var(--blue-300,#93C5FD); border-radius: 12px; padding: 14px 16px; cursor: pointer; }
+    .ref-code-text { font-size: 28px; font-weight: 900; letter-spacing: 6px; color: var(--navy-500); font-family: monospace; }
+    .ref-code-copy { font-size: 20px; }
+    .ref-share-row { display: flex; gap: 10px; margin: 12px 0 0; }
+    .ref-btn-wa { flex: 1; background: #25D366; color: #fff; border: none; border-radius: 12px; padding: 13px 10px; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .ref-btn-copy { flex: 1; background: var(--gray-100); color: var(--navy-500); border: none; border-radius: 12px; padding: 13px 10px; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; }
+    .ref-how-card { background: var(--surface); border-radius: 16px; padding: 18px 20px; margin: 0 16px 16px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+    .ref-how-title { font-size: 14px; font-weight: 800; color: var(--navy-500); margin-bottom: 14px; }
+    .ref-how-step { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+    .ref-how-num { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg,#0F1F3D,#2563EB); color: #fff; font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ref-how-text { font-size: 13px; color: var(--gray-600); line-height: 1.5; padding-top: 4px; }
+    .ref-reward-card { background: linear-gradient(135deg,rgba(37,99,235,.07),rgba(245,158,11,.06)); border: 1px solid rgba(37,99,235,.18); border-radius: 16px; padding: 16px 20px; margin: 0 16px 16px; }
+    .ref-reward-title { font-size: 13px; font-weight: 800; color: var(--navy-500); margin-bottom: 12px; text-align: center; }
+    .ref-reward-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 13px; color: var(--gray-700); }
+    .ref-reward-badge { background: #0F1F3D; color: #fff; border-radius: 8px; padding: 4px 10px; font-size: 12px; font-weight: 800; white-space: nowrap; }
+    .ref-stats-card { background: var(--surface); border-radius: 16px; padding: 16px 20px; margin: 0 16px 20px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+    .ref-stats-row { display: flex; justify-content: space-around; text-align: center; }
+    .ref-stat-val { font-size: 26px; font-weight: 900; color: var(--navy-500); }
+    .ref-stat-lbl { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+
     /* ── XP Store ── */
     .xps-header { background: linear-gradient(135deg,#0F1F3D 0%,#1e3a6e 100%); padding: 20px 20px 14px; color: #fff; }
     .xps-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
@@ -2681,6 +2708,10 @@
 ═══════════════════════════════════════ -->
 <div id="screen-login">
   <div class="login-card">
+    <div id="ref-welcome-banner" style="display:none;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border-radius:12px;padding:12px 16px;margin-bottom:16px;text-align:center;font-size:13px;font-weight:700;line-height:1.5;">
+      🎁 הגעת עם קוד המלצה של חבר!<br>
+      <span style="font-weight:400;opacity:.9;">תקבל 20% הנחה על החודש הראשון — ממתין לך בהרשמה</span>
+    </div>
     <div class="login-logo">
       <div class="login-logo-text">Liders<span>.</span></div>
       <div class="login-tagline">הפלטפורמה שהופכת לידים לעסקאות</div>
@@ -2818,6 +2849,9 @@
       </a>
       <a class="nav-item" data-screen="xp-store" onclick="App.go('xp-store')" style="background:linear-gradient(135deg,rgba(245,158,11,0.14),rgba(251,191,36,0.07));border:1px solid rgba(245,158,11,0.25);border-radius:8px;margin-top:4px;">
         <span class="nav-icon">🏆</span> <span style="background:linear-gradient(135deg,#D97706,#F59E0B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;">חנות XP</span>
+      </a>
+      <a class="nav-item" data-screen="referral" onclick="App.go('referral')" style="background:linear-gradient(135deg,rgba(22,163,74,0.12),rgba(16,185,129,0.06));border:1px solid rgba(22,163,74,0.22);border-radius:8px;margin-top:4px;">
+        <span class="nav-icon">🎁</span> <span style="background:linear-gradient(135deg,#15803d,#16a34a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;">הזמן חבר</span>
       </a>
     </div>
     <div class="sidebar-footer">
@@ -3687,6 +3721,63 @@
       <div class="xps-grid" id="xps-grid"></div>
       <div style="text-align:center;padding:16px 0 8px;font-size:11px;color:var(--gray-400);">
         המחירים הם מחירי השקה ועשויים לעלות בהמשך • XP נצבר ממימוש אמיתי במערכת בלבד
+      </div>
+    </div>
+
+    <!-- ── REFERRAL SCREEN ── -->
+    <div id="screen-referral" class="screen hidden">
+      <div class="ref-header">
+        <div class="ref-header-icon">🎁</div>
+        <div class="ref-header-title">הזמן חבר — שניכם מרוויחים</div>
+        <div class="ref-header-sub">שתף את הקוד האישי שלך<br>החבר מקבל הנחה — אתה מקבל בונוס</div>
+      </div>
+      <div class="ref-code-card">
+        <div class="ref-code-label">הקוד האישי שלך</div>
+        <div class="ref-code-box" onclick="Referral.copyCode()">
+          <span class="ref-code-text" id="ref-code-display">------</span>
+          <span class="ref-code-copy">📋</span>
+        </div>
+        <div class="ref-share-row">
+          <button class="ref-btn-wa" onclick="Referral.shareWhatsApp()">
+            <span>📲</span> שלח בוואטסאפ
+          </button>
+          <button class="ref-btn-copy" onclick="Referral.copyLink()">🔗 העתק קישור</button>
+        </div>
+      </div>
+      <div class="ref-reward-card">
+        <div class="ref-reward-title">מה כל אחד מקבל?</div>
+        <div class="ref-reward-row">
+          <span class="ref-reward-badge">החבר שלך</span>
+          <span>20% הנחה על החודש הראשון 💸</span>
+        </div>
+        <div class="ref-reward-row">
+          <span class="ref-reward-badge">אתה</span>
+          <span>+500 XP לחנות הפרסים + חודש מתנה 🎯</span>
+        </div>
+        <div style="font-size:11px;color:var(--gray-400);margin-top:8px;text-align:center;">חודש מתנה יופעל אוטומטית כשמערכת התשלומים תהיה זמינה</div>
+      </div>
+      <div class="ref-how-card">
+        <div class="ref-how-title">איך זה עובד?</div>
+        <div class="ref-how-step">
+          <div class="ref-how-num">1</div>
+          <div class="ref-how-text"><strong>שלח את הקוד</strong> לחבר, שותף, או קולגה שעובד בנדל"ן / מכירות</div>
+        </div>
+        <div class="ref-how-step">
+          <div class="ref-how-num">2</div>
+          <div class="ref-how-text"><strong>החבר נרשם</strong> עם הקוד שלך ומקבל 20% הנחה על החודש הראשון אוטומטית</div>
+        </div>
+        <div class="ref-how-step" style="margin-bottom:0">
+          <div class="ref-how-num">3</div>
+          <div class="ref-how-text"><strong>שניכם מרוויחים</strong> — הוא מתחיל לסגור יותר עסקאות, אתה מקבל בונוס</div>
+        </div>
+      </div>
+      <div class="ref-stats-card">
+        <div class="ref-how-title" style="text-align:center;margin-bottom:16px;">הסטטיסטיקות שלי</div>
+        <div class="ref-stats-row">
+          <div><div class="ref-stat-val" id="ref-stat-referrals">0</div><div class="ref-stat-lbl">חברים הצטרפו</div></div>
+          <div><div class="ref-stat-val" id="ref-stat-xp">0</div><div class="ref-stat-lbl">XP מהפניות</div></div>
+          <div><div class="ref-stat-val" id="ref-stat-shares">0</div><div class="ref-stat-lbl">פעמים ששיתפת</div></div>
+        </div>
       </div>
     </div>
 
@@ -7660,6 +7751,7 @@ const Gamify = {
     log_activity:   8,
     daily_login:    5,
     rescue_cold:   25,
+    refer_share:   30,
   },
   ACHIEVEMENTS: [
     { id:'first_lead',   icon:'🎯', name:'ליד ראשון',        desc:'הליד הראשון נוסף למערכת',            xp:12,  check: d => d.leadsAdded >= 1   },
@@ -8670,6 +8762,118 @@ const DemoLock = {
   },
 };
 
+const Referral = {
+  _KEY: 'liders_referral_v1',
+
+  _data() {
+    try { return JSON.parse(localStorage.getItem(this._KEY) || '{}'); } catch { return {}; }
+  },
+  _save(d) { localStorage.setItem(this._KEY, JSON.stringify(d)); },
+
+  // Deterministic 6-char code from user email — same code across sessions
+  _genCode(email) {
+    const src = (email || Math.random().toString()).toUpperCase();
+    let h = 5381;
+    for (const c of src) h = Math.imul((h << 5) + h, 1) ^ c.charCodeAt(0);
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '', n = Math.abs(h >>> 0);
+    for (let i = 0; i < 6; i++) { code += chars[n % chars.length]; n = Math.floor(n / chars.length); }
+    return code;
+  },
+
+  getCode() {
+    const d = this._data();
+    if (!d.code) {
+      d.code = this._genCode(State.user?.email || '');
+      d.referrals = 0; d.xpFromReferrals = 0; d.shares = 0;
+      this._save(d);
+    }
+    return d.code;
+  },
+
+  renderScreen() {
+    const code = this.getCode();
+    const d    = this._data();
+    const el   = document.getElementById('ref-code-display');
+    if (el) el.textContent = code;
+    const sr = document.getElementById('ref-stat-referrals');
+    const sx = document.getElementById('ref-stat-xp');
+    const ss = document.getElementById('ref-stat-shares');
+    if (sr) sr.textContent = d.referrals  || 0;
+    if (sx) sx.textContent = d.xpFromReferrals || 0;
+    if (ss) ss.textContent = d.shares || 0;
+  },
+
+  _link() {
+    const code = this.getCode();
+    return `https://liders-crm.com/?ref=${code}`;
+  },
+
+  _waMessage() {
+    const code = this.getCode();
+    return `היי! אני עובד עם Liders CRM — הכלי שניהל לי את כל הפייפליין ועזר לסגור יותר עסקאות 🚀\n\nתנסה חינם 30 יום עם קוד ההמלצה שלי ותקבל 20% הנחה על החודש הראשון:\n\n🔑 קוד: *${code}*\n🔗 כניסה: ${this._link()}`;
+  },
+
+  shareWhatsApp() {
+    const d = this._data();
+    d.shares = (d.shares || 0) + 1;
+    this._save(d);
+    const sr = document.getElementById('ref-stat-shares');
+    if (sr) sr.textContent = d.shares;
+    Gamify.event('refer_share');
+    const url = `https://wa.me/?text=${encodeURIComponent(this._waMessage())}`;
+    window.open(url, '_blank');
+  },
+
+  copyLink() {
+    const d = this._data();
+    d.shares = (d.shares || 0) + 1;
+    this._save(d);
+    const sr = document.getElementById('ref-stat-shares');
+    if (sr) sr.textContent = d.shares;
+    Gamify.event('refer_share');
+    navigator.clipboard.writeText(this._link()).then(() => {
+      toast('✅ הקישור הועתק! שתף עם חבר 🔗', 'success');
+    }).catch(() => {
+      toast(`קישור: ${this._link()}`, 'info', 5000);
+    });
+  },
+
+  copyCode() {
+    navigator.clipboard.writeText(this.getCode()).then(() => {
+      toast('✅ הקוד הועתק!', 'success');
+    }).catch(() => {});
+  },
+
+  // Called on page load and after auth — save ?ref= code and show banner on login screen
+  checkInboundRef() {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref && ref.length >= 4) {
+      localStorage.setItem('liders_inbound_ref', ref.toUpperCase().trim());
+    }
+    const saved = localStorage.getItem('liders_inbound_ref');
+    if (saved) {
+      const banner = document.getElementById('ref-welcome-banner');
+      if (banner) banner.style.display = 'block';
+    }
+  },
+
+  // Award XP to referrer when a friend confirms joining (called manually by admin or future webhook)
+  awardReferral() {
+    const d = this._data();
+    d.referrals = (d.referrals || 0) + 1;
+    d.xpFromReferrals = (d.xpFromReferrals || 0) + 500;
+    this._save(d);
+    Gamify.get().xp += 500;
+    Gamify.save();
+    Gamify.renderSidebar();
+    Gamify.renderWidget();
+    toast('🎉 חבר שהזמנת הצטרף! +500 XP נוספו לחשבונך', 'success', 4000);
+    this.renderScreen();
+  },
+};
+
 const AnnualUpsell = {
   _KEY: 'liders_annual_v1',
 
@@ -9080,6 +9284,7 @@ const App = {
       case 'marketing':   Marketing.render();      break;
       case 'pro':         ProHub.render();         break;
       case 'xp-store':    Gamify.renderStore();    break;
+      case 'referral':    Referral.renderScreen(); break;
     }
     window.scrollTo(0, 0);
   },
@@ -12073,6 +12278,7 @@ sbClient.auth.onAuthStateChange((event, session) => {
           App._showApp();
           document.getElementById('support-fab-btn')?.classList.remove('hidden');
           setTimeout(() => Gamify.init(), 800);
+          Referral.checkInboundRef();
           overlay.classList.add('fade-out');
           setTimeout(() => overlay.classList.add('hidden'), 520);
         } catch(e) {
@@ -12163,6 +12369,9 @@ window.DemoLock   = DemoLock;
     if (document.hidden) show(); else hide();
   });
 })();
+
+// Check for inbound referral code immediately on page load
+Referral.checkInboundRef();
 
 // ═══════════════════════════════════════
 // SERVICE WORKER
