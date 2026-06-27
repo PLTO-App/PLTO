@@ -5700,6 +5700,7 @@ function toast(msg, type='') {
 const AI = {
   async call(messages, maxTokens = 400, opts = {}) {
     if (State.isDemo) throw Object.assign(new Error('demo_locked'), { isDemo: true });
+    if (!AiLimits.hasAiAccess()) throw new Error('⏰ תקופת הניסיון הסתיימה — שדרג לתוסף ה-AI (₪100/חודש)');
     const type = opts.type || 'general';
     if (!AiLimits.canUse(type)) {
       const lim = AiLimits._lim()[type];
@@ -10466,7 +10467,7 @@ async function quickDeleteProp(id) {
     await DB.deleteProperty(id);
     State.properties = State.properties.filter(p => p.id !== id);
     toast('🗑 הנכס נמחק', 'success');
-    PropertiesScreen.render();
+    if (State.screen === 'properties') PropertiesScreen.render();
   } catch(e) {
     toast('שגיאה במחיקה: ' + e.message, 'error');
   }
@@ -11492,7 +11493,6 @@ const QuickLog = {
 
       const raw = (fn?.content || '').replace(/```json?\n?/g,'').replace(/```/g,'').trim();
       this._parsed = JSON.parse(raw);
-      AiLimits.consume('quicklog');
 
       const name = (this._parsed.lead_name || '').toLowerCase().trim();
       if (!name || name.length < 2) {
@@ -11599,6 +11599,7 @@ const QuickLog = {
         (this._parsed.next_action ? `\n🎯 הצעד הבא: ${this._parsed.next_action}` : '');
 
       const act = await DB.addActivity({ lead_id: this._leadId, type: typeMap[this._parsed.activity_type]||'note', content });
+      AiLimits.consume('quicklog');
       State.activities.unshift(act);
 
       const upd = this._parsed.updates || {};
@@ -11634,7 +11635,9 @@ const QuickLog = {
           : '';
         const locPart = mtg.location ? ` ב${mtg.location}` : '';
         const waMsg = `שלום ${lead.name} 😊\nנקבעה פגישתנו${mtgDateStr ? ` ל${mtgDateStr}` : ''}${locPart}.\nמאשר/ת? ✅ כן / ❌ לא מתאים`;
-        document.getElementById('ql-gcal-btn').href = gcalUrl;
+        const gcalBtn = document.getElementById('ql-gcal-btn');
+        if (mtg.date_iso) { gcalBtn.href = gcalUrl; gcalBtn.style.display = ''; }
+        else gcalBtn.style.display = 'none';
         document.getElementById('ql-wa-btn').href = `https://wa.me/972${phone}?text=${encodeURIComponent(waMsg)}`;
         mtgActions.classList.remove('hidden');
       } else {
