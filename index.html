@@ -1786,6 +1786,30 @@
     .gamify-prize-reached-tag { font-size: 10px; color: #F0C040; font-weight: 800; }
     .gamify-prize-claimed-tag { font-size: 10px; color: #4ade80; font-weight: 800; }
 
+    /* ── Annual Upsell Modal ── */
+    .annual-upsell-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 9000; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .3s; }
+    .annual-upsell-backdrop.show { opacity: 1; pointer-events: auto; }
+    .annual-upsell-card { background: var(--surface); border-radius: 24px 24px 0 0; padding: 28px 24px 32px; width: 100%; max-width: 480px; position: relative; transform: translateY(40px); transition: transform .35s cubic-bezier(.22,.61,.36,1); }
+    .annual-upsell-backdrop.show .annual-upsell-card { transform: translateY(0); }
+    .annual-upsell-x { position: absolute; top: 16px; left: 16px; background: var(--gray-100); border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 13px; cursor: pointer; color: var(--gray-500); font-family: inherit; }
+    .aum-icon { font-size: 44px; text-align: center; margin-bottom: 10px; }
+    .aum-title { font-size: 18px; font-weight: 900; color: var(--navy-500); text-align: center; margin-bottom: 12px; }
+    .aum-body { font-size: 13px; color: var(--gray-600); line-height: 1.6; margin-bottom: 18px; }
+    .aum-body p { margin: 0 0 10px; text-align: center; }
+    .aum-saving-card { background: linear-gradient(135deg,var(--blue-50),#f0f9ff); border: 1px solid var(--blue-100); border-radius: 12px; padding: 14px 16px; }
+    .aum-saving-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--gray-600); padding: 4px 0; }
+    .aum-annual-row { font-weight: 800; color: var(--navy-500); font-size: 13px; border-top: 1px dashed var(--blue-100); margin-top: 4px; padding-top: 8px; }
+    .aum-saving-highlight { margin-top: 8px; font-size: 12px; font-weight: 700; color: var(--green-700,#15803d); text-align: center; background: var(--green-50,#f0fdf4); border-radius: 6px; padding: 6px; }
+    .aum-roi-card { display: flex; align-items: center; justify-content: center; gap: 16px; background: var(--gray-50); border-radius: 12px; padding: 14px; margin-bottom: 4px; }
+    .aum-roi-item { text-align: center; }
+    .aum-roi-val { font-size: 20px; font-weight: 900; color: var(--navy-500); }
+    .aum-roi-green { color: var(--green-600,#16a34a) !important; }
+    .aum-roi-label { font-size: 10px; color: var(--gray-500); margin-top: 2px; }
+    .aum-roi-sep { font-size: 11px; font-weight: 700; color: var(--gray-400); }
+    .aum-cta-btn { display: block; width: 100%; background: linear-gradient(135deg,#0F1F3D,#2563EB); color: #fff; border: none; border-radius: 14px; padding: 15px; font-size: 15px; font-weight: 800; cursor: pointer; font-family: inherit; margin-bottom: 10px; transition: .15s; }
+    .aum-cta-btn:active { transform: scale(.97); }
+    .aum-later-btn { display: block; width: 100%; background: none; border: none; color: var(--gray-400); font-size: 13px; cursor: pointer; font-family: inherit; padding: 6px; }
+
     /* ── XP Store ── */
     .xps-header { background: linear-gradient(135deg,#0F1F3D 0%,#1e3a6e 100%); padding: 20px 20px 14px; color: #fff; }
     .xps-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
@@ -3667,6 +3691,18 @@
     </div>
 
   </main>
+
+  <!-- ANNUAL UPSELL MODAL -->
+  <div class="annual-upsell-backdrop" id="annual-upsell-modal" onclick="AnnualUpsell.dismiss()">
+    <div class="annual-upsell-card" onclick="event.stopPropagation()">
+      <button class="annual-upsell-x" onclick="AnnualUpsell.dismiss()">✕</button>
+      <div class="aum-icon" id="aum-icon">🌟</div>
+      <div class="aum-title" id="aum-title"></div>
+      <div class="aum-body" id="aum-body"></div>
+      <button class="aum-cta-btn" id="aum-cta" onclick="AnnualUpsell.interest()"></button>
+      <button class="aum-later-btn" onclick="AnnualUpsell.dismiss()">אשמח לשמוע בהמשך</button>
+    </div>
+  </div>
 
   <!-- BOTTOM NAV (mobile) -->
   <nav id="bottom-nav">
@@ -5626,32 +5662,38 @@ const Billing = {
     {
       id: 'basic',
       name: 'Solo',
-      price: 149,
-      priceLabel: '₪149',
+      price: 249,
+      priceLabel: '₪249',
       desc: 'לסוכן עצמאי',
-      features: ['סוכן 1 בלבד', 'עד 200 לידים פעילים', 'לוח Kanban', 'תזכורות WhatsApp', 'אפליקציה מובייל', 'ניסיון חינם 30 יום'],
+      features: ['סוכן 1 בלבד', 'עד 200 לידים פעילים', 'לוח Kanban + פייפליין', 'תזכורות WhatsApp', 'אפליקציה מובייל', 'ניסיון חינם 30 יום'],
       featured: false,
       agentLimit: '1 סוכן · 200 לידים',
+      annualMonthly: 207,
+      annualTotal: 2490,
     },
     {
       id: 'pro',
       name: 'צוות',
-      price: 299,
-      priceLabel: '₪299',
+      price: 449,
+      priceLabel: '₪449',
       desc: 'לצוות קטן',
-      features: ['עד 5 סוכנים', 'עד 1,000 לידים פעילים', 'לוח Kanban', 'תזכורות WhatsApp', 'אפליקציה מובייל'],
+      features: ['עד 5 סוכנים', 'עד 1,000 לידים פעילים', 'לוח Kanban + פייפליין', 'תזכורות WhatsApp', 'אפליקציה מובייל', 'AI שיווקי מתקדם'],
       featured: true,
       agentLimit: '5 סוכנים · 1,000 לידים',
+      annualMonthly: 374,
+      annualTotal: 4490,
     },
     {
       id: 'premium',
       name: 'סוכנות',
-      price: 549,
-      priceLabel: '₪549',
+      price: 649,
+      priceLabel: '₪649',
       desc: 'לסוכנות נדל"ן',
-      features: ['סוכנים ללא הגבלה', 'לידים ללא הגבלה', 'לוח Kanban', 'תזכורות WhatsApp', 'אפליקציה מובייל'],
+      features: ['סוכנים ללא הגבלה', 'לידים ללא הגבלה', 'לוח Kanban + פייפליין', 'תזכורות WhatsApp', 'אפליקציה מובייל', 'AI שיווקי מתקדם'],
       featured: false,
       agentLimit: 'ללא הגבלה',
+      annualMonthly: 541,
+      annualTotal: 6490,
     },
   ],
 
@@ -5797,7 +5839,7 @@ const Billing = {
         </p>
         <div style="display:flex;flex-direction:column;gap:10px;">
           <button class="btn btn-primary" onclick="Billing.openCheckout('basic');document.getElementById('modal-billing-reminder').remove();" style="padding:14px;">
-            הוסף פרטי תשלום — מ-₪199/חודש
+            הוסף פרטי תשלום — מ-₪249/חודש
           </button>
           <button class="btn btn-ghost" onclick="document.getElementById('modal-billing-reminder').remove();" style="font-size:13px;">
             תזכיר לי מאוחר יותר
@@ -7753,7 +7795,7 @@ const Gamify = {
     const prevLevel = this.getLevel(d.xp);
     d.xp += pts;
     if (type === 'add_lead')      { d.leadsAdded++;      d.acLeads++;  }
-    if (type === 'close_deal')    { d.dealsClosed++;      if (leadId) d.acClosed.push(leadId);   this.confetti(); }
+    if (type === 'close_deal')    { d.dealsClosed++;      if (leadId) d.acClosed.push(leadId);   this.confetti(); if (d.dealsClosed === 1) setTimeout(() => AnnualUpsell.tryShow('first_deal'), 4000); }
     if (type === 'advance_stage') { if (leadId) d.acAdvanced.push(leadId); this.targetHit(); }
     if (type === 'complete_task') { d.tasksCompleted++;   d.acTasks++;  }
     if (type === 'use_ai')        { d.aiUses++;           d.acAi++;     }
@@ -7785,6 +7827,8 @@ const Gamify = {
     this.renderSidebar();
     this.renderWidget();
     if (d.streak > 1) toast(`🔥 ${d.streak} ימים רצופים! +${this.XP.daily_login} XP`, 'success');
+    if (d.streak === 10) setTimeout(() => AnnualUpsell.tryShow('streak_10'), 3000);
+    if (d.streak === 30) setTimeout(() => AnnualUpsell.tryShow('streak_30'), 3000);
   },
 
   checkAchievements() {
@@ -8622,6 +8666,126 @@ const DemoLock = {
     document.getElementById('app-shell')?.classList.add('hidden');
     document.getElementById('screen-login')?.classList.remove('hidden');
     State.isDemo = false;
+  },
+};
+
+const AnnualUpsell = {
+  _KEY: 'liders_annual_v1',
+
+  _data() {
+    try { return JSON.parse(localStorage.getItem(this._KEY) || '{}'); } catch { return {}; }
+  },
+  _save(obj) { localStorage.setItem(this._KEY, JSON.stringify(obj)); },
+
+  _isEligible() {
+    if (State.isDemo) return false;
+    const gd = Gamify.get();
+    // Only surface after at least 10 days of actual usage
+    return (gd.streak || 0) >= 10 || (gd.dayCount || 0) >= 10;
+  },
+
+  tryShow(trigger) {
+    if (!this._isEligible()) return;
+    const data = this._data();
+    if (data.interest) return;                      // already expressed interest
+    if (data.dismissed >= 3) return;               // dismissed too many times
+    const shown = data.shown || {};
+    if (shown[trigger]) return;                    // already shown this specific trigger
+    // Space out: don't show within 3 days of last modal
+    if (data.lastShown) {
+      const daysSince = (Date.now() - data.lastShown) / 864e5;
+      if (daysSince < 3) return;
+    }
+    setTimeout(() => this.show(trigger), 1800);
+  },
+
+  show(trigger) {
+    const VARIANTS = {
+      streak_10: {
+        icon:  '🌟',
+        title: '10 ימים רצופים — כל הכבוד!',
+        body:  `<p style="color:var(--gray-600);line-height:1.6;margin:0 0 14px;">אתה משתמש ב-CRM בצורה מדהימה. כדי לתת לך עוד ערך — רצינו לספר שבקרוב נוציא <strong>מנוי שנתי</strong> שכולל את כל תוספות השיווק ב-AI בחינם.</p>
+          <div class="aum-saving-card">
+            <div class="aum-saving-row"><span>מנוי חודשי Solo</span><span>₪249/חודש</span></div>
+            <div class="aum-saving-row"><span>מנוי שנתי + שיווק AI</span><span class="aum-annual-row">₪207/חודש</span></div>
+            <div class="aum-saving-highlight">חיסכון של ₪504 בשנה — ותוספת שיווק AI בחינם 🎁</div>
+          </div>`,
+        cta:   'עניין אותי — תעדכנו אותי 📬',
+      },
+      first_deal: {
+        icon:  '🎉',
+        title: 'סגרת עסקה! ה-CRM עבד בשבילך',
+        body:  `<p style="color:var(--gray-600);line-height:1.6;margin:0 0 14px;">עמלה ממוצעת על עסקת נדל"ן היא ₪15,000–₪25,000. ה-CRM שלך עזר לך להגיע לשם — ולשמחתנו זה רק ההתחלה.</p>
+          <div class="aum-roi-card">
+            <div class="aum-roi-item"><div class="aum-roi-val aum-roi-green">₪15,000+</div><div>עמלה ממוצעת</div></div>
+            <div class="aum-roi-sep">÷</div>
+            <div class="aum-roi-item"><div class="aum-roi-val">₪249</div><div>עלות CRM לחודש</div></div>
+            <div class="aum-roi-sep">=</div>
+            <div class="aum-roi-item"><div class="aum-roi-val aum-roi-green">60×</div><div>החזר על ההשקעה</div></div>
+          </div>
+          <p style="color:var(--gray-500);font-size:13px;margin:12px 0 0;text-align:center;">בקרוב: מנוי שנתי + כלי AI לשיווק — כדי לסגור עוד עסקאות כאלה 🚀</p>`,
+        cta:   'מעניין אותי לשמוע יותר 📬',
+      },
+      streak_30: {
+        icon:  '💎',
+        title: 'חודש רצוף — אתה אחד מ-1%!',
+        body:  `<p style="color:var(--gray-600);line-height:1.6;margin:0 0 14px;">30 ימים רצופים זה לא מקרה — זו הרגל עסקית אמיתית. בשביל אנשים כמוך בנינו את <strong>מנוי Pro השנתי</strong>:</p>
+          <div class="aum-saving-card">
+            <div class="aum-saving-row"><span>Pro חודשי × 12</span><span>₪5,388/שנה</span></div>
+            <div class="aum-saving-row"><span>Pro שנתי + שיווק AI</span><span class="aum-annual-row">₪4,490/שנה</span></div>
+            <div class="aum-saving-highlight">חיסכון של ₪898 + כלי שיווק AI ללא הגבלה 🏆</div>
+          </div>`,
+        cta:   'שמרו לי מקום ברשימה 📬',
+      },
+      settings_cta: {
+        icon:  '📅',
+        title: 'מנוי שנתי — בקרוב',
+        body:  `<p style="color:var(--gray-600);line-height:1.6;margin:0 0 14px;">אנחנו בונים את מסלול המנוי השנתי עם כלי שיווק AI כלולים. כשיהיה מוכן — תקבל הודעה ראשון.</p>
+          <div class="aum-saving-card">
+            <div class="aum-saving-row"><span>Solo שנתי + שיווק AI</span><span class="aum-annual-row">₪207/חודש</span></div>
+            <div class="aum-saving-row"><span>Pro שנתי + שיווק AI</span><span class="aum-annual-row">₪374/חודש</span></div>
+            <div class="aum-saving-row"><span>סוכנות שנתי + שיווק AI</span><span class="aum-annual-row">₪541/חודש</span></div>
+            <div class="aum-saving-highlight">חיסכון של עד 20% + תוספת שיווק AI בחינם 🎁</div>
+          </div>`,
+        cta:   'עדכנו אותי כשזה יוצא 📬',
+      },
+    };
+
+    const v = VARIANTS[trigger] || VARIANTS.settings_cta;
+    document.getElementById('aum-icon').textContent  = v.icon;
+    document.getElementById('aum-title').textContent = v.title;
+    document.getElementById('aum-body').innerHTML    = v.body;
+    document.getElementById('aum-cta').textContent   = v.cta;
+
+    const data = this._data();
+    const shown = data.shown || {};
+    shown[trigger] = Date.now();
+    data.shown = shown;
+    data.lastShown = Date.now();
+    data.dismissed = (data.dismissed || 0);
+    this._save(data);
+
+    document.getElementById('annual-upsell-modal').classList.add('show');
+    document.body.style.overflow = 'hidden';
+  },
+
+  interest() {
+    const data = this._data();
+    data.interest = Date.now();
+    data.interestEmail = State.user?.email || '';
+    this._save(data);
+    document.getElementById('annual-upsell-modal').classList.remove('show');
+    document.body.style.overflow = '';
+    toast('✅ נשמר! ניצור איתך קשר כשמנוי שנתי יהיה זמין 📞', 'success', 4500);
+  },
+
+  dismiss() {
+    const data = this._data();
+    data.dismissed = (data.dismissed || 0) + 1;
+    data.lastDismissed = Date.now();
+    this._save(data);
+    document.getElementById('annual-upsell-modal').classList.remove('show');
+    document.body.style.overflow = '';
   },
 };
 
@@ -10521,13 +10685,18 @@ const Settings = {
             🚀 <strong>מחירי השקה</strong> — המחירים צפויים לעלות בהמשך
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn btn-ghost btn-sm" onclick="Billing.openCheckout('basic')" style="flex:1;min-width:80px;">Basic<br><span style="font-size:10px;opacity:.7;">₪199 · 1 סוכן</span></button>
-            <button class="btn btn-ghost btn-sm" onclick="Billing.openCheckout('pro')" style="flex:1;min-width:80px;">Pro<br><span style="font-size:10px;opacity:.7;">₪349 · עד 5</span></button>
-            <button class="btn btn-primary btn-sm" onclick="Billing.openCheckout('premium')" style="flex:1;min-width:80px;">Premium ⭐<br><span style="font-size:10px;opacity:.8;">₪549 · עד 10</span></button>
+            <button class="btn btn-ghost btn-sm" onclick="Billing.openCheckout('basic')" style="flex:1;min-width:80px;">Solo<br><span style="font-size:10px;opacity:.7;">₪249 · 1 סוכן</span></button>
+            <button class="btn btn-ghost btn-sm" onclick="Billing.openCheckout('pro')" style="flex:1;min-width:80px;">צוות<br><span style="font-size:10px;opacity:.7;">₪449 · עד 5</span></button>
+            <button class="btn btn-primary btn-sm" onclick="Billing.openCheckout('premium')" style="flex:1;min-width:80px;">סוכנות ⭐<br><span style="font-size:10px;opacity:.8;">₪649 · ללא הגבלה</span></button>
           </div>
+          ${(Gamify.get()?.streak||0) >= 10 ? `
+          <div style="margin-top:10px;background:linear-gradient(135deg,rgba(37,99,235,.07),rgba(15,31,61,.05));border:1px solid rgba(37,99,235,.2);border-radius:10px;padding:10px 12px;cursor:pointer;" onclick="AnnualUpsell.tryShow('settings_cta')">
+            <div style="font-size:12px;font-weight:800;color:var(--blue-600);margin-bottom:2px;">📅 מנוי שנתי + שיווק — מגיע לך</div>
+            <div style="font-size:11px;color:var(--gray-500);">₪207/חודש במקום ₪349 · חיסכון ₪1,700 בשנה</div>
+          </div>` : `
           <div style="margin-top:10px;font-size:11px;color:var(--gray-500);text-align:center;">
             📅 מינוי שנתי — בקרוב | חיסכון עד 20% לעומת חיוב חודשי
-          </div>
+          </div>`}
         </div>
         `}
         <div class="settings-row" style="flex-direction:column; align-items:stretch; cursor:default;">
