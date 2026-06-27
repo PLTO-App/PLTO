@@ -3752,7 +3752,7 @@
         </div>
         <div class="ref-reward-row">
           <span class="ref-reward-badge">אתה</span>
-          <span>+500 XP לחנות הפרסים + חודש מתנה 🎯</span>
+          <span>+800 XP לחנות הפרסים + חודש מתנה 🎯</span>
         </div>
         <div style="font-size:11px;color:var(--gray-400);margin-top:8px;text-align:center;">חודש מתנה יופעל אוטומטית כשמערכת התשלומים תהיה זמינה</div>
       </div>
@@ -3775,8 +3775,8 @@
         <div class="ref-how-title" style="text-align:center;margin-bottom:16px;">הסטטיסטיקות שלי</div>
         <div class="ref-stats-row">
           <div><div class="ref-stat-val" id="ref-stat-referrals">0</div><div class="ref-stat-lbl">חברים הצטרפו</div></div>
-          <div><div class="ref-stat-val" id="ref-stat-xp">0</div><div class="ref-stat-lbl">XP מהפניות</div></div>
-          <div><div class="ref-stat-val" id="ref-stat-shares">0</div><div class="ref-stat-lbl">פעמים ששיתפת</div></div>
+          <div><div class="ref-stat-val" id="ref-stat-xp" style="color:var(--gold-500,#D97706);">0</div><div class="ref-stat-lbl">XP נצבר מהפניות</div></div>
+          <div><div class="ref-stat-val" style="color:var(--green-600,#16a34a);">×800</div><div class="ref-stat-lbl">XP לכל הצטרפות</div></div>
         </div>
       </div>
     </div>
@@ -7751,7 +7751,7 @@ const Gamify = {
     log_activity:   8,
     daily_login:    5,
     rescue_cold:   25,
-    refer_share:   30,
+    refer_joined:  800,
   },
   ACHIEVEMENTS: [
     { id:'first_lead',   icon:'🎯', name:'ליד ראשון',        desc:'הליד הראשון נוסף למערכת',            xp:12,  check: d => d.leadsAdded >= 1   },
@@ -8798,10 +8798,8 @@ const Referral = {
     if (el) el.textContent = code;
     const sr = document.getElementById('ref-stat-referrals');
     const sx = document.getElementById('ref-stat-xp');
-    const ss = document.getElementById('ref-stat-shares');
-    if (sr) sr.textContent = d.referrals  || 0;
+    if (sr) sr.textContent = d.referrals      || 0;
     if (sx) sx.textContent = d.xpFromReferrals || 0;
-    if (ss) ss.textContent = d.shares || 0;
   },
 
   _link() {
@@ -8815,23 +8813,11 @@ const Referral = {
   },
 
   shareWhatsApp() {
-    const d = this._data();
-    d.shares = (d.shares || 0) + 1;
-    this._save(d);
-    const sr = document.getElementById('ref-stat-shares');
-    if (sr) sr.textContent = d.shares;
-    Gamify.event('refer_share');
     const url = `https://wa.me/?text=${encodeURIComponent(this._waMessage())}`;
     window.open(url, '_blank');
   },
 
   copyLink() {
-    const d = this._data();
-    d.shares = (d.shares || 0) + 1;
-    this._save(d);
-    const sr = document.getElementById('ref-stat-shares');
-    if (sr) sr.textContent = d.shares;
-    Gamify.event('refer_share');
     navigator.clipboard.writeText(this._link()).then(() => {
       toast('✅ הקישור הועתק! שתף עם חבר 🔗', 'success');
     }).catch(() => {
@@ -8859,17 +8845,20 @@ const Referral = {
     }
   },
 
-  // Award XP to referrer when a friend confirms joining (called manually by admin or future webhook)
+  // Award XP when a referred friend actually joins and activates — called by admin panel or future Tranzila webhook
   awardReferral() {
+    const XP_AWARD = 800;
     const d = this._data();
     d.referrals = (d.referrals || 0) + 1;
-    d.xpFromReferrals = (d.xpFromReferrals || 0) + 500;
+    d.xpFromReferrals = (d.xpFromReferrals || 0) + XP_AWARD;
     this._save(d);
-    Gamify.get().xp += 500;
+    const gd = Gamify.get();
+    gd.xp += XP_AWARD;
     Gamify.save();
     Gamify.renderSidebar();
     Gamify.renderWidget();
-    toast('🎉 חבר שהזמנת הצטרף! +500 XP נוספו לחשבונך', 'success', 4000);
+    Gamify.checkMilestones();
+    toast(`🎉 חבר שהזמנת הצטרף! +${XP_AWARD} XP — בדוק מה נפתח בחנות הפרסים 🏆`, 'success', 5000);
     this.renderScreen();
   },
 };
