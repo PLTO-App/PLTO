@@ -1810,6 +1810,25 @@
     .aum-cta-btn:active { transform: scale(.97); }
     .aum-later-btn { display: block; width: 100%; background: none; border: none; color: var(--gray-400); font-size: 13px; cursor: pointer; font-family: inherit; padding: 6px; }
 
+    /* ── NAV NEW BADGE ── */
+    .nav-new-badge { display:inline-block; background:linear-gradient(135deg,#16a34a,#22c55e); color:#fff; font-size:9px; font-weight:900; padding:2px 6px; border-radius:20px; margin-right:5px; vertical-align:middle; animation:nav-badge-pulse 2s ease-in-out infinite; letter-spacing:.3px; }
+    @keyframes nav-badge-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,.5)} 50%{box-shadow:0 0 0 5px rgba(22,163,74,0)} }
+
+    /* ── DASHBOARD GROWTH CARD ── */
+    .dash-growth-card { background:linear-gradient(135deg,#0F1F3D 0%,#1e3a6e 60%,#1a3460 100%); border-radius:16px; padding:18px 20px; margin:0 0 16px; color:#fff; position:relative; overflow:hidden; }
+    .dash-growth-card::before { content:''; position:absolute; top:-20px; left:-20px; width:120px; height:120px; background:radial-gradient(circle,rgba(37,99,235,.3),transparent 70%); pointer-events:none; }
+    .dash-growth-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .dash-growth-left { flex:1; }
+    .dash-growth-title { font-size:15px; font-weight:900; margin-bottom:4px; }
+    .dash-growth-sub { font-size:12px; opacity:.8; line-height:1.5; }
+    .dash-growth-btns { display:flex; gap:8px; margin-top:14px; }
+    .dash-growth-btn-main { background:#fff; color:#0F1F3D; border:none; border-radius:10px; padding:9px 16px; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit; white-space:nowrap; }
+    .dash-growth-btn-sec  { background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.25); border-radius:10px; padding:9px 14px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap; }
+    .dash-growth-dismiss  { position:absolute; top:10px; left:12px; background:none; border:none; color:rgba(255,255,255,.45); font-size:16px; cursor:pointer; font-family:inherit; line-height:1; }
+    .dash-growth-stat { text-align:center; background:rgba(255,255,255,.1); border-radius:10px; padding:8px 14px; flex-shrink:0; }
+    .dash-growth-stat-val { font-size:20px; font-weight:900; }
+    .dash-growth-stat-lbl { font-size:10px; opacity:.75; margin-top:1px; }
+
     /* ── REFERRAL SCREEN ── */
     .ref-header { background: linear-gradient(135deg,#0F1F3D 0%,#1e3a6e 100%); padding: 28px 20px 24px; color: #fff; text-align: center; border-radius: 0 0 24px 24px; margin-bottom: 20px; }
     .ref-header-icon { font-size: 42px; margin-bottom: 8px; }
@@ -2850,8 +2869,8 @@
       <a class="nav-item" data-screen="xp-store" onclick="App.go('xp-store')" style="background:linear-gradient(135deg,rgba(245,158,11,0.14),rgba(251,191,36,0.07));border:1px solid rgba(245,158,11,0.25);border-radius:8px;margin-top:4px;">
         <span class="nav-icon">🏆</span> <span style="background:linear-gradient(135deg,#D97706,#F59E0B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;">חנות XP</span>
       </a>
-      <a class="nav-item" data-screen="referral" onclick="App.go('referral')" style="background:linear-gradient(135deg,rgba(22,163,74,0.12),rgba(16,185,129,0.06));border:1px solid rgba(22,163,74,0.22);border-radius:8px;margin-top:4px;">
-        <span class="nav-icon">🎁</span> <span style="background:linear-gradient(135deg,#15803d,#16a34a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;">הזמן חבר</span>
+      <a class="nav-item" id="nav-referral" data-screen="referral" onclick="App.go('referral');document.querySelector('.nav-new-badge')?.remove();" style="background:linear-gradient(135deg,rgba(22,163,74,0.12),rgba(16,185,129,0.06));border:1px solid rgba(22,163,74,0.22);border-radius:8px;margin-top:4px;">
+        <span class="nav-icon">🎁</span> <span style="background:linear-gradient(135deg,#15803d,#16a34a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;">הזמן חבר</span><span class="nav-new-badge" id="nav-ref-badge">חדש</span>
       </a>
     </div>
     <div class="sidebar-footer">
@@ -3127,6 +3146,9 @@
       </div>
       <div class="activity-list" id="dash-activity"></div>
     </div>
+
+    <!-- GROWTH CARD (referral + annual teaser, injected by Dashboard.renderGrowthCard) -->
+    <div id="dash-growth-card-wrap" style="padding:0 16px;"></div>
 
     <!-- ── PIPELINE ── -->
     <div id="screen-pipeline" class="screen hidden">
@@ -9290,7 +9312,7 @@ const App = {
       case 'marketing':   Marketing.render();      break;
       case 'pro':         ProHub.render();         break;
       case 'xp-store':    Gamify.renderStore();    break;
-      case 'referral':    Referral.renderScreen(); break;
+      case 'referral':    Referral.renderScreen(); localStorage.setItem('liders_ref_visited','1'); document.getElementById('nav-ref-badge')?.remove(); break;
     }
     window.scrollTo(0, 0);
   },
@@ -9324,8 +9346,61 @@ const Dashboard = {
     this.renderColdLeads();
     this.renderActivity();
     this.renderAIBriefing();
+    this.renderGrowthCard();
     Billing.renderDashTrialCard();
     Gamify.renderWidget();
+  },
+
+  renderGrowthCard() {
+    const wrap = document.getElementById('dash-growth-card-wrap');
+    if (!wrap || State.isDemo) return;
+    const KEY = 'liders_growth_card_v1';
+    if (localStorage.getItem(KEY) === 'dismissed') { wrap.innerHTML = ''; return; }
+    const refData = Referral._data();
+    const xpData  = Gamify.get();
+    const streak  = xpData.streak || 0;
+    const refCount= refData.referrals || 0;
+    // Rotate between referral pitch and annual pitch based on streak
+    const showAnnual = streak >= 10 && !AnnualUpsell._data().interest;
+    if (showAnnual) {
+      wrap.innerHTML = `
+        <div class="dash-growth-card" style="margin-bottom:16px;">
+          <button class="dash-growth-dismiss" onclick="localStorage.setItem('${KEY}','dismissed');document.getElementById('dash-growth-card-wrap').innerHTML='';">✕</button>
+          <div class="dash-growth-row">
+            <div class="dash-growth-left">
+              <div class="dash-growth-title">💰 חסוך ₪1,700 השנה</div>
+              <div class="dash-growth-sub">מנוי שנתי + שיווק AI כלול<br>₪207/חודש במקום ₪349</div>
+            </div>
+            <div class="dash-growth-stat">
+              <div class="dash-growth-stat-val">20%</div>
+              <div class="dash-growth-stat-lbl">הנחה שנתית</div>
+            </div>
+          </div>
+          <div class="dash-growth-btns">
+            <button class="dash-growth-btn-main" onclick="AnnualUpsell.tryShow('settings_cta')">אני רוצה לחסוך 📅</button>
+            <button class="dash-growth-btn-sec"  onclick="App.go('referral')">🎁 הזמן חבר</button>
+          </div>
+        </div>`;
+    } else {
+      wrap.innerHTML = `
+        <div class="dash-growth-card" style="margin-bottom:16px;">
+          <button class="dash-growth-dismiss" onclick="localStorage.setItem('${KEY}','dismissed');document.getElementById('dash-growth-card-wrap').innerHTML='';">✕</button>
+          <div class="dash-growth-row">
+            <div class="dash-growth-left">
+              <div class="dash-growth-title">🎁 הזמן חבר — שניכם מרוויחים</div>
+              <div class="dash-growth-sub">חבר שמצטרף = +100 XP לך<br>הוא מקבל +100 XP + 20% הנחה</div>
+            </div>
+            <div class="dash-growth-stat">
+              <div class="dash-growth-stat-val">${refCount > 0 ? refCount : '+'}</div>
+              <div class="dash-growth-stat-lbl">${refCount > 0 ? 'הצטרפו' : 'הפנה עכשיו'}</div>
+            </div>
+          </div>
+          <div class="dash-growth-btns">
+            <button class="dash-growth-btn-main" onclick="App.go('referral')">שלח קוד לחבר 📲</button>
+            <button class="dash-growth-btn-sec"  onclick="App.go('xp-store')">🏆 חנות XP</button>
+          </div>
+        </div>`;
+    }
   },
   renderHotLeads() {
     const el = document.getElementById('dash-hot-leads');
@@ -12378,6 +12453,11 @@ window.DemoLock   = DemoLock;
 
 // Check for inbound referral code immediately on page load
 Referral.checkInboundRef();
+// Hide referral "new" badge if user already visited
+if (localStorage.getItem('liders_ref_visited')) {
+  document.addEventListener('DOMContentLoaded', () => document.getElementById('nav-ref-badge')?.remove(), { once: true });
+  document.getElementById('nav-ref-badge')?.remove();
+}
 
 // ═══════════════════════════════════════
 // SERVICE WORKER
