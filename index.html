@@ -10611,6 +10611,8 @@ async function saveEditProperty() {
   if (!price) { toast('נא הכנס מחיר', 'error'); return; }
   const saveBtn = document.getElementById('edit-prop-save-btn');
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'שומר...'; }
+  SaveAnim.show();
+  const t0 = Date.now();
   try {
     const allUrls = await PropImages.uploadEditNew(propId);
     const updates = {
@@ -10630,9 +10632,13 @@ async function saveEditProperty() {
     await DB.updateProperty(propId, updates);
     Object.assign(prop, updates);
     closeModal('modal-edit-property');
-    toast('✅ הנכס עודכן בהצלחה', 'success');
-    if (State.screen === 'properties') PropertiesScreen.render();
+    await new Promise(r => setTimeout(r, Math.max(0, 1200 - (Date.now() - t0))));
+    SaveAnim.success(() => {
+      toast('✅ הנכס עודכן בהצלחה', 'success');
+      if (State.screen === 'properties') PropertiesScreen.render();
+    });
   } catch(e) {
+    SaveAnim.hide();
     toast('שגיאה בשמירה: ' + e.message, 'error');
   } finally {
     if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'שמור שינויים'; }
