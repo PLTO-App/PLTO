@@ -4030,7 +4030,7 @@
     </div>
     <div class="paywall-plans" id="paywall-plans-container"></div>
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px;">
-      <button class="btn btn-ghost btn-sm" onclick="if(Billing.isExpired()||Billing.retentionEndsAt()&&new Date()>Billing.retentionEndsAt()){App.logout();}else{document.getElementById('screen-paywall').classList.add('hidden');document.getElementById('app-shell').classList.remove('hidden');App.go('dashboard');}" style="flex:1;max-width:160px;">🏠 חזור לבית</button>
+      <button class="btn btn-ghost btn-sm" onclick="if(Billing.isExpired()||(Billing.retentionEndsAt()&&new Date()>Billing.retentionEndsAt())){App.logout();}else{document.getElementById('screen-paywall').classList.add('hidden');document.getElementById('app-shell').classList.remove('hidden');App.go('dashboard');}" style="flex:1;max-width:160px;">🏠 חזור לבית</button>
       <button class="btn btn-ghost btn-sm" onclick="App.logout()" style="flex:1;max-width:160px;opacity:.6;">← יציאה</button>
     </div>
   </div>
@@ -7059,7 +7059,7 @@ const AiLimits = {
   hasAiAccess() {
     if (State.isDemo) return false;
     if (this._isAdmin()) return true;
-    return State.tenant?.marketing_addon === true || Billing.daysLeft() > 0;
+    return State.tenant?.marketing_addon === true || Billing.isPaid() || Billing.daysLeft() > 0;
   },
   canUse(t) { if (this._isAdmin()) return true; const d=this._get(); return (d[t]||0) < this._lim()[t]; },
   consume(t) { const d=this._get(); d[t]=(d[t]||0)+1; this._save(d); },
@@ -8898,7 +8898,7 @@ const Referral = {
   _genCode(email) {
     const src = (email || Math.random().toString()).toUpperCase();
     let h = 5381;
-    for (const c of src) h = Math.imul((h << 5) + h, 1) ^ c.charCodeAt(0);
+    for (const c of src) h = Math.imul((h << 5) + h, 33) ^ c.charCodeAt(0);
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let code = '', n = Math.abs(h >>> 0);
     for (let i = 0; i < 6; i++) { code += chars[n % chars.length]; n = Math.floor(n / chars.length); }
@@ -8908,7 +8908,7 @@ const Referral = {
   getCode() {
     const d = this._data();
     if (!d.code) {
-      d.code = this._genCode(State.user?.email || '');
+      d.code = this._genCode(State.agent?.email || '');
       d.referrals = 0; d.xpFromReferrals = 0; d.shares = 0;
       this._save(d);
     }
@@ -9211,7 +9211,7 @@ const AnnualUpsell = {
   interest() {
     const data = this._data();
     data.interest = Date.now();
-    data.interestEmail = State.user?.email || '';
+    data.interestEmail = State.agent?.email || '';
     this._save(data);
     document.getElementById('annual-upsell-modal').classList.remove('show');
     document.body.style.overflow = '';
@@ -11179,14 +11179,14 @@ const Settings = {
             🚀 <strong>מחירי השקה</strong> — המחירים צפויים לעלות בהמשך
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn btn-ghost btn-sm" onclick="Billing.openCheckout('basic')" style="flex:1;min-width:80px;">Solo<br><span style="font-size:10px;opacity:.7;">₪249 · 1 סוכן</span></button>
-            <button class="btn btn-ghost btn-sm" onclick="Billing.openCheckout('pro')" style="flex:1;min-width:80px;">צוות<br><span style="font-size:10px;opacity:.7;">₪449 · עד 5</span></button>
-            <button class="btn btn-primary btn-sm" onclick="Billing.openCheckout('premium')" style="flex:1;min-width:80px;">סוכנות ⭐<br><span style="font-size:10px;opacity:.8;">₪649 · ללא הגבלה</span></button>
+            <button class="btn btn-ghost btn-sm" onclick="Billing.openCheckout('basic')" style="flex:1;min-width:80px;">Solo<br><span style="font-size:10px;opacity:.7;">₪149 · 1 סוכן</span></button>
+            <button class="btn btn-ghost btn-sm" onclick="Billing.openCheckout('pro')" style="flex:1;min-width:80px;">צוות<br><span style="font-size:10px;opacity:.7;">₪249 · עד 5</span></button>
+            <button class="btn btn-primary btn-sm" onclick="Billing.openCheckout('premium')" style="flex:1;min-width:80px;">סוכנות ⭐<br><span style="font-size:10px;opacity:.8;">₪399 · ללא הגבלה</span></button>
           </div>
           ${(Gamify.get()?.streak||0) >= 10 ? `
           <div style="margin-top:10px;background:linear-gradient(135deg,rgba(37,99,235,.07),rgba(15,31,61,.05));border:1px solid rgba(37,99,235,.2);border-radius:10px;padding:10px 12px;cursor:pointer;" onclick="AnnualUpsell.tryShow('settings_cta')">
             <div style="font-size:12px;font-weight:800;color:var(--blue-600);margin-bottom:2px;">📅 מנוי שנתי + שיווק — מגיע לך</div>
-            <div style="font-size:11px;color:var(--gray-500);">₪207/חודש במקום ₪349 · חיסכון ₪1,700 בשנה</div>
+            <div style="font-size:11px;color:var(--gray-500);">₪124/חודש במקום ₪249 · חיסכון ₪1,500 בשנה</div>
           </div>` : `
           <div style="margin-top:10px;font-size:11px;color:var(--gray-500);text-align:center;">
             📅 מינוי שנתי — בקרוב | חיסכון עד 20% לעומת חיוב חודשי
