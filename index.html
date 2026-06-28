@@ -5851,8 +5851,8 @@ const Billing = {
     {
       id: 'basic',
       name: 'Solo',
-      price: 149,
-      priceLabel: '₪149',
+      price: 179,
+      priceLabel: '₪179',
       desc: 'לסוכן עצמאי',
       features: ['סוכן 1 בלבד', 'עד 200 לידים פעילים', 'לוח Kanban + פייפליין', 'תזכורות WhatsApp', 'אפליקציה מובייל', 'ניסיון חינם 30 יום'],
       featured: false,
@@ -5863,26 +5863,26 @@ const Billing = {
     {
       id: 'pro',
       name: 'צוות',
-      price: 249,
-      priceLabel: '₪249',
+      price: 349,
+      priceLabel: '₪349',
       desc: 'לצוות קטן',
       features: ['עד 5 סוכנים', 'עד 1,000 לידים פעילים', 'לוח Kanban + פייפליין', 'תזכורות WhatsApp', 'אפליקציה מובייל', 'AI שיווקי מתקדם'],
       featured: true,
       agentLimit: '5 סוכנים · 1,000 לידים',
-      annualMonthly: 207,
-      annualTotal: 2490,
+      annualMonthly: 249,
+      annualTotal: 2990,
     },
     {
       id: 'premium',
       name: 'סוכנות',
-      price: 399,
-      priceLabel: '₪399',
+      price: 549,
+      priceLabel: '₪549',
       desc: 'לסוכנות נדל"ן',
       features: ['סוכנים ללא הגבלה', 'לידים ללא הגבלה', 'לוח Kanban + פייפליין', 'תזכורות WhatsApp', 'אפליקציה מובייל', 'AI שיווקי מתקדם'],
       featured: false,
       agentLimit: 'ללא הגבלה',
-      annualMonthly: 332,
-      annualTotal: 3990,
+      annualMonthly: 399,
+      annualTotal: 4790,
     },
   ],
 
@@ -6032,7 +6032,7 @@ const Billing = {
         </p>
         <div style="display:flex;flex-direction:column;gap:10px;">
           <button class="btn btn-primary" onclick="Billing.openCheckout('basic');document.getElementById('modal-billing-reminder').remove();" style="padding:14px;">
-            הוסף פרטי תשלום — מ-₪149/חודש
+            הוסף פרטי תשלום — מ-₪179/חודש
           </button>
           <button class="btn btn-ghost" onclick="document.getElementById('modal-billing-reminder').remove();" style="font-size:13px;">
             תזכיר לי מאוחר יותר
@@ -6100,12 +6100,16 @@ const Billing = {
     return { text:'לא פעיל', color:'var(--red-600)', bg:'var(--red-100)' };
   },
   renderPlansHTML() {
+    const monthlySavings = { basic: 658, pro: 1198, premium: 1798 };
     return this.PLANS.map(plan => `
       <div class="paywall-plan ${plan.featured ? 'paywall-plan--featured' : ''}">
         ${plan.featured ? '<div class="plan-badge">⭐ הכי פופולרי</div>' : ''}
         <div class="plan-name">${plan.name}</div>
         <div class="plan-agent-limit">👥 ${plan.agentLimit}</div>
         <div class="plan-price">${plan.priceLabel}<span>/חודש</span></div>
+        <div style="text-align:center;margin:-4px 0 8px;font-size:11px;color:#16A34A;font-weight:700;">
+          📅 שנתי — ₪${plan.annualMonthly}/חודש · חיסכון ₪${(monthlySavings[plan.id]||0).toLocaleString()}
+        </div>
         <div class="plan-features">
           ${plan.features.map(f => `<div>${f.includes('מעל') ? '📞' : '✓'} ${f}</div>`).join('')}
         </div>
@@ -6113,6 +6117,7 @@ const Billing = {
                 onclick="Billing.openCheckout('${plan.id}')">
           ${this.PAYMENTS_LIVE ? 'התחל עם ' + plan.name : '📬 שמרו לי מקום — ' + plan.name}
         </button>
+        <div style="text-align:center;margin-top:6px;font-size:10px;color:var(--gray-400);">🚀 מחיר השקה — יעלה בהמשך</div>
       </div>
     `).join('');
   },
@@ -9134,22 +9139,22 @@ const AnnualUpsell = {
         title: 'רוצה לסגור יותר עסקאות עוד השנה?',
         body:  `<p style="color:var(--gray-600);line-height:1.6;margin:0 0 14px;">CRM לבד זה כלי. CRM + שיווק AI זו <strong>מכונת צמיחה</strong>. פייפליין מסודר + תוכן שיווקי שנכתב תוך שניות + פולואפ אוטומטי — זה מה שמבדיל בין איש מכירות ממוצע לאחד שסוגר עסקאות בסדרה.</p>
           <div class="aum-saving-card">
-            <div class="aum-saving-row"><span>CRM + שיווק AI — בנפרד</span><span>₪249/חודש</span></div>
+            <div class="aum-saving-row"><span>CRM + שיווק AI — בנפרד</span><span>₪279/חודש</span></div>
             <div class="aum-saving-row"><span>חבילה שנתית כוללת — הכל ביחד</span><span class="aum-annual-row">₪124/חודש</span></div>
-            <div class="aum-saving-highlight">חיסכון של ₪1,500 בשנה — הכל כלול 🔥</div>
+            <div class="aum-saving-highlight">חיסכון של ₪1,858 בשנה — מחיר השקה נעול 🔥</div>
           </div>`,
         cta:   'כן! שמרו לי מקום בחבילה השנתית 📬',
       },
       first_deal: {
         icon:  '🎉',
         title: 'עסקה אחת כיסתה חצי שנה של CRM. מה אם תסגור 10?',
-        body:  `<p style="color:var(--gray-600);line-height:1.6;margin:0 0 14px;">עמלה ממוצעת על עסקת נדל"ן = ₪15,000+. החבילה השנתית שלנו עולה ₪2,490 לשנה וכוללת גם <strong>שיווק AI מלא</strong> — כלי שיוצרים לך תוכן, מסנן לידים, וכותבים הצעות. יותר לידים פנימה, יותר עסקאות סגורות.</p>
+        body:  `<p style="color:var(--gray-600);line-height:1.6;margin:0 0 14px;">עמלה ממוצעת על עסקת נדל"ן = ₪15,000+. החבילה השנתית שלנו עולה ₪1,490 לשנה וכוללת גם <strong>שיווק AI מלא</strong> — כלי שיוצרים לך תוכן, מסנן לידים, וכותבים הצעות. יותר לידים פנימה, יותר עסקאות סגורות.</p>
           <div class="aum-roi-card">
             <div class="aum-roi-item"><div class="aum-roi-val aum-roi-green">₪15,000+</div><div>עמלה ממוצעת</div></div>
             <div class="aum-roi-sep">vs</div>
-            <div class="aum-roi-item"><div class="aum-roi-val">₪2,490</div><div>חבילה שנתית</div></div>
+            <div class="aum-roi-item"><div class="aum-roi-val">₪1,490</div><div>חבילה שנתית</div></div>
             <div class="aum-roi-sep">=</div>
-            <div class="aum-roi-item"><div class="aum-roi-val aum-roi-green">6×</div><div>מעסקה אחת</div></div>
+            <div class="aum-roi-item"><div class="aum-roi-val aum-roi-green">10×</div><div>מעסקה אחת</div></div>
           </div>
           <p style="color:var(--gray-500);font-size:12px;margin:10px 0 0;text-align:center;">מחיר מוזל לנרשמים מראש — לפני שנגדיל את המחיר 🔒</p>`,
         cta:   'בדיוק מה שאני צריך — עדכנו אותי 📬',
@@ -9159,20 +9164,20 @@ const AnnualUpsell = {
         title: 'המתחרים שלך כבר עובדים עם AI — האם גם אתה?',
         body:  `<p style="color:var(--gray-600);line-height:1.6;margin:0 0 14px;">כלי שיווק AI כותבים פוסטים, מנסחים הצעות מחיר, ומייצרים תוכן תוך שניות. מי שמשתמש בהם — מגיע ללקוחות מהר יותר ונשמע מקצועי יותר. החבילה השנתית שלנו כוללת <strong>הכל ביחד</strong>: CRM + שיווק AI — מחיר אחד, נעול שנה שלמה.</p>
           <div class="aum-saving-card">
-            <div class="aum-saving-row"><span>CRM + שיווק AI — בנפרד</span><span>₪249/חודש</span></div>
+            <div class="aum-saving-row"><span>CRM + שיווק AI — בנפרד</span><span>₪279/חודש</span></div>
             <div class="aum-saving-row"><span>חבילה שנתית כוללת</span><span class="aum-annual-row">₪124/חודש</span></div>
-            <div class="aum-saving-highlight">חיסכון ₪1,500 בשנה — הכל כלול, מחיר נעול 🎯</div>
+            <div class="aum-saving-highlight">חיסכון ₪1,858 בשנה — מחיר השקה נעול 🎯</div>
           </div>`,
         cta:   'רוצה את היתרון הזה — עדכנו אותי 📬',
       },
       streak_30: {
         icon:  '💎',
         title: 'מי שמתמיד — מנצח. תמיד.',
-        body:  `<p style="color:var(--gray-600);line-height:1.6;margin:0 0 14px;">פחות מ-₪7 ביום. פחות מכוס קפה. יותר מכל כלי עסקי אחר שיש לך. החבילה השנתית Pro כוללת CRM מלא + שיווק AI ללא הגבלה — ומחיר שנעול לשנה שלמה, בלי הפתעות.</p>
+        body:  `<p style="color:var(--gray-600);line-height:1.6;margin:0 0 14px;">פחות מ-₪9 ביום. פחות מכוס קפה. יותר מכל כלי עסקי אחר שיש לך. החבילה השנתית Pro כוללת CRM מלא + שיווק AI ללא הגבלה — ומחיר שנעול לשנה שלמה, בלי הפתעות.</p>
           <div class="aum-saving-card">
-            <div class="aum-saving-row"><span>Pro + שיווק AI — בנפרד</span><span>₪349/חודש</span></div>
-            <div class="aum-saving-row"><span>Pro שנתי כולל — הכל ביחד</span><span class="aum-annual-row">₪207/חודש</span></div>
-            <div class="aum-saving-highlight">חיסכון ₪1,700 בשנה — מחיר שנעול 12 חודש 🏆</div>
+            <div class="aum-saving-row"><span>Pro + שיווק AI — בנפרד</span><span>₪449/חודש</span></div>
+            <div class="aum-saving-row"><span>Pro שנתי כולל — הכל ביחד</span><span class="aum-annual-row">₪249/חודש</span></div>
+            <div class="aum-saving-highlight">חיסכון ₪2,398 בשנה — מחיר השקה נעול 12 חודש 🏆</div>
           </div>`,
         cta:   'נעלו לי את המחיר — Pro שנתי 📬',
       },
@@ -9182,9 +9187,9 @@ const AnnualUpsell = {
         body:  `<p style="color:var(--gray-600);line-height:1.6;margin:0 0 14px;">אנחנו בונים את מסלול המנוי השנתי עם כלי שיווק AI כלולים. כשיהיה מוכן — תקבל הודעה ראשון.</p>
           <div class="aum-saving-card">
             <div class="aum-saving-row"><span>Solo שנתי + שיווק AI</span><span class="aum-annual-row">₪124/חודש</span></div>
-            <div class="aum-saving-row"><span>Pro שנתי + שיווק AI</span><span class="aum-annual-row">₪207/חודש</span></div>
-            <div class="aum-saving-row"><span>סוכנות שנתי + שיווק AI</span><span class="aum-annual-row">₪332/חודש</span></div>
-            <div class="aum-saving-highlight">חיסכון של עד 17% + תוספת שיווק AI בחינם 🎁</div>
+            <div class="aum-saving-row"><span>Pro שנתי + שיווק AI</span><span class="aum-annual-row">₪249/חודש</span></div>
+            <div class="aum-saving-row"><span>סוכנות שנתי + שיווק AI</span><span class="aum-annual-row">₪399/חודש</span></div>
+            <div class="aum-saving-highlight">מחירי השקה — יעלו בהמשך. נעלו עכשיו 🔒</div>
           </div>`,
         cta:   'עדכנו אותי כשזה יוצא 📬',
       },
@@ -9564,8 +9569,8 @@ const Dashboard = {
           <button class="dash-growth-dismiss" onclick="localStorage.setItem('${KEY}','dismissed');document.getElementById('dash-growth-card-wrap').innerHTML='';">✕</button>
           <div class="dash-growth-row">
             <div class="dash-growth-left">
-              <div class="dash-growth-title">💰 חסוך ₪1,700 השנה</div>
-              <div class="dash-growth-sub">מנוי שנתי + שיווק AI כלול<br>₪207/חודש במקום ₪349</div>
+              <div class="dash-growth-title">💰 חסוך ₪1,858 השנה</div>
+              <div class="dash-growth-sub">מנוי שנתי + שיווק AI כלול<br>₪124/חודש במקום ₪279 — מחיר השקה</div>
             </div>
             <div class="dash-growth-stat">
               <div class="dash-growth-stat-val">20%</div>
@@ -11179,14 +11184,14 @@ const Settings = {
             🚀 <strong>מחירי השקה</strong> — המחירים צפויים לעלות בהמשך
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn btn-ghost btn-sm" onclick="Billing.openCheckout('basic')" style="flex:1;min-width:80px;">Solo<br><span style="font-size:10px;opacity:.7;">₪149 · 1 סוכן</span></button>
-            <button class="btn btn-ghost btn-sm" onclick="Billing.openCheckout('pro')" style="flex:1;min-width:80px;">צוות<br><span style="font-size:10px;opacity:.7;">₪249 · עד 5</span></button>
-            <button class="btn btn-primary btn-sm" onclick="Billing.openCheckout('premium')" style="flex:1;min-width:80px;">סוכנות ⭐<br><span style="font-size:10px;opacity:.8;">₪399 · ללא הגבלה</span></button>
+            <button class="btn btn-ghost btn-sm" onclick="Billing.openCheckout('basic')" style="flex:1;min-width:80px;">Solo<br><span style="font-size:10px;opacity:.7;">₪179 · 1 סוכן</span></button>
+            <button class="btn btn-ghost btn-sm" onclick="Billing.openCheckout('pro')" style="flex:1;min-width:80px;">צוות<br><span style="font-size:10px;opacity:.7;">₪349 · עד 5</span></button>
+            <button class="btn btn-primary btn-sm" onclick="Billing.openCheckout('premium')" style="flex:1;min-width:80px;">סוכנות ⭐<br><span style="font-size:10px;opacity:.8;">₪549 · ללא הגבלה</span></button>
           </div>
           ${(Gamify.get()?.streak||0) >= 10 ? `
           <div style="margin-top:10px;background:linear-gradient(135deg,rgba(37,99,235,.07),rgba(15,31,61,.05));border:1px solid rgba(37,99,235,.2);border-radius:10px;padding:10px 12px;cursor:pointer;" onclick="AnnualUpsell.tryShow('settings_cta')">
             <div style="font-size:12px;font-weight:800;color:var(--blue-600);margin-bottom:2px;">📅 מנוי שנתי + שיווק — מגיע לך</div>
-            <div style="font-size:11px;color:var(--gray-500);">₪124/חודש במקום ₪249 · חיסכון ₪1,500 בשנה</div>
+            <div style="font-size:11px;color:var(--gray-500);">₪124/חודש במקום ₪279 · חיסכון ₪1,858 בשנה</div>
           </div>` : `
           <div style="margin-top:10px;font-size:11px;color:var(--gray-500);text-align:center;">
             📅 מינוי שנתי — בקרוב | חיסכון עד 20% לעומת חיוב חודשי
