@@ -14291,7 +14291,7 @@ const MotivationAgent = {
       }
     }
     if (coolEl)  coolEl.classList.toggle('hidden', !isCool);
-    if (btn)     btn.disabled = rem === 0 || isCool;
+    if (btn)     btn.disabled = (rem === 0 || isCool) && !AiLimits._isAdmin();
 
     if (isCool) {
       this._startCountdown();
@@ -14325,7 +14325,7 @@ const MotivationAgent = {
   async generate() {
     if (State.isDemo) { toast('סוכן מוטיבציה זמין לאחר פתיחת חשבון', 'info'); return; }
     if (!AiLimits.hasAiAccess()) { toast('הסוכן זמין בתקופת הניסיון — הירשם בחינם', 'info'); return; }
-    if (this._isCooling()) {
+    if (!AiLimits._isAdmin() && this._isCooling()) {
       toast(`⏳ הסוכן יחזור בעוד ${this._fmtTime(this._remaining())} — צור שגרת בוקר ולילה!`, 'info', 3000); return;
     }
     if (!AiLimits.canUse('motivation')) {
