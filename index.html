@@ -34,6 +34,7 @@
        DESIGN TOKENS
     ═══════════════════════════════════════ */
     :root {
+      --navy:     #1C3E6B;  /* alias for --navy-500 */
       --navy-900: #060F1C;
       --navy-800: #0A1A2E;
       --navy-700: #0F2440;
@@ -65,8 +66,13 @@
       --purple-500: #7C3AED;
       --purple-100: #EDE9FE;
 
+      --blue-600: #1D4ED8;
       --blue-500: #2563EB;
+      --blue-400: #60A5FA;
+      --blue-200: #BFDBFE;
       --blue-100: #DBEAFE;
+      --blue-50:  #EFF6FF;
+      --blue:     #2563EB;  /* alias for --blue-500 */
 
       --gray-900: #111827;
       --gray-800: #1F2937;
@@ -81,6 +87,7 @@
       --white:    #FFFFFF;
 
       --bg-app:   #EFF3F8;
+      --bg:       #EFF3F8;  /* alias for --bg-app */
       --surface:  #FFFFFF;
       --border:   #E2E8F0;
 
@@ -176,6 +183,8 @@
       background: transparent; color: var(--navy-500); border: 1.5px solid var(--navy-500);
     }
     .btn-outline:hover { background: var(--navy-50, var(--gray-100)); }
+    .btn-secondary { background: var(--gray-100); color: var(--gray-700); border: 1px solid var(--gray-300); }
+    .btn-secondary:hover { background: var(--gray-200); }
     .btn-danger { background: var(--red-100); color: var(--red-600); }
     .btn-danger:hover { background: var(--red-500); color: var(--white); }
     .btn-sm { font-size: 13px; padding: 7px 14px; }
@@ -412,6 +421,13 @@
       width: 36px; height: 4px; background: var(--gray-300);
       border-radius: var(--radius-full); margin: 0 auto 20px;
     }
+    .modal-sheet {
+      background: var(--surface); width: 100%; max-width: 520px;
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      max-height: 90dvh; overflow-y: auto; padding: 20px 24px 32px;
+      position: relative;
+    }
+    @media (min-width: 640px) { .modal-sheet { border-radius: var(--radius-xl); max-height: 85dvh; } }
     .modal-header {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 20px;
@@ -980,16 +996,9 @@
       .pipeline-wrapper { padding: 12px; gap: 10px; }
     }
     .kanban-col {
-      flex-shrink: 0; width: 240px; display: flex; flex-direction: column; gap: 8px;
+      flex-shrink: 0; width: 240px;
     }
     @media (max-width: 767px) { .kanban-col { width: 210px; } }
-    .kanban-add-btn {
-      display: flex; align-items: center; gap: 6px; padding: 8px 12px;
-      background: transparent; border: 1.5px dashed var(--gray-300);
-      border-radius: var(--radius-md); color: var(--gray-400); font-size: 13px;
-      cursor: pointer; transition: var(--transition); width: 100%;
-    }
-    .kanban-add-btn:hover { background: var(--gray-50); border-color: var(--navy-300); color: var(--navy-500); }
 
     /* ═══════════════════════════════════════
        LEAD DETAIL
@@ -1269,6 +1278,7 @@
     /* FADE IN for screens */
     .screen { animation: fadeIn 0.25s ease both; }
     @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+    @media (prefers-reduced-motion: reduce) { .screen { animation: none; } }
 
     /* ═══════════════════════════════════════
        PWA INSTALL BANNER
@@ -1967,8 +1977,8 @@
     .milestone-claim-btn { background: linear-gradient(135deg,#C49A2A,#F0C040); color: #000; border: none; border-radius: 14px; padding: 14px 28px; font-size: 15px; font-weight: 800; cursor: pointer; font-family: inherit; width: 100%; margin-bottom: 10px; }
     .milestone-save-btn { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.75); border: 1px solid rgba(255,255,255,0.2); border-radius: 14px; padding: 11px 20px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; width: 100%; margin-bottom: 8px; transition: background .15s; }
     .milestone-save-btn:hover { background: rgba(255,255,255,0.14); }
-    .milestone-save-note { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 10px; min-height: 16px; }
-    .milestone-close-btn { background: none; color: rgba(255,255,255,0.3); border: none; font-size: 12px; cursor: pointer; padding: 6px; font-family: inherit; }
+    .milestone-save-note { font-size: 11px; color: rgba(255,255,255,0.6); margin-bottom: 10px; min-height: 16px; }
+    .milestone-close-btn { background: none; color: rgba(255,255,255,0.55); border: none; font-size: 12px; cursor: pointer; padding: 6px; font-family: inherit; }
     /* Next milestone in gamify widget */
     .gamify-milestone { margin-top: 12px; padding: 10px 12px; background: rgba(255,255,255,0.07); border-radius: 10px; }
     .gamify-milestone-label { font-size: 9px; color: rgba(255,255,255,.45); margin-bottom: 3px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; }
@@ -2603,7 +2613,7 @@
     box-shadow: 0 3px 10px rgba(37,99,235,0.4);
   }
   .motivation-card-title { font-size:13px; font-weight:800; color:#fff; }
-  .motivation-card-sub { font-size:10px; color:rgba(255,255,255,0.45); margin-top:1px; }
+  .motivation-card-sub { font-size:10px; color:rgba(255,255,255,0.65); margin-top:1px; }
   .motivation-text-area {
     font-size:13px; color:rgba(255,255,255,0.85); line-height:1.6;
     margin-bottom:12px; min-height:38px;
@@ -3099,7 +3109,7 @@
           👁
         </button>
       </div>
-      <div style="text-align:left;">
+      <div style="text-align:right;">
         <button type="button" onclick="App.forgotPassword()"
           style="background:none;border:none;color:var(--blue-500);font-size:12px;cursor:pointer;padding:0;">
           שכחתי סיסמה
@@ -5921,7 +5931,8 @@ const DB = {
       patch.done = updates.done;
       if (updates.done) patch.done_at = new Date().toISOString();
     }
-    const { error } = await sbClient.from('tasks').update(patch).eq('id', id);
+    const { error } = await sbClient.from('tasks').update(patch)
+      .eq('id', id).eq('tenant_id', this.tenantId);
     if (error) throw error;
   },
 
@@ -6006,7 +6017,8 @@ const DB = {
     const uuid = this.stageRev[shortStageId];
     if (!uuid) return;
     const { error } = await sbClient.from('leads')
-      .update({ pipeline_stage_id: uuid }).eq('id', leadId);
+      .update({ pipeline_stage_id: uuid })
+      .eq('id', leadId).eq('tenant_id', this.tenantId);
     if (error) throw error;
   },
 
@@ -8567,9 +8579,11 @@ const Gamify = {
     const today_ = new Date().toISOString().split('T')[0];
     if (d.dailyDone === today_) return;
     d.dailyDone = today_;
-    d.xp += 20;
+    d.xp += 80;
     this.save();
     this.renderWidget();
+    this.checkMilestones();
+    floatXP(80);
     toast('🎯 אתגר יומי הושלם! +80 XP', 'success');
   },
 
@@ -9835,6 +9849,8 @@ const App = {
     if (!State.isDemo) setTimeout(() => Onboarding.show(), 800);
     // Show billing reminder for days 7-1 (not in demo)
     if (!State.isDemo) setTimeout(() => Billing.showDailyReminder(), 1500);
+    // Init gamification (XP, milestones, daily login bonus)
+    Gamify.init();
     // Init motivation agent UI
     MotivationAgent.init();
     // Show guided tour for new users after onboarding is done
@@ -9893,6 +9909,7 @@ const App = {
   },
   async _performLogout() {
     sessionStorage.removeItem('liders_auth_active');
+    MotivationAgent._stopCountdown();
     await DB.signOut();
     // Wipe per-tenant state so a different account signing in on this same
     // browser/device can never see (or be shown alongside) the previous
@@ -13023,8 +13040,9 @@ sbClient.auth.onAuthStateChange((event, session) => {
           const t = loaded.tenant;
           State.tenant = t
             ? { id: t.id, name: t.name, slug: t.slug, plan: t.plan, trial_ends_at: t.trial_ends_at,
-                make_webhook_url: t.make_webhook_url || null, whatsapp_number: t.whatsapp_number || null }
-            : { name: 'הסוכנות שלי', plan: 'trial' };
+                make_webhook_url: t.make_webhook_url || null, whatsapp_number: t.whatsapp_number || null,
+                marketing_addon: t.marketing_addon || false, industry: t.industry || null }
+            : { name: 'הסוכנות שלי', plan: 'trial', marketing_addon: false };
           if (t?.make_webhook_url) localStorage.setItem('make_webhook_url', t.make_webhook_url);
           if (t?.whatsapp_number)  localStorage.setItem('whatsapp_number',  t.whatsapp_number);
           State.isNewTenant = isNew;
@@ -14381,6 +14399,7 @@ const IdeaBox = {
       Gamify.save();
       Gamify.renderSidebar();
       Gamify.renderWidget();
+      Gamify.checkMilestones();
       floatXP(300);
 
       closeModal('modal-idea-box');
