@@ -34,6 +34,7 @@
        DESIGN TOKENS
     ═══════════════════════════════════════ */
     :root {
+      --navy:     #1C3E6B;  /* alias for --navy-500 */
       --navy-900: #060F1C;
       --navy-800: #0A1A2E;
       --navy-700: #0F2440;
@@ -65,8 +66,13 @@
       --purple-500: #7C3AED;
       --purple-100: #EDE9FE;
 
+      --blue-600: #1D4ED8;
       --blue-500: #2563EB;
+      --blue-400: #60A5FA;
+      --blue-200: #BFDBFE;
       --blue-100: #DBEAFE;
+      --blue-50:  #EFF6FF;
+      --blue:     #2563EB;  /* alias for --blue-500 */
 
       --gray-900: #111827;
       --gray-800: #1F2937;
@@ -81,6 +87,7 @@
       --white:    #FFFFFF;
 
       --bg-app:   #EFF3F8;
+      --bg:       #EFF3F8;  /* alias for --bg-app */
       --surface:  #FFFFFF;
       --border:   #E2E8F0;
 
@@ -176,6 +183,8 @@
       background: transparent; color: var(--navy-500); border: 1.5px solid var(--navy-500);
     }
     .btn-outline:hover { background: var(--navy-50, var(--gray-100)); }
+    .btn-secondary { background: var(--gray-100); color: var(--gray-700); border: 1px solid var(--gray-300); }
+    .btn-secondary:hover { background: var(--gray-200); }
     .btn-danger { background: var(--red-100); color: var(--red-600); }
     .btn-danger:hover { background: var(--red-500); color: var(--white); }
     .btn-sm { font-size: 13px; padding: 7px 14px; }
@@ -412,6 +421,13 @@
       width: 36px; height: 4px; background: var(--gray-300);
       border-radius: var(--radius-full); margin: 0 auto 20px;
     }
+    .modal-sheet {
+      background: var(--surface); width: 100%; max-width: 520px;
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      max-height: 90dvh; overflow-y: auto; padding: 20px 24px 32px;
+      position: relative;
+    }
+    @media (min-width: 640px) { .modal-sheet { border-radius: var(--radius-xl); max-height: 85dvh; } }
     .modal-header {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 20px;
@@ -980,16 +996,9 @@
       .pipeline-wrapper { padding: 12px; gap: 10px; }
     }
     .kanban-col {
-      flex-shrink: 0; width: 240px; display: flex; flex-direction: column; gap: 8px;
+      flex-shrink: 0; width: 240px;
     }
     @media (max-width: 767px) { .kanban-col { width: 210px; } }
-    .kanban-add-btn {
-      display: flex; align-items: center; gap: 6px; padding: 8px 12px;
-      background: transparent; border: 1.5px dashed var(--gray-300);
-      border-radius: var(--radius-md); color: var(--gray-400); font-size: 13px;
-      cursor: pointer; transition: var(--transition); width: 100%;
-    }
-    .kanban-add-btn:hover { background: var(--gray-50); border-color: var(--navy-300); color: var(--navy-500); }
 
     /* ═══════════════════════════════════════
        LEAD DETAIL
@@ -1269,6 +1278,7 @@
     /* FADE IN for screens */
     .screen { animation: fadeIn 0.25s ease both; }
     @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+    @media (prefers-reduced-motion: reduce) { .screen { animation: none; } }
 
     /* ═══════════════════════════════════════
        PWA INSTALL BANNER
@@ -1965,7 +1975,10 @@
     .milestone-prize-name { font-size: 22px; font-weight: 900; margin-bottom: 8px; line-height:1.3; }
     .milestone-prize-desc { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.65; margin-bottom: 22px; }
     .milestone-claim-btn { background: linear-gradient(135deg,#C49A2A,#F0C040); color: #000; border: none; border-radius: 14px; padding: 14px 28px; font-size: 15px; font-weight: 800; cursor: pointer; font-family: inherit; width: 100%; margin-bottom: 10px; }
-    .milestone-close-btn { background: none; color: rgba(255,255,255,0.4); border: none; font-size: 13px; cursor: pointer; padding: 8px; font-family: inherit; }
+    .milestone-save-btn { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.75); border: 1px solid rgba(255,255,255,0.2); border-radius: 14px; padding: 11px 20px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; width: 100%; margin-bottom: 8px; transition: background .15s; }
+    .milestone-save-btn:hover { background: rgba(255,255,255,0.14); }
+    .milestone-save-note { font-size: 11px; color: rgba(255,255,255,0.6); margin-bottom: 10px; min-height: 16px; }
+    .milestone-close-btn { background: none; color: rgba(255,255,255,0.55); border: none; font-size: 12px; cursor: pointer; padding: 6px; font-family: inherit; }
     /* Next milestone in gamify widget */
     .gamify-milestone { margin-top: 12px; padding: 10px 12px; background: rgba(255,255,255,0.07); border-radius: 10px; }
     .gamify-milestone-label { font-size: 9px; color: rgba(255,255,255,.45); margin-bottom: 3px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; }
@@ -2600,7 +2613,7 @@
     box-shadow: 0 3px 10px rgba(37,99,235,0.4);
   }
   .motivation-card-title { font-size:13px; font-weight:800; color:#fff; }
-  .motivation-card-sub { font-size:10px; color:rgba(255,255,255,0.45); margin-top:1px; }
+  .motivation-card-sub { font-size:10px; color:rgba(255,255,255,0.65); margin-top:1px; }
   .motivation-text-area {
     font-size:13px; color:rgba(255,255,255,0.85); line-height:1.6;
     margin-bottom:12px; min-height:38px;
@@ -2629,6 +2642,30 @@
     line-height:1;
   }
   .motivation-card-dismiss:hover { color:rgba(255,255,255,0.5); }
+  .motivation-cooldown {
+    font-size:11px; color:rgba(255,255,255,0.45); font-weight:600;
+    display:flex; align-items:center; gap:5px;
+  }
+  .motivation-cooldown-timer {
+    font-variant-numeric: tabular-nums; color:rgba(255,255,255,0.65);
+    font-weight:700; font-size:12px;
+  }
+  /* Real estate shortcuts */
+  .re-shortcuts { }
+  .re-shortcuts-title { font-size:11px; font-weight:700; color:var(--gray-500); margin-bottom:8px; letter-spacing:0.4px; }
+  .re-shortcuts-row { display:flex; gap:8px; }
+  .re-shortcut-btn {
+    flex:1; display:flex; align-items:center; justify-content:center; gap:5px;
+    padding:8px 6px; border-radius:10px; font-size:12px; font-weight:700;
+    cursor:pointer; text-decoration:none; border:none; font-family:var(--font);
+    transition: transform .13s;
+  }
+  .re-shortcut-btn:active { transform:scale(0.95); }
+  .re-shortcut-icon { font-size:14px; }
+  .re-yad2   { background:#EBF4FF; color:#1D4ED8; }
+  .re-madlan { background:#ECFDF5; color:#065F46; }
+  .re-wa     { background:#DCFCE7; color:#166534; }
+  .re-idea   { background:#FEF9C3; color:#854D0E; }
 
   /* ── Tutorial Video Button ── */
   .tutorial-btn {
@@ -3072,7 +3109,7 @@
           👁
         </button>
       </div>
-      <div style="text-align:left;">
+      <div style="text-align:right;">
         <button type="button" onclick="App.forgotPassword()"
           style="background:none;border:none;color:var(--blue-500);font-size:12px;cursor:pointer;padding:0;">
           שכחתי סיסמה
@@ -3242,7 +3279,31 @@
         <div class="motivation-text-area" id="motivation-text">לחץ על הכפתור וקבל מסר מוטיבציה אישי לפי הנתונים שלך...</div>
         <div class="motivation-card-footer">
           <button class="motivation-btn" id="motivation-btn" onclick="MotivationAgent.generate()">✨ קבל מוטיבציה</button>
-          <span class="motivation-usage-badge" id="motivation-usage"></span>
+          <div id="motivation-footer-info">
+            <span class="motivation-usage-badge" id="motivation-usage"></span>
+            <div class="motivation-cooldown hidden" id="motivation-cooldown">
+              ⏳ זמין שוב בעוד: <span class="motivation-cooldown-timer" id="motivation-countdown">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REAL ESTATE SHORTCUTS — Yad2 & Madlan quick links -->
+      <div id="realestate-shortcuts" class="re-shortcuts hidden" style="margin:0 20px 14px;">
+        <div class="re-shortcuts-title">🏠 חיפוש נכסים מהיר</div>
+        <div class="re-shortcuts-row">
+          <a class="re-shortcut-btn re-yad2" href="https://www.yad2.co.il/realestate/forsale" target="_blank" rel="noopener">
+            <span class="re-shortcut-icon">🔵</span> יד2
+          </a>
+          <a class="re-shortcut-btn re-madlan" href="https://www.madlan.co.il/for-sale" target="_blank" rel="noopener">
+            <span class="re-shortcut-icon">🟢</span> מדלן
+          </a>
+          <button class="re-shortcut-btn re-wa" onclick="WAConnect.open()">
+            <span class="re-shortcut-icon">📲</span> WhatsApp
+          </button>
+          <button class="re-shortcut-btn re-idea" onclick="IdeaBox.open()">
+            <span class="re-shortcut-icon">💡</span> רעיון
+          </button>
         </div>
       </div>
 
@@ -4042,6 +4103,13 @@
       <div style="text-align:center;padding:16px 0 8px;font-size:11px;color:var(--gray-400);">
         המחירים הם מחירי השקה ועשויים לעלות בהמשך • XP נצבר ממימוש אמיתי במערכת בלבד
       </div>
+      <!-- Ideas suggestion box -->
+      <div style="margin:8px 16px 24px;background:linear-gradient(135deg,rgba(37,99,235,.07),rgba(124,58,237,.06));border:1px solid rgba(37,99,235,.18);border-radius:16px;padding:18px 20px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:8px;">💡</div>
+        <div style="font-size:15px;font-weight:800;color:var(--navy-500);margin-bottom:4px;">יש לך רעיון לשיפור?</div>
+        <div style="font-size:13px;color:var(--gray-500);line-height:1.55;margin-bottom:14px;">רעיון טוב שיאושר = <strong>+300 XP</strong> אוטומטי ✨</div>
+        <button class="btn btn-primary btn-sm" onclick="IdeaBox.open()" style="font-size:14px;padding:10px 24px;">💡 הצע רעיון ← </button>
+      </div>
     </div>
 
     <!-- ── REFERRAL SCREEN ── -->
@@ -4336,7 +4404,110 @@
     <div class="milestone-prize-name" id="milestone-prize-name">פרס</div>
     <div class="milestone-prize-desc" id="milestone-prize-desc"></div>
     <button class="milestone-claim-btn" onclick="Gamify.claimMilestone()">🎁 מימוש הפרס →</button>
+    <button class="milestone-save-btn" onclick="Gamify.saveForBetter()">🎯 שמור לפרס שווה יותר</button>
+    <div class="milestone-save-note" id="milestone-save-note"></div>
     <button class="milestone-close-btn" onclick="Gamify.closeMilestone()">בהמשך</button>
+  </div>
+</div>
+
+<!-- IDEA BOX MODAL -->
+<div id="modal-idea-box" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-idea-box')">
+  <div class="modal-sheet" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title">💡 הצע רעיון למערכת</div>
+      <button class="modal-close" onclick="closeModal('modal-idea-box')">×</button>
+    </div>
+    <div style="padding:0 20px 16px;">
+      <div style="background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(251,191,36,.04));border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--gray-700);line-height:1.6;">
+        🎁 <strong>רעיון שיאושר ויושם = +300 XP!</strong><br>
+        <span style="font-size:12px;color:var(--gray-500);">נשתדל לעדכן אם הרעיון שלך נבחר לפיתוח.</span>
+      </div>
+      <label class="form-label">תיאור הרעיון</label>
+      <textarea id="idea-text" class="form-input" rows="4" placeholder="לדוגמה: הוספת מסנן לפי ערך עסקה בפייפליין, שליחה ישירה לוואטסאפ ממסך הליד..." style="resize:vertical;min-height:100px;"></textarea>
+      <label class="form-label" style="margin-top:12px;">קטגוריה</label>
+      <select id="idea-category" class="form-input">
+        <option value="ui">עיצוב וממשק משתמש</option>
+        <option value="feature">פיצ'ר חדש</option>
+        <option value="automation">אוטומציה ו-AI</option>
+        <option value="whatsapp">WhatsApp ותקשורת</option>
+        <option value="reporting">דוחות וניתוחים</option>
+        <option value="other">אחר</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-idea-box')">ביטול</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="IdeaBox.submit()">💡 שלח רעיון ← </button>
+    </div>
+  </div>
+</div>
+
+<!-- WHATSAPP CONNECT MODAL -->
+<div id="modal-whatsapp-connect" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-whatsapp-connect')">
+  <div class="modal-sheet" style="max-width:440px;overflow:visible;">
+    <div class="modal-header" style="background:linear-gradient(135deg,#075E54,#128C7E);border-radius:16px 16px 0 0;padding:20px 20px 18px;">
+      <div>
+        <div class="modal-title" style="color:#fff;font-size:18px;">חיבור ה-WhatsApp שלך ב-2 דקות</div>
+        <div style="color:rgba(255,255,255,.7);font-size:12px;margin-top:3px;">נחבר בצורה מאובטחת את הוואטסאפ שלך לשליחת הודעות אוטומטיות מה-CRM</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-whatsapp-connect')" style="color:rgba(255,255,255,.7);">×</button>
+    </div>
+    <div style="padding:24px 20px 0;">
+      <!-- Visual flow -->
+      <div id="wa-connect-screen-main" style="">
+        <div style="display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:24px;">
+          <div style="text-align:center;">
+            <div style="font-size:42px;filter:drop-shadow(0 4px 10px rgba(37,211,102,.25));">📱</div>
+            <div style="font-size:11px;color:var(--gray-500);margin-top:4px;font-weight:600;">WhatsApp</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <div style="width:48px;height:2px;background:linear-gradient(90deg,#25D366,#2563EB);border-radius:2px;"></div>
+            <div style="font-size:10px;color:var(--gray-400);font-weight:600;">מאובטח</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:42px;filter:drop-shadow(0 4px 10px rgba(37,99,235,.25));">🏆</div>
+            <div style="font-size:11px;color:var(--gray-500);margin-top:4px;font-weight:600;">Liders CRM</div>
+          </div>
+        </div>
+        <div style="background:var(--gray-50);border-radius:14px;padding:16px 18px;margin-bottom:18px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <span style="font-size:20px;">✅</span>
+            <span style="font-size:13px;color:var(--gray-700);">קבל התראה WhatsApp על כל ליד חדש</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <span style="font-size:20px;">✅</span>
+            <span style="font-size:13px;color:var(--gray-700);">שלח הודעות אוטומטיות עם מעבר שלב</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:20px;">✅</span>
+            <span style="font-size:13px;color:var(--gray-700);">ניתוק בכל עת בלחיצה אחת</span>
+          </div>
+        </div>
+        <label style="display:flex;align-items:flex-start;gap:10px;background:var(--gray-50);border-radius:12px;padding:14px 16px;margin-bottom:20px;cursor:pointer;">
+          <input type="checkbox" id="wa-terms-check" style="margin-top:2px;accent-color:#25D366;width:16px;height:16px;flex-shrink:0;">
+          <span style="font-size:12px;color:var(--gray-600);line-height:1.6;">
+            אני מאשר כי השימוש תואם למדיניות WhatsApp, לשליחה לנמענים שהסכימו לכך, ומבין שהאחריות על השימוש היא עליי בלבד. החיבור מאובטח וניתן לניתוק בכל עת.
+          </span>
+        </label>
+        <button class="btn" id="wa-connect-main-btn" onclick="WAConnect.start()" style="width:100%;padding:14px;font-size:16px;font-weight:800;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border-radius:14px;margin-bottom:8px;">
+          📲 חיבור לוואטסאפ
+        </button>
+        <div style="text-align:center;font-size:12px;color:var(--gray-400);margin-bottom:4px;">ללא הגדרה טכנית. הכל מתבצע אוטומטית.</div>
+        <div style="text-align:center;font-size:11px;color:var(--gray-400);">המערכת תומכת בחשבונות WhatsApp Business בלבד</div>
+      </div>
+      <!-- Status screen -->
+      <div id="wa-connect-screen-progress" class="hidden" style="text-align:center;padding:12px 0 8px;">
+        <div style="font-size:48px;margin-bottom:12px;" id="wa-progress-icon">⏳</div>
+        <div style="font-size:16px;font-weight:800;color:var(--navy-500);margin-bottom:6px;" id="wa-progress-title">מחבר...</div>
+        <div style="font-size:13px;color:var(--gray-500);margin-bottom:20px;" id="wa-progress-sub">אנא המתן</div>
+        <div style="background:var(--gray-100);border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:13px;color:var(--gray-600);text-align:right;">
+          <strong>👋 הודעת אישור מה-AI:</strong><br>
+          <span style="font-style:italic;">"היי, כאן סוכן ה-AI שלך — החיבור הצליח! מהיום אני אעדכן אותך על כל ליד חדש ישירות בוואטסאפ 🚀"</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-whatsapp-connect')">סגור</button>
+    </div>
   </div>
 </div>
 
@@ -5346,8 +5517,8 @@
         <div class="tutorial-step-card">
           <div class="tutorial-step-num">6</div>
           <div>
-            <div class="tutorial-step-title">🏆 צבור XP ורוח פרסים</div>
-            <div class="tutorial-step-desc">כל פעולה מוסיפה XP. הגע ל-500 XP ותזכה באופניים חשמליות בשווי ₪2,000!</div>
+            <div class="tutorial-step-title">🏆 צבור XP ורווח פרסים</div>
+            <div class="tutorial-step-desc">כל פעולה מוסיפה XP. צבור XP ופדה פרסים אמיתיים — ייעוץ שיווקי, דפי נחיתה, קמפיינים ועוד!</div>
           </div>
         </div>
       </div>
@@ -5760,7 +5931,8 @@ const DB = {
       patch.done = updates.done;
       if (updates.done) patch.done_at = new Date().toISOString();
     }
-    const { error } = await sbClient.from('tasks').update(patch).eq('id', id);
+    const { error } = await sbClient.from('tasks').update(patch)
+      .eq('id', id).eq('tenant_id', this.tenantId);
     if (error) throw error;
   },
 
@@ -5845,12 +6017,15 @@ const DB = {
     const uuid = this.stageRev[shortStageId];
     if (!uuid) return;
     const { error } = await sbClient.from('leads')
-      .update({ pipeline_stage_id: uuid }).eq('id', leadId);
+      .update({ pipeline_stage_id: uuid })
+      .eq('id', leadId).eq('tenant_id', this.tenantId);
     if (error) throw error;
   },
 
   async updateLead(id, patch) {
-    const { data, error } = await sbClient.from('leads').update(patch).eq('id', id).select().single();
+    let q = sbClient.from('leads').update(patch).eq('id', id);
+    if (this.tenantId) q = q.eq('tenant_id', this.tenantId);
+    const { data, error } = await q.select().single();
     if (error) throw error;
     return data;
   },
@@ -8169,16 +8344,16 @@ const Gamify = {
   ],
 
   MILESTONES: [
-    { xp:  2000, icon: '🎯', value: '₪300',    name: 'ייעוץ שיווקי',         desc: 'פגישת ייעוץ שיווקי אישית + סקירת האסטרטגיה של העסק שלך' },
-    { xp:  5000, icon: '🌐', value: '₪500',    name: 'דף נחיתה מקצועי',     desc: 'בניית דף נחיתה ממירה, מעוצב ומותאם לעסק ולקהל שלך' },
-    { xp: 10000, icon: '💼', value: '₪800',    name: 'תהליך מכירה מותאם',   desc: 'עיצוב תהליך מכירה עסקי מקצועי — מהפנייה הראשונה ועד הסגירה' },
-    { xp: 18000, icon: '🎤', value: '₪2,000',  name: 'מצגת מכירה מקצועית', desc: 'Deck מעוצב ומחודד לפגישות עם לקוחות — עם סיפור מכירה ברור' },
-    { xp: 28000, icon: '📣', value: '₪1,500',  name: 'חבילת תוכן שיווקי',  desc: '10 פוסטים + 3 מאמרים + קמפיין מייל מוכן לפרסום' },
-    { xp: 40000, icon: '🏢', value: '₪2,500',  name: 'אתר תדמית מלא',      desc: 'אתר תדמית מקצועי כולל עיצוב, תוכן, דומיין ואחסון לשנה' },
-    { xp: 55000, icon: '🔍', value: '₪3,500',  name: 'חבילת SEO',           desc: 'אופטימיזציה לאתר + מחקר מילות מפתח + 6 מאמרים לקידום אורגני' },
-    { xp: 70000, icon: '⚙️', value: '₪3,500',  name: 'אוטומציה עסקית',     desc: '3 תהליכי Make.com אוטומטיים — לידים, פולואפ ודיווח — מותאמים לעסק' },
-    { xp: 85000, icon: '📢', value: '₪3,500',  name: 'קמפיין פרסום ממומן', desc: 'ניהול קמפיין גוגל ו/או פייסבוק ממומן לאורך חודש שלם' },
-    { xp:100000, icon: '🏆', value: '₪10,000', name: 'פרטנר אסטרטגי',      desc: 'ניהול שיווק דיגיטלי מלא + מנהל תיק לקוח אישי חצי שנה' },
+    { xp:  3000, icon: '🎯', value: '₪300',    name: 'ייעוץ שיווקי',         desc: 'פגישת ייעוץ שיווקי אישית + סקירת האסטרטגיה של העסק שלך' },
+    { xp:  7500, icon: '🌐', value: '₪500',    name: 'דף נחיתה מקצועי',     desc: 'בניית דף נחיתה ממירה, מעוצב ומותאם לעסק ולקהל שלך' },
+    { xp: 14000, icon: '💼', value: '₪800',    name: 'תהליך מכירה מותאם',   desc: 'עיצוב תהליך מכירה עסקי מקצועי — מהפנייה הראשונה ועד הסגירה' },
+    { xp: 25000, icon: '🎤', value: '₪2,000',  name: 'מצגת מכירה מקצועית', desc: 'Deck מעוצב ומחודד לפגישות עם לקוחות — עם סיפור מכירה ברור' },
+    { xp: 40000, icon: '📣', value: '₪1,500',  name: 'חבילת תוכן שיווקי',  desc: '10 פוסטים + 3 מאמרים + קמפיין מייל מוכן לפרסום' },
+    { xp: 58000, icon: '🏢', value: '₪2,500',  name: 'אתר תדמית מלא',      desc: 'אתר תדמית מקצועי כולל עיצוב, תוכן, דומיין ואחסון לשנה' },
+    { xp: 78000, icon: '🔍', value: '₪3,500',  name: 'חבילת SEO',           desc: 'אופטימיזציה לאתר + מחקר מילות מפתח + 6 מאמרים לקידום אורגני' },
+    { xp: 100000, icon: '⚙️', value: '₪3,500', name: 'אוטומציה עסקית',     desc: '3 תהליכי Make.com אוטומטיים — לידים, פולואפ ודיווח — מותאמים לעסק' },
+    { xp: 125000, icon: '📢', value: '₪3,500', name: 'קמפיין פרסום ממומן', desc: 'ניהול קמפיין גוגל ו/או פייסבוק ממומן לאורך חודש שלם' },
+    { xp: 150000, icon: '🏆', value: '₪10,000', name: 'פרטנר אסטרטגי',    desc: 'ניהול שיווק דיגיטלי מלא + מנהל תיק לקוח אישי חצי שנה' },
   ],
 
   _d: null,
@@ -8404,9 +8579,11 @@ const Gamify = {
     const today_ = new Date().toISOString().split('T')[0];
     if (d.dailyDone === today_) return;
     d.dailyDone = today_;
-    d.xp += 20;
+    d.xp += 80;
     this.save();
     this.renderWidget();
+    this.checkMilestones();
+    floatXP(80);
     toast('🎯 אתגר יומי הושלם! +80 XP', 'success');
   },
 
@@ -8524,9 +8701,10 @@ const Gamify = {
     }
 
     // Milestone progress bar
-    const claimed = new Set(d.milestoneClaimed || []);
-    const nextMs  = this.MILESTONES.find(m => !claimed.has(m.xp));
-    const msBar   = document.getElementById('gamify-milestone-bar');
+    const claimed  = new Set(d.milestoneClaimed  || []);
+    const deferred = new Set(d.milestoneDeferred || []);
+    const nextMs   = this.MILESTONES.find(m => !claimed.has(m.xp) && (!deferred.has(m.xp) || d.xp < m.xp));
+    const msBar    = document.getElementById('gamify-milestone-bar');
     if (msBar) {
       if (nextMs) {
         msBar.style.display = '';
@@ -8625,9 +8803,10 @@ const Gamify = {
   checkMilestones() {
     if (State.isDemo) return;
     const d = this.get();
-    const claimed = new Set(d.milestoneClaimed || []);
+    const claimed  = new Set(d.milestoneClaimed  || []);
+    const deferred = new Set(d.milestoneDeferred || []);
     for (const m of this.MILESTONES) {
-      if (claimed.has(m.xp)) continue;
+      if (claimed.has(m.xp) || deferred.has(m.xp)) continue;
       if (d.xp >= m.xp) { setTimeout(() => this.showMilestone(m), 800); break; }
     }
   },
@@ -8638,6 +8817,11 @@ const Gamify = {
     set('milestone-xp-badge', m.xp.toLocaleString('he-IL') + ' XP');
     set('milestone-prize-name', m.name);
     set('milestone-prize-desc', m.desc);
+    // Show next-reward teaser
+    const idx = this.MILESTONES.indexOf(m);
+    const nextM = this.MILESTONES[idx + 1];
+    const noteEl = document.getElementById('milestone-save-note');
+    if (noteEl) noteEl.textContent = nextM ? `הפרס הבא: ${nextM.icon} ${nextM.name} (${nextM.xp.toLocaleString('he-IL')} XP)` : '';
     this._pendingMilestone = m;
     document.getElementById('milestone-overlay')?.classList.add('show');
     this.confetti('milestone');
@@ -8659,9 +8843,22 @@ const Gamify = {
     toast('🎁 הפרס נרשם! נציג Liders יצור איתך קשר בקרוב 📞', 'success');
   },
 
+  saveForBetter() {
+    if (!this._pendingMilestone) return;
+    const d = this.get();
+    if (!d.milestoneDeferred) d.milestoneDeferred = [];
+    if (!d.milestoneDeferred.includes(this._pendingMilestone.xp)) {
+      d.milestoneDeferred.push(this._pendingMilestone.xp);
+    }
+    this.save();
+    this.closeMilestone();
+    toast('🎯 שמרנו! תוכל לממש מהחנות בכל עת — המשך לצבור XP לפרס גדול יותר!', 'success', 4000);
+  },
+
   renderStore() {
     const d = this.get();
-    const claimed = new Set(d.milestoneClaimed || []);
+    const claimed  = new Set(d.milestoneClaimed  || []);
+    const deferred = new Set(d.milestoneDeferred || []);
     const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
 
     set('xps-xp-num', d.xp.toLocaleString('he-IL'));
@@ -8685,6 +8882,7 @@ const Gamify = {
     if (!grid) return;
     grid.innerHTML = this.MILESTONES.map(m => {
       const isClaimed  = claimed.has(m.xp);
+      const isDeferred = deferred.has(m.xp) && !isClaimed;
       const isUnlocked = !isClaimed && d.xp >= m.xp;
       const isLocked   = !isClaimed && !isUnlocked;
       const cls = isClaimed ? 'xps-claimed' : isUnlocked ? 'xps-unlocked' : 'xps-locked';
@@ -8693,7 +8891,8 @@ const Gamify = {
       const footer = isClaimed
         ? `<span class="xps-claimed-tag">✅ מומש — נציגנו ייצור איתך קשר</span>`
         : isUnlocked
-        ? `<button class="xps-claim-btn" onclick="Gamify.showMilestone(Gamify.MILESTONES.find(x=>x.xp===${m.xp}))">🎁 מימוש הפרס</button>`
+        ? `<div style="display:flex;gap:8px;">${isDeferred ? '<span style="font-size:10px;color:var(--gold-400);font-weight:700;">🎯 שמור לפרס גדול</span>' : ''}
+           <button class="xps-claim-btn" onclick="Gamify.showMilestone(Gamify.MILESTONES.find(x=>x.xp===${m.xp}))">🎁 מימוש הפרס</button></div>`
         : `<span class="xps-xp-req">${m.xp.toLocaleString('he-IL')} XP</span>
            <div class="xps-locked-bar-wrap"><div class="xps-locked-bar" style="width:${pct}%"></div></div>`;
       return `<div class="xps-card ${cls}">
@@ -9650,12 +9849,19 @@ const App = {
     if (!State.isDemo) setTimeout(() => Onboarding.show(), 800);
     // Show billing reminder for days 7-1 (not in demo)
     if (!State.isDemo) setTimeout(() => Billing.showDailyReminder(), 1500);
+    // Init gamification (XP, milestones, daily login bonus)
+    Gamify.init();
     // Init motivation agent UI
     MotivationAgent.init();
     // Show guided tour for new users after onboarding is done
     if (!State.isDemo && localStorage.getItem('onboarding_done') === '1' && !localStorage.getItem('liders_tour_v1')) {
       setTimeout(() => GuidedTour.start(), 3500);
     }
+    // Show real estate shortcuts for relevant industries
+    const _re_ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+    const _re_show = ['realestate','mortgage','appraiser','realestate_lawyer','construction'].includes(_re_ind);
+    if (_re_show) { const el = document.getElementById('realestate-shortcuts'); if (el) el.classList.remove('hidden'); }
+
     // Init PIN lock
     AppLock._updateLockBtn();
     AppLock.initListeners();
@@ -9703,6 +9909,7 @@ const App = {
   },
   async _performLogout() {
     sessionStorage.removeItem('liders_auth_active');
+    MotivationAgent._stopCountdown();
     await DB.signOut();
     // Wipe per-tenant state so a different account signing in on this same
     // browser/device can never see (or be shown alongside) the previous
@@ -11375,11 +11582,19 @@ const Settings = {
       </div>
       <div class="settings-section">
         <div class="settings-section-title">חיבורים</div>
+        <div class="settings-row" onclick="WAConnect.open()" style="cursor:pointer;background:linear-gradient(135deg,rgba(37,211,102,.06),rgba(18,140,126,.04));border:1px solid rgba(37,211,102,.2);">
+          <div class="settings-row-icon" style="background:#DCFCE7;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;">📲</div>
+          <div class="settings-row-body">
+            <div class="settings-row-label">חיבור WhatsApp אוטומטי</div>
+            <div class="settings-row-sub" style="color:var(--orange-500);">לחץ לחיבור — ב-2 דקות בלבד</div>
+          </div>
+          <div class="settings-arrow" style="color:#25D366;">›</div>
+        </div>
         <div class="settings-row" style="flex-direction:column; align-items:stretch;">
           <div style="display:flex; align-items:center; gap:12px;">
             <div class="settings-row-icon">💬</div>
             <div class="settings-row-body" style="flex:1;">
-              <div class="settings-row-label">מספר WhatsApp עסקי</div>
+              <div class="settings-row-label">מספר WhatsApp עסקי (Twilio)</div>
               <div class="settings-row-sub" style="color:${Make.getWhatsApp() ? 'var(--green-600)' : 'var(--orange-500)'};">
                 ${Make.getWhatsApp() ? '✅ ' + escapeHtml(Make.getWhatsApp()) : 'לא הוגדר'}
               </div>
@@ -11497,6 +11712,17 @@ const Settings = {
           <div class="settings-arrow">↗</div>
         </div>
       </div>` : ''}
+      <div class="settings-section">
+        <div class="settings-section-title">קהילה ושיפורים</div>
+        <div class="settings-row" onclick="IdeaBox.open()" style="cursor:pointer;">
+          <div class="settings-row-icon">💡</div>
+          <div class="settings-row-body">
+            <div class="settings-row-label">הצע רעיון לשיפור</div>
+            <div class="settings-row-sub" style="color:var(--gold-500);">רעיון שיאושר = +300 XP אוטומטי ✨</div>
+          </div>
+          <div class="settings-arrow">›</div>
+        </div>
+      </div>
       <div class="settings-section">
         <div class="settings-section-title">אחר</div>
         <div class="settings-row" onclick="Settings.resetOnboarding()" style="cursor:pointer;">
@@ -12814,8 +13040,9 @@ sbClient.auth.onAuthStateChange((event, session) => {
           const t = loaded.tenant;
           State.tenant = t
             ? { id: t.id, name: t.name, slug: t.slug, plan: t.plan, trial_ends_at: t.trial_ends_at,
-                make_webhook_url: t.make_webhook_url || null, whatsapp_number: t.whatsapp_number || null }
-            : { name: 'הסוכנות שלי', plan: 'trial' };
+                make_webhook_url: t.make_webhook_url || null, whatsapp_number: t.whatsapp_number || null,
+                marketing_addon: t.marketing_addon || false, industry: t.industry || null }
+            : { name: 'הסוכנות שלי', plan: 'trial', marketing_addon: false };
           if (t?.make_webhook_url) localStorage.setItem('make_webhook_url', t.make_webhook_url);
           if (t?.whatsapp_number)  localStorage.setItem('whatsapp_number',  t.whatsapp_number);
           State.isNewTenant = isNew;
@@ -13887,6 +14114,9 @@ const TutorialVideo = {
    MOTIVATION AGENT MODULE
 ═══════════════════════════════════════════ */
 const MotivationAgent = {
+  _COOLDOWN_MS: 3 * 60 * 60 * 1000, // 3 hours between clicks
+  _STORAGE_KEY: 'liders_motive_last',
+  _countdownInterval: null,
   _quotes: [
     'כל ליד הוא הזדמנות. כל שיחה היא צעד קדימה. המשך כך! 💪',
     'עסקאות לא נסגרות בישיבה — הן נסגרות בפעולה. קדימה! 🚀',
@@ -13894,16 +14124,65 @@ const MotivationAgent = {
     'כל יום שאתה בונה את הפייפליין, אתה בונה את העתיד שלך.',
     'הצלחה היא הסכום של מאמצים קטנים שחוזרים יום אחרי יום.',
   ],
-  _updateUI() {
-    const rem = AiLimits.remaining('motivation');
-    const usageEl = document.getElementById('motivation-usage');
-    const btn = document.getElementById('motivation-btn');
-    if (usageEl) usageEl.textContent = `${rem} מסרים נותרו היום`;
-    if (btn) btn.disabled = rem === 0;
+
+  _getLastTime() { return parseInt(localStorage.getItem(this._STORAGE_KEY) || '0'); },
+  _setLastTime() { localStorage.setItem(this._STORAGE_KEY, Date.now().toString()); },
+  _remaining() { return Math.max(0, this._COOLDOWN_MS - (Date.now() - this._getLastTime())); },
+  _isCooling() { return this._remaining() > 0; },
+
+  _fmtTime(ms) {
+    const h = Math.floor(ms / 3600000);
+    const m = Math.floor((ms % 3600000) / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    return h > 0 ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${m}:${String(s).padStart(2,'0')}`;
   },
+
+  _updateUI() {
+    const rem    = AiLimits.remaining('motivation');
+    const isCool = this._isCooling();
+    const usageEl    = document.getElementById('motivation-usage');
+    const coolEl     = document.getElementById('motivation-cooldown');
+    const btn        = document.getElementById('motivation-btn');
+
+    if (usageEl) usageEl.textContent = isCool ? '' : `${rem} מסרים נותרו היום`;
+    if (coolEl)  coolEl.classList.toggle('hidden', !isCool);
+    if (btn)     btn.disabled = rem === 0 || isCool;
+
+    if (isCool) {
+      this._startCountdown();
+    } else {
+      this._stopCountdown();
+    }
+  },
+
+  _startCountdown() {
+    const el = document.getElementById('motivation-countdown');
+    if (!el) return;
+    if (this._countdownInterval) return; // already running
+    el.textContent = this._fmtTime(this._remaining());
+    this._countdownInterval = setInterval(() => {
+      const rem = this._remaining();
+      if (el) el.textContent = this._fmtTime(rem);
+      if (rem <= 0) {
+        this._stopCountdown();
+        this._updateUI();
+      }
+    }, 1000);
+  },
+
+  _stopCountdown() {
+    if (this._countdownInterval) {
+      clearInterval(this._countdownInterval);
+      this._countdownInterval = null;
+    }
+  },
+
   async generate() {
     if (State.isDemo) { toast('סוכן מוטיבציה זמין לאחר פתיחת חשבון', 'info'); return; }
     if (!AiLimits.hasAiAccess()) { toast('הסוכן זמין בתקופת הניסיון — הירשם בחינם', 'info'); return; }
+    if (this._isCooling()) {
+      toast(`⏳ הסוכן יחזור בעוד ${this._fmtTime(this._remaining())} — צור שגרת בוקר ולילה!`, 'info', 3000); return;
+    }
     if (!AiLimits.canUse('motivation')) {
       toast('הגעת למגבלת המוטיבציה היומית — חזור מחר! 🌅', 'info'); return;
     }
@@ -13912,16 +14191,24 @@ const MotivationAgent = {
     if (textEl) { textEl.textContent = 'מייצר מסר אישי...'; textEl.classList.add('loading'); }
     if (btn) btn.disabled = true;
     try {
-      const d = Gamify.get();
-      const lv = Gamify.getLevel(d.xp);
+      const d    = Gamify.get();
+      const lv   = Gamify.getLevel(d.xp);
       const name = State.agent?.name?.split(' ')[0] || 'סוכן';
-      const msg = await AI.call([{ role:'user', content:
-        `אתה מאמן מכירות ישראלי אנרגטי. שמך "מוטי". כתוב מסר מוטיבציה קצר, אישי ומדויק (2-3 משפטים בלבד) לסוכן נדל"ן בשם ${name}.
-נתוניו: רמה "${lv.name}" (${d.xp} XP), ${d.leadsAdded} לידים שהוסף, ${d.dealsClosed} עסקאות שנסגרו, ${d.streak || 0} ימים רצופים.
-המסר: ישיר, אנרגטי, בגוף שני זכר. אל תגיד "כמובן" או "בהחלט". אל תתחיל ב"שלום".` }],
-        160, { type: 'motivation' }
-      );
-      if (textEl) { textEl.textContent = msg || this._fallback(); textEl.classList.remove('loading'); }
+      const { data: fn, error: fnErr } = await sbClient.functions.invoke('ai-proxy', {
+        body: {
+          model: 'claude-sonnet-4-6',
+          system: 'אתה מאמן מכירות ישראלי אנרגטי בשם "מוטי". ענה תמיד בעברית בלבד. אסור לכתוב בשפות אחרות. כתוב תמיד בגוף שני זכר.',
+          messages: [{ role: 'user', content:
+            `כתוב מסר מוטיבציה קצר, אישי ומדויק (2-3 משפטים בלבד) לסוכן נדל"ן בשם ${name}.
+נתוניו: רמה "${lv.name}" (${d.xp} XP), ${d.leadsAdded} לידים שנוספו, ${d.dealsClosed} עסקאות שנסגרו, ${d.streak || 0} ימים רצופים.
+המסר: ישיר, אנרגטי. אל תגיד "כמובן" או "בהחלט". אל תתחיל ב"שלום".` }],
+          max_tokens: 200,
+        }
+      });
+      if (fnErr) throw fnErr;
+      const msg = fn?.content?.[0]?.text || fn?.content || null;
+      if (textEl) { textEl.textContent = (typeof msg === 'string' && msg.trim()) ? msg.trim() : this._fallback(); textEl.classList.remove('loading'); }
+      this._setLastTime();
       AiLimits.consume('motivation');
       Gamify.event('use_ai');
     } catch(e) {
@@ -13929,13 +14216,15 @@ const MotivationAgent = {
     }
     this._updateUI();
     if (btn) btn.disabled = false;
+    this._updateUI();
   },
+
   _fallback() {
     return this._quotes[Math.floor(Math.random() * this._quotes.length)];
   },
+
   init() {
     this._updateUI();
-    // In demo mode, hide motivation card
     if (State.isDemo) {
       const card = document.getElementById('motivation-card');
       if (card) card.style.display = 'none';
@@ -13971,8 +14260,8 @@ const GuidedTour = {
     {
       target: '#gamify-widget',
       emoji: '🏆',
-      title: 'צבור XP ורוח פרסים!',
-      text: 'כל פעולה מוסיפה XP. הגע ל-500 XP ותזכה באופניים חשמליות בשווי ₪2,000. רצינו.',
+      title: 'צבור XP ורווח פרסים!',
+      text: 'כל פעולה מוסיפה XP. צבור XP ופדה פרסים אמיתיים — ייעוץ שיווקי, דפי נחיתה, קמפיינים ועוד.',
     },
     {
       target: '[data-screen="marketing"]',
@@ -14064,6 +14353,103 @@ const GuidedTour = {
     if (completed) toast('🎉 מוכן! הוסף את הליד הראשון שלך', 'success');
   },
 };
+
+/* ═══════════════════════════════════════════
+   IDEA BOX — submit user ideas for 300 XP
+═══════════════════════════════════════════ */
+const IdeaBox = {
+  _STORAGE_KEY: 'liders_ideas_v1',
+  _submitted: null,
+
+  open() {
+    if (demoGuard()) return;
+    const ta = document.getElementById('idea-text');
+    if (ta) ta.value = '';
+    openModal('modal-idea-box');
+  },
+
+  async submit() {
+    const text = (document.getElementById('idea-text')?.value || '').trim();
+    if (text.length < 15) { toast('נא כתוב לפחות משפט אחד המתאר את הרעיון', 'warning'); return; }
+    const category = document.getElementById('idea-category')?.value || 'other';
+    const agentName  = State.agent?.name  || '';
+    const agentEmail = State.agent?.email || '';
+    const tenantName = State.tenant?.name || '';
+
+    const btn = document.querySelector('#modal-idea-box .modal-footer .btn-primary');
+    if (btn) { btn.disabled = true; btn.textContent = 'שולח...'; }
+
+    try {
+      // Store locally
+      const ideas = JSON.parse(localStorage.getItem(this._STORAGE_KEY) || '[]');
+      const idea  = { text, category, ts: Date.now() };
+      ideas.push(idea);
+      localStorage.setItem(this._STORAGE_KEY, JSON.stringify(ideas));
+
+      // Send to Make.com webhook (non-blocking)
+      fetch('https://hook.eu1.make.com/f0nzngm6gdokri5naqu7enbay538ay8i', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'idea_suggestion', text, category,
+          agent_name: agentName, agent_email: agentEmail, tenant_name: tenantName })
+      }).catch(() => {});
+
+      // Award 300 XP
+      const d = Gamify.get();
+      d.xp += 300;
+      Gamify.save();
+      Gamify.renderSidebar();
+      Gamify.renderWidget();
+      Gamify.checkMilestones();
+      floatXP(300);
+
+      closeModal('modal-idea-box');
+      toast('🎉 תודה! עובדים על הרעיון שלך — קיבלת 300 XP נוספים!', 'success', 5000);
+    } catch(e) {
+      toast('שגיאה בשליחה: ' + e.message, 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '💡 שלח רעיון ← '; }
+    }
+  },
+};
+window.IdeaBox = IdeaBox;
+
+/* ═══════════════════════════════════════════
+   WHATSAPP CONNECT — UI flow (backend TBD)
+═══════════════════════════════════════════ */
+const WAConnect = {
+  open() {
+    document.getElementById('wa-connect-screen-main')?.classList.remove('hidden');
+    document.getElementById('wa-connect-screen-progress')?.classList.add('hidden');
+    const cb = document.getElementById('wa-terms-check');
+    if (cb) cb.checked = false;
+    openModal('modal-whatsapp-connect');
+  },
+
+  start() {
+    const cb = document.getElementById('wa-terms-check');
+    if (!cb?.checked) { toast('יש לאשר את תנאי השימוש לפני החיבור', 'warning'); return; }
+
+    document.getElementById('wa-connect-screen-main')?.classList.add('hidden');
+    const prog = document.getElementById('wa-connect-screen-progress');
+    if (prog) prog.classList.remove('hidden');
+
+    const icon  = document.getElementById('wa-progress-icon');
+    const title = document.getElementById('wa-progress-title');
+    const sub   = document.getElementById('wa-progress-sub');
+
+    if (icon) icon.textContent = '⏳';
+    if (title) title.textContent = 'מכין את החיבור...';
+    if (sub) sub.textContent = 'אנא המתן מספר שניות';
+
+    setTimeout(() => {
+      if (icon) icon.textContent = '📲';
+      if (title) title.textContent = 'בקרוב זמין!';
+      if (sub) sub.textContent = 'תכונת ה-WhatsApp מתפתחת ותהיה זמינה בשבועות הקרובים. נודיע לך ברגע שפתוח!';
+      toast('📲 WhatsApp — בקרוב! נעדכן אותך כשיהיה זמין', 'info', 4000);
+    }, 1800);
+  },
+};
+window.WAConnect = WAConnect;
 
 </script>
 <!-- ═══ SAVE PROCESSING OVERLAY ═══════════════════════════════ -->
