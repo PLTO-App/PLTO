@@ -5,6 +5,13 @@ const CORS = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const ALLOWED_MODELS = [
+  'claude-haiku-4-5-20251001',
+  'claude-sonnet-4-6',
+];
+
+const DEFAULT_MODEL = 'claude-haiku-4-5-20251001';
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
 
@@ -12,10 +19,12 @@ serve(async (req) => {
     const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
     if (!apiKey) return Response.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 500, headers: CORS });
 
-    const { messages, max_tokens = 400, system } = await req.json();
+    const { messages, max_tokens = 400, system, model: requestedModel } = await req.json();
+
+    const model = ALLOWED_MODELS.includes(requestedModel) ? requestedModel : DEFAULT_MODEL;
 
     const body: Record<string, unknown> = {
-      model: 'claude-haiku-4-5-20251001',
+      model,
       max_tokens,
       messages,
     };
@@ -37,4 +46,3 @@ serve(async (req) => {
     return Response.json({ error: { message: e.message } }, { status: 500, headers: CORS });
   }
 });
-
