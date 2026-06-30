@@ -623,43 +623,6 @@
       #main-content { margin-right: var(--sidebar-w); padding-bottom: 0; }
     }
 
-    /* ═══════════════════════════════════════
-       DESKTOP LAYOUT IMPROVEMENTS
-    ═══════════════════════════════════════ */
-    @media (min-width: 768px) {
-      /* Hide PWA install banner on desktop */
-      #pwa-install-banner { display: none !important; }
-
-      /* Constrain gamify widget so it doesn't stretch the full width */
-      .gamify-widget { max-width: 700px; margin: 0 auto 14px; }
-
-      /* Dashboard content: limit max width and center */
-      .screen-body { max-width: 900px; margin: 0 auto; }
-
-      /* Pipeline board: allow horizontal scroll on desktop too, better spacing */
-      .pipeline-board { gap: 16px; }
-      .pipeline-col { min-width: 240px; }
-
-      /* Stats row — 4 columns on desktop */
-      .stats-grid { grid-template-columns: repeat(4, 1fr); }
-
-      /* Lead cards get slightly more padding on desktop */
-      .lead-card { padding: 16px 18px; }
-
-      /* AI motivation card — limit width */
-      .ai-motivation-card { max-width: 700px; margin: 0 auto 14px; }
-    }
-
-    @media (min-width: 1024px) {
-      /* On large screens, two-column dashboard layout */
-      .dashboard-two-col {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        align-items: start;
-      }
-    }
-
     /* Screen header */
     .screen-header {
       background: var(--surface); padding: 16px 20px;
@@ -3112,6 +3075,58 @@
   .email-tips-title   { font-size:12px; font-weight:800; color:var(--navy-500); margin-bottom:10px; }
   .email-tip          { font-size:12px; color:var(--gray-600); margin-bottom:6px; line-height:1.5; display:flex; gap:6px; }
   .email-tip:last-child { margin-bottom:0; }
+
+  /* ═══════════════════════════════════════
+     DESKTOP LAYOUT IMPROVEMENTS
+     (kept last in the stylesheet so these rules win over
+     earlier same-specificity component rules)
+  ═══════════════════════════════════════ */
+  @media (min-width: 768px) {
+    /* Hide PWA install banner on desktop */
+    #pwa-install-banner { display: none !important; }
+
+    /* Center & constrain the dashboard so content doesn't stretch edge-to-edge */
+    #screen-dashboard { max-width: 1080px; margin: 0 auto; }
+
+    /* Constrain gamify widget so it doesn't dominate the page */
+    .gamify-widget { max-width: 720px; margin: 0 auto 14px; }
+    .motivation-card { max-width: 720px; margin: 0 auto 14px; }
+    #dash-ai-briefing.ai-card { max-width: 720px; margin: 0 auto 14px; }
+    #realestate-shortcuts.re-shortcuts { max-width: 720px; margin: 0 auto 14px !important; }
+    #dash-getting-started.card { max-width: 720px; margin: 0 auto 16px; }
+
+    /* KPI row: wrap into a grid instead of horizontal scroll */
+    .kpi-row { flex-wrap: wrap; overflow-x: visible; justify-content: center; }
+    .kpi-row > * { flex: 1 1 160px; max-width: 220px; }
+
+    /* Quick features row: wrap into a grid instead of horizontal scroll */
+    .dash-features-row { flex-wrap: wrap; overflow-x: visible; justify-content: center; max-width: 900px; margin: 0 auto; }
+    .dash-features-row > * { flex: 0 1 110px; }
+
+    /* Pipeline columns get a bit more breathing room on desktop */
+    .kanban-col { width: 270px; }
+    .pipeline-wrapper { padding: 24px; gap: 18px; }
+
+    /* Lead cards get slightly more padding on desktop */
+    .lead-card { padding: 16px 18px; }
+
+    /* Growth/referral card sits right after the dashboard — keep it aligned */
+    #dash-growth-card-wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px !important; }
+  }
+
+  /* On wide desktop screens, center list/grid screens instead of stretching
+     them edge-to-edge (leads, properties, tasks, settings, etc.) */
+  @media (min-width: 1024px) {
+    .screen-header,
+    .screen-body,
+    .search-wrap,
+    .properties-grid,
+    .tasks-list,
+    .activity-list {
+      padding-left: max(20px, calc(50% - 540px));
+      padding-right: max(20px, calc(50% - 540px));
+    }
+  }
 
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.js"
