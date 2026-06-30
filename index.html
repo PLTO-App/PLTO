@@ -7550,6 +7550,7 @@ const Tools = {
       closing: 'סגירת עסקה'
     };
     if (!res || !btn) return;
+    if (State.isDemo) { DemoLock.showPrompt('הצטרפו לנסיון חינמי ותוכלו להשתמש בסוכן ה-AI ליצירת תסריטי שיחה ✨'); return; }
     btn.textContent = '⏳ מייצר תסריט...'; btn.disabled = true;
     res.classList.remove('visible'); if (acts) acts.style.display = 'none';
     try {
@@ -7599,6 +7600,7 @@ ${type === 'objection' ? '**תשובות להתנגדויות נפוצות:**\n[
     const acts    = document.getElementById('email-actions');
     const toneLabel = { formal:'רשמי ומקצועי', friendly:'ידידותי ומקצועי', urgent:'דחוף אך מנומס', followup:'עדין ולא פולשני' };
     if (!res || !btn) return;
+    if (State.isDemo) { DemoLock.showPrompt('הצטרפו לנסיון חינמי ותוכלו להשתמש בסוכן ה-AI ליצירת אימיילים מקצועיים ✨'); return; }
     btn.textContent = '⏳ כותב אימייל...'; btn.disabled = true;
     res.classList.remove('visible'); if (acts) acts.style.display = 'none';
     try {
@@ -7641,6 +7643,7 @@ ${type === 'objection' ? '**תשובות להתנגדויות נפוצות:**\n[
     const btn      = document.getElementById('prop-btn');
     const acts     = document.getElementById('prop-actions');
     if (!res || !btn) return;
+    if (State.isDemo) { DemoLock.showPrompt('הצטרפו לנסיון חינמי ותוכלו להשתמש בסוכן ה-AI ליצירת הצעות מחיר ✨'); return; }
     btn.textContent = '⏳ מייצר הצעה...'; btn.disabled = true;
     res.classList.remove('visible'); if (acts) acts.style.display = 'none';
     try {
@@ -8483,6 +8486,7 @@ const CallLog = {
 ═══════════════════════════════════════════ */
 const SmartWA = {
   async open(leadId) {
+    if (State.isDemo) { DemoLock.showPrompt('הצטרפו לנסיון חינמי ותוכלו לשלוח הודעות WhatsApp חכמות שנכתבות ע"י AI ✨'); return; }
     if (!Marketing.hasMktgAccess()) {
       toast('✨ כלי זה זמין בתוספת השיווק', 'warning');
       return;
@@ -9562,14 +9566,16 @@ function navRipple(el) {
    DEMO LOCK
 ═══════════════════════════════════════════ */
 const DemoLock = {
-  showPrompt() {
+  showPrompt(customMsg) {
     const el = document.getElementById('modal-demo-lock');
     if (!el) return;
     // Personalise message with current lead count
     const n = State.leads ? State.leads.length : 0;
     const msgEl = document.getElementById('demo-lock-lead-msg');
     if (msgEl) {
-      if (n > 0) {
+      if (customMsg) {
+        msgEl.innerHTML = customMsg;
+      } else if (n > 0) {
         msgEl.innerHTML = `יש לך <strong style="color:var(--navy)">${n} לידים בדמו</strong> שיאבדו כשתצא.<br>הירשם ושמור אותם לצמיתות.`;
       } else {
         msgEl.innerHTML = 'פתח חשבון ניסיון חינמי ל-30 יום<br>וקבל גישה מלאה לכל הכלים';
@@ -9723,6 +9729,7 @@ const EmailAI = {
     const emailText = (input?.value || '').trim();
     if (!emailText) { toast('הדבק תוכן מייל לפני הניתוח', 'error'); return; }
     if (emailText.length < 20) { toast('המייל קצר מדי — הדבק את התוכן המלא', 'error'); return; }
+    if (State.isDemo) { DemoLock.showPrompt('הצטרפו לנסיון חינמי ותוכלו להשתמש בסוכן ה-AI לניתוח מיילים ויצירת תשובות ✨'); return; }
 
     const btn = document.getElementById('email-analyze-btn');
     btn.disabled = true;
@@ -14023,7 +14030,7 @@ const Support = {
   _busy: false,
 
   open() {
-    if (State.isDemo) { toast('⚡ מצב דמו — התחבר כדי לפנות לתמיכה', 'warning'); return; }
+    if (State.isDemo) { DemoLock.showPrompt('הצטרפו לנסיון חינמי ותוכלו לקבל תמיכה אישית מסוכן ה-AI שלנו 🤖'); return; }
     const inp     = document.getElementById('support-msg-input');
     const aiEl    = document.getElementById('support-ai-response');
     const btn     = document.getElementById('support-submit-btn');
@@ -14183,7 +14190,7 @@ const QuickLog = {
   },
 
   async process() {
-    if (State.isDemo) { toast('⚡ יומן מהיר AI זמין לחשבונות פעילים בלבד — פתח חשבון חינמי', 'warning'); this._setState('input'); return; }
+    if (State.isDemo) { DemoLock.showPrompt('הצטרפו לנסיון חינמי ותוכלו להשתמש ביומן המהיר עם AI ✨'); this._setState('input'); return; }
     if (!AiLimits.hasAiAccess()) {
       toast('⏰ תקופת הניסיון הסתיימה — שדרג לתוסף ה-AI (₪100/חודש) להמשך שימוש', 'warning');
       this._setState('input'); return;
@@ -14503,7 +14510,7 @@ const MotivationAgent = {
   },
 
   async generate() {
-    if (State.isDemo) { toast('סוכן מוטיבציה זמין לאחר פתיחת חשבון', 'info'); return; }
+    if (State.isDemo) { DemoLock.showPrompt('הצטרפו לנסיון חינמי ותוכלו לקבל מוטיבציה יומית מסוכן ה-AI 💪'); return; }
     if (!AiLimits.hasAiAccess()) { toast('הסוכן זמין בתקופת הניסיון — הירשם בחינם', 'info'); return; }
     if (!AiLimits._isAdmin() && this._isCooling()) {
       toast(`⏳ הסוכן יחזור בעוד ${this._fmtTime(this._remaining())} — צור שגרת בוקר ולילה!`, 'info', 3000); return;
