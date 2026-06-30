@@ -8076,17 +8076,18 @@ const AiLimits = {
     } catch { return { date: this._today(), general: 0, marketing: 0, quicklog: 0, support: 0, motivation: 0 }; }
   },
   _save(d) { localStorage.setItem(this._k, JSON.stringify(d)); },
-  _lim() { return this.PLANS[State.tenant?.plan||'trial'] || this.PLANS.trial; },
+  // Admin accounts always get the premium tier's quota (highest paid package) — never the
+  // 999/day internal bypass — so usage limits and cooldowns are felt the same as a real customer.
+  _lim() { if (this._isAdmin()) return this.PLANS.premium; return this.PLANS[State.tenant?.plan||'trial'] || this.PLANS.trial; },
   hasAiAccess() {
     if (State.isDemo) return false;
     if (this._isAdmin()) return true;
     return State.tenant?.marketing_addon === true || Billing.isPaid() || Billing.daysLeft() > 0;
   },
-  canUse(t) { if (this._isAdmin()) return true; const d=this._get(); return (d[t]||0) < this._lim()[t]; },
+  canUse(t) { const d=this._get(); return (d[t]||0) < this._lim()[t]; },
   consume(t) { const d=this._get(); d[t]=(d[t]||0)+1; this._save(d); },
-  remaining(t) { if (this._isAdmin()) return 999; const d=this._get(); return Math.max(0,this._lim()[t]-(d[t]||0)); },
+  remaining(t) { const d=this._get(); return Math.max(0,this._lim()[t]-(d[t]||0)); },
   limitLabel(t) {
-    if (this._isAdmin()) return '';
     const rem = this.remaining(t); const lim = this._lim()[t];
     return `${rem}/${lim} שימושים נותרו היום`;
   },
@@ -14672,7 +14673,6 @@ const Support = {
       el.innerHTML = '🔒 תגובת AI זמינה לאחר שדרוג, <a href="mailto:biz@liders-crm.com" style="color:var(--blue-500);">פצור אלינו</a>';
       return;
     }
-    if (AiLimits._isAdmin()) { el.textContent = ''; return; }
     const rem = AiLimits.remaining('support');
     const lim = AiLimits._lim().support;
     const isPaid = State.tenant?.marketing_addon === true;
@@ -15157,7 +15157,7 @@ const MotivationAgent = {
       }
     }
     if (coolEl)  coolEl.classList.toggle('hidden', !isCool);
-    if (btn)     btn.disabled = (rem === 0 || isCool) && !AiLimits._isAdmin();
+    if (btn)     btn.disabled = (rem === 0 || isCool);
 
     if (isCool) {
       this._startCountdown();
@@ -15191,7 +15191,7 @@ const MotivationAgent = {
   async generate() {
     if (State.isDemo) { DemoLock.showPrompt('הצטרפו לנסיון חינמי ותוכלו לקבל מוטיבציה יומית מסוכן ה-AI 💪'); return; }
     if (!AiLimits.hasAiAccess()) { toast('הסוכן זמין בתקופת הניסיון, הירשם בחינם', 'info'); return; }
-    if (!AiLimits._isAdmin() && this._isCooling()) {
+    if (this._isCooling()) {
       toast(`⏳ הסוכן יחזור בעוד ${this._fmtTime(this._remaining())}, צור שגרת בוקר ולילה!`, 'info', 3000); return;
     }
     if (!AiLimits.canUse('motivation')) {
