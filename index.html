@@ -3563,25 +3563,54 @@
         <button class="tutorial-btn" onclick="TutorialVideo.open()">▶ ראה איך משתמשים במערכת</button>
       </div>
 
-      <!-- MOTIVATION AGENT - AI motivational boost, up to 5/day -->
-      <div class="motivation-card" id="motivation-card">
-        <button class="motivation-card-dismiss" onclick="document.getElementById('motivation-card').style.display='none'" title="הסתר">×</button>
-        <div class="motivation-card-header">
-          <div class="motivation-card-icon">🚀</div>
-          <div>
-            <div class="motivation-card-title">סוכן מוטיבציה</div>
-            <div class="motivation-card-sub">AI אישי שדוחף אותך קדימה</div>
-          </div>
+      <div id="dash-trial-card"></div>
+
+      <!-- AI BRIEFING - first thing the agent sees -->
+      <div class="ai-card" id="dash-ai-briefing" style="margin: 0 20px 14px;">
+        <div class="ai-card-title">✨ עוזר AI אישי, תדרוך יומי על המערכת</div>
+        <div id="dash-ai-briefing-body" style="min-height:40px;"></div>
+      </div>
+
+      <!-- KPI CARDS - primary data -->
+      <div class="kpi-row" id="kpi-row"></div>
+
+      <!-- QUICK FEATURES ROW -->
+      <div class="dash-features-row" id="dash-features-row">
+        <div class="dash-feat-tile" style="background:linear-gradient(135deg,#0F1F3D,#1a3a6a);color:#fff;border-color:transparent;" onclick="QuickLog.open()">
+          <div class="dash-feat-tile-icon">⚡</div>
+          <div class="dash-feat-tile-label" style="color:#fff;">יומן<br>מהיר AI</div>
         </div>
-        <div class="motivation-text-area" id="motivation-text">לחץ על הכפתור וקבל מסר מוטיבציה אישי לפי הנתונים שלך...</div>
-        <div class="motivation-card-footer">
-          <button class="motivation-btn" id="motivation-btn" onclick="MotivationAgent.generate()">✨ קבל מוטיבציה</button>
-          <div id="motivation-footer-info">
-            <span class="motivation-usage-badge" id="motivation-usage"></span>
-            <div class="motivation-cooldown hidden" id="motivation-cooldown">
-              ⏳ זמין שוב בעוד: <span class="motivation-cooldown-timer" id="motivation-countdown">—</span>
-            </div>
-          </div>
+        <div class="dash-feat-tile dash-feat-tile-pro" onclick="App.go('pro')">
+          <div class="dash-feat-tile-icon">✨</div>
+          <div class="dash-feat-tile-label">פיצ'רים<br>PRO</div>
+        </div>
+        <div class="dash-feat-tile" style="background:linear-gradient(135deg,#5b21b6,#7c3aed);color:#fff;border-color:transparent;" onclick="App.go('marketing')">
+          <div class="dash-feat-tile-icon">🎯</div>
+          <div class="dash-feat-tile-label" style="color:#fff;">שיווק<br>AI</div>
+        </div>
+        <div class="dash-feat-tile" onclick="MortgageCalc.open()">
+          <div class="dash-feat-tile-icon">🧮</div>
+          <div class="dash-feat-tile-label">מחשבון<br>משכנתא</div>
+        </div>
+        <div class="dash-feat-tile" onclick="App.go('tools')">
+          <div class="dash-feat-tile-icon">🤖</div>
+          <div class="dash-feat-tile-label">כלי AI</div>
+        </div>
+        <div class="dash-feat-tile" onclick="App.go('properties')">
+          <div class="dash-feat-tile-icon">🏠</div>
+          <div class="dash-feat-tile-label">נכסים</div>
+        </div>
+        <div class="dash-feat-tile" onclick="App.go('analytics')">
+          <div class="dash-feat-tile-icon">📊</div>
+          <div class="dash-feat-tile-label">ניתוח<br>נתונים</div>
+        </div>
+        <div class="dash-feat-tile" onclick="App.go('pipeline')">
+          <div class="dash-feat-tile-icon">📋</div>
+          <div class="dash-feat-tile-label">פייפליין</div>
+        </div>
+        <div class="dash-feat-tile" onclick="openModal('modal-add-lead')">
+          <div class="dash-feat-tile-icon">➕</div>
+          <div class="dash-feat-tile-label">ליד חדש</div>
         </div>
       </div>
 
@@ -3604,7 +3633,29 @@
         </div>
       </div>
 
-      <!-- GAMIFICATION WIDGET - motivation & XP progress - prominent at top -->
+      <!-- MOTIVATION AGENT - AI motivational boost, up to 5/day -->
+      <div class="motivation-card" id="motivation-card">
+        <button class="motivation-card-dismiss" onclick="document.getElementById('motivation-card').style.display='none'" title="הסתר">×</button>
+        <div class="motivation-card-header">
+          <div class="motivation-card-icon">🚀</div>
+          <div>
+            <div class="motivation-card-title">סוכן מוטיבציה</div>
+            <div class="motivation-card-sub">AI אישי שדוחף אותך קדימה</div>
+          </div>
+        </div>
+        <div class="motivation-text-area" id="motivation-text">לחץ על הכפתור וקבל מסר מוטיבציה אישי לפי הנתונים שלך...</div>
+        <div class="motivation-card-footer">
+          <button class="motivation-btn" id="motivation-btn" onclick="MotivationAgent.generate()">✨ קבל מוטיבציה</button>
+          <div id="motivation-footer-info">
+            <span class="motivation-usage-badge" id="motivation-usage"></span>
+            <div class="motivation-cooldown hidden" id="motivation-cooldown">
+              ⏳ זמין שוב בעוד: <span class="motivation-cooldown-timer" id="motivation-countdown">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GAMIFICATION WIDGET - motivation & XP progress -->
       <div class="gamify-widget" id="gamify-widget">
         <!-- ── Activation gate: shown when < 5 leads ── -->
         <div id="gamify-activation-gate" style="display:none;text-align:center;padding:4px 0 8px;">
@@ -3701,57 +3752,6 @@
               <span>3️⃣</span><span>קבל תזכורות אוטומטיות וניתוח AI שיעזרו לך לסגור עוד עסקאות</span>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div id="dash-trial-card"></div>
-
-      <!-- AI BRIEFING - first thing the agent sees -->
-      <div class="ai-card" id="dash-ai-briefing" style="margin: 0 20px 14px;">
-        <div class="ai-card-title">✨ עוזר AI אישי, תדרוך יומי על המערכת</div>
-        <div id="dash-ai-briefing-body" style="min-height:40px;"></div>
-      </div>
-
-      <!-- KPI CARDS - primary data -->
-      <div class="kpi-row" id="kpi-row"></div>
-
-      <!-- QUICK FEATURES ROW -->
-      <div class="dash-features-row" id="dash-features-row">
-        <div class="dash-feat-tile" style="background:linear-gradient(135deg,#0F1F3D,#1a3a6a);color:#fff;border-color:transparent;" onclick="QuickLog.open()">
-          <div class="dash-feat-tile-icon">⚡</div>
-          <div class="dash-feat-tile-label" style="color:#fff;">יומן<br>מהיר AI</div>
-        </div>
-        <div class="dash-feat-tile dash-feat-tile-pro" onclick="App.go('pro')">
-          <div class="dash-feat-tile-icon">✨</div>
-          <div class="dash-feat-tile-label">פיצ'רים<br>PRO</div>
-        </div>
-        <div class="dash-feat-tile" style="background:linear-gradient(135deg,#5b21b6,#7c3aed);color:#fff;border-color:transparent;" onclick="App.go('marketing')">
-          <div class="dash-feat-tile-icon">🎯</div>
-          <div class="dash-feat-tile-label" style="color:#fff;">שיווק<br>AI</div>
-        </div>
-        <div class="dash-feat-tile" onclick="MortgageCalc.open()">
-          <div class="dash-feat-tile-icon">🧮</div>
-          <div class="dash-feat-tile-label">מחשבון<br>משכנתא</div>
-        </div>
-        <div class="dash-feat-tile" onclick="App.go('tools')">
-          <div class="dash-feat-tile-icon">🤖</div>
-          <div class="dash-feat-tile-label">כלי AI</div>
-        </div>
-        <div class="dash-feat-tile" onclick="App.go('properties')">
-          <div class="dash-feat-tile-icon">🏠</div>
-          <div class="dash-feat-tile-label">נכסים</div>
-        </div>
-        <div class="dash-feat-tile" onclick="App.go('analytics')">
-          <div class="dash-feat-tile-icon">📊</div>
-          <div class="dash-feat-tile-label">ניתוח<br>נתונים</div>
-        </div>
-        <div class="dash-feat-tile" onclick="App.go('pipeline')">
-          <div class="dash-feat-tile-icon">📋</div>
-          <div class="dash-feat-tile-label">פייפליין</div>
-        </div>
-        <div class="dash-feat-tile" onclick="openModal('modal-add-lead')">
-          <div class="dash-feat-tile-icon">➕</div>
-          <div class="dash-feat-tile-label">ליד חדש</div>
         </div>
       </div>
 
