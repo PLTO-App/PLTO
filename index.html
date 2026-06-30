@@ -1541,6 +1541,38 @@
       border: 1px solid rgba(124,58,237,0.2);
       border-radius: var(--radius-md); padding: 14px;
     }
+    /* Dashboard smart-agent card — stands out from the regular .ai-card variants */
+    .dash-smart-card {
+      position: relative;
+      background: linear-gradient(155deg, var(--navy-50) 0%, var(--purple-100) 55%, #fdf2ff 100%);
+      border: 1px solid transparent;
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 10px 26px -10px rgba(124,58,237,.45), 0 0 0 1px rgba(124,58,237,.12);
+      isolation: isolate;
+    }
+    .dash-smart-card::before {
+      content: '';
+      position: absolute; inset: -1.5px;
+      border-radius: 19px; padding: 1.5px;
+      background: linear-gradient(120deg, #7c3aed, #2563eb, #f59e0b, #7c3aed);
+      background-size: 300% 300%;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor; mask-composite: exclude;
+      animation: dash-smart-ring 6s linear infinite;
+      pointer-events: none; z-index: -1;
+    }
+    .dash-smart-card-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      box-shadow: 0 0 0 4px rgba(124,58,237,.15);
+      font-size: 13px;
+    }
+    @keyframes dash-smart-ring {
+      0%   { background-position: 0% 50%; }
+      100% { background-position: 300% 50%; }
+    }
     .dash-import-banner {
       margin: 0 20px 14px;
       background: linear-gradient(135deg, var(--navy-50), var(--blue-100));
@@ -1574,6 +1606,44 @@
     @keyframes ai-pulse {
       0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
       40% { transform: scale(1.1); opacity: 1; }
+    }
+    /* Fire-burn CTA button — flickers idly, "burns away" on click */
+    .briefing-fire-btn {
+      position: relative; overflow: visible; isolation: isolate;
+    }
+    .briefing-fire-btn::after {
+      content: ''; position: absolute; left: 8%; right: 8%; bottom: -5px; height: 12px;
+      background:
+        radial-gradient(circle at 20% 100%, rgba(251,191,36,.9), transparent 60%),
+        radial-gradient(circle at 50% 100%, rgba(249,115,22,.95), transparent 65%),
+        radial-gradient(circle at 80% 100%, rgba(239,68,68,.85), transparent 60%);
+      filter: blur(4px); opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 2;
+    }
+    .briefing-fire-btn:hover::after, .briefing-fire-btn:focus-visible::after {
+      opacity: 1; animation: briefing-flicker .55s ease-in-out infinite alternate;
+    }
+    @keyframes briefing-flicker {
+      from { transform: scaleY(1) translateY(0); opacity: .8; }
+      to   { transform: scaleY(1.35) translateY(-3px); opacity: 1; }
+    }
+    .briefing-fire-btn.is-burning {
+      animation: briefing-burn .5s ease-in forwards; pointer-events: none;
+    }
+    .briefing-fire-btn.is-burning::before {
+      content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: 3;
+      background: linear-gradient(0deg, #ea580c 0%, #fbbf24 35%, transparent 75%);
+      mix-blend-mode: overlay;
+      animation: briefing-burn-rise .5s ease-in forwards;
+    }
+    @keyframes briefing-burn {
+      0%   { transform: scale(1); opacity: 1; filter: brightness(1); }
+      45%  { transform: scale(1.03); filter: brightness(1.35); }
+      100% { transform: scale(.9) translateY(8px); opacity: 0; filter: brightness(.55); }
+    }
+    @keyframes briefing-burn-rise {
+      0%   { transform: translateY(100%); opacity: 0; }
+      35%  { opacity: 1; }
+      100% { transform: translateY(-15%); opacity: 1; }
     }
     @keyframes ai-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
     .ai-empty-robot { animation: ai-float 2.8s ease-in-out infinite; display:inline-block; font-size:34px; }
@@ -3566,9 +3636,31 @@
       <div id="dash-trial-card"></div>
 
       <!-- AI BRIEFING - first thing the agent sees -->
-      <div class="ai-card" id="dash-ai-briefing" style="margin: 0 20px 14px;">
-        <div class="ai-card-title">✨ עוזר AI אישי, תדרוך יומי על המערכת</div>
+      <div class="ai-card dash-smart-card" id="dash-ai-briefing" style="margin: 0 20px 14px;">
+        <div class="ai-card-title" style="font-size:13px; gap:8px;">
+          <span class="dash-smart-card-badge">✨</span>
+          <span>הסוכן החכם תמיד כאן לתת לך תדרוך יומי, ואיזה פינות צריך לסגור לעבר העסקה הבאה</span>
+        </div>
         <div id="dash-ai-briefing-body" style="min-height:40px;"></div>
+      </div>
+
+      <!-- REAL ESTATE SHORTCUTS - Yad2 & Madlan quick links -->
+      <div id="realestate-shortcuts" class="re-shortcuts hidden" style="margin:0 20px 14px;">
+        <div class="re-shortcuts-title">🏠 חיפוש נכסים מהיר</div>
+        <div class="re-shortcuts-row">
+          <a class="re-shortcut-btn re-yad2" href="https://www.yad2.co.il/realestate/forsale" target="_blank" rel="noopener">
+            <span class="re-logo-mono">Y2</span> יד2
+          </a>
+          <a class="re-shortcut-btn re-madlan" href="https://www.madlan.co.il/for-sale" target="_blank" rel="noopener">
+            <span class="re-logo-mono">M</span> מדלן
+          </a>
+          <button class="re-shortcut-btn re-wa" onclick="WAConnect.open()">
+            <span class="re-shortcut-icon">📲</span> WhatsApp
+          </button>
+          <button class="re-shortcut-btn re-idea" onclick="IdeaBox.open()">
+            <span class="re-shortcut-icon">💡</span> רעיון
+          </button>
+        </div>
       </div>
 
       <!-- KPI CARDS - primary data -->
@@ -3611,25 +3703,6 @@
         <div class="dash-feat-tile" onclick="openModal('modal-add-lead')">
           <div class="dash-feat-tile-icon">➕</div>
           <div class="dash-feat-tile-label">ליד חדש</div>
-        </div>
-      </div>
-
-      <!-- REAL ESTATE SHORTCUTS - Yad2 & Madlan quick links -->
-      <div id="realestate-shortcuts" class="re-shortcuts hidden" style="margin:0 20px 14px;">
-        <div class="re-shortcuts-title">🏠 חיפוש נכסים מהיר</div>
-        <div class="re-shortcuts-row">
-          <a class="re-shortcut-btn re-yad2" href="https://www.yad2.co.il/realestate/forsale" target="_blank" rel="noopener">
-            <span class="re-logo-mono">Y2</span> יד2
-          </a>
-          <a class="re-shortcut-btn re-madlan" href="https://www.madlan.co.il/for-sale" target="_blank" rel="noopener">
-            <span class="re-logo-mono">M</span> מדלן
-          </a>
-          <button class="re-shortcut-btn re-wa" onclick="WAConnect.open()">
-            <span class="re-shortcut-icon">📲</span> WhatsApp
-          </button>
-          <button class="re-shortcut-btn re-idea" onclick="IdeaBox.open()">
-            <span class="re-shortcut-icon">💡</span> רעיון
-          </button>
         </div>
       </div>
 
@@ -11015,7 +11088,7 @@ const Dashboard = {
       el.innerHTML = `
         <div class="ai-card-body">${cache.html}</div>
         ${remaining > 0
-          ? `<button class="btn btn-ghost btn-sm" style="margin-top:10px;" onclick="Dashboard.runAIBriefing(true)">🔄 תדרוך נוסף (${remaining} נותר היום)</button>`
+          ? `<button class="btn btn-ghost btn-sm briefing-fire-btn" style="margin-top:10px;" onclick="this.classList.add('is-burning');setTimeout(()=>Dashboard.runAIBriefing(true),480)">🔄 תדרוך נוסף (${remaining} נותר היום)</button>`
           : `<div style="font-size:11px;color:var(--gray-400);margin-top:8px;">✅ השתמשת ב-${dailyLimit} תדרוכים להיום, נתחדש מחר</div>`
         }
       `;
@@ -11025,7 +11098,7 @@ const Dashboard = {
       <div style="font-size:13px; color:var(--gray-600); line-height:1.6; margin-bottom:10px;">
         קבל תדרוך יומי אישי, מה הכי חשוב היום, אילו לידים לטפל בהם דחוף, והמלצה לשיפור הביצועים.
       </div>
-      <button class="btn btn-primary btn-sm w-full" onclick="Dashboard.runAIBriefing()">✨ קבל תדרוך AI על המערכת</button>
+      <button class="btn btn-primary btn-sm w-full briefing-fire-btn" onclick="this.classList.add('is-burning');setTimeout(()=>Dashboard.runAIBriefing(),480)">✨ תדרוך AI על המערכת</button>
     `;
   },
 
@@ -11088,7 +11161,7 @@ const Dashboard = {
       el.innerHTML = `
         <div class="ai-card-body">${html}</div>
         ${remaining > 0
-          ? `<button class="btn btn-ghost btn-sm" style="margin-top:10px;" onclick="Dashboard.runAIBriefing(true)">🔄 תדרוך נוסף (${remaining} נותר היום)</button>`
+          ? `<button class="btn btn-ghost btn-sm briefing-fire-btn" style="margin-top:10px;" onclick="this.classList.add('is-burning');setTimeout(()=>Dashboard.runAIBriefing(true),480)">🔄 תדרוך נוסף (${remaining} נותר היום)</button>`
           : `<div style="font-size:11px;color:var(--gray-400);margin-top:8px;">✅ השתמשת ב-${dailyLimit} תדרוכים להיום, נתחדש מחר</div>`
         }
       `;
