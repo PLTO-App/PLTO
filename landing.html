@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Liders CRM — הפלטפורמה שהופכת לידים לעסקאות</title>
+  <title>Liders CRM: הפלטפורמה שהופכת לידים לעסקאות</title>
   <meta name="description" content="מערכת CRM לסוכני נדל״ן עם סוכן AI שמנהל את הפייפליין בשבילך. 30 יום חינם, ללא כרטיס אשראי.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -329,7 +329,7 @@
        כאב (הזדהות)
     ══════════════════════════════ */
     .section {
-      padding: 80px 24px;
+      padding: 56px 24px;
     }
     .section-inner {
       max-width: 900px;
@@ -357,7 +357,7 @@
       color: var(--text-muted);
       text-align: center;
       max-width: 520px;
-      margin: 0 auto 48px;
+      margin: 0 auto 32px;
       line-height: 1.7;
     }
 
@@ -400,7 +400,7 @@
     ══════════════════════════════ */
     .demo-section {
       background: var(--gray-bg);
-      padding: 80px 24px;
+      padding: 56px 24px;
     }
     .phone-mockup-wrap {
       display: flex;
@@ -488,7 +488,7 @@
     ══════════════════════════════ */
     .ai-section {
       background: linear-gradient(160deg, var(--navy) 0%, #162B52 100%);
-      padding: 80px 24px;
+      padding: 56px 24px;
       position: relative;
       overflow: hidden;
     }
@@ -615,7 +615,7 @@
     ══════════════════════════════ */
     .pricing-section {
       background: var(--gray-bg);
-      padding: 80px 24px;
+      padding: 56px 24px;
     }
     .plans-grid {
       display: grid;
@@ -717,7 +717,7 @@
     ══════════════════════════════ */
     .closing {
       background: linear-gradient(145deg, var(--navy) 0%, #162B52 100%);
-      padding: 100px 24px;
+      padding: 80px 24px;
       text-align: center;
       position: relative;
       overflow: hidden;
@@ -790,6 +790,10 @@
       .stat-num { font-size: 26px; }
       .phone-mockup-wrap { gap: 16px; }
       .phone-frame { width: 200px; }
+      .section, .demo-section, .ai-section, .pricing-section { padding: 44px 20px; }
+      .closing { padding: 60px 20px; }
+      .section-sub { margin-bottom: 28px; }
+      .feature-groups { gap: 24px; }
     }
 
     /* ══════════════════════════════
@@ -939,6 +943,85 @@
     .trust-link:hover { text-decoration: underline; }
 
     /* ══════════════════════════════
+       קצת עלינו
+    ══════════════════════════════ */
+    .about-section { background: var(--white); }
+    .about-text {
+      max-width: 640px;
+      margin: 0 auto 36px;
+      font-size: 16px;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.8;
+    }
+    .about-pillars {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+    .about-pillar {
+      background: var(--gray-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 18px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .about-pillar:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+    .ap-icon { font-size: 28px; display: block; margin-bottom: 10px; }
+    .ap-title { font-size: 14px; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
+    .ap-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.6; }
+
+    /* ══════════════════════════════
+       שאלות ותשובות
+    ══════════════════════════════ */
+    .faq-section { background: var(--gray-bg); }
+    .faq-list {
+      max-width: 700px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .faq-item {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    .faq-item summary {
+      cursor: pointer;
+      padding: 16px 20px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      list-style: none;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after {
+      content: '+';
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--blue);
+      flex-shrink: 0;
+      transition: transform 0.25s ease;
+    }
+    .faq-item[open] summary::after { transform: rotate(45deg); }
+    .faq-item[open] summary { border-bottom: 1px solid var(--border); }
+    .faq-answer {
+      padding: 4px 20px 18px;
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* ══════════════════════════════
        אנימציות כניסה
     ══════════════════════════════ */
     .fade-up {
@@ -954,7 +1037,7 @@
     /* ══════════════════════════════
        ויטרינת פיצ'רים
     ══════════════════════════════ */
-    .feature-groups { display: flex; flex-direction: column; gap: 40px; }
+    .feature-groups { display: flex; flex-direction: column; gap: 28px; }
     .fg-title {
       font-size: 18px;
       font-weight: 800;
@@ -1005,7 +1088,7 @@
     }
 
     /* ══════════════════════════════
-       תמחור — תג השקה + טיזר שנתי
+       תמחור: תג השקה וטיזר שנתי
     ══════════════════════════════ */
     .plan-launch-badge {
       display: inline-block;
@@ -1025,7 +1108,7 @@
     }
 
     /* ══════════════════════════════
-       רגעי "חיות" — בהשראת אפקט הפטיש באונבורדינג
+       רגעי "חיות": בהשראת אפקט הפטיש באונבורדינג
     ══════════════════════════════ */
     .kanban-card.spotlight {
       animation: spotlightPulse 2.4s ease-in-out infinite;
@@ -1214,6 +1297,34 @@
   </div>
 </section>
 
+<!-- קצת עלינו -->
+<section class="section about-section" id="about">
+  <div class="section-inner">
+    <p class="section-label fade-up">הסיפור שלנו</p>
+    <h2 class="section-title fade-up">בנינו את לידרס כי מגיע לסוכני נדל"ן יותר טוב</h2>
+    <p class="about-text fade-up">
+      ראינו סוכנים שמנהלים לידים באקסלים, בקבוצות וואטסאפ ובפתקים מפוזרים. ידע יקר הולך לאיבוד ועסקאות נשכחות, רק כי אין מקום אחד מסודר לכל הנתונים. לידרס נבנתה כדי לתת לסוכני נדל"ן ולאנשי מכירות בתחום כלי אחד פשוט, חכם ובעברית מלאה, שמטפל בעבודה השוטפת ומשחרר זמן לדבר הכי חשוב: לסגור עסקאות וליצור קשרים אמיתיים עם לקוחות.
+    </p>
+    <div class="about-pillars fade-up">
+      <div class="about-pillar">
+        <span class="ap-icon">🎯</span>
+        <div class="ap-title">פחות ניהול, יותר מכירה</div>
+        <div class="ap-desc">המערכת עושה את העבודה השוטפת, אתה מתפנה למה שמייצר עסקאות</div>
+      </div>
+      <div class="about-pillar">
+        <span class="ap-icon">🇮🇱</span>
+        <div class="ap-title">נבנה לשוק הישראלי</div>
+        <div class="ap-desc">עברית מלאה ב-RTL, מותאם לאופן שבו סוכני נדל"ן באמת עובדים כאן</div>
+      </div>
+      <div class="about-pillar">
+        <span class="ap-icon">🤖</span>
+        <div class="ap-title">AI שעובד בשבילך</div>
+        <div class="ap-desc">לא עוד עומס מידע, אלא תובנות פשוטות שעוזרות לך להחליט מהר</div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- תצוגת המערכת -->
 <section class="demo-section" id="demo">
   <div class="section-inner">
@@ -1337,7 +1448,7 @@
   <div class="section-inner">
     <p class="section-label fade-up">מה מקבלים בפנים</p>
     <h2 class="section-title fade-up">לא עוד CRM. מערכת שעובדת בשבילך.</h2>
-    <p class="section-sub fade-up">קצת מהכלים שמחכים לך אחרי ההרשמה — בלי שתצטרך ללמוד שום דבר חדש.</p>
+    <p class="section-sub fade-up">קצת מהכלים שמחכים לך אחרי ההרשמה, בלי שתצטרך ללמוד שום דבר חדש.</p>
 
     <div class="feature-groups">
       <div class="feature-group fade-up">
@@ -1346,7 +1457,7 @@
           <div class="feature-card">
             <span class="fc-icon">🗂️</span>
             <div class="fc-title">לוח קנבן בגרירה</div>
-            <div class="fc-desc">גוררים ליד בין שלבים בנגיעה אחת — בלי טפסים, בלי קליקים מיותרים</div>
+            <div class="fc-desc">גוררים ליד בין שלבים בנגיעה אחת, בלי טפסים ובלי קליקים מיותרים</div>
           </div>
           <div class="feature-card">
             <span class="fc-icon">🎯</span>
@@ -1356,7 +1467,7 @@
           <div class="feature-card">
             <span class="fc-icon">⏰</span>
             <div class="fc-title">תזכורות חכמות</div>
-            <div class="fc-desc">לא תשכח לחזור לאף ליד — המערכת מזכירה בדיוק מתי</div>
+            <div class="fc-desc">לא תשכח לחזור לאף ליד, המערכת מזכירה בדיוק מתי</div>
           </div>
           <div class="feature-card">
             <span class="fc-icon">📥</span>
@@ -1382,7 +1493,7 @@
           <div class="feature-card">
             <span class="fc-icon">🔍</span>
             <div class="fc-title">ניתוח לידים אוטומטי</div>
-            <div class="fc-desc">AI סורק את הליד ומחזיר תובנות פעולה — בלי שתצטרך לחשוב</div>
+            <div class="fc-desc">AI סורק את הליד ומחזיר תובנות פעולה, בלי שתצטרך לחשוב</div>
           </div>
         </div>
       </div>
@@ -1393,12 +1504,12 @@
           <div class="feature-card feature-card-game">
             <span class="fc-icon">⭐</span>
             <div class="fc-title">נקודות XP</div>
-            <div class="fc-desc">כל פעולה במערכת — מהוספת ליד ועד סגירת עסקה — שווה נקודות</div>
+            <div class="fc-desc">כל פעולה במערכת, מהוספת ליד ועד סגירת עסקה, שווה נקודות</div>
           </div>
           <div class="feature-card">
             <span class="fc-icon">🏆</span>
             <div class="fc-title">הישגים ואבני דרך</div>
-            <div class="fc-desc">תגי הצלחה שנפתחים ככל שמתקדמים — כי מגיע לך הכרה</div>
+            <div class="fc-desc">תגי הצלחה שנפתחים ככל שמתקדמים, כי מגיע לך הכרה</div>
           </div>
           <div class="feature-card">
             <span class="fc-icon">🎁</span>
@@ -1408,7 +1519,7 @@
           <div class="feature-card">
             <span class="fc-icon">🔥</span>
             <div class="fc-title">סטריקים יומיים</div>
-            <div class="fc-desc">שומרים על רצף פעילות — והמערכת חוגגת איתך כל הישג</div>
+            <div class="fc-desc">שומרים על רצף פעילות, והמערכת חוגגת איתך כל הישג</div>
           </div>
         </div>
       </div>
@@ -1419,7 +1530,7 @@
           <div class="feature-card">
             <span class="fc-icon">🏦</span>
             <div class="fc-title">מחשבון משכנתא</div>
-            <div class="fc-desc">כלי ייחודי שלא תמצא אצל אף מתחרה — ישירות בתוך כרטיס הליד</div>
+            <div class="fc-desc">כלי ייחודי שלא תמצא אצל אף מתחרה, ישירות בתוך כרטיס הליד</div>
           </div>
           <div class="feature-card">
             <span class="fc-icon">📲</span>
@@ -1429,7 +1540,7 @@
           <div class="feature-card">
             <span class="fc-icon">🔗</span>
             <div class="fc-title">שיתוף ליד מאובטח עם PIN</div>
-            <div class="fc-desc">משתפים ליד ספציפי עם קולגה — מוגן בקוד אישי, לא גישה לכל המערכת</div>
+            <div class="fc-desc">משתפים ליד ספציפי עם קולגה, מוגן בקוד אישי בלבד וללא גישה לשאר המערכת</div>
           </div>
         </div>
       </div>
@@ -1476,11 +1587,11 @@
 
     <div class="plans-grid">
       <div class="plan-card fade-up">
-        <div class="plan-launch-badge">🚀 מחיר השקה — יעלה בהמשך</div>
+        <div class="plan-launch-badge">🚀 מחיר השקה · יעלה בהמשך</div>
         <div class="plan-name">Solo</div>
         <div class="plan-desc">לסוכן עצמאי</div>
         <div class="plan-price">₪179<small>/חודש</small></div>
-        <div class="plan-annual-teaser">📅 שנתי — ₪124/חודש · חיסכון ₪658</div>
+        <div class="plan-annual-teaser">📅 שנתי · ₪124/חודש · חיסכון ₪658</div>
         <div class="plan-limit">1 סוכן · עד 200 לידים</div>
         <ul class="plan-features">
           <li>לוח Kanban מלא</li>
@@ -1489,17 +1600,17 @@
           <li>אפליקציה למובייל</li>
           <li>30 יום ניסיון חינם</li>
         </ul>
-        <div class="plan-addon">✨ <span>+ <strong>₪100/חודש</strong> — שירותי שיווק מלאים</span></div>
+        <div class="plan-addon">✨ <span>+ <strong>₪100/חודש</strong> לשירותי שיווק מלאים</span></div>
         <a href="https://liders-crm.com" class="plan-btn outline">התחל בחינם</a>
       </div>
 
       <div class="plan-card featured fade-up">
         <div class="plan-popular">⭐ הכי פופולרי</div>
-        <div class="plan-launch-badge">🚀 מחיר השקה — יעלה בהמשך</div>
+        <div class="plan-launch-badge">🚀 מחיר השקה · יעלה בהמשך</div>
         <div class="plan-name">צוות</div>
         <div class="plan-desc">לצוות קטן</div>
         <div class="plan-price">₪349<small>/חודש</small></div>
-        <div class="plan-annual-teaser">📅 שנתי — ₪249/חודש · חיסכון ₪1,198</div>
+        <div class="plan-annual-teaser">📅 שנתי · ₪249/חודש · חיסכון ₪1,198</div>
         <div class="plan-limit">5 סוכנים · עד 1,000 לידים</div>
         <ul class="plan-features">
           <li>כל מה שב Solo</li>
@@ -1507,16 +1618,16 @@
           <li>אנליטיקס צוות</li>
           <li>דוחות ביצועים</li>
         </ul>
-        <div class="plan-addon">✨ <span>+ <strong>₪100/חודש</strong> — שירותי שיווק מלאים</span></div>
+        <div class="plan-addon">✨ <span>+ <strong>₪100/חודש</strong> לשירותי שיווק מלאים</span></div>
         <a href="https://liders-crm.com" class="plan-btn primary">בחר צוות</a>
       </div>
 
       <div class="plan-card fade-up">
-        <div class="plan-launch-badge">🚀 מחיר השקה — יעלה בהמשך</div>
+        <div class="plan-launch-badge">🚀 מחיר השקה · יעלה בהמשך</div>
         <div class="plan-name">סוכנות</div>
         <div class="plan-desc">לסוכנות נדל"ן</div>
         <div class="plan-price">₪549<small>/חודש</small></div>
-        <div class="plan-annual-teaser">📅 שנתי — ₪399/חודש · חיסכון ₪1,798</div>
+        <div class="plan-annual-teaser">📅 שנתי · ₪399/חודש · חיסכון ₪1,798</div>
         <div class="plan-limit">סוכנים ולידים ללא הגבלה</div>
         <ul class="plan-features">
           <li>כל מה שב צוות</li>
@@ -1524,7 +1635,7 @@
           <li>לידים ללא הגבלה</li>
           <li>תמיכה עדיפות</li>
         </ul>
-        <div class="plan-addon">✨ <span>+ <strong>₪100/חודש</strong> — שירותי שיווק מלאים</span></div>
+        <div class="plan-addon">✨ <span>+ <strong>₪100/חודש</strong> לשירותי שיווק מלאים</span></div>
         <a href="https://liders-crm.com" class="plan-btn outline">בחר סוכנות</a>
       </div>
     </div>
@@ -1537,14 +1648,14 @@
 <section class="section marketing-section">
   <div class="section-inner">
     <p class="section-label fade-up" style="color:#B45309;">✨ תוספת פרימיום · ₪100/חודש</p>
-    <h2 class="section-title fade-up">כלי שיווק מקצועיים — ישירות מהמערכת</h2>
-    <p class="section-sub fade-up">צור הצעות מיוחדות, פוסטים לסושיאל וקמפיינים ללקוחות — בלי לצאת מה-CRM ובלי לבזבז שעות.</p>
+    <h2 class="section-title fade-up">כלי שיווק מקצועיים, ישירות מהמערכת</h2>
+    <p class="section-sub fade-up">צור הצעות מיוחדות, פוסטים לסושיאל וקמפיינים ללקוחות, בלי לצאת מה-CRM ובלי לבזבז שעות.</p>
 
     <div class="marketing-banner fade-up">
-      <div class="mb-badge">תוספת שיווק — ₪100 לחודש על כל חבילה</div>
-      <h3 class="mb-title">תוכן שיווקי בלחיצה אחת — מותאם אישית לכל לקוח</h3>
+      <div class="mb-badge">תוספת שיווק: ₪100 לחודש על כל חבילה</div>
+      <h3 class="mb-title">תוכן שיווקי בלחיצה אחת, מותאם אישית לכל לקוח</h3>
       <p class="mb-desc">
-        3 כלים מובנים בתוך ה-CRM: מחולל הצעה מיוחדת לכל ליד, יוצר פוסטים לסושיאל לכל נכס, ומחולל קמפיין WhatsApp לרשימת לקוחות. אתה כותב, מעתיק, שולח — תוך שניות.
+        3 כלים מובנים בתוך ה-CRM: מחולל הצעה מיוחדת לכל ליד, יוצר פוסטים לסושיאל לכל נכס, ומחולל קמפיין WhatsApp לרשימת לקוחות. אתה כותב, מעתיק, שולח, הכל תוך שניות.
       </p>
 
       <div class="mb-features">
@@ -1552,27 +1663,27 @@
           <span class="mbf-icon">🎯</span>
           <div>
             <strong>הצעה מיוחדת לכל ליד</strong>
-            <span>בוחר ליד, בוחר סוג הצעה — המערכת כותבת הודעה אישית שתשלח מיידית</span>
+            <span>בוחר ליד, בוחר סוג הצעה, והמערכת כותבת הודעה אישית לשליחה מיידית</span>
           </div>
         </div>
         <div class="mb-feature">
           <span class="mbf-icon">📸</span>
           <div>
             <strong>פוסט לסושיאל לכל נכס</strong>
-            <span>בוחר נכס ופלטפורמה (Instagram / Facebook / WhatsApp) — מקבל פוסט מוכן</span>
+            <span>בוחר נכס ופלטפורמה (Instagram / Facebook / WhatsApp) ומקבל פוסט מוכן</span>
           </div>
         </div>
         <div class="mb-feature">
           <span class="mbf-icon">📢</span>
           <div>
             <strong>קמפיין WhatsApp מוכן</strong>
-            <span>בוחר נושא (נכס חדש / ירידת מחיר / חג) — מקבל הודעת שידור לכל הלקוחות</span>
+            <span>בוחר נושא (נכס חדש / ירידת מחיר / חג) ומקבל הודעת שידור לכל הלקוחות</span>
           </div>
         </div>
         <div class="mb-feature">
           <span class="mbf-icon">🌟</span>
           <div>
-            <strong>שירות מלא — נציג יפנה אליך</strong>
+            <strong>שירות מלא: נציג יפנה אליך</strong>
             <span>רוצה שנבנה עבורך דפי מכירה ותוכן מותאם? שלח בקשה מתוך המערכת</span>
           </div>
         </div>
@@ -1587,7 +1698,7 @@
       <p style="font-size:13px;font-weight:800;color:var(--blue);letter-spacing:.05em;margin-bottom:8px;">שירות פרימיום · תמחור נפרד לכל בקשה</p>
       <h3 style="font-size:22px;font-weight:900;color:var(--navy);margin-bottom:10px;">רוצה שנבנה הכל עבורך?</h3>
       <p style="font-size:14px;color:var(--text-muted);line-height:1.7;max-width:480px;margin:0 auto 20px;">
-        אם תרצה שצוות Liders יבנה עבורך את דפי המכירה, התוכן וההצעות המיוחדות שתשלח ללקוחות — נציג שלנו יפנה אליך עם מספר שאלות שיעזרו לנו לכוון ולבנות בדיוק מה שתרצה, בצורה הטובה ביותר.
+        אם תרצה שצוות Liders יבנה עבורך את דפי המכירה, התוכן וההצעות המיוחדות שתשלח ללקוחות, נציג שלנו יפנה אליך עם מספר שאלות שיעזרו לנו לכוון ולבנות בדיוק מה שתרצה, בצורה הטובה ביותר.
       </p>
       <a href="https://liders-crm.com" class="plan-btn primary" style="max-width:260px;display:inline-block;">שלח בקשה לנציג שלנו →</a>
       <p style="font-size:12px;color:var(--text-muted);margin-top:12px;">כמובן שהכל נתון לבחירתך החופשית</p>
@@ -1595,9 +1706,45 @@
   </div>
 </section>
 
+<!-- שאלות ותשובות -->
+<section class="section faq-section" id="faq">
+  <div class="section-inner">
+    <p class="section-label fade-up">שאלות נפוצות</p>
+    <h2 class="section-title fade-up">כל מה שרצית לדעת</h2>
+    <p class="section-sub fade-up">ואם משהו לא ברור, אפשר פשוט להתחיל ולבדוק בעצמך, 30 יום על חשבון הבית.</p>
+
+    <div class="faq-list fade-up">
+      <details class="faq-item">
+        <summary>יש התחייבות לתקופה מסוימת?</summary>
+        <div class="faq-answer">לא. אפשר לבטל בכל עת, ללא קנסות וללא שאלות. כל החבילות כוללות 30 יום ניסיון חינם מלא לפני שמתחייבים לכלום.</div>
+      </details>
+      <details class="faq-item">
+        <summary>מה קורה לנתונים שלי אחרי שהניסיון החינמי נגמר?</summary>
+        <div class="faq-answer">הנתונים נשארים שמורים אצלך במערכת. כדי להמשיך להשתמש בהם צריך לשדרג לחבילה בתשלום, אבל שום דבר לא נמחק או הולך לאיבוד.</div>
+      </details>
+      <details class="faq-item">
+        <summary>המערכת מתאימה לסוכן עצמאי או רק לצוותים גדולים?</summary>
+        <div class="faq-answer">גם וגם. חבילת Solo נבנתה בדיוק בשביל סוכן עצמאי, וחבילות צוות וסוכנות מתאימות לכל גודל ארגון.</div>
+      </details>
+      <details class="faq-item">
+        <summary>כמה זמן לוקח להתחיל לעבוד בפועל?</summary>
+        <div class="faq-answer">נרשמים תוך כ-60 שניות, מכניסים את הלידים הראשונים (ידנית או בייבוא מאקסל), והפייפליין כבר פעיל.</div>
+      </details>
+      <details class="faq-item">
+        <summary>הממשק באמת בעברית מלאה?</summary>
+        <div class="faq-answer">כן, כל המערכת בנויה מההתחלה בעברית וב-RTL מלא, לא תרגום שנדבק על מערכת זרה.</div>
+      </details>
+      <details class="faq-item">
+        <summary>איך הנתונים שלי ושל הלקוחות שלי מאובטחים?</summary>
+        <div class="faq-answer">הצפנת HTTPS/TLS מלאה, בידוד נתונים בין חשבונות, וסיסמאות מוצפנות שלא נשמרות כטקסט גלוי. אפשר לקרוא עוד בעמוד מדיניות הפרטיות.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
 <!-- רצועת אמון / אבטחה -->
 <section class="trust-strip" id="trust-section">
-  <div class="trust-title">🛡️ הנתונים שלך ושל הלקוחות שלך — מוגנים ברמה הגבוהה ביותר</div>
+  <div class="trust-title">🛡️ הנתונים שלך ושל הלקוחות שלך מוגנים ברמה הגבוהה ביותר</div>
   <div class="trust-grid fade-up">
     <div class="trust-item"><span class="ti-icon">🔐</span> הצפנת HTTPS/TLS מלאה</div>
     <div class="trust-item"><span class="ti-icon">🧩</span> בידוד נתונים מלא בין חשבונות</div>
@@ -1636,7 +1783,7 @@
         observer.unobserve(e.target);
       }
     });
-  }, { threshold: 0.12 });
+  }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
 
   document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
 </script>
