@@ -623,6 +623,43 @@
       #main-content { margin-right: var(--sidebar-w); padding-bottom: 0; }
     }
 
+    /* ═══════════════════════════════════════
+       DESKTOP LAYOUT IMPROVEMENTS
+    ═══════════════════════════════════════ */
+    @media (min-width: 768px) {
+      /* Hide PWA install banner on desktop */
+      #pwa-install-banner { display: none !important; }
+
+      /* Constrain gamify widget so it doesn't stretch the full width */
+      .gamify-widget { max-width: 700px; margin: 0 auto 14px; }
+
+      /* Dashboard content: limit max width and center */
+      .screen-body { max-width: 900px; margin: 0 auto; }
+
+      /* Pipeline board: allow horizontal scroll on desktop too, better spacing */
+      .pipeline-board { gap: 16px; }
+      .pipeline-col { min-width: 240px; }
+
+      /* Stats row — 4 columns on desktop */
+      .stats-grid { grid-template-columns: repeat(4, 1fr); }
+
+      /* Lead cards get slightly more padding on desktop */
+      .lead-card { padding: 16px 18px; }
+
+      /* AI motivation card — limit width */
+      .ai-motivation-card { max-width: 700px; margin: 0 auto 14px; }
+    }
+
+    @media (min-width: 1024px) {
+      /* On large screens, two-column dashboard layout */
+      .dashboard-two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        align-items: start;
+      }
+    }
+
     /* Screen header */
     .screen-header {
       background: var(--surface); padding: 16px 20px;
@@ -4227,7 +4264,7 @@
         </div>
         <div class="ref-reward-row">
           <span class="ref-reward-badge">אתה</span>
-          <span>+100 XP לחנות הפרסים + חודש מתנה 🎯</span>
+          <span>+250 XP לחנות הפרסים + חודש מתנה 🎯</span>
         </div>
         <div style="font-size:11px;color:var(--gray-400);margin-top:8px;text-align:center;">חודש מתנה יופעל אוטומטית כשמערכת התשלומים תהיה זמינה</div>
       </div>
@@ -7314,7 +7351,7 @@ const INDUSTRY_SOURCES = {
 };
 
 function applyIndustryToLeadForm(prefix) {
-  const ind = localStorage.getItem('liders_industry') || 'other';
+  const ind = localStorage.getItem('liders_industry') || (State.tenant?.industry || '').replace(/_/g,'') || 'other';
 
   // Inspiration URL field - only relevant for interior designers
   const fg = document.getElementById(`fg-${prefix}-inspiration`);
@@ -9991,7 +10028,7 @@ const Referral = {
       const { data, error } = await sbClient.rpc('pull_pending_referral_xp');
       const count = Number(data) || 0;
       if (error || count <= 0) return;
-      const xpGained = count * 200;
+      const xpGained = count * 250;
       const d = this._data();
       d.referrals = (d.referrals || 0) + count;
       d.xpFromReferrals = (d.xpFromReferrals || 0) + xpGained;
@@ -10366,7 +10403,8 @@ const App = {
     document.getElementById('sidebar-agent-role').textContent  = State.agent.role;
     Billing.renderTrialBanner();
     // Restore industry from Supabase so it survives logout
-    const savedInd = State.tenant?.industry;
+    // DB stores 'real_estate' (underscore) but frontend uses 'realestate' (no underscore)
+    const savedInd = (State.tenant?.industry || '').replace(/_/g, '');
     if (savedInd && INDUSTRY_LABELS[savedInd]) {
       localStorage.setItem('liders_industry', savedInd);
     }
@@ -10611,7 +10649,7 @@ const Dashboard = {
           <div class="dash-growth-row">
             <div class="dash-growth-left">
               <div class="dash-growth-title">🎁 הזמן חבר, שניכם מרוויחים</div>
-              <div class="dash-growth-sub">חבר שמצטרף = +100 XP לך<br>הוא מקבל +100 XP + 20% הנחה</div>
+              <div class="dash-growth-sub">חבר שמצטרף = +250 XP לך<br>הוא מקבל +100 XP + 20% הנחה</div>
             </div>
             <div class="dash-growth-stat">
               <div class="dash-growth-stat-val">${refCount > 0 ? refCount : '+'}</div>
