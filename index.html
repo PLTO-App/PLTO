@@ -2686,7 +2686,7 @@
   .motivation-card-footer {
     display:flex; align-items:center; justify-content:space-between; gap:10px;
   }
-  /* ── Motivation button: Lightning ⚡ + Fire 🔥 ── */
+  /* ── Motivation button: Sparkle ✨ particles ── */
   .motivation-btn {
     background: linear-gradient(270deg, #1d4ed8, #6d28d9, #2563eb, #1d4ed8);
     background-size: 300% 100%;
@@ -2695,23 +2695,23 @@
     cursor:pointer; font-family:inherit;
     white-space: nowrap; flex-shrink: 0;
     transition: transform .15s;
-    animation: motivationPulse 5s ease infinite, electricFireGlow 4s ease-in-out infinite;
+    animation: motivationPulse 5s ease infinite, sparkleGlow 3s ease-in-out infinite;
     position: relative; overflow: hidden;
   }
-  /* Fire glow rising from bottom */
+  /* Inner golden radial pulse */
   .motivation-btn::before {
     content: '';
-    position: absolute; bottom: 0; left: 5%; right: 5%; height: 55%;
-    background: radial-gradient(ellipse at 50% 130%, rgba(251,146,60,0.55) 0%, rgba(239,68,68,0.2) 40%, transparent 75%);
-    animation: fireLick 2s ease-in-out infinite;
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(255,215,0,0.18) 0%, transparent 65%);
+    animation: sparkleInnerPulse 2s ease-in-out infinite;
     pointer-events: none;
   }
-  /* Shimmer sweep */
+  /* Gold shimmer sweep */
   .motivation-btn::after {
     content: '';
     position: absolute; top: 0; left: -75%;
     width: 50%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,215,0,0.2), rgba(255,255,255,0.25), rgba(255,215,0,0.2), transparent);
     transform: skewX(-20deg);
     animation: motivationShine 4s ease infinite;
     pointer-events: none;
@@ -2724,27 +2724,25 @@
     0%       { left: -75%; }
     28%,100% { left: 125%; }
   }
-  @keyframes fireLick {
-    0%,100% { opacity: .65; transform: scaleY(1)   scaleX(1); }
-    40%     { opacity: .9;  transform: scaleY(1.2) scaleX(.95); }
-    70%     { opacity: 1;   transform: scaleY(1.4) scaleX(.9); }
+  @keyframes sparkleGlow {
+    0%,100% { box-shadow: 0 4px 14px rgba(37,99,235,.5), 0 0 0 rgba(255,215,0,0); }
+    50%     { box-shadow: 0 6px 24px rgba(37,99,235,.7), 0 0 20px rgba(255,215,0,.4), 0 0 40px rgba(255,215,0,.12); }
   }
-  /* Electric flicker phase (50-65%) + fire warmth (20-40%) */
-  @keyframes electricFireGlow {
-    0%   { box-shadow: 0 4px 14px rgba(37,99,235,.5); }
-    /* Fire phase */
-    15%  { box-shadow: 0 6px 24px rgba(234,88,12,.5), 0 4px 14px rgba(37,99,235,.3); }
-    30%  { box-shadow: 0 10px 36px rgba(239,68,68,.45), 0 0 0 1px rgba(251,146,60,.25); }
-    40%  { box-shadow: 0 4px 14px rgba(37,99,235,.5); }
-    /* Electric flicker phase — rapid spikes */
-    50%  { box-shadow: 0 4px 14px rgba(37,99,235,.5); }
-    52%  { box-shadow: 0 0 0 3px rgba(147,197,253,.8), 0 4px 22px rgba(59,130,246,.7); }
-    54%  { box-shadow: 0 4px 14px rgba(37,99,235,.4); }
-    57%  { box-shadow: 0 0 0 2px rgba(147,197,253,.6), 0 4px 28px rgba(59,130,246,.55); }
-    59%  { box-shadow: 0 4px 14px rgba(37,99,235,.4); }
-    62%  { box-shadow: 0 0 0 4px rgba(147,197,253,.45), 0 8px 32px rgba(37,99,235,.65); }
-    66%  { box-shadow: 0 4px 14px rgba(37,99,235,.5); }
-    100% { box-shadow: 0 4px 14px rgba(37,99,235,.5); }
+  @keyframes sparkleInnerPulse {
+    0%,100% { opacity: 0.45; transform: scale(0.88); }
+    50%     { opacity: 1;    transform: scale(1.12); }
+  }
+  @keyframes sparkleOut {
+    0%   { transform: translate(0,0) scale(1); opacity: 1; }
+    60%  { opacity: 0.75; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(0.1); opacity: 0; }
+  }
+  .motivation-sparkle {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    animation: sparkleOut .7s ease-out forwards;
   }
   .motivation-btn:hover  { transform: scale(1.05); }
   .motivation-btn:active { transform: scale(0.97); }
@@ -3577,7 +3575,7 @@
         </div>
         <div class="motivation-text-area" id="motivation-text">לחץ על הכפתור וקבל מסר מוטיבציה אישי לפי הנתונים שלך...</div>
         <div class="motivation-card-footer">
-          <button class="motivation-btn" id="motivation-btn" onclick="MotivationAgent.generate()">⚡ קבל מוטיבציה</button>
+          <button class="motivation-btn" id="motivation-btn" onclick="MotivationAgent.generate()">✨ קבל מוטיבציה</button>
           <div id="motivation-footer-info">
             <span class="motivation-usage-badge" id="motivation-usage"></span>
             <div class="motivation-cooldown hidden" id="motivation-cooldown">
@@ -10616,6 +10614,8 @@ const App = {
     }
     // Init motivation agent UI
     MotivationAgent.init();
+    // Start sparkle particle loop on motivation button
+    _startMotivationSparkles();
     // Show guided tour for new users after onboarding is done
     if (!State.isDemo && localStorage.getItem('onboarding_done') === '1' && !localStorage.getItem('liders_tour_v1')) {
       setTimeout(() => GuidedTour.start(), 3500);
@@ -14963,6 +14963,62 @@ window.QuickLog = QuickLog;
 const TutorialVideo = {
   open() { document.getElementById('modal-tutorial')?.classList.remove('hidden'); },
 };
+
+/* ─── Motivation button: sparkle particle burst loop ─── */
+function _startMotivationSparkles() {
+  const btn = document.getElementById('motivation-btn');
+  if (!btn || btn._sparkleRunning) return;
+  btn._sparkleRunning = true;
+
+  const COLORS = ['#FFD700','#FFF5A0','#FFFFFF','#FFE866','#FFF8DC'];
+
+  function burst() {
+    const b = document.getElementById('motivation-btn');
+    if (!b) return; // element removed
+    if (b.disabled) { setTimeout(burst, 1500); return; }
+
+    const rect = b.getBoundingClientRect();
+    if (!rect.width) { setTimeout(burst, 1500); return; }
+
+    const count = 6 + Math.floor(Math.random() * 4); // 6–9 particles
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        const s = document.createElement('span');
+        s.className = 'motivation-sparkle';
+
+        // Random point on button perimeter
+        const edge = Math.floor(Math.random() * 4);
+        let px, py;
+        if      (edge === 0) { px = Math.random() * rect.width; py = 0; }
+        else if (edge === 1) { px = Math.random() * rect.width; py = rect.height; }
+        else if (edge === 2) { px = 0; py = Math.random() * rect.height; }
+        else                 { px = rect.width; py = Math.random() * rect.height; }
+
+        // Fly outward from button center
+        const angle = Math.atan2(py - rect.height / 2, px - rect.width / 2);
+        const dist  = 22 + Math.random() * 32;
+        const tx    = Math.cos(angle) * dist;
+        const ty    = Math.sin(angle) * dist;
+        const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+        const size  = 2.5 + Math.random() * 3.5;
+
+        s.style.cssText =
+          'left:'  + (rect.left + px) + 'px;' +
+          'top:'   + (rect.top  + py) + 'px;' +
+          'width:' + size + 'px;height:' + size + 'px;' +
+          'background:' + color + ';' +
+          'box-shadow:0 0 ' + (size * 1.6) + 'px ' + color + ';' +
+          '--tx:' + tx + 'px;--ty:' + ty + 'px;';
+        document.body.appendChild(s);
+        setTimeout(() => s.remove(), 900);
+      }, i * 55);
+    }
+
+    setTimeout(burst, 1000 + Math.random() * 700); // 1.0–1.7s between bursts
+  }
+
+  setTimeout(burst, 900); // initial delay after page load
+}
 
 /* ═══════════════════════════════════════════
    MOTIVATION AGENT MODULE
