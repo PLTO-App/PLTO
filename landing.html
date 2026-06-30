@@ -950,6 +950,132 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    /* ══════════════════════════════
+       ויטרינת פיצ'רים
+    ══════════════════════════════ */
+    .feature-groups { display: flex; flex-direction: column; gap: 40px; }
+    .fg-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .feature-card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 18px;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+      border-color: var(--blue);
+    }
+    .fc-icon { font-size: 26px; display: inline-block; position: relative; margin-bottom: 10px; }
+    .fc-title { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+    .fc-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.6; }
+
+    .feature-card-game .fc-icon::after {
+      content: '🎉';
+      position: absolute;
+      top: -8px;
+      left: -16px;
+      font-size: 15px;
+      opacity: 0;
+      transform: scale(0.3) rotate(-15deg);
+    }
+    .feature-group.visible .feature-card-game .fc-icon::after {
+      animation: confettiPop 1.1s ease-out 0.4s both;
+    }
+    @keyframes confettiPop {
+      0%   { opacity: 0; transform: scale(0.3) rotate(-15deg) translateY(6px); }
+      35%  { opacity: 1; transform: scale(1.15) rotate(8deg) translateY(-4px); }
+      60%  { opacity: 1; transform: scale(1) rotate(-4deg) translateY(-8px); }
+      100% { opacity: 0; transform: scale(0.85) rotate(0deg) translateY(-18px); }
+    }
+
+    /* ══════════════════════════════
+       תמחור — תג השקה + טיזר שנתי
+    ══════════════════════════════ */
+    .plan-launch-badge {
+      display: inline-block;
+      background: rgba(245,158,11,0.12);
+      color: #B45309;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 99px;
+      margin-bottom: 10px;
+    }
+    .plan-annual-teaser {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+
+    /* ══════════════════════════════
+       רגעי "חיות" — בהשראת אפקט הפטיש באונבורדינג
+    ══════════════════════════════ */
+    .kanban-card.spotlight {
+      animation: spotlightPulse 2.4s ease-in-out infinite;
+    }
+    @keyframes spotlightPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+      50%      { box-shadow: 0 0 0 6px rgba(245,158,11,0.18); }
+    }
+
+    .chat-demo { position: relative; }
+    .live-score-badge {
+      position: absolute;
+      top: -14px;
+      left: 20px;
+      background: linear-gradient(135deg, var(--gold), #F97316);
+      color: var(--white);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 99px;
+      box-shadow: 0 4px 16px rgba(245,158,11,0.40);
+      animation: scoreBadgePulse 2.6s ease-in-out infinite;
+    }
+    @keyframes scoreBadgePulse {
+      0%, 100% { transform: scale(1);    box-shadow: 0 4px 16px rgba(245,158,11,0.40); }
+      50%      { transform: scale(1.05); box-shadow: 0 6px 22px rgba(245,158,11,0.60); }
+    }
+
+    .btn-primary.pulse-cta { position: relative; }
+    .btn-primary.pulse-cta::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 99px;
+      animation: ctaPulseRing 2.4s ease-out infinite;
+      pointer-events: none;
+    }
+    @keyframes ctaPulseRing {
+      0%   { box-shadow: 0 0 0 0 rgba(37,99,235,0.45); }
+      70%  { box-shadow: 0 0 0 14px rgba(37,99,235,0); }
+      100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -975,7 +1101,7 @@
   </p>
 
   <div class="hero-actions">
-    <a href="https://liders-crm.com" class="btn-primary">התחל 30 יום בחינם</a>
+    <a href="https://liders-crm.com" class="btn-primary pulse-cta">התחל 30 יום בחינם</a>
     <a href="#demo" class="btn-ghost">תראה לי איך זה עובד</a>
   </div>
   <p class="hero-micro">ללא כרטיס אשראי. ללא התחייבות. כן ממש.</p>
@@ -1025,7 +1151,7 @@
         </div>
         <div class="kanban-col">
           <div class="kanban-col-title">משא ומתן</div>
-          <div class="kanban-card orange">
+          <div class="kanban-card orange spotlight">
             <div class="kc-name">שרה אביב</div>
             <div class="kc-val">5.2M ₪</div>
             <div class="kc-ai">AI 94</div>
@@ -1167,13 +1293,14 @@
 </section>
 
 <!-- סוכן AI -->
-<section class="ai-section">
+<section class="ai-section" id="ai-section">
   <div class="section-inner">
     <p class="section-label fade-up">הסוכן החכם שלך</p>
     <h2 class="section-title fade-up">הסוכן שלא ישן. אף פעם.</h2>
     <p class="section-sub fade-up">שאל אותו מה שאתה רוצה. הוא יודע יותר ממה שאתה חושב.</p>
 
     <div class="chat-demo fade-up">
+      <div class="live-score-badge">🎯 ציון AI מתעדכן בזמן אמת</div>
       <div class="chat-header">
         <div class="chat-avatar">🤖</div>
         <div>
@@ -1202,6 +1329,111 @@
       </div>
     </div>
     <p style="text-align:center;font-size:13px;color:rgba(255,255,255,0.35);margin-top:20px;">כי לפעמים צריך מישהו שיגיד לך מה אתה כבר יודע.</p>
+  </div>
+</section>
+
+<!-- ויטרינת פיצ'רים -->
+<section class="section" id="features">
+  <div class="section-inner">
+    <p class="section-label fade-up">מה מקבלים בפנים</p>
+    <h2 class="section-title fade-up">לא עוד CRM. מערכת שעובדת בשבילך.</h2>
+    <p class="section-sub fade-up">קצת מהכלים שמחכים לך אחרי ההרשמה — בלי שתצטרך ללמוד שום דבר חדש.</p>
+
+    <div class="feature-groups">
+      <div class="feature-group fade-up">
+        <h3 class="fg-title">📋 ניהול פייפליין</h3>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <span class="fc-icon">🗂️</span>
+            <div class="fc-title">לוח קנבן בגרירה</div>
+            <div class="fc-desc">גוררים ליד בין שלבים בנגיעה אחת — בלי טפסים, בלי קליקים מיותרים</div>
+          </div>
+          <div class="feature-card">
+            <span class="fc-icon">🎯</span>
+            <div class="fc-title">ציון AI לכל ליד</div>
+            <div class="fc-desc">המערכת מדרגת כל ליד לפי פוטנציאל סגירה, כדי שתדע למי לפנות קודם</div>
+          </div>
+          <div class="feature-card">
+            <span class="fc-icon">⏰</span>
+            <div class="fc-title">תזכורות חכמות</div>
+            <div class="fc-desc">לא תשכח לחזור לאף ליד — המערכת מזכירה בדיוק מתי</div>
+          </div>
+          <div class="feature-card">
+            <span class="fc-icon">📥</span>
+            <div class="fc-title">ייבוא וייצוא מהיר</div>
+            <div class="fc-desc">מעבירים את כל הלידים מאקסל בלחיצה אחת, בלי הקלדה ידנית</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-group fade-up">
+        <h3 class="fg-title">🤖 סוכני AI (Claude)</h3>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <span class="fc-icon">💪</span>
+            <div class="fc-title">סוכן מוטיבציה יומי</div>
+            <div class="fc-desc">מסר אישי כל בוקר שמתאים בדיוק למצב הפייפליין שלך</div>
+          </div>
+          <div class="feature-card">
+            <span class="fc-icon">✍️</span>
+            <div class="fc-title">כתיבת תוכן שיווקי</div>
+            <div class="fc-desc">הצעות, פוסטים וקמפיינים נכתבים אוטומטית, מותאמים אישית לכל ליד</div>
+          </div>
+          <div class="feature-card">
+            <span class="fc-icon">🔍</span>
+            <div class="fc-title">ניתוח לידים אוטומטי</div>
+            <div class="fc-desc">AI סורק את הליד ומחזיר תובנות פעולה — בלי שתצטרך לחשוב</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-group fade-up">
+        <h3 class="fg-title">🎮 גיימיפיקציה</h3>
+        <div class="feature-grid">
+          <div class="feature-card feature-card-game">
+            <span class="fc-icon">⭐</span>
+            <div class="fc-title">נקודות XP</div>
+            <div class="fc-desc">כל פעולה במערכת — מהוספת ליד ועד סגירת עסקה — שווה נקודות</div>
+          </div>
+          <div class="feature-card">
+            <span class="fc-icon">🏆</span>
+            <div class="fc-title">הישגים ואבני דרך</div>
+            <div class="fc-desc">תגי הצלחה שנפתחים ככל שמתקדמים — כי מגיע לך הכרה</div>
+          </div>
+          <div class="feature-card">
+            <span class="fc-icon">🎁</span>
+            <div class="fc-title">חנות פרסים</div>
+            <div class="fc-desc">צוברים XP ופודים אותו בייעוץ שיווקי, דף נחיתה ועוד</div>
+          </div>
+          <div class="feature-card">
+            <span class="fc-icon">🔥</span>
+            <div class="fc-title">סטריקים יומיים</div>
+            <div class="fc-desc">שומרים על רצף פעילות — והמערכת חוגגת איתך כל הישג</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-group fade-up">
+        <h3 class="fg-title">🏠 כלים לנדל"ן ואינטגרציות</h3>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <span class="fc-icon">🏦</span>
+            <div class="fc-title">מחשבון משכנתא</div>
+            <div class="fc-desc">כלי ייחודי שלא תמצא אצל אף מתחרה — ישירות בתוך כרטיס הליד</div>
+          </div>
+          <div class="feature-card">
+            <span class="fc-icon">📲</span>
+            <div class="fc-title">חיבור WhatsApp ואוטומציות</div>
+            <div class="fc-desc">התראות והודעות זורמות אוטומטית דרך Make, בלי להתעסק ידנית</div>
+          </div>
+          <div class="feature-card">
+            <span class="fc-icon">🔗</span>
+            <div class="fc-title">שיתוף ליד מאובטח עם PIN</div>
+            <div class="fc-desc">משתפים ליד ספציפי עם קולגה — מוגן בקוד אישי, לא גישה לכל המערכת</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1236,7 +1468,7 @@
 </section>
 
 <!-- תמחור -->
-<section class="pricing-section">
+<section class="pricing-section" id="pricing">
   <div class="section-inner">
     <p class="section-label fade-up">שקוף לחלוטין</p>
     <h2 class="section-title fade-up">בחר את הגודל שלך</h2>
@@ -1244,9 +1476,11 @@
 
     <div class="plans-grid">
       <div class="plan-card fade-up">
+        <div class="plan-launch-badge">🚀 מחיר השקה — יעלה בהמשך</div>
         <div class="plan-name">Solo</div>
         <div class="plan-desc">לסוכן עצמאי</div>
-        <div class="plan-price">₪150<small>/חודש</small></div>
+        <div class="plan-price">₪179<small>/חודש</small></div>
+        <div class="plan-annual-teaser">📅 שנתי — ₪124/חודש · חיסכון ₪658</div>
         <div class="plan-limit">1 סוכן · עד 200 לידים</div>
         <ul class="plan-features">
           <li>לוח Kanban מלא</li>
@@ -1261,9 +1495,11 @@
 
       <div class="plan-card featured fade-up">
         <div class="plan-popular">⭐ הכי פופולרי</div>
+        <div class="plan-launch-badge">🚀 מחיר השקה — יעלה בהמשך</div>
         <div class="plan-name">צוות</div>
         <div class="plan-desc">לצוות קטן</div>
-        <div class="plan-price">₪300<small>/חודש</small></div>
+        <div class="plan-price">₪349<small>/חודש</small></div>
+        <div class="plan-annual-teaser">📅 שנתי — ₪249/חודש · חיסכון ₪1,198</div>
         <div class="plan-limit">5 סוכנים · עד 1,000 לידים</div>
         <ul class="plan-features">
           <li>כל מה שב Solo</li>
@@ -1276,9 +1512,11 @@
       </div>
 
       <div class="plan-card fade-up">
+        <div class="plan-launch-badge">🚀 מחיר השקה — יעלה בהמשך</div>
         <div class="plan-name">סוכנות</div>
         <div class="plan-desc">לסוכנות נדל"ן</div>
-        <div class="plan-price">₪550<small>/חודש</small></div>
+        <div class="plan-price">₪549<small>/חודש</small></div>
+        <div class="plan-annual-teaser">📅 שנתי — ₪399/חודש · חיסכון ₪1,798</div>
         <div class="plan-limit">סוכנים ולידים ללא הגבלה</div>
         <ul class="plan-features">
           <li>כל מה שב צוות</li>
