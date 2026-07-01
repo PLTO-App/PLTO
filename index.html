@@ -4108,7 +4108,7 @@
               <label class="tool-label">הערה קצרה (אופציונלי)</label>
               <input class="form-input" id="script-note" type="text" placeholder="למשל: מתלבט על המחיר..." />
             </div>
-            <button class="btn btn-primary btn-sm" onclick="Tools.generateCallScript()" id="script-btn">✨ צור תסריט</button>
+            <button class="btn btn-primary btn-sm" onclick="Tools.generateCallScript()" id="script-btn">✨ יצירת תסריט</button>
             <div class="tool-ai-result" id="script-result"></div>
             <div class="tool-actions" id="script-actions" style="display:none;">
               <button class="tool-btn-copy" onclick="Tools.copyResult('script-result')">📋 העתק</button>
@@ -4147,7 +4147,7 @@
               <label class="tool-label">תוכן עיקרי (ב-2-3 מילים)</label>
               <input class="form-input" id="email-content" type="text" placeholder="למשל: אישור פגישה, הצעת מחיר, תודה..." />
             </div>
-            <button class="btn btn-primary btn-sm" onclick="Tools.generateEmail()" id="email-btn">✨ צור אימייל</button>
+            <button class="btn btn-primary btn-sm" onclick="Tools.generateEmail()" id="email-btn">✨ יצירת אימייל</button>
             <div class="tool-ai-result" id="email-result"></div>
             <div class="tool-actions" id="email-actions" style="display:none;">
               <button class="tool-btn-copy" onclick="Tools.copyResult('email-result')">📋 העתק</button>
@@ -4187,7 +4187,7 @@
               <label class="tool-label">3 יתרונות עיקריים שלך (מופרדים בפסיק)</label>
               <input class="form-input" id="prop-benefits" type="text" placeholder="14 שנות ניסיון, רשת קשרים רחבה, ליווי מלא עד רישום" />
             </div>
-            <button class="btn btn-primary btn-sm" onclick="Tools.generateProposal()" id="prop-btn">✨ צור הצעת מחיר</button>
+            <button class="btn btn-primary btn-sm" onclick="Tools.generateProposal()" id="prop-btn">✨ יצירת הצעת מחיר</button>
             <div class="tool-ai-result" id="prop-result"></div>
             <div class="tool-actions" id="prop-actions" style="display:none;">
               <button class="tool-btn-copy" onclick="Tools.copyResult('prop-result')">📋 העתק</button>
@@ -4248,8 +4248,8 @@
         <div style="padding:28px 16px 8px;text-align:center;">
           <div style="font-size:48px;margin-bottom:12px;">🔑</div>
           <div style="font-size:16px;font-weight:700;color:var(--navy-500);margin-bottom:6px;">קיבלת קוד שיתוף?</div>
-          <div style="font-size:13px;color:var(--gray-500);margin-bottom:20px;line-height:1.5;">שותף שעובד עם Liders CRM שלח לך קוד ו-PIN, הזן אותם כאן</div>
-          <button class="btn btn-primary" style="width:100%;max-width:280px;" onclick="openModal('modal-accept-share')">🔑 הזן קוד שיתוף</button>
+          <div style="font-size:13px;color:var(--gray-500);margin-bottom:20px;line-height:1.5;">שותף שעובד עם Liders CRM שלח לך קוד ו-PIN, ניתן להזין אותם כאן</div>
+          <button class="btn btn-primary" style="width:100%;max-width:280px;" onclick="openModal('modal-accept-share')">🔑 הזנת קוד שיתוף</button>
         </div>
         <div style="padding:8px 16px 16px;" id="partners-joined-list"></div>
       </div>
@@ -4553,7 +4553,7 @@
         <textarea id="email-paste-input" class="email-paste-area"
           placeholder="הדבק כאן את המייל שקיבלת מלקוח, ליד, או פרטנר..."></textarea>
         <button class="email-analyze-btn" id="email-analyze-btn" onclick="EmailAI.analyze()">
-          ✨ נתח וצור תשובה
+          ✨ ניתוח ויצירת תשובה
         </button>
         <div class="email-quota-badge" id="email-quota-label"></div>
       </div>
@@ -4663,7 +4663,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button id="share-btn-create" class="btn btn-primary" style="flex:1;" onclick="Partners.createShare()">✅ צור שיתוף</button>
+        <button id="share-btn-create" class="btn btn-primary" style="flex:1;" onclick="Partners.createShare()">✅ יצירת שיתוף</button>
         <button id="share-btn-done" class="btn btn-primary hidden" style="flex:1;" onclick="closeModal('modal-share-lead');Partners.render()">סיום ✓</button>
       </div>
     </div>
@@ -4728,7 +4728,7 @@
       <div class="paywall-hero-title">הניסיון הסתיים, הנתונים שלך בטוחים</div>
       <div class="paywall-hero-sub" id="paywall-sub-text">
         הלידים, הנכסים והמשימות שלך <strong>שמורים ומחכים לך</strong>.<br>
-        בחר תוכנית והמשך לעבוד בלי הפרעה:
+        בחירת תוכנית מאפשרת להמשיך לעבוד בלי הפרעה:
       </div>
     </div>
 
@@ -4985,7 +4985,7 @@
       <!-- State: multiple leads - pick -->
       <div id="ql-state-pick" class="hidden">
         <div style="font-size:14px;font-weight:700;margin-bottom:4px;">🔍 נמצאו כמה לידים תואמים</div>
-        <div style="font-size:12px;color:var(--gray-500);margin-bottom:12px;">בחר את הלקוח הנכון:</div>
+        <div style="font-size:12px;color:var(--gray-500);margin-bottom:12px;">בחירת הלקוח הנכון:</div>
         <div id="ql-pick-list"></div>
         <button onclick="QuickLog._resetToInput()" class="btn btn-ghost" style="width:100%;margin-top:10px;font-size:13px;">← חזרה לעריכה</button>
       </div>
@@ -5082,7 +5082,7 @@
       <button class="modal-close" onclick="closeModal('modal-reward-gen')">×</button>
     </div>
     <div id="reward-gen-inputs" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
-    <button class="tool-btn tool-btn-primary" id="reward-gen-btn" onclick="RewardGen.generate()">✨ צור עבורי</button>
+    <button class="tool-btn tool-btn-primary" id="reward-gen-btn" onclick="RewardGen.generate()">✨ יצירה עבורי</button>
     <div class="mktg-output" id="reward-gen-out"></div>
     <div class="mktg-actions" id="reward-gen-act">
       <button class="mktg-btn-copy" onclick="RewardGen.copy()">📋 העתק</button>
@@ -5842,7 +5842,7 @@
     <button onclick="App.logout()" style="background:none; border:none; color:rgba(255,255,255,0.35); font-size:14px; cursor:pointer; font-family:inherit; display:block; margin:0 auto; padding:12px 16px; min-height:44px;">שכחתי קוד, יציאה</button>
     <button onclick="AppLock._goToSettings=true; document.getElementById('lock-hint').style.opacity='1';"
       style="background:none; border:none; color:rgba(255,255,255,0.55); font-size:14px; cursor:pointer; font-family:inherit; text-decoration:underline; text-underline-offset:3px; padding:12px 16px; min-height:44px;">
-      לא רוצה קוד בכל כניסה? לחץ כאן
+      לא רוצה קוד בכל כניסה? לחיצה כאן
     </button>
     <div id="lock-hint" style="opacity:0; transition:opacity 0.3s; margin-top:10px; font-size:12px; color:rgba(255,255,255,0.6); line-height:1.6;">
       הכנס את הקוד ← תועבר ישירות להגדרות לביטול
@@ -5854,7 +5854,7 @@
 <div class="modal-overlay hidden" id="modal-pin-setup">
   <div class="modal" style="max-width:340px;">
     <div class="modal-header">
-      <div class="modal-title" id="pin-setup-title">בחר קוד PIN (4 ספרות)</div>
+      <div class="modal-title" id="pin-setup-title">בחירת קוד PIN (4 ספרות)</div>
       <button class="modal-close" onclick="document.getElementById('modal-pin-setup').classList.add('hidden')">×</button>
     </div>
     <div class="modal-body" style="padding:24px 20px;">
@@ -5863,8 +5863,8 @@
         style="font-size:2rem; letter-spacing:12px; text-align:center; margin-bottom:14px;"
         onkeydown="if(event.key==='Enter')AppLock.confirmSetup()">
       <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 12px;font-size:0.82rem;color:#0369a1;line-height:1.7;">
-        💡 <strong>טיפ:</strong> בחר קוד שתזכור בקלות, שנת לידה, 4 ספרות מהטלפון, או תאריך משמעותי.<br>
-        <span style="color:#64748b;">אבל לא 1234 😉, עדיף משהו שרק אתה יודע.</span>
+        💡 <strong>טיפ:</strong> קוד קל לזכירה: שנת לידה, 4 ספרות מהטלפון, או תאריך משמעותי.<br>
+        <span style="color:#64748b;">אבל לא 1234 😉, עדיף משהו שרק לך ידוע.</span>
       </div>
     </div>
     <div class="modal-footer">
@@ -5891,29 +5891,29 @@
         <div class="tutorial-step-card">
           <div class="tutorial-step-num">1</div>
           <div>
-            <div class="tutorial-step-title">➕ הוסף ליד חדש</div>
-            <div class="tutorial-step-desc">לחץ על הכפתור הכתום + בפינה הימנית התחתונה. מלא שם, טלפון ושלב הפייפליין.</div>
+            <div class="tutorial-step-title">➕ הוספת ליד חדש</div>
+            <div class="tutorial-step-desc">הכפתור הכתום + בפינה הימנית התחתונה פותח טופס עם שם, טלפון ושלב הפייפליין.</div>
           </div>
         </div>
         <div class="tutorial-step-card">
           <div class="tutorial-step-num">2</div>
           <div>
-            <div class="tutorial-step-title">📋 נהל את הפייפליין</div>
-            <div class="tutorial-step-desc">לשונית "פייפליין" מציגה את כל הלידים לפי שלבים. גרור להעביר שלב או לחץ על ליד לפרטים.</div>
+            <div class="tutorial-step-title">📋 ניהול הפייפליין</div>
+            <div class="tutorial-step-desc">לשונית "פייפליין" מציגה את כל הלידים לפי שלבים. גרירה מעבירה שלב, ולחיצה על ליד פותחת את הפרטים.</div>
           </div>
         </div>
         <div class="tutorial-step-card">
           <div class="tutorial-step-num">3</div>
           <div>
             <div class="tutorial-step-title">🤝 שיתוף טננט</div>
-            <div class="tutorial-step-desc">לשונית "שיתופי פעולה", שתף לידים עם סוכנים אחרים ב-Liders ודבר איתם בצ׳אט.</div>
+            <div class="tutorial-step-desc">לשונית "שיתופי פעולה" מאפשרת שיתוף לידים עם סוכנים אחרים ב-Liders ושיחה בצ׳אט.</div>
           </div>
         </div>
         <div class="tutorial-step-card">
           <div class="tutorial-step-num">4</div>
           <div>
             <div class="tutorial-step-title">🏦 מחשבון משכנתא</div>
-            <div class="tutorial-step-desc">ב"מרכז כלים" → מחשבון משכנתא, חשב תשלום חודשי מהיר ושתף עם הלקוח.</div>
+            <div class="tutorial-step-desc">ב"מרכז כלים" → מחשבון משכנתא, לחישוב תשלום חודשי מהיר ושיתוף עם הלקוח.</div>
           </div>
         </div>
         <div class="tutorial-step-card">
@@ -5926,8 +5926,8 @@
         <div class="tutorial-step-card">
           <div class="tutorial-step-num">6</div>
           <div>
-            <div class="tutorial-step-title">🏆 צבור XP ורווח פרסים</div>
-            <div class="tutorial-step-desc">כל פעולה מוסיפה XP. צבור XP ופדה פרסים אמיתיים, ייעוץ שיווקי, דפי נחיתה, קמפיינים ועוד!</div>
+            <div class="tutorial-step-title">🏆 צבירת XP ופדיית פרסים</div>
+            <div class="tutorial-step-desc">כל פעולה מוסיפה XP, שאפשר לפדות בפרסים אמיתיים: ייעוץ שיווקי, דפי נחיתה, קמפיינים ועוד!</div>
           </div>
         </div>
       </div>
@@ -6072,7 +6072,7 @@ async function aiQuotaMessage(error) {
     if (error?.context && typeof error.context.json === 'function') {
       const body = await error.context.json();
       if (body?.error === 'quota_exceeded') {
-        return `הגעת למכסת השימוש היומית ב-AI לתוכנית שלך (${body.used}/${body.limit}), נסה שוב מחר`;
+        return `הגעת למכסת השימוש היומית ב-AI לתוכנית שלך (${body.used}/${body.limit}), אפשר לנסות שוב מחר`;
       }
     }
   } catch (_) {}
@@ -6876,19 +6876,19 @@ const Billing = {
       if (rDays > 0) {
         subEl.innerHTML = `
           הלידים, הנכסים והמשימות שלך <strong>שמורים בחינם עוד ${rDays} ימים</strong>, בלי כרטיס אשראי.<br>
-          בחר תוכנית כדי <strong>להמשיך לעבוד</strong> בלי הפרעה:
+          בחירת תוכנית מאפשרת <strong>להמשיך לעבוד</strong> בלי הפרעה:
         `;
         noteEl.innerHTML = this.PAYMENTS_LIVE
           ? `🛡️ הנתונים שמורים עוד ${rDays} ימים · ביטול בכל עת · ללא עמלות הפתעה`
-          : `📬 בחר חבילה ונחזור אליך תוך 24 שעות לסגירת המנוי · ✅ הנתונים שמורים`;
+          : `📬 בחירת חבילה, ונחזור אליך תוך 24 שעות לסגירת המנוי · ✅ הנתונים שמורים`;
       } else {
         subEl.innerHTML = `
           תקופת השימור של הנתונים הסתיימה.<br>
-          בחר תוכנית עכשיו כדי <strong>לשחזר גישה מלאה</strong> לכל הנתונים שלך:
+          בחירת תוכנית עכשיו <strong>משחזרת גישה מלאה</strong> לכל הנתונים שלך:
         `;
         noteEl.innerHTML = this.PAYMENTS_LIVE
-          ? `⏰ פנה לתמיכה אם אינך רואה את הנתונים לאחר ההצטרפות · ביטול בכל עת`
-          : `📬 בחר חבילה ונחזור אליך תוך 24 שעות לסגירת המנוי`;
+          ? `⏰ יש לפנות לתמיכה אם אינך רואה את הנתונים לאחר ההצטרפות · ביטול בכל עת`
+          : `📬 בחירת חבילה, ונחזור אליך תוך 24 שעות לסגירת המנוי`;
       }
     }
   },
@@ -7239,7 +7239,7 @@ const Onboarding = {
               <strong>ה-AI קורא את הקובץ, מזהה לבד אילו עמודות הן שם, טלפון, מייל ועוד</strong> — בלי שתצטרך לסדר כלום.
             </div>`}
             <button class="btn btn-primary" style="padding:14px 28px;font-size:1rem;" onclick="Onboarding._openImportFromOnboarding()">
-              📁 ${count > 0 ? 'ייבא קובץ נוסף' : 'בחר קובץ אקסל / CSV'}
+              📁 ${count > 0 ? 'ייבוא קובץ נוסף' : 'בחירת קובץ אקסל / CSV'}
             </button>
           </div>`;
       },
@@ -7972,14 +7972,14 @@ ${type === 'objection' ? '**תשובות להתנגדויות נפוצות:**\n[
 
 שמור על טון חם, מקצועי ואנושי. עברית בלבד.`;
       const text = await AI.call([{ role: 'user', content: prompt }], 600);
-      res.textContent = text || 'לא הצלחתי לייצר תסריט, נסה שוב';
+      res.textContent = text || 'לא הצלחתי לייצר תסריט, אפשר לנסות שוב';
       res.classList.add('visible');
       if (acts) acts.style.display = 'flex';
     } catch(e) {
       res.textContent = 'שגיאה: ' + e.message;
       res.classList.add('visible');
     }
-    btn.textContent = '✨ צור תסריט'; btn.disabled = false;
+    btn.textContent = '✨ יצירת תסריט'; btn.disabled = false;
   },
 
   // ── AI Professional Email ──
@@ -8022,7 +8022,7 @@ ${type === 'objection' ? '**תשובות להתנגדויות נפוצות:**\n[
       res.textContent = 'שגיאה: ' + e.message;
       res.classList.add('visible');
     }
-    btn.textContent = '✨ צור אימייל'; btn.disabled = false;
+    btn.textContent = '✨ יצירת אימייל'; btn.disabled = false;
   },
 
   // ── AI Proposal Generator ──
@@ -8076,7 +8076,7 @@ ${type === 'objection' ? '**תשובות להתנגדויות נפוצות:**\n[
       res.textContent = 'שגיאה: ' + e.message;
       res.classList.add('visible');
     }
-    btn.textContent = '✨ צור הצעת מחיר'; btn.disabled = false;
+    btn.textContent = '✨ יצירת הצעת מחיר'; btn.disabled = false;
   },
 
   copyResult(elId) {
@@ -8280,7 +8280,7 @@ const Partners = {
     } catch(e) {
       toast('שגיאה: ' + (e.message || e), 'error');
     }
-    btn.disabled = false; btn.textContent = '✅ צור שיתוף';
+    btn.disabled = false; btn.textContent = '✅ יצירת שיתוף';
   },
 
   copyShareInfo() {
@@ -8515,7 +8515,7 @@ const Marketing = {
       <div class="marketing-header-strip">
         <div class="marketing-addon-badge">${isAddon ? '✅ תוסף פעיל' : '🎁 ניסיון חינמי'}</div>
         <h2>📣 שירותי שיווק</h2>
-        <p>צור תוכן שיווקי מקצועי ישירות מהמערכת, בשניות</p>
+        <p>יצירת תוכן שיווקי מקצועי ישירות מהמערכת, בשניות</p>
       </div>
       ${trialBanner}
       ${usageLabel ? `<div style="font-size:0.8rem;color:var(--gray-500);text-align:center;margin-bottom:10px;"><span class="mktg-usage-counter">${usageLabel}</span></div>` : ''}
@@ -8532,11 +8532,11 @@ const Marketing = {
           </div>
           <div class="mktg-card-body">
             <div>
-              <label class="tool-label">בחר ליד</label>
+              <label class="tool-label">בחירת ליד</label>
               <select class="form-input" id="mktg-lead-sel">${leadOptions || '<option>אין לידים עדיין</option>'}</select>
             </div>
             <div>
-              <label class="tool-label">בחר נכס (אופציונלי)</label>
+              <label class="tool-label">בחירת נכס (אופציונלי)</label>
               <select class="form-input" id="mktg-prop-sel">${propOptions}</select>
             </div>
             <div>
@@ -8545,10 +8545,10 @@ const Marketing = {
                 <option value="exclusive">ביקור בלעדי לפני השוק</option>
                 <option value="special_price">תנאים מיוחדים שלא לכולם</option>
                 <option value="limited">הצעה מוגבלת לשבוע הקרוב</option>
-                <option value="first">אתה הראשון שאני פונה אליו</option>
+                <option value="first">פנייה בלעדית, לפני כולם</option>
               </select>
             </div>
-            <button class="tool-btn tool-btn-primary" onclick="Marketing.genOffer()">✨ צור הצעה</button>
+            <button class="tool-btn tool-btn-primary" onclick="Marketing.genOffer()">✨ יצירת הצעה</button>
             <div class="mktg-output" id="mktg-offer-out"></div>
             <div class="mktg-watermark hidden" id="mktg-offer-wm">🏷️ נבנה ע"י Liders CRM | liders-crm.com</div>
             <div class="mktg-actions" id="mktg-offer-act">
@@ -8568,7 +8568,7 @@ const Marketing = {
           </div>
           <div class="mktg-card-body">
             <div>
-              <label class="tool-label">בחר נכס</label>
+              <label class="tool-label">בחירת נכס</label>
               <select class="form-input" id="mktg-post-prop">${properties.length ? properties.map(p=>`<option value="${p.id}">${p.title||p.city}</option>`).join('') : '<option>אין נכסים עדיין</option>'}</select>
             </div>
             <div>
@@ -8579,7 +8579,7 @@ const Marketing = {
                 <option value="whatsapp">WhatsApp Status</option>
               </select>
             </div>
-            <button class="tool-btn tool-btn-primary" onclick="Marketing.genPost()">✨ צור פוסט</button>
+            <button class="tool-btn tool-btn-primary" onclick="Marketing.genPost()">✨ יצירת פוסט</button>
             <div class="mktg-output" id="mktg-post-out"></div>
             <div class="mktg-watermark hidden" id="mktg-post-wm">🏷️ נבנה ע"י Liders CRM | liders-crm.com</div>
             <div class="mktg-actions" id="mktg-post-act">
@@ -8612,7 +8612,7 @@ const Marketing = {
               <label class="tool-label">שם הסוכנות / חתימה</label>
               <input class="form-input" id="mktg-campaign-sig" type="text" placeholder="${State.tenant?.name || 'הסוכנות שלי'}" />
             </div>
-            <button class="tool-btn tool-btn-primary" onclick="Marketing.genCampaign()">✨ צור הודעה</button>
+            <button class="tool-btn tool-btn-primary" onclick="Marketing.genCampaign()">✨ יצירת הודעה</button>
             <div class="mktg-output" id="mktg-campaign-out"></div>
             <div class="mktg-watermark hidden" id="mktg-campaign-wm">🏷️ נבנה ע"י Liders CRM | liders-crm.com</div>
             <div class="mktg-actions" id="mktg-campaign-act">
@@ -8670,7 +8670,7 @@ const Marketing = {
     const type    = document.getElementById('mktg-offer-type')?.value;
     const lead    = State.leads.find(l => l.id === leadId);
     const prop    = State.properties.find(p => p.id === propId);
-    if (!lead) { toast('בחר ליד קודם', 'warning'); return; }
+    if (!lead) { toast('יש לבחור ליד קודם', 'warning'); return; }
     const outEl = document.getElementById('mktg-offer-out');
     if (outEl) { outEl.textContent = '✨ יוצר הצעה מותאמת אישית...'; outEl.classList.add('visible'); }
     try {
@@ -9517,7 +9517,7 @@ const Gamify = {
       const fromXp = (() => { const idx = this.MILESTONES.indexOf(m); return idx > 0 ? this.MILESTONES[idx-1].xp : 0; })();
       const pct    = isLocked ? Math.min(100, Math.max(0, ((d.xp - fromXp) / (m.xp - fromXp)) * 100)).toFixed(1) : 0;
       const footer = isClaimed
-        ? `<div style="display:flex;align-items:center;gap:8px;"><span class="xps-claimed-tag">✅ מומש</span>${m.action ? `<button class="xps-claim-btn" style="padding:4px 10px;" onclick="RewardGen.open(${m.xp})">🔄 צור שוב</button>` : ''}</div>`
+        ? `<div style="display:flex;align-items:center;gap:8px;"><span class="xps-claimed-tag">✅ מומש</span>${m.action ? `<button class="xps-claim-btn" style="padding:4px 10px;" onclick="RewardGen.open(${m.xp})">🔄 יצירה נוספת</button>` : ''}</div>`
         : isUnlocked
         ? `<div style="display:flex;gap:8px;">${isDeferred ? '<span style="font-size:10px;color:var(--gold-400);font-weight:700;">🎯 שמור לפרס גדול</span>' : ''}
            <button class="xps-claim-btn" onclick="Gamify.showMilestone(Gamify.MILESTONES.find(x=>x.xp===${m.xp}))">🎁 מימוש הפרס</button></div>`
@@ -9698,7 +9698,7 @@ ${v.topics ? `נושאים מועדפים: ${v.topics}` : ''}
     for (const inp of flow.inputs) {
       values[inp.id] = (document.getElementById(`rg-${inp.id}`)?.value || '').trim();
     }
-    if (flow.inputs.some(inp => !values[inp.id])) { toast('מלא את כל השדות', 'warning'); return; }
+    if (flow.inputs.some(inp => !values[inp.id])) { toast('יש למלא את כל השדות', 'warning'); return; }
     const outEl = document.getElementById('reward-gen-out');
     const btn = document.getElementById('reward-gen-btn');
     if (btn) btn.disabled = true;
@@ -10241,7 +10241,7 @@ const Referral = {
 
   _waMessage() {
     const code = this._code || this._data().code || '';
-    return `היי! אני עובד עם Liders CRM, הכלי שניהל לי את כל הפייפליין ועזר לסגור יותר עסקאות 🚀\n\nתנסה חינם 30 יום עם קוד ההמלצה שלי ותקבל 20% הנחה על החודש הראשון:\n\n🔑 קוד: *${code}*\n🔗 כניסה: ${this._link()}`;
+    return `היי! Liders CRM הוא הכלי שניהל לי את כל הפייפליין ועזר לסגור יותר עסקאות 🚀\n\n30 יום ניסיון חינם עם קוד ההמלצה שלי, ו-20% הנחה על החודש הראשון:\n\n🔑 קוד: *${code}*\n🔗 כניסה: ${this._link()}`;
   },
 
   shareWhatsApp() {
@@ -10412,7 +10412,7 @@ ${emailText.slice(0, 3000)}
       toast(e.message || 'שגיאה בניתוח המייל', 'error');
     } finally {
       btn.disabled = false;
-      btn.textContent = '✨ נתח וצור תשובה';
+      btn.textContent = '✨ ניתוח ויצירת תשובה';
     }
   },
 
@@ -10422,7 +10422,7 @@ ${emailText.slice(0, 3000)}
       await navigator.clipboard.writeText(this._lastReply);
       toast('✅ התשובה הועתקה ללוח, תדביק ב-Gmail ושלח', 'success');
     } catch {
-      toast('לא ניתן להעתיק, סמן ידנית והעתק', 'error');
+      toast('לא ניתן להעתיק אוטומטית, יש לסמן ולהעתיק ידנית', 'error');
     }
   },
 };
@@ -10620,7 +10620,7 @@ const App = {
       if (result.error) {
         const em = result.error.message || '';
         if (em.includes('confirm') || em.includes('email')) {
-          toast('נא אשר את האימייל שנשלח אליך ואז נסה שוב', 'error'); return;
+          toast('יש לאשר את האימייל שנשלח אליך ואז לנסות שוב', 'error'); return;
         }
         // Try signup - distinguishes new user from wrong password
         if (loginBtn) loginBtn.textContent = 'יוצר חשבון...';
@@ -10634,7 +10634,7 @@ const App = {
         }
       }
       const { data } = result;
-      if (!data?.user) { toast('שגיאת התחברות, נסה שנית', 'error'); return; }
+      if (!data?.user) { toast('שגיאת התחברות, אפשר לנסות שנית', 'error'); return; }
       if (!data?.session) {
         toast('📧 נשלח אימייל אישור, אשר ואז התחבר שוב', 'success');
         return;
@@ -11170,7 +11170,7 @@ const Dashboard = {
     const dailyLimit = { trial:2, basic:2, pro:3, premium:5, lifetime:5 }[plan] ?? 2;
     const usedToday = this._briefingCache?.date === today() ? (this._briefingCache.count||0) : 0;
     if (usedToday >= dailyLimit) {
-      toast(`הגעת למגבלת ${dailyLimit} תדרוכים ביום, נסה מחר 😊`, 'error'); return;
+      toast(`הגעת למגבלת ${dailyLimit} תדרוכים ביום, אפשר לנסות מחר 😊`, 'error'); return;
     }
     if (State.leads.length < 5) {
       el.innerHTML = `
@@ -11190,7 +11190,7 @@ const Dashboard = {
       const text = await AI.getDailyBriefing();
       if (!text) {
         this._briefingCache = null;
-        el.innerHTML = `<div style="color:var(--gray-400);font-size:13px;padding:8px;">לא הצלחתי להכין תדרוך כרגע. נסה שוב מאוחר יותר.</div>`;
+        el.innerHTML = `<div style="color:var(--gray-400);font-size:13px;padding:8px;">לא הצלחתי להכין תדרוך כרגע. אפשר לנסות שוב מאוחר יותר.</div>`;
         return;
       }
       const safe = escapeHtml(text);
@@ -11207,7 +11207,7 @@ const Dashboard = {
     } catch(e) {
       el.innerHTML = `
         <div style="color:var(--red-600);font-size:13px;padding:8px;">שגיאה: ${escapeHtml(e?.message || 'שגיאה לא ידועה')}</div>
-        <button class="btn btn-ghost btn-sm" style="margin-top:6px;" onclick="Dashboard.runAIBriefing(true)">נסה שוב</button>
+        <button class="btn btn-ghost btn-sm" style="margin-top:6px;" onclick="Dashboard.runAIBriefing(true)">ניסיון נוסף</button>
       `;
     }
   }
@@ -11241,7 +11241,7 @@ function pipelineEmptyTip(stageIdx) {
     realestate:        '💡 רוב הקונות מגיעות מהפניות, שלח הודעה ל-3 לקוחות ישנים השבוע',
     construction:      '💡 80% מהג\'ובים מגיעים מהפניות, שלח הודעה ל-3 לקוחות ישנים',
     interior:          '💡 פרסם תמונה מפרויקט אחרון באינסטגרם, לידים מגיעים מ-portfolio',
-    photography:       '💡 צור חבילת "צילום + וידאו" במחיר מיוחד לפרסום השבוע',
+    photography:       '💡 חבילת "צילום + וידאו" במחיר מיוחד לפרסום השבוע',
     mortgage:          '💡 שלח דוח ריבית עדכני ל-5 לקוחות ישנים, רבים זכאים למחזור',
     appraiser:         '💡 זמן טוב לשלוח דוח שוק לרשת הקשרים שלך',
     realestate_lawyer: '💡 רוב התיקים מגיעים מסוכנים ומתווכים, יצרת קשר עם 2 סוכנים השבוע?',
@@ -11300,7 +11300,7 @@ const Pipeline = {
       board.innerHTML = `<div style="padding:40px 20px;text-align:center;color:var(--gray-400);">
         <div style="font-size:32px;margin-bottom:10px;">🔍</div>
         <div style="font-weight:700;margin-bottom:6px;">לא נמצאו תוצאות</div>
-        <div style="font-size:13px;">נסה שם אחר, אזור, או מספר טלפון</div>
+        <div style="font-size:13px;">אפשר לנסות שם אחר, אזור, או מספר טלפון</div>
       </div>`;
     }
   },
@@ -12294,7 +12294,7 @@ const AppLock = {
   },
 
   _showSetupModal() {
-    const title = this._setupStep === 1 ? 'בחר קוד PIN (4 ספרות)' : 'אשר את הקוד שוב';
+    const title = this._setupStep === 1 ? 'בחירת קוד PIN (4 ספרות)' : 'אישור הקוד שוב';
     document.getElementById('pin-setup-title').textContent = title;
     const inp = document.getElementById('pin-setup-input');
     inp.value = '';
@@ -12311,7 +12311,7 @@ const AppLock = {
       this._showSetupModal();
     } else {
       if (val !== this._setupPin) {
-        toast('הקודים לא תואמים, נסה שוב', 'error');
+        toast('הקודים לא תואמים, אפשר לנסות שוב', 'error');
         this._setupStep = 1; this._setupPin = '';
         this._showSetupModal(); return;
       }
@@ -12398,8 +12398,8 @@ const Settings = {
         <div class="settings-row" onclick="AppLock.lock()" style="cursor:pointer;">
           <div class="settings-row-icon">🔒</div>
           <div class="settings-row-body">
-            <div class="settings-row-label">נעל עכשיו</div>
-            <div class="settings-row-sub">PIN פעיל, לחץ לנעילה מיידית</div>
+            <div class="settings-row-label">נעילה עכשיו</div>
+            <div class="settings-row-sub">PIN פעיל, לחיצה לנעילה מיידית</div>
           </div>
         </div>
         <div class="settings-row">
@@ -12480,7 +12480,7 @@ const Settings = {
                   <span style="font-size:22px;">${curMeta.icon}</span>
                   <div>
                     <div style="font-size:13px;font-weight:700;color:var(--gray-800);">${curMeta.label}</div>
-                    <div style="font-size:11px;color:var(--gray-500);">תחום נוכחי, לחץ לשינוי</div>
+                    <div style="font-size:11px;color:var(--gray-500);">תחום נוכחי, לחיצה לשינוי</div>
                   </div>
                 </div>
                 <span style="font-size:18px;color:var(--gray-400);">›</span>
@@ -12504,7 +12504,7 @@ const Settings = {
           <div class="settings-row-icon" style="background:#DCFCE7;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;">📲</div>
           <div class="settings-row-body">
             <div class="settings-row-label">חיבור WhatsApp אוטומטי</div>
-            <div class="settings-row-sub" style="color:var(--orange-500);">לחץ לחיבור, ב-2 דקות בלבד</div>
+            <div class="settings-row-sub" style="color:var(--orange-500);">חיבור מהיר, ב-2 דקות בלבד</div>
           </div>
           <div class="settings-arrow" style="color:#25D366;">›</div>
         </div>
@@ -12573,7 +12573,7 @@ const Settings = {
         ` : `
         <div class="billing-cta-box">
           <div style="font-weight:800;font-size:15px;margin-bottom:2px;">⏳ ${Billing.daysLeft()} ימים נותרו בניסיון החינמי</div>
-          <div style="font-size:12px;color:var(--gray-500);margin-bottom:10px;">בחר תוכנית, ביטול בכל עת, ללא עמלות</div>
+          <div style="font-size:12px;color:var(--gray-500);margin-bottom:10px;">בחירת תוכנית, ביטול בכל עת, ללא עמלות</div>
           <div style="font-size:11px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:7px 10px;margin-bottom:10px;color:var(--gray-700);">
             🚀 <strong>מחירי השקה</strong>, המחירים צפויים לעלות בהמשך
           </div>
@@ -12645,8 +12645,8 @@ const Settings = {
         <div class="settings-row" onclick="Settings.resetOnboarding()" style="cursor:pointer;">
           <div class="settings-row-icon">🔄</div>
           <div class="settings-row-body">
-            <div class="settings-row-label">הצג אשף הגדרות מחדש</div>
-            <div class="settings-row-sub">בחר תחום עסק מחדש עכשיו</div>
+            <div class="settings-row-label">הצגת אשף הגדרות מחדש</div>
+            <div class="settings-row-sub">בחירת תחום עסק מחדש עכשיו</div>
           </div>
           <div class="settings-arrow">›</div>
         </div>
@@ -13234,7 +13234,7 @@ async function addLead() {
   if (demoGuard()) return;
   const name = document.getElementById('new-lead-name').value.trim();
   const phone = document.getElementById('new-lead-phone').value.trim();
-  if (!name || !phone) { toast('נא מלא שם וטלפון', 'error'); return; }
+  if (!name || !phone) { toast('נא למלא שם וטלפון', 'error'); return; }
   const rawBudget = parseInt(document.getElementById('new-lead-budget').value.replace(/[,\.]/g,'')) || 0;
   if (rawBudget < 0 || rawBudget > 1e9) { toast('תקציב לא תקין', 'error'); return; }
 
@@ -13641,7 +13641,7 @@ const MortgageCalc = {
     const res     = document.getElementById('mtg-result');
     if (!res) return;
     if (!price || !rate || !years) {
-      res.innerHTML = '<div style="text-align:center;padding:12px;color:var(--gray-400)">הזן פרטי הנכס לחישוב</div>';
+      res.innerHTML = '<div style="text-align:center;padding:12px;color:var(--gray-400)">הזנת פרטי הנכס לחישוב</div>';
       return;
     }
     const downAmt = price * (downPct / 100);
@@ -13929,7 +13929,7 @@ async function saveEditLead() {
   if (!lead) return;
   const name = document.getElementById('edit-lead-name').value.trim();
   const phone = document.getElementById('edit-lead-phone').value.trim();
-  if (!name || !phone) { toast('נא מלא שם וטלפון', 'error'); return; }
+  if (!name || !phone) { toast('נא למלא שם וטלפון', 'error'); return; }
   const rawBudgetMin = parseInt(document.getElementById('edit-lead-budget-min').value) || null;
   const rawBudgetMax = parseInt(document.getElementById('edit-lead-budget-max').value) || null;
   if (rawBudgetMin !== null && (rawBudgetMin < 0 || rawBudgetMin > 1e9)) { toast('תקציב מינימום לא תקין', 'error'); return; }
@@ -14388,7 +14388,7 @@ const ProHub = {
       wrap.innerHTML = '<div style="text-align:center;color:var(--gray-400);padding:10px;font-size:13px;">אין לידים בשלב זה</div>';
       return;
     }
-    wrap.innerHTML = `<div style="font-size:12px;font-weight:700;color:var(--gray-500);padding:6px 0 8px;">${leads.length} לידים, לחץ לשליחה:</div>` +
+    wrap.innerHTML = `<div style="font-size:12px;font-weight:700;color:var(--gray-500);padding:6px 0 8px;">${leads.length} לידים, לחיצה לשליחה:</div>` +
       leads.map(l => `
         <div class="pro-bc-lead">
           <span style="font-size:15px;">💬</span>
@@ -14412,7 +14412,7 @@ const ProHub = {
     const stage = document.getElementById('bc-stage')?.value || '';
     const leads = (State.leads || []).filter(l => l.stage !== 's5' && (!stage || l.stage === stage) && l.phone);
     if (!leads.length) { toast('אין לידים עם טלפון בשלב זה', 'error'); return; }
-    toast(`📢 פותח WhatsApp עבור ${leads.length} לידים, לחץ על כל אחד`);
+    toast(`📢 פותח WhatsApp עבור ${leads.length} לידים, לחיצה על כל אחד`);
     leads.forEach((l, i) => setTimeout(() => this._sendWa(l.id), i * 800));
   },
 
@@ -14762,7 +14762,7 @@ const Support = {
   _updateQuota(el) {
     if (!el) return;
     if (!AiLimits.hasAiAccess()) {
-      el.innerHTML = '🔒 תגובת AI זמינה לאחר שדרוג, <a href="mailto:biz@liders-crm.com" style="color:var(--blue-500);">פצור אלינו</a>';
+      el.innerHTML = '🔒 תגובת AI זמינה לאחר שדרוג, <a href="mailto:biz@liders-crm.com" style="color:var(--blue-500);">פנייה אלינו</a>';
       return;
     }
     const rem = AiLimits.remaining('support');
@@ -14956,7 +14956,7 @@ const QuickLog = {
       }
 
       const rawJson = (fn?.content?.[0]?.text || fn?.content || '');
-      if (/[؀-ۿ]/.test(rawJson)) throw new Error('תגובת AI לא תקינה, נסה שוב');
+      if (/[؀-ۿ]/.test(rawJson)) throw new Error('תגובת AI לא תקינה, אפשר לנסות שוב');
       const raw = rawJson.replace(/```json?\n?/g,'').replace(/```/g,'').trim();
       this._parsed = JSON.parse(raw);
 
@@ -15284,7 +15284,7 @@ const MotivationAgent = {
     if (State.isDemo) { DemoLock.showPrompt('הצטרפו לנסיון חינמי ותוכלו לקבל מוטיבציה יומית מסוכן ה-AI 💪'); return; }
     if (!AiLimits.hasAiAccess()) { toast('הסוכן זמין בתקופת הניסיון, הירשם בחינם', 'info'); return; }
     if (this._isCooling()) {
-      toast(`⏳ הסוכן יחזור בעוד ${this._fmtTime(this._remaining())}, צור שגרת בוקר ולילה!`, 'info', 3000); return;
+      toast(`⏳ הסוכן יחזור בעוד ${this._fmtTime(this._remaining())}, כדאי לקבוע שגרת בוקר ולילה!`, 'info', 3000); return;
     }
     if (!AiLimits.canUse('motivation')) {
       toast('הגעת למגבלת המוטיבציה היומית, חזור מחר! 🌅', 'info'); return;
