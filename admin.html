@@ -727,12 +727,13 @@
               <th>לידים</th>
               <th>משימות</th>
               <th>שיווק</th>
+              <th>מושבים</th>
               <th>נרשם</th>
               <th>פעולות</th>
             </tr>
           </thead>
           <tbody id="saas-tbody">
-            <tr><td colspan="9"><div class="empty-state"><div class="spinner"></div></div></td></tr>
+            <tr><td colspan="10"><div class="empty-state"><div class="spinner"></div></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -1366,15 +1367,22 @@ async function saveInvoice() {
 }
 
 /* ── SAAS TENANTS ── */
+let allTenantSeats = {};
+
 async function loadSaasTenants() {
   const tbody = document.getElementById('saas-tbody');
-  tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="spinner"></div></div></td></tr>';
-  const { data, error } = await sb.rpc('get_saas_tenants_admin');
+  tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="spinner"></div></div></td></tr>';
+  const [{ data, error }, { data: seatData }] = await Promise.all([
+    sb.rpc('get_saas_tenants_admin'),
+    sb.rpc('admin_list_tenant_seats'),
+  ]);
   if (error) {
-    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><p style="color:var(--red)">שגיאה: ${esc(error.message)}</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><p style="color:var(--red)">שגיאה: ${esc(error.message)}</p></div></td></tr>`;
     return;
   }
   allSaasTenants = data || [];
+  allTenantSeats = {};
+  (seatData || []).forEach(s => { allTenantSeats[s.tenant_id] = s; });
   renderSaasStats(allSaasTenants);
   renderSaasTable(allSaasTenants);
 }
@@ -1396,7 +1404,7 @@ function renderSaasStats(tenants) {
 function renderSaasTable(tenants) {
   const tbody = document.getElementById('saas-tbody');
   if (!tenants.length) {
-    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="icon">🏢</div><p>אין נתונים</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="icon">🏢</div><p>אין נתונים</p></div></td></tr>';
     return;
   }
   tbody.innerHTML = tenants.map(t => {
@@ -1412,6 +1420,10 @@ function renderSaasTable(tenants) {
     const mktgCell = mktg
       ? `<button class="btn-icon" title="כבה שיווק" onclick="toggleMarketing('${t.id}',false)" style="color:var(--green);font-size:.75rem;">📣 פעיל</button>`
       : `<button class="btn-icon" title="הפעל שיווק" onclick="toggleMarketing('${t.id}',true)" style="color:var(--text-dim);font-size:.75rem;">📣 כבוי</button>`;
+    const seats = allTenantSeats[t.id];
+    const seatsCell = seats
+      ? `<span style="font-weight:600;">${seats.seats_active}/${seats.seats_max}</span>${seats.overage_seats > 0 ? `<div style="font-size:.72rem;color:var(--gold);font-weight:700;">+${seats.overage_seats} מעבר, ₪${seats.monthly_overage_charge}/חוד'</div>` : ''}`
+      : '<span style="color:var(--text-dim)">–</span>';
     return `
       <tr>
         <td><strong>${esc(t.name||'?')}</strong>${t.notes ? `<div style="font-size:.72rem;color:var(--text-dim);margin-top:2px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(t.notes)}">📝 ${esc(t.notes)}</div>` : ''}</td>
@@ -1421,6 +1433,7 @@ function renderSaasTable(tenants) {
         <td style="font-weight:600;color:${(t.lead_count||0)>0?'var(--text)':'var(--red)'}">${t.lead_count||0}</td>
         <td style="color:var(--text-muted)">${t.task_count||0}</td>
         <td>${mktgCell}</td>
+        <td>${seatsCell}</td>
         <td style="font-size:.78rem;color:var(--text-dim)">${t.created_at ? new Date(t.created_at).toLocaleDateString('he-IL') : '–'}</td>
         <td>
           <div class="action-btns">

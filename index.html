@@ -4912,6 +4912,33 @@
   </div>
 </div>
 
+<!-- TEAM MODAL -->
+<div id="modal-team" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-team')">
+  <div class="modal-sheet" style="max-width:440px;">
+    <div class="modal-header">
+      <div class="modal-title">👥 הצוות שלי</div>
+      <button class="modal-close" onclick="closeModal('modal-team')">×</button>
+    </div>
+    <div style="padding:0 20px 16px;">
+      <div id="team-seats-summary"></div>
+      <div id="team-invite-form" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+        <label class="form-label">הזמן סוכן חדש</label>
+        <input type="email" id="team-invite-email" class="form-input" placeholder="email@example.com" style="direction:ltr;margin-bottom:8px;">
+        <select id="team-invite-role" class="form-input" style="margin-bottom:10px;">
+          <option value="agent">סוכן</option>
+          <option value="admin">אדמין</option>
+          <option value="viewer">צופה</option>
+        </select>
+        <button class="btn btn-primary btn-sm" style="width:100%;" onclick="Team.invite()">📨 שלח הזמנה</button>
+      </div>
+      <div style="margin-top:16px;">
+        <div class="form-label" style="margin-bottom:8px;">הזמנות ממתינות</div>
+        <div id="team-invites-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- WHATSAPP CONNECT MODAL -->
 <div id="modal-whatsapp-connect" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-whatsapp-connect')">
   <div class="modal-sheet" style="max-width:440px;overflow:visible;">
@@ -6877,9 +6904,9 @@ const Billing = {
       price: 349,
       priceLabel: '₪349',
       desc: 'לצוות קטן',
-      features: ['עד 5 סוכנים', 'עד 1,000 לידים פעילים', 'לוח Kanban + פייפליין', 'תזכורות WhatsApp', 'אפליקציה מובייל', 'AI שיווקי מתקדם'],
+      features: ['3 סוכנים כלולים, עד 7 בתוספת תשלום', 'עד 1,000 לידים פעילים', 'לוח Kanban + פייפליין', 'תזכורות WhatsApp', 'אפליקציה מובייל', 'AI שיווקי מתקדם'],
       featured: true,
-      agentLimit: '5 סוכנים · 1,000 לידים',
+      agentLimit: '3 סוכנים כלולים · עד 7 · ₪30/סוכן נוסף',
       annualMonthly: 249,
       annualTotal: 2990,
     },
@@ -6889,9 +6916,9 @@ const Billing = {
       price: 549,
       priceLabel: '₪549',
       desc: 'לסוכנות נדל"ן',
-      features: ['סוכנים ללא הגבלה', 'לידים ללא הגבלה', 'לוח Kanban + פייפליין', 'תזכורות WhatsApp', 'אפליקציה מובייל', 'AI שיווקי מתקדם'],
+      features: ['10 סוכנים כלולים, ללא הגבלת מספר בתוספת תשלום', 'לידים ללא הגבלה', 'לוח Kanban + פייפליין', 'תזכורות WhatsApp', 'אפליקציה מובייל', 'AI שיווקי מתקדם'],
       featured: false,
-      agentLimit: 'ללא הגבלה',
+      agentLimit: '10 סוכנים כלולים · ₪30/סוכן נוסף',
       annualMonthly: 399,
       annualTotal: 4790,
     },
@@ -10772,7 +10799,7 @@ const App = {
       const agentRow = loaded.agent;
       const displayName = agentRow?.name || user.email.split('@')[0];
       const roleMap = { owner: 'מנהל', agent: 'סוכן', admin: 'אדמין' };
-      State.agent = { name: displayName, email: user.email, initials: calcInitials(displayName), role: roleMap[agentRow?.role] || 'סוכן' };
+      State.agent = { name: displayName, email: user.email, initials: calcInitials(displayName), role: roleMap[agentRow?.role] || 'סוכן', rawRole: agentRow?.role || 'agent' };
       const t = loaded.tenant;
       State.tenant = t
         ? { id: t.id, name: t.name, slug: t.slug, plan: t.plan, trial_ends_at: t.trial_ends_at,
@@ -12698,8 +12725,8 @@ const Settings = {
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn btn-ghost btn-sm" onclick="Billing.openCheckout('basic')" style="flex:1;min-width:80px;">Solo<br><span style="font-size:10px;opacity:.7;">₪179 · 1 סוכן</span></button>
-            <button class="btn btn-ghost btn-sm" onclick="Billing.openCheckout('pro')" style="flex:1;min-width:80px;">צוות<br><span style="font-size:10px;opacity:.7;">₪349 · עד 5</span></button>
-            <button class="btn btn-primary btn-sm" onclick="Billing.openCheckout('premium')" style="flex:1;min-width:80px;">סוכנות ⭐<br><span style="font-size:10px;opacity:.8;">₪549 · ללא הגבלה</span></button>
+            <button class="btn btn-ghost btn-sm" onclick="Billing.openCheckout('pro')" style="flex:1;min-width:80px;">צוות<br><span style="font-size:10px;opacity:.7;">₪349 · 3 סוכנים</span></button>
+            <button class="btn btn-primary btn-sm" onclick="Billing.openCheckout('premium')" style="flex:1;min-width:80px;">סוכנות ⭐<br><span style="font-size:10px;opacity:.8;">₪549 · 10 סוכנים</span></button>
           </div>
           ${(Gamify.get()?.streak||0) >= 10 ? `
           <div style="margin-top:10px;background:linear-gradient(135deg,rgba(37,99,235,.07),rgba(15,31,61,.05));border:1px solid rgba(37,99,235,.2);border-radius:10px;padding:10px 12px;cursor:pointer;" onclick="AnnualUpsell.tryShow('settings_cta')">
@@ -12732,6 +12759,17 @@ const Settings = {
           <div class="settings-row-icon">📄</div>
           <div class="settings-row-body">
             <div class="settings-row-label">תנאי שימוש ופרטיות</div>
+          </div>
+          <div class="settings-arrow">›</div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-title">👥 הצוות שלי</div>
+        <div class="settings-row" onclick="Team.open()" style="cursor:pointer;">
+          <div class="settings-row-icon">👥</div>
+          <div class="settings-row-body">
+            <div class="settings-row-label">ניהול סוכנים במערכת</div>
+            <div class="settings-row-sub">הזמנת סוכנים, מושבים בשימוש</div>
           </div>
           <div class="settings-arrow">›</div>
         </div>
@@ -15711,6 +15749,121 @@ const IdeaBox = {
   },
 };
 window.IdeaBox = IdeaBox;
+
+/* ═══════════════════════════════════════════
+   TEAM, invite teammates + seat usage
+═══════════════════════════════════════════ */
+const Team = {
+  _data: null,
+  _ROLE_LABELS: { owner: 'מנהל', admin: 'אדמין', agent: 'סוכן', viewer: 'צופה' },
+
+  canManage() { return ['owner', 'admin'].includes(State.agent?.rawRole); },
+
+  async fetch() {
+    try {
+      const { data, error } = await sbClient.rpc('list_agent_invites');
+      if (error) throw error;
+      this._data = data;
+    } catch(e) {
+      this._data = null;
+    }
+    return this._data;
+  },
+
+  renderSummary() {
+    const el = document.getElementById('team-seats-summary');
+    if (!el) return;
+    const d = this._data;
+    if (!d) { el.innerHTML = '<div style="text-align:center;padding:12px;color:var(--gray-400);font-size:12.5px;">שגיאה בטעינת נתוני הצוות</div>'; return; }
+    const pct = Math.min(100, Math.round((d.seats_active / d.seats_max) * 100));
+    const overIncluded = Math.max(0, d.seats_active - d.seats_included);
+    el.innerHTML = `
+      <div style="display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--gray-700);margin-bottom:4px;">
+        <span>${d.seats_active}/${d.seats_max} מושבים בשימוש</span>
+        <span style="color:var(--gray-500);font-weight:600;">${d.seats_included} כלולים${d.seat_price ? ' · ₪' + d.seat_price + '/מושב נוסף' : ''}</span>
+      </div>
+      <div style="height:8px;background:var(--gray-100);border-radius:99px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${overIncluded > 0 ? 'var(--gold-500)' : 'var(--blue-500)'};border-radius:99px;"></div>
+      </div>
+      ${overIncluded > 0 ? `<div style="font-size:11px;color:var(--gold-600);margin-top:4px;">🔸 ${overIncluded} מושבים מעבר לכלול בחבילה — תוספת ₪${overIncluded * d.seat_price}/חודש</div>` : ''}
+    `;
+    const form = document.getElementById('team-invite-form');
+    if (form) form.style.display = this.canManage() ? 'block' : 'none';
+  },
+
+  renderInvites() {
+    const el = document.getElementById('team-invites-list');
+    if (!el) return;
+    const invites = this._data?.invites || [];
+    if (!invites.length) {
+      el.innerHTML = '<div style="font-size:12px;color:var(--gray-400);text-align:center;padding:6px;">אין הזמנות ממתינות</div>';
+      return;
+    }
+    const canManage = this.canManage();
+    el.innerHTML = invites.map(i => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--gray-50);border-radius:8px;margin-bottom:6px;">
+        <div>
+          <div style="font-size:12.5px;font-weight:600;color:var(--gray-800);">${escapeHtml(i.email)}</div>
+          <div style="font-size:11px;color:var(--gray-500);">${this._ROLE_LABELS[i.role] || i.role} · ממתין</div>
+        </div>
+        ${canManage ? `<button class="btn btn-ghost btn-sm" onclick="Team.revoke('${i.id}')" style="padding:4px 10px;font-size:11px;">בטל</button>` : ''}
+      </div>
+    `).join('');
+  },
+
+  async open() {
+    if (demoGuard()) return;
+    await this.fetch();
+    this.renderSummary();
+    this.renderInvites();
+    openModal('modal-team');
+  },
+
+  async invite() {
+    const email = (document.getElementById('team-invite-email')?.value || '').trim();
+    const role  = document.getElementById('team-invite-role')?.value || 'agent';
+    if (!email || !email.includes('@')) { toast('נא הזן אימייל תקין', 'warning'); return; }
+
+    const btn = document.querySelector('#team-invite-form .btn-primary');
+    if (btn) { btn.disabled = true; btn.textContent = 'שולח...'; }
+    try {
+      const { data, error } = await sbClient.rpc('invite_agent', { p_email: email, p_role: role });
+      if (error) throw error;
+      document.getElementById('team-invite-email').value = '';
+      toast(data?.is_overage
+        ? `✅ הזמנה נשלחה! שים לב: זה מושב מעבר למכסה הכלולה, תוספת ₪${data.monthly_overage_charge}/חודש`
+        : '✅ הזמנה נשלחה בהצלחה', data?.is_overage ? 'info' : 'success', 6000);
+      await this.fetch();
+      this.renderSummary();
+      this.renderInvites();
+    } catch(e) {
+      const msg = e.message || '';
+      if (msg.includes('seat_limit_reached')) {
+        toast('הגעת למקסימום המושבים האפשרי בחבילה הזו, כדאי לשדרג לחבילה גדולה יותר', 'warning', 6000);
+      } else if (msg.includes('only the owner or an admin')) {
+        toast('רק המנהל או אדמין יכולים להזמין סוכנים', 'warning');
+      } else {
+        toast('שגיאה: ' + msg, 'error');
+      }
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '📨 שלח הזמנה'; }
+    }
+  },
+
+  async revoke(id) {
+    try {
+      const { error } = await sbClient.rpc('revoke_agent_invite', { p_id: id });
+      if (error) throw error;
+      toast('ההזמנה בוטלה', 'success');
+      await this.fetch();
+      this.renderSummary();
+      this.renderInvites();
+    } catch(e) {
+      toast('שגיאה: ' + (e.message || ''), 'error');
+    }
+  },
+};
+window.Team = Team;
 
 /* ═══════════════════════════════════════════
    WHATSAPP CONNECT, UI flow (backend TBD)
