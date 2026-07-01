@@ -78,9 +78,11 @@ serve(async (req) => {
       return Response.json(
         {
           error: 'quota_exceeded',
+          reason: quota?.reason ?? 'daily_limit',
           plan:  quota?.plan  ?? 'unknown',
           used:  quota?.used  ?? 0,
           limit: quota?.limit ?? 0,
+          retry_after_seconds: quota?.retry_after_seconds ?? null,
         },
         { status: 429, headers: cors }
       );

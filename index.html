@@ -6182,6 +6182,9 @@ async function aiQuotaMessage(error) {
     if (error?.context && typeof error.context.json === 'function') {
       const body = await error.context.json();
       if (body?.error === 'quota_exceeded') {
+        if (body?.reason === 'cooling_down') {
+          return 'הסוכן עדיין בקירור, נסה שוב בעוד כמה רגעים';
+        }
         return `הגעת למכסת השימוש היומית ב-AI לתוכנית שלך (${body.used}/${body.limit}), אפשר לנסות שוב מחר`;
       }
     }
@@ -15480,10 +15483,28 @@ const MotivationAgent = {
       Gamify.event('use_ai');
     } catch(e) {
       if (textEl) { textEl.textContent = this._fallback(); textEl.classList.remove('loading'); }
+      await this._syncServerCooldown(e);
     }
     this._updateUI();
     if (btn) btn.disabled = false;
     this._updateUI();
+  },
+
+  // The 90/120/150/180-min cooldown is also enforced server-side (can't be
+  // skipped by clearing localStorage/incognito) - if the server rejected
+  // this attempt as still cooling down, pull its real remaining time so the
+  // local countdown display matches reality instead of wrongly showing "0".
+  async _syncServerCooldown(e) {
+    try {
+      const body = typeof e?.context?.json === 'function' ? await e.context.json() : null;
+      if (body?.error === 'quota_exceeded' && body?.reason === 'cooling_down' && body.retry_after_seconds > 0) {
+        const s = this._getState();
+        s.uses = Math.max(s.uses || 0, 1);
+        s.lastTs = Date.now() + body.retry_after_seconds * 1000 - this._cooldownMs(s.uses);
+        this._saveState(s);
+        toast(`⏳ הסוכן עדיין בקירור, יחזור בעוד ${this._fmtTime(body.retry_after_seconds * 1000)}`, 'info', 3000);
+      }
+    } catch(_) {}
   },
 
   _fallback() {
