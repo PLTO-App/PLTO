@@ -8698,7 +8698,7 @@ const Marketing = {
               <li>💬 הודעת WA חכמה לכל ליד</li>
               <li>🤖 תמיכה אוטומטית 24/7</li>
             </ul>
-            <button class="mktg-upgrade-btn" onclick="toast('לרכישת התוסף פנה אלינו, biz@liders-crm.com','info')">
+            <button class="mktg-upgrade-btn" onclick="toast('לרכישת התוסף פנה אלינו, liders.crm@gmail.com','info')">
               🚀 הפעל תוסף AI, ₪100/חודש
             </button>
             <p class="mktg-upgrade-micro">ביטול בכל עת · ללא התחייבות</p>
@@ -8717,7 +8717,7 @@ const Marketing = {
     const trialBanner = (!isAddon && trialLeft > 0) ? `
       <div style="background:linear-gradient(90deg,#f59e0b,#d97706);color:#fff;padding:10px 18px;border-radius:var(--radius-md);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
         <span style="font-weight:600;font-size:0.9rem;">⏰ ניסיון חינמי, ${trialLeft} ימים נותרו</span>
-        <span onclick="toast('לשדרוג פנה אלינו, biz@liders-crm.com','info')" style="cursor:pointer;font-size:0.82rem;text-decoration:underline;white-space:nowrap;">שדרג ל-₪100/חודש →</span>
+        <span onclick="toast('לשדרוג פנה אלינו, liders.crm@gmail.com','info')" style="cursor:pointer;font-size:0.82rem;text-decoration:underline;white-space:nowrap;">שדרג ל-₪100/חודש →</span>
       </div>` : '';
 
     el.innerHTML = `
@@ -12957,11 +12957,11 @@ const Settings = {
           </div>
           <div class="settings-arrow">›</div>
         </div>
-        <div class="settings-row" onclick="window.location.href='mailto:biz@liders-crm.com'" style="cursor:pointer;">
+        <div class="settings-row" onclick="window.location.href='mailto:liders.crm@gmail.com'" style="cursor:pointer;">
           <div class="settings-row-icon">✉️</div>
           <div class="settings-row-body">
             <div class="settings-row-label">יצירת קשר במייל</div>
-            <div class="settings-row-sub">biz@liders-crm.com</div>
+            <div class="settings-row-sub">liders.crm@gmail.com</div>
           </div>
           <div class="settings-arrow">›</div>
         </div>
@@ -15108,7 +15108,7 @@ const Support = {
   _updateQuota(el) {
     if (!el) return;
     if (!AiLimits.hasAiAccess()) {
-      el.innerHTML = '🔒 תגובת AI זמינה לאחר שדרוג, <a href="mailto:biz@liders-crm.com" style="color:var(--blue-500);">פנייה אלינו</a>';
+      el.innerHTML = '🔒 תגובת AI זמינה לאחר שדרוג, <a href="mailto:liders.crm@gmail.com" style="color:var(--blue-500);">פנייה אלינו</a>';
       return;
     }
     const rem = AiLimits.remaining('support');
@@ -15195,7 +15195,7 @@ const Support = {
       // 4. Webhook - notify admin via Make.com
       fetch('https://hook.eu1.make.com/f0nzngm6gdokri5naqu7enbay538ay8i', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'support_ticket', ticket_id: ticket.id,
+        body: JSON.stringify({ event: 'support.ticket_created', type: 'support_ticket', ticket_id: ticket.id,
           tenant_name: tenantName, agent_name: agentName, agent_email: agentEmail,
           message: msg, ai_response: aiText })
       }).catch(() => {});
