@@ -6352,10 +6352,10 @@ function roleMatchesFilter(leadRole, filter) {
   return role === filter || role === 'both';
 }
 function sourceLabel(s) {
-  const m = { yad2:'יד2', madlan:'מדלן', facebook:'פייסבוק', referral:'הפניה', website:'אתר', call:'שיחה', other:'אחר' };
+  const m = { yad2:'יד2', madlan:'מדלן', facebook:'פייסבוק', instagram:'אינסטגרם', pinterest:'פינטרסט', agent:'הפניית סוכן נדל"ן', bank:'בנק / עו"ד שותף', referral:'הפניה', website:'אתר', call:'שיחה', other:'אחר' };
   return m[s] || s;
 }
-const VALID_SOURCES = ['yad2','madlan','facebook','referral','website','call','other'];
+const VALID_SOURCES = ['yad2','madlan','facebook','instagram','pinterest','agent','bank','referral','website','call','other'];
 function safeSource(s) { return VALID_SOURCES.includes(s) ? s : 'other'; }
 function typeEmoji(t) {
   const m = { call:'📞', whatsapp:'💬', email:'📧', showing:'🏠', meeting:'🤝', note:'📝', stage_change:'🔄', task_done:'✅', other:'⚡' };
@@ -7831,7 +7831,7 @@ const Onboarding = {
       const action = this._pendingAction;
       this._pendingAction = null;
       if (action === 'addlead') {
-        document.getElementById('modal-add-lead')?.classList.remove('hidden');
+        openModal('modal-add-lead');
         document.getElementById('lead-name')?.focus();
       } else if (action === 'pipeline') {
         App.go('pipeline');
@@ -11087,7 +11087,7 @@ const App = {
       State.tenant = t
         ? { id: t.id, name: t.name, slug: t.slug, plan: t.plan, trial_ends_at: t.trial_ends_at,
             make_webhook_url: t.make_webhook_url || null, whatsapp_number: t.whatsapp_number || null,
-            marketing_addon: t.marketing_addon || false }
+            marketing_addon: t.marketing_addon || false, industry: t.industry || null }
         : { name: 'הסוכנות שלי', plan: 'trial' };
       // Seed localStorage from DB so Make.getWebhook() works offline too
       if (t?.make_webhook_url) localStorage.setItem('make_webhook_url', t.make_webhook_url);
@@ -11177,14 +11177,6 @@ const App = {
     if (!State.isDemo && localStorage.getItem('onboarding_done') === '1' && !localStorage.getItem('liders_tour_v1')) {
       setTimeout(() => GuidedTour.start(), 3500);
     }
-    // Show real estate shortcuts (Yad2/Madlan) only for real estate agents
-    const _re_ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
-    const _re_show = _re_ind === 'realestate';
-    if (_re_show) { const el = document.getElementById('realestate-shortcuts'); if (el) el.classList.remove('hidden'); }
-    // Mortgage calculator: relevant to agents and lawyers (client financing), not interior designers
-    const mortgageCard = document.getElementById('tool-card-mortgage');
-    if (mortgageCard) mortgageCard.classList.toggle('hidden', _re_ind === 'interior');
-
     // Init PIN lock
     AppLock._updateLockBtn();
     AppLock.initListeners();
@@ -11209,6 +11201,13 @@ const App = {
     set('screen-leads-title',      '👥 ' + getLabel('allLeads'));
     const addBtns = document.querySelectorAll('.btn-add-lead-label');
     addBtns.forEach(b => { b.textContent = '+ ' + getLabel('addLead'); });
+    // Show real estate shortcuts (Yad2/Madlan) only for real estate agents
+    const ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+    const reShortcuts = document.getElementById('realestate-shortcuts');
+    if (reShortcuts) reShortcuts.classList.toggle('hidden', ind !== 'realestate');
+    // Mortgage calculator: relevant to agents and lawyers (client financing), not interior designers
+    const mortgageCard = document.getElementById('tool-card-mortgage');
+    if (mortgageCard) mortgageCard.classList.toggle('hidden', ind === 'interior');
   },
   async logout() {
     const curInd = localStorage.getItem('liders_industry');
@@ -11777,7 +11776,7 @@ const Pipeline = {
   _renderRoleFilter() {
     const el = document.getElementById('pipeline-role-filter');
     if (!el) return;
-    if (!showsBuyerSellerRole()) { el.innerHTML = ''; return; }
+    if (!showsBuyerSellerRole()) { el.innerHTML = ''; this._roleFilter = 'all'; return; }
     const pills = [
       { id: 'all',    label: 'הכל' },
       { id: 'buyer',  label: '💰 קונים' },
@@ -11884,7 +11883,7 @@ const Leads = {
   _renderRoleFilter() {
     const el = document.getElementById('leads-role-filter');
     if (!el) return;
-    if (!showsBuyerSellerRole()) { el.innerHTML = ''; return; }
+    if (!showsBuyerSellerRole()) { el.innerHTML = ''; this._roleFilter = 'all'; return; }
     const pills = [
       { id: 'all',    label: 'הכל' },
       { id: 'buyer',  label: '💰 קונים' },
@@ -13537,7 +13536,7 @@ ${fileData}
   },
 
   _buildLeads() {
-    const VALID_SOURCES = ['yad2','madlan','facebook','referral','website','call','other'];
+    const VALID_SOURCES = ['yad2','madlan','facebook','instagram','pinterest','agent','bank','referral','website','call','other'];
     const colFor = (field) => {
       const entry = Object.entries(this._mapping).find(([, f]) => f === field);
       return entry ? Number(entry[0]) : -1;
@@ -14451,12 +14450,24 @@ function openEditLead(leadId) {
   document.getElementById('edit-lead-budget-min').value = lead.budget_min || '';
   document.getElementById('edit-lead-budget-max').value = lead.budget_max || '';
   document.getElementById('edit-lead-area').value = lead.desired_area || '';
-  document.getElementById('edit-lead-source').value = lead.source || 'other';
   document.getElementById('edit-lead-notes').value = lead.notes || '';
   document.getElementById('edit-lead-inspiration').value = lead.inspiration_url || '';
   selectLeadRole('edit', lead.lead_role || 'buyer');
   State.currentLeadId = leadId;
-  openModal('modal-edit-lead');
+  openModal('modal-edit-lead'); // rebuilds the source dropdown for the tenant's current industry
+  const sourceSel = document.getElementById('edit-lead-source');
+  if (sourceSel) {
+    const src = lead.source || 'other';
+    // Lead was created under a different industry's source list (e.g. after an
+    // industry switch) - preserve the real value instead of silently dropping it.
+    if (![...sourceSel.options].some(o => o.value === src)) {
+      const opt = document.createElement('option');
+      opt.value = src;
+      opt.textContent = sourceLabel(src);
+      sourceSel.appendChild(opt);
+    }
+    sourceSel.value = src;
+  }
 }
 
 async function saveEditLead() {
