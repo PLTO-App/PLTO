@@ -1627,6 +1627,16 @@
     }
     .dash-import-banner-title { font-weight: 700; font-size: 14px; color: var(--navy-700); }
     .dash-import-banner-sub   { font-size: 12px; color: var(--blue-500); margin-top: 2px; }
+    .dash-import-row {
+      display: flex; align-items: center; gap: 8px;
+      margin: 0 20px 14px; padding: 10px 14px;
+      background: var(--navy-50); border: 1px solid var(--navy-200);
+      border-radius: var(--radius-md, 10px);
+      font-size: 13px; font-weight: 600; color: var(--navy-700);
+      cursor: pointer;
+    }
+    .dash-import-row:hover { background: var(--blue-100); }
+    .dash-import-row span:first-child { font-size: 15px; }
     .ai-card-title {
       font-size: 12px; font-weight: 700; color: var(--purple-500);
       margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
@@ -3789,26 +3799,9 @@
         </div>
       </div>
 
-      <!-- MOTIVATION AGENT - AI motivational boost, up to 5/day -->
-      <div class="motivation-card" id="motivation-card">
-        <button class="motivation-card-dismiss" onclick="document.getElementById('motivation-card').style.display='none'" title="הסתר">×</button>
-        <div class="motivation-card-header">
-          <div class="motivation-card-icon">🚀</div>
-          <div>
-            <div class="motivation-card-title">סוכן מוטיבציה</div>
-            <div class="motivation-card-sub">הסוכן החכם שדוחף אותך קדימה</div>
-          </div>
-        </div>
-        <div class="motivation-text-area" id="motivation-text">מסר מוטיבציה אישי לפי הנתונים שלך, בלחיצת כפתור...</div>
-        <div class="motivation-card-footer">
-          <button class="motivation-btn" id="motivation-btn" onclick="MotivationAgent.generate()">✨ מוטיבציה חדשה</button>
-          <div id="motivation-footer-info">
-            <span class="motivation-usage-badge" id="motivation-usage"></span>
-            <div class="motivation-cooldown hidden" id="motivation-cooldown">
-              ⏳ זמין שוב בעוד: <span class="motivation-cooldown-timer" id="motivation-countdown">—</span>
-            </div>
-          </div>
-        </div>
+      <!-- IMPORT LEADS - always-visible quick row, regardless of lead count -->
+      <div class="dash-import-row" onclick="LeadImport.open()">
+        <span>📁</span><span>ייבוא לידים מקובץ (Excel / CSV)</span>
       </div>
 
       <!-- GAMIFICATION WIDGET - motivation & XP progress -->
@@ -3881,6 +3874,28 @@
             <div class="gamify-daily-icon">⚡</div>
             <div class="gamify-daily-text" id="gamify-daily-text">טוען אתגר יומי...</div>
             <div class="gamify-daily-done" id="gamify-daily-check"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MOTIVATION AGENT - AI motivational boost, up to 5/day -->
+      <div class="motivation-card" id="motivation-card">
+        <button class="motivation-card-dismiss" onclick="document.getElementById('motivation-card').style.display='none'" title="הסתר">×</button>
+        <div class="motivation-card-header">
+          <div class="motivation-card-icon">🚀</div>
+          <div>
+            <div class="motivation-card-title">סוכן מוטיבציה</div>
+            <div class="motivation-card-sub">הסוכן החכם שדוחף אותך קדימה</div>
+          </div>
+        </div>
+        <div class="motivation-text-area" id="motivation-text">מסר מוטיבציה אישי לפי הנתונים שלך, בלחיצת כפתור...</div>
+        <div class="motivation-card-footer">
+          <button class="motivation-btn" id="motivation-btn" onclick="MotivationAgent.generate()">✨ מוטיבציה חדשה</button>
+          <div id="motivation-footer-info">
+            <span class="motivation-usage-badge" id="motivation-usage"></span>
+            <div class="motivation-cooldown hidden" id="motivation-cooldown">
+              ⏳ זמין שוב בעוד: <span class="motivation-cooldown-timer" id="motivation-countdown">—</span>
+            </div>
           </div>
         </div>
       </div>
