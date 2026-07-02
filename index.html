@@ -4452,7 +4452,7 @@
         </div>
 
         <!-- TOOL 6: Mortgage Calculator -->
-        <div class="tool-card">
+        <div class="tool-card" id="tool-card-mortgage">
           <div class="tool-card-head">
             <div class="tool-card-icon" style="background:#EFF6FF;">🧮</div>
             <div>
@@ -11112,6 +11112,9 @@ const App = {
     const _re_ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
     const _re_show = _re_ind === 'realestate';
     if (_re_show) { const el = document.getElementById('realestate-shortcuts'); if (el) el.classList.remove('hidden'); }
+    // Mortgage calculator: relevant to agents and lawyers (client financing), not interior designers
+    const mortgageCard = document.getElementById('tool-card-mortgage');
+    if (mortgageCard) mortgageCard.classList.toggle('hidden', _re_ind === 'interior');
 
     // Init PIN lock
     AppLock._updateLockBtn();
