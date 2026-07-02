@@ -1288,14 +1288,59 @@
     .kpi-sub { font-size: 12px; color: var(--gray-400); margin-top: 5px; }
 
     /* ═══════════════════════════════════════
-       PIPELINE CHART
+       PIPELINE CHART / LIVE FLOW
     ═══════════════════════════════════════ */
-    .chart-card {
+    .chart-card, .pipeline-flow-card {
       background: var(--surface); border-radius: var(--radius-lg);
       padding: 16px 16px 8px; box-shadow: var(--shadow-sm);
       border: 1px solid var(--border); margin: 0 20px 8px;
     }
     .chart-card-title { font-size: 13px; font-weight: 700; color: var(--gray-600); margin-bottom: 10px; }
+
+    .pipeline-flow-card { padding-bottom: 14px; }
+    .pipeline-flow-lanes { display: flex; flex-direction: column; gap: 10px; }
+    .pipeline-flow-lane { display: flex; flex-direction: column; gap: 4px; }
+    .pipeline-flow-lane-head {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 12px; font-weight: 700; color: var(--gray-600);
+    }
+    .pipeline-flow-lane-name { display: flex; align-items: center; gap: 6px; }
+    .pipeline-flow-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .pipeline-flow-lane-total { font-weight: 800; color: var(--gray-900); }
+    .pipeline-flow-track {
+      position: relative; overflow: hidden; border-radius: 10px;
+      background: var(--gray-50); border: 1px solid var(--border);
+      -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+      mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+    }
+    .pipeline-flow-chips {
+      display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+      width: max-content; will-change: transform;
+      animation: pipeline-flow-scroll linear infinite;
+    }
+    .pipeline-flow-track:hover .pipeline-flow-chips { animation-play-state: paused; }
+    .pipeline-flow-chip {
+      display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+      background: var(--surface); border-radius: 999px; padding: 5px 12px 5px 6px;
+      font-size: 12.5px; font-weight: 600; color: var(--gray-800);
+      border: 1.5px solid var(--chip-color, var(--border));
+      box-shadow: 0 1px 2px rgba(15,31,61,.06); cursor: pointer;
+      transition: transform .15s ease;
+    }
+    .pipeline-flow-chip:hover { transform: translateY(-2px); }
+    .pipeline-flow-chip-avatar {
+      width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+      background: var(--chip-color, var(--gray-400)); color: #fff;
+      font-size: 9.5px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+    }
+    .pipeline-flow-chip-val { color: var(--gray-500); font-weight: 700; }
+    @keyframes pipeline-flow-scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .pipeline-flow-chips { animation: none; }
+    }
 
     /* ═══════════════════════════════════════
        KANBAN ENHANCEMENTS
@@ -4017,9 +4062,9 @@
         </div>
         <div id="dash-cold-leads"></div>
       </div>
-      <div class="chart-card" id="dash-chart-container" style="display:none;">
-        <div class="chart-card-title">📊 שווי צינור לפי שלב</div>
-        <canvas id="pipeline-chart" height="140"></canvas>
+      <div class="pipeline-flow-card" id="dash-chart-container" style="display:none;">
+        <div class="chart-card-title">📊 שווי צינור לפי שלב — בזמן אמת</div>
+        <div class="pipeline-flow-lanes" id="pipeline-flow-lanes"></div>
       </div>
 
       <div class="section-header mt-4">
@@ -11316,43 +11361,50 @@ const Dashboard = {
     });
     this.renderChart();
   },
-  _chartInst: null,
   renderChart() {
     const container = document.getElementById('dash-chart-container');
-    const canvas = document.getElementById('pipeline-chart');
-    if (!container || !canvas || !window.Chart) return;
-    const stageData = State.stages.map(s => {
-      const val = State.leads
-        .filter(l => l.stage === s.id && l.stage !== 's5')
-        .reduce((acc, l) => acc + (l.budget_max || 0), 0);
-      return { name: s.name, value: val, color: s.color };
-    }).filter(s => s.value > 0);
+    const lanesEl = document.getElementById('pipeline-flow-lanes');
+    if (!container || !lanesEl) return;
+    const stageData = State.stages
+      .filter(s => !s.is_terminal)
+      .map(s => {
+        const leads = State.leads.filter(l => l.stage === s.id);
+        const val = leads.reduce((acc, l) => acc + (l.budget_max || 0), 0);
+        return { stage: s, leads, value: val };
+      })
+      .filter(s => s.leads.length > 0);
     if (!stageData.length) { container.style.display = 'none'; return; }
     container.style.display = '';
-    if (this._chartInst) { this._chartInst.destroy(); }
-    this._chartInst = new Chart(canvas, {
-      type: 'bar',
-      data: {
-        labels: stageData.map(s => s.name),
-        datasets: [{
-          data: stageData.map(s => s.value),
-          backgroundColor: stageData.map(s => s.color + 'CC'),
-          borderColor:     stageData.map(s => s.color),
-          borderWidth: 2,
-          borderRadius: 6,
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false }, tooltip: {
-          callbacks: { label: ctx => formatMoney(ctx.raw) }
-        }},
-        scales: {
-          x: { grid: { display: false }, ticks: { font: { family:'Heebo', size:11 } } },
-          y: { display: false, beginAtZero: true }
-        }
-      }
-    });
+
+    const initials = name => (name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+
+    lanesEl.innerHTML = stageData.map((s, i) => {
+      const chipHtml = s.leads.map(l => `
+        <div class="pipeline-flow-chip" style="--chip-color:${s.stage.color};" onclick="App.go('lead-detail',{currentLeadId:'${l.id}'})">
+          <span class="pipeline-flow-chip-avatar" style="--chip-color:${s.stage.color};">${initials(l.name)}</span>
+          <span>${escapeHtml(l.name)}</span>
+          <span class="pipeline-flow-chip-val">${formatMoney(l.budget_max)}</span>
+        </div>
+      `).join('');
+      const duration = Math.max(10, s.leads.length * 4);
+      const direction = i % 2 === 0 ? 'normal' : 'reverse';
+      return `
+        <div class="pipeline-flow-lane">
+          <div class="pipeline-flow-lane-head">
+            <span class="pipeline-flow-lane-name">
+              <span class="pipeline-flow-dot" style="background:${s.stage.color};"></span>
+              ${escapeHtml(s.stage.name)} · ${s.leads.length}
+            </span>
+            <span class="pipeline-flow-lane-total">${formatMoney(s.value)}</span>
+          </div>
+          <div class="pipeline-flow-track">
+            <div class="pipeline-flow-chips" style="animation-duration:${duration}s;animation-direction:${direction};">
+              ${chipHtml}${chipHtml}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
   },
   renderTasks() {
     const urgent = State.tasks.filter(t => !t.done && diffDays(t.due) <= 0)
