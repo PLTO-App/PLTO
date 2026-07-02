@@ -5618,7 +5618,7 @@
         <label class="form-label">אזור מבוקש</label>
         <input type="text" id="new-lead-area" class="form-input" placeholder="תל אביב, גבעתיים...">
       </div>
-      <div class="form-group">
+      <div class="form-group" id="fg-new-role">
         <label class="form-label">סוג ליד</label>
         <div class="role-picker" id="new-lead-role-picker" data-value="buyer">
           <button type="button" class="role-pick-btn role-pick-buyer active" onclick="selectLeadRole('new','buyer')">💰 קונה</button>
@@ -5887,7 +5887,7 @@
           <option value="other">אחר</option>
         </select>
       </div>
-      <div class="form-group">
+      <div class="form-group" id="fg-edit-role">
         <label class="form-label">סוג ליד</label>
         <div class="role-picker" id="edit-lead-role-picker" data-value="buyer">
           <button type="button" class="role-pick-btn role-pick-buyer active" onclick="selectLeadRole('edit','buyer')">💰 קונה</button>
@@ -6334,9 +6334,16 @@ function roleLabel(r) {
   return { buyer: 'קונה', seller: 'מוכר', both: 'קונה+מוכר' }[r] || 'קונה';
 }
 function roleBadgeHtml(r) {
+  if (!showsBuyerSellerRole()) return '';
   const role = ['buyer','seller','both'].includes(r) ? r : 'buyer';
   const icon = { buyer: '💰', seller: '🏠', both: '💰🏠' }[role];
   return `<span class="role-badge role-badge-${role}">${icon} ${roleLabel(role)}</span>`;
+}
+// Buyer/seller only makes sense for real estate transactions (agent or lawyer) -
+// meaningless for an interior design client, so it's hidden for that vertical.
+function showsBuyerSellerRole() {
+  const ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+  return ind !== 'interior';
 }
 function roleMatchesFilter(leadRole, filter) {
   if (!filter || filter === 'all') return true;
@@ -7938,11 +7945,15 @@ const INDUSTRY_SOURCES = {
 };
 
 function applyIndustryToLeadForm(prefix) {
-  const ind = localStorage.getItem('liders_industry') || (State.tenant?.industry || '').replace(/_/g,'') || 'other';
+  const ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
 
   // Inspiration URL field - only relevant for interior designers
   const fg = document.getElementById(`fg-${prefix}-inspiration`);
   if (fg) fg.style.display = ind === 'interior' ? '' : 'none';
+
+  // Buyer/seller role picker - meaningless for interior design clients
+  const fgRole = document.getElementById(`fg-${prefix}-role`);
+  if (fgRole) fgRole.style.display = showsBuyerSellerRole() ? '' : 'none';
 
   // Source dropdown - populate with industry-specific options
   const sel = document.getElementById(`${prefix}-lead-source`);
@@ -8778,7 +8789,7 @@ const Marketing = {
     const leads = State.leads || [];
     const properties = State.properties || [];
     const leadOptions = leads.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
-    const propOptions = `<option value="">ללא נכס ספציפי</option>` +
+    const propOptions = `<option value="">ללא ${getLabel('property')} ספציפי</option>` +
       properties.map(p => `<option value="${p.id}">${p.title || p.city}</option>`).join('');
     const usageLabel = AiLimits.limitLabel('marketing');
     const ind        = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
@@ -11110,8 +11121,7 @@ const App = {
     document.getElementById('sidebar-agent-role').textContent  = State.agent.role;
     Billing.renderTrialBanner();
     // Restore industry from Supabase so it survives logout
-    // DB stores 'real_estate' (underscore) but frontend uses 'realestate' (no underscore)
-    const savedInd = (State.tenant?.industry || '').replace(/_/g, '');
+    const savedInd = State.tenant?.industry || '';
     if (savedInd && INDUSTRY_LABELS[savedInd]) {
       localStorage.setItem('liders_industry', savedInd);
     }
@@ -11767,6 +11777,7 @@ const Pipeline = {
   _renderRoleFilter() {
     const el = document.getElementById('pipeline-role-filter');
     if (!el) return;
+    if (!showsBuyerSellerRole()) { el.innerHTML = ''; return; }
     const pills = [
       { id: 'all',    label: 'הכל' },
       { id: 'buyer',  label: '💰 קונים' },
@@ -11873,6 +11884,7 @@ const Leads = {
   _renderRoleFilter() {
     const el = document.getElementById('leads-role-filter');
     if (!el) return;
+    if (!showsBuyerSellerRole()) { el.innerHTML = ''; return; }
     const pills = [
       { id: 'all',    label: 'הכל' },
       { id: 'buyer',  label: '💰 קונים' },
