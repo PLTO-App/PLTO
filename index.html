@@ -1288,14 +1288,59 @@
     .kpi-sub { font-size: 12px; color: var(--gray-400); margin-top: 5px; }
 
     /* ═══════════════════════════════════════
-       PIPELINE CHART
+       PIPELINE CHART / LIVE FLOW
     ═══════════════════════════════════════ */
-    .chart-card {
+    .chart-card, .pipeline-flow-card {
       background: var(--surface); border-radius: var(--radius-lg);
       padding: 16px 16px 8px; box-shadow: var(--shadow-sm);
       border: 1px solid var(--border); margin: 0 20px 8px;
     }
     .chart-card-title { font-size: 13px; font-weight: 700; color: var(--gray-600); margin-bottom: 10px; }
+
+    .pipeline-flow-card { padding-bottom: 14px; }
+    .pipeline-flow-lanes { display: flex; flex-direction: column; gap: 10px; }
+    .pipeline-flow-lane { display: flex; flex-direction: column; gap: 4px; }
+    .pipeline-flow-lane-head {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 12px; font-weight: 700; color: var(--gray-600);
+    }
+    .pipeline-flow-lane-name { display: flex; align-items: center; gap: 6px; }
+    .pipeline-flow-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .pipeline-flow-lane-total { font-weight: 800; color: var(--gray-900); }
+    .pipeline-flow-track {
+      position: relative; overflow: hidden; border-radius: 10px;
+      background: var(--gray-50); border: 1px solid var(--border);
+      -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+      mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+    }
+    .pipeline-flow-chips {
+      display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+      width: max-content; will-change: transform;
+      animation: pipeline-flow-scroll linear infinite;
+    }
+    .pipeline-flow-track:hover .pipeline-flow-chips { animation-play-state: paused; }
+    .pipeline-flow-chip {
+      display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+      background: var(--surface); border-radius: 999px; padding: 5px 12px 5px 6px;
+      font-size: 12.5px; font-weight: 600; color: var(--gray-800);
+      border: 1.5px solid var(--chip-color, var(--border));
+      box-shadow: 0 1px 2px rgba(15,31,61,.06); cursor: pointer;
+      transition: transform .15s ease;
+    }
+    .pipeline-flow-chip:hover { transform: translateY(-2px); }
+    .pipeline-flow-chip-avatar {
+      width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+      background: var(--chip-color, var(--gray-400)); color: #fff;
+      font-size: 9.5px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+    }
+    .pipeline-flow-chip-val { color: var(--gray-500); font-weight: 700; }
+    @keyframes pipeline-flow-scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .pipeline-flow-chips { animation: none; }
+    }
 
     /* ═══════════════════════════════════════
        KANBAN ENHANCEMENTS
@@ -2180,12 +2225,26 @@
     .cal-cell {
       min-height:68px; background:var(--surface); border-radius:var(--radius-md);
       border:1px solid var(--border); padding:4px; cursor:pointer;
-      transition:box-shadow 0.15s, border-color 0.15s;
+      transition:box-shadow 0.15s, border-color 0.15s, transform 0.15s;
+      animation: cal-cell-fade .32s ease both;
+      animation-delay: calc(var(--col, 0) * 22ms);
     }
-    .cal-cell:hover { box-shadow:var(--shadow-sm); border-color:var(--navy-200); }
+    .cal-grid.dir-next .cal-cell { animation-name: cal-cell-slide-next; }
+    .cal-grid.dir-prev .cal-cell { animation-name: cal-cell-slide-prev; }
+    .cal-cell:hover { box-shadow:var(--shadow-md); border-color:var(--navy-200); transform:translateY(-2px); }
     .cal-cell.other-month { background:var(--gray-50); opacity:0.5; cursor:default; }
-    .cal-cell.today { border-color:var(--navy-400); border-width:2px; }
+    .cal-cell.other-month:hover { transform:none; box-shadow:none; }
+    .cal-cell.today { border-color:var(--navy-400); border-width:2px; animation: cal-cell-fade .32s ease both, cal-today-pulse 2.4s ease-in-out .4s infinite; }
+    .cal-grid.dir-next .cal-cell.today { animation-name: cal-cell-slide-next, cal-today-pulse; }
+    .cal-grid.dir-prev .cal-cell.today { animation-name: cal-cell-slide-prev, cal-today-pulse; }
     .cal-cell.today .cal-day-num { background:var(--navy-500); color:white; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; }
+    @keyframes cal-cell-fade { from { opacity:0; transform:translateY(5px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+    @keyframes cal-cell-slide-next { from { opacity:0; transform:translateX(-10px); } to { opacity:1; transform:translateX(0); } }
+    @keyframes cal-cell-slide-prev { from { opacity:0; transform:translateX(10px); } to { opacity:1; transform:translateX(0); } }
+    @keyframes cal-today-pulse { 0%,100% { box-shadow:0 0 0 0 rgba(28,62,107,.28); } 50% { box-shadow:0 0 0 5px rgba(28,62,107,0); } }
+    @media (prefers-reduced-motion: reduce) {
+      .cal-cell, .cal-cell.today { animation:none !important; }
+    }
     .cal-day-num { font-size:12px; font-weight:700; color:var(--gray-700); margin-bottom:3px; width:22px; height:22px; display:flex; align-items:center; justify-content:center; }
     .cal-dot { font-size:10px; border-radius:3px; padding:1px 4px; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:600; }
     .cal-dot-task { background:var(--blue-100); color:var(--blue-500); }
@@ -3158,16 +3217,40 @@
   .demo-lock-features li { font-size:13px; color:var(--gray-700); padding:3px 0; }
 
   /* ── PRO HUB ── */
-  .pro-hub-hero { background:linear-gradient(135deg,var(--navy-700) 0%,var(--navy-500) 55%,#2563EB 100%); color:#fff; padding:26px 20px 30px; text-align:center; border-radius:0 0 28px 28px; margin-bottom:4px; }
-  .pro-hub-hero-emoji { font-size:38px; margin-bottom:10px; }
+  .pro-hub-hero {
+    background:linear-gradient(120deg,var(--navy-700) 0%,var(--navy-500) 45%,#2563EB 75%,var(--navy-500) 100%);
+    background-size:220% 220%; animation:pro-hero-shift 9s ease-in-out infinite;
+    color:#fff; padding:26px 20px 30px; text-align:center; border-radius:0 0 28px 28px; margin-bottom:4px;
+    position:relative; overflow:hidden;
+  }
+  @keyframes pro-hero-shift { 0%,100% { background-position:0% 50%; } 50% { background-position:100% 50%; } }
+  .pro-hub-hero-emoji { font-size:38px; margin-bottom:10px; display:inline-block; animation:pro-hero-emoji-float 3.2s ease-in-out infinite; }
+  @keyframes pro-hero-emoji-float { 0%,100% { transform:translateY(0) rotate(0deg); } 50% { transform:translateY(-5px) rotate(-6deg); } }
   .pro-hub-hero-title { font-size:23px; font-weight:900; margin-bottom:6px; letter-spacing:-0.3px; }
   .pro-hub-hero-sub { font-size:13px; opacity:0.88; line-height:1.6; margin-bottom:14px; }
   .pro-hub-pills { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
   .pro-hub-pill { background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.25); border-radius:99px; padding:5px 12px; font-size:11px; font-weight:700; }
   .pro-cat-label { font-size:11px; font-weight:800; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.08em; padding:16px 20px 6px; }
-  .pro-grid { display:flex; flex-direction:column; gap:8px; padding:0 14px 4px; }
-  .pro-card { background:var(--surface); border:1.5px solid var(--border); border-radius:14px; padding:13px 12px; display:flex; align-items:center; gap:12px; cursor:pointer; transition:.15s; box-shadow:var(--shadow-sm); }
+  .pro-grid { display:grid; grid-template-columns:1fr; gap:8px; padding:0 14px 4px; }
+  @media (min-width:700px) { .pro-grid { grid-template-columns:1fr 1fr; } }
+  @media (min-width:1024px) { .pro-grid { grid-template-columns:1fr 1fr 1fr; } }
+  .pro-card {
+    background:var(--surface); border:1.5px solid var(--border); border-radius:14px; padding:13px 12px;
+    display:flex; align-items:center; gap:12px; cursor:pointer; transition:transform .15s, box-shadow .15s, border-color .15s;
+    box-shadow:var(--shadow-sm); animation:pro-card-in .35s ease both;
+  }
   .pro-card:active { transform:scale(0.97); background:var(--gray-50); }
+  .pro-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-md); border-color:var(--navy-200); }
+  .pro-grid .pro-card:nth-child(1) { animation-delay: 0ms; }
+  .pro-grid .pro-card:nth-child(2) { animation-delay: 40ms; }
+  .pro-grid .pro-card:nth-child(3) { animation-delay: 80ms; }
+  .pro-grid .pro-card:nth-child(4) { animation-delay: 120ms; }
+  .pro-grid .pro-card:nth-child(5) { animation-delay: 160ms; }
+  .pro-grid .pro-card:nth-child(n+6) { animation-delay: 200ms; }
+  @keyframes pro-card-in { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  @media (prefers-reduced-motion: reduce) {
+    .pro-card, .pro-hub-hero, .pro-hub-hero-emoji { animation:none !important; }
+  }
   .pro-card-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:21px; flex-shrink:0; }
   .pci-blue { background:#EFF6FF; } .pci-purple { background:#F5F3FF; } .pci-green { background:#F0FDF4; }
   .pci-gold { background:#FEFCE8; } .pci-orange { background:#FFF7ED; } .pci-red { background:#FEF2F2; }
@@ -3175,10 +3258,19 @@
   .pro-card-info { flex:1; min-width:0; }
   .pro-card-title { font-size:14px; font-weight:700; color:var(--navy); line-height:1.3; }
   .pro-card-sub { font-size:11.5px; color:var(--gray-500); margin-top:2px; }
-  .pro-chip { font-size:9px; font-weight:900; padding:3px 8px; border-radius:99px; white-space:nowrap; flex-shrink:0; letter-spacing:0.04em; }
+  .pro-chip { position:relative; overflow:hidden; font-size:9px; font-weight:900; padding:3px 8px; border-radius:99px; white-space:nowrap; flex-shrink:0; letter-spacing:0.04em; }
   .pro-chip-pro  { background:linear-gradient(135deg,#7C3AED,#2563EB); color:#fff; }
   .pro-chip-free { background:var(--green-500); color:#fff; }
   .pro-chip-ai   { background:linear-gradient(135deg,#EA580C,#F59E0B); color:#fff; }
+  .pro-chip-pro::after, .pro-chip-ai::after {
+    content:''; position:absolute; inset:0; transform:translateX(-100%);
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
+    animation:pro-chip-shimmer 3.6s ease-in-out infinite;
+  }
+  @keyframes pro-chip-shimmer { 0%,35% { transform:translateX(-100%); } 65%,100% { transform:translateX(100%); } }
+  @media (prefers-reduced-motion: reduce) {
+    .pro-chip-pro::after, .pro-chip-ai::after { animation:none; }
+  }
   /* score list */
   .pro-score-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
   .pro-score-item:last-child { border-bottom:none; }
@@ -3457,6 +3549,14 @@
 
     /* Center & constrain the dashboard so content doesn't stretch edge-to-edge */
     #screen-dashboard { max-width: 1080px; margin: 0 auto; }
+
+    /* Same treatment for screens that were never capped - they used to stretch
+       edge-to-edge on wide desktops, turning modest components (calendar cells,
+       pro-hub rows, chart cards) into oversized, dead-looking blocks. */
+    #screen-calendar, #screen-analytics, #screen-pro,
+    #screen-xp-store, #screen-referral, #screen-partners {
+      max-width: 1080px; margin: 0 auto;
+    }
 
     /* Constrain gamify widget so it doesn't dominate the page */
     .gamify-widget { max-width: 720px; margin: 0 auto 14px; }
@@ -4017,9 +4117,9 @@
         </div>
         <div id="dash-cold-leads"></div>
       </div>
-      <div class="chart-card" id="dash-chart-container" style="display:none;">
-        <div class="chart-card-title">📊 שווי צינור לפי שלב</div>
-        <canvas id="pipeline-chart" height="140"></canvas>
+      <div class="pipeline-flow-card" id="dash-chart-container" style="display:none;">
+        <div class="chart-card-title">📊 שווי צינור לפי שלב — בזמן אמת</div>
+        <div class="pipeline-flow-lanes" id="pipeline-flow-lanes"></div>
       </div>
 
       <div class="section-header mt-4">
@@ -10853,6 +10953,31 @@ const AnnualUpsell = {
   },
 };
 
+// Wraps #loading-overlay so the skyline-building animation is guaranteed to
+// stay on screen for a minimum stretch of time - data often loads fast
+// enough that the overlay used to flash for a fraction of a second, which
+// read as a glitch rather than the intended "building rises" moment.
+const LoadingOverlay = {
+  MIN_MS: 2000,
+  _shownAt: 0,
+  show(text) {
+    const overlay = document.getElementById('loading-overlay');
+    if (!overlay) return;
+    overlay.classList.remove('hidden', 'fade-out');
+    const t = overlay.querySelector('.loader-text');
+    if (t && text) t.textContent = text;
+    this._shownAt = Date.now();
+  },
+  async hide() {
+    const overlay = document.getElementById('loading-overlay');
+    if (!overlay) return;
+    const remaining = this.MIN_MS - (Date.now() - this._shownAt);
+    if (remaining > 0) await new Promise(r => setTimeout(r, remaining));
+    overlay.classList.add('fade-out');
+    setTimeout(() => overlay.classList.add('hidden'), 520);
+  },
+};
+
 const App = {
   async loginWithEmail() {
     const email    = document.getElementById('login-email').value.trim();
@@ -10907,7 +11032,6 @@ const App = {
   },
   async _authAndEnter(email, password) {
     const loginBtn = document.getElementById('btn-login-email');
-    const overlay  = document.getElementById('loading-overlay');
     if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'מתחבר...'; }
     try {
       // Try login first; if credentials unknown → auto-signup for new users
@@ -10935,8 +11059,7 @@ const App = {
         return;
       }
       // show loading overlay while fetching data
-      overlay.classList.remove('hidden', 'fade-out');
-      overlay.querySelector('.loader-text').textContent = 'טוען נתונים...';
+      LoadingOverlay.show('טוען נתונים...');
       const user = data.user;
       const { isNew } = await DB.ensureAgent(user.email, user.email.split('@')[0]);
       AuditLog.log('auth.login');
@@ -10961,9 +11084,7 @@ const App = {
       if (t?.whatsapp_number)  localStorage.setItem('whatsapp_number',  t.whatsapp_number);
       State.isNewTenant = isNew;
       this._showApp();
-      // fade out overlay
-      overlay.classList.add('fade-out');
-      setTimeout(() => overlay.classList.add('hidden'), 520);
+      await LoadingOverlay.hide();
     } catch(e) {
       if ((e.message || '').includes('disposable_email_blocked')) {
         await DB.signOut();
@@ -10971,7 +11092,7 @@ const App = {
       } else {
         toast('שגיאה: ' + e.message, 'error');
       }
-      overlay.classList.add('hidden');
+      document.getElementById('loading-overlay')?.classList.add('hidden');
     } finally {
       if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'כניסה / הרשמה בחינם'; }
     }
@@ -11316,43 +11437,50 @@ const Dashboard = {
     });
     this.renderChart();
   },
-  _chartInst: null,
   renderChart() {
     const container = document.getElementById('dash-chart-container');
-    const canvas = document.getElementById('pipeline-chart');
-    if (!container || !canvas || !window.Chart) return;
-    const stageData = State.stages.map(s => {
-      const val = State.leads
-        .filter(l => l.stage === s.id && l.stage !== 's5')
-        .reduce((acc, l) => acc + (l.budget_max || 0), 0);
-      return { name: s.name, value: val, color: s.color };
-    }).filter(s => s.value > 0);
+    const lanesEl = document.getElementById('pipeline-flow-lanes');
+    if (!container || !lanesEl) return;
+    const stageData = State.stages
+      .filter(s => !s.is_terminal)
+      .map(s => {
+        const leads = State.leads.filter(l => l.stage === s.id);
+        const val = leads.reduce((acc, l) => acc + (l.budget_max || 0), 0);
+        return { stage: s, leads, value: val };
+      })
+      .filter(s => s.leads.length > 0);
     if (!stageData.length) { container.style.display = 'none'; return; }
     container.style.display = '';
-    if (this._chartInst) { this._chartInst.destroy(); }
-    this._chartInst = new Chart(canvas, {
-      type: 'bar',
-      data: {
-        labels: stageData.map(s => s.name),
-        datasets: [{
-          data: stageData.map(s => s.value),
-          backgroundColor: stageData.map(s => s.color + 'CC'),
-          borderColor:     stageData.map(s => s.color),
-          borderWidth: 2,
-          borderRadius: 6,
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false }, tooltip: {
-          callbacks: { label: ctx => formatMoney(ctx.raw) }
-        }},
-        scales: {
-          x: { grid: { display: false }, ticks: { font: { family:'Heebo', size:11 } } },
-          y: { display: false, beginAtZero: true }
-        }
-      }
-    });
+
+    const initials = name => (name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+
+    lanesEl.innerHTML = stageData.map((s, i) => {
+      const chipHtml = s.leads.map(l => `
+        <div class="pipeline-flow-chip" style="--chip-color:${s.stage.color};" onclick="App.go('lead-detail',{currentLeadId:'${l.id}'})">
+          <span class="pipeline-flow-chip-avatar" style="--chip-color:${s.stage.color};">${initials(l.name)}</span>
+          <span>${escapeHtml(l.name)}</span>
+          <span class="pipeline-flow-chip-val">${formatMoney(l.budget_max)}</span>
+        </div>
+      `).join('');
+      const duration = Math.max(10, s.leads.length * 4);
+      const direction = i % 2 === 0 ? 'normal' : 'reverse';
+      return `
+        <div class="pipeline-flow-lane">
+          <div class="pipeline-flow-lane-head">
+            <span class="pipeline-flow-lane-name">
+              <span class="pipeline-flow-dot" style="background:${s.stage.color};"></span>
+              ${escapeHtml(s.stage.name)} · ${s.leads.length}
+            </span>
+            <span class="pipeline-flow-lane-total">${formatMoney(s.value)}</span>
+          </div>
+          <div class="pipeline-flow-track">
+            <div class="pipeline-flow-chips" style="animation-duration:${duration}s;animation-direction:${direction};">
+              ${chipHtml}${chipHtml}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
   },
   renderTasks() {
     const urgent = State.tasks.filter(t => !t.done && diffDays(t.due) <= 0)
@@ -12407,6 +12535,7 @@ const Calendar = {
   _year: null,
   _month: null,
   _selectedDate: null,
+  _navDir: null,
 
   render() {
     const now = new Date();
@@ -12416,6 +12545,7 @@ const Calendar = {
 
   goToday() {
     const now = new Date();
+    this._navDir = null;
     this._year = now.getFullYear();
     this._month = now.getMonth();
     this._selectedDate = null;
@@ -12424,6 +12554,7 @@ const Calendar = {
   },
 
   prevMonth() {
+    this._navDir = 'prev';
     this._month--;
     if (this._month < 0) { this._month = 11; this._year--; }
     this._selectedDate = null;
@@ -12432,6 +12563,7 @@ const Calendar = {
   },
 
   nextMonth() {
+    this._navDir = 'next';
     this._month++;
     if (this._month > 11) { this._month = 0; this._year++; }
     this._selectedDate = null;
@@ -12477,7 +12609,8 @@ const Calendar = {
 
     const grid = document.getElementById('cal-grid');
     if (!grid) return;
-    grid.innerHTML = cells.map(cell => {
+    grid.className = 'cal-grid' + (this._navDir ? ' dir-' + this._navDir : '');
+    grid.innerHTML = cells.map((cell, idx) => {
       const dateStr = cell.date.toISOString().slice(0, 10);
       const { tasks, followups } = this._eventsForDate(dateStr);
       const isToday = dateStr === todayStr;
@@ -12496,7 +12629,7 @@ const Calendar = {
 
       const cellClass = ['cal-cell', cell.otherMonth ? 'other-month' : '', isToday ? 'today' : '', isSelected ? 'selected' : ''].filter(Boolean).join(' ');
       const onclick = cell.otherMonth ? '' : `onclick="Calendar.selectDay('${dateStr}')"`;
-      return `<div class="${cellClass}" ${onclick}>
+      return `<div class="${cellClass}" style="--col:${idx % 7}" ${onclick}>
         <div class="cal-day-num">${cell.date.getDate()}</div>
         ${dots}
       </div>`;
@@ -14453,9 +14586,7 @@ sbClient.auth.onAuthStateChange((event, session) => {
       // actual work to a macrotask so it runs after the callback returns and
       // the lock is released. See supabase/supabase-js auth deadlock issues.
       setTimeout(async () => {
-        const overlay = document.getElementById('loading-overlay');
-        overlay.classList.remove('hidden', 'fade-out');
-        overlay.querySelector('.loader-text').textContent = 'מתחבר...';
+        LoadingOverlay.show('מתחבר...');
         try {
           const { isNew } = await DB.ensureAgent(session.user.email, session.user.user_metadata?.full_name || session.user.email.split('@')[0]);
           AuditLog.log('auth.login');
@@ -14481,10 +14612,9 @@ sbClient.auth.onAuthStateChange((event, session) => {
           setTimeout(() => { Gamify.init(); Referral.claimWelcomeBonus(); }, 800);
           Referral.checkInboundRef();
           Support.checkInboundOpen();
-          overlay.classList.add('fade-out');
-          setTimeout(() => overlay.classList.add('hidden'), 520);
+          await LoadingOverlay.hide();
         } catch(e) {
-          overlay.classList.add('hidden');
+          document.getElementById('loading-overlay')?.classList.add('hidden');
           if ((e.message || '').includes('disposable_email_blocked')) {
             await DB.signOut();
             toast('נא להירשם עם כתובת אימייל אמיתית וקבועה, לא כתובת זמנית/חד-פעמית', 'error', 6000);
