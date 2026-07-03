@@ -37,31 +37,34 @@
 > ב-`.claude/agents/`. **כללי יעילות הטוקנים למעלה גוברים תמיד** — הסוכנים מופעלים
 > רק כשהשינוי מצדיק זאת, לא על כל עריכה קטנה.
 
-### סוכני הפרויקט (ב-`.claude/agents/`)
+### סוכן הפרויקט היחיד (ב-`.claude/agents/`)
 
 | סוכן | מתי להפעיל |
 |------|-------------|
-| `liders-code-reviewer` | לפני commit של שינוי משמעותי — 5 עדשות (באגים/סגנון/ביצועים/ארכיטקטורה/תיעוד) בריצה אחת |
-| `liders-security-reviewer` | שינוי שנוגע ב-auth / RLS / תשלומים / edge functions / קלט משתמש |
 | `liders-ui-reviewer` | שינוי מסך או קומפוננטה — התאמה למערכת העיצוב, RTL, mobile-first (רק המסך שהשתנה) |
 
-### יכולות שכבר מובנות (לא להתקין/לשכפל)
+> הוחלט 3/7/2026 (לבקשת המשתמש): **סוכן אחד בלבד, בלי כפילויות.** נמחקו
+> `liders-code-reviewer` ו-`liders-security-reviewer` כי הם שכפלו יכולות קיימות —
+> ראה טבלה למטה. אין ליצור סוכני פרויקט חדשים שחופפים ל-skills קיימים או ליכולות מובנות.
+
+### יכולות שכבר קיימות (לא להתקין/לשכפל)
 
 | מהסרטון | הפתרון אצלנו |
 |---------|----------------|
 | "Superpowers" (תכנון לפני קוד + אימות) | Plan mode מובנה + skill‏ `/verify` |
-| "Claude Code Workflows" (סקירה מקבילה) | skill‏ `/code-review` מובנה (ברמת medium!) + `liders-code-reviewer` |
-| "Security Review" | skill‏ `/security-review` מובנה + `liders-security-reviewer` המותאם ל-Supabase שלנו |
+| "Claude Code Workflows" (סקירה מקבילה) | skill‏ `/code-review` מובנה — ברמת medium! |
+| "Security Review" | skill‏ `/security-review` מובנה + skills פרויקט `security-guardian`/`supabase-security` (threat model מלא) |
 | "Claude MEM" (זיכרון בין סשנים) | קובץ CLAUDE.md הזה — **חובה לעדכן אותו בסוף כל סשן עם החלטות ושינויים** |
-| "Frontend Design" | מערכת העיצוב המתועדת כאן + `liders-ui-reviewer` + skills קיימים ב-`.claude/skills/` |
+| "Frontend Design" | מערכת העיצוב המתועדת כאן + `liders-ui-reviewer` + skill‏ `figma-crm-ui` |
+| QA פונקציונלי E2E | skill פרויקט `qa-liders` (סקריפט Playwright מוכן) |
 | "gstack" (היררכיית CEO/מנהלים) | **לא אומץ בכוונה** — משחק תפקידים שמנפח טוקנים בלי ערך הנדסי, מנוגד לכללי היעילות |
 
 ### תהליך עבודה לשינוי משמעותי
 1. **תכנון** — מיפוי קצר של הצעדים לפני כתיבת קוד (בשינוי גדול: Plan mode).
 2. **מימוש** — לפי דפוסי הקוד הקיימים ומערכת העיצוב.
-3. **סקירה** — `liders-code-reviewer` או `/code-review` ברמת medium; על מסכים —
-   `liders-ui-reviewer`.
-4. **אבטחה** — `liders-security-reviewer` רק כשהשינוי נוגע בתחום רגיש (סעיף למעלה).
+3. **סקירה** — `/code-review` ברמת medium; על מסכים — `liders-ui-reviewer`.
+4. **אבטחה** — `/security-review` (עם ה-checklist של `security-guardian`) רק כשהשינוי
+   נוגע ב-auth / RLS / תשלומים / edge functions / קלט משתמש.
 5. **תיעוד** — עדכון CLAUDE.md אם השתנו החלטות/מחירים/סכמה, ואז commit + push.
 
 בתיקונים קטנים (טקסט, צבע, באג נקודתי) — מדלגים על שלבים 3–4 ועובדים ישירות.
