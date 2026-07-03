@@ -569,6 +569,10 @@
     </div>
     <button class="btn-auth" id="btn-login" onclick="doLogin()">כניסה לפאנל</button>
     <div id="auth-error"></div>
+    <div style="text-align:center;margin-top:14px;">
+      <button onclick="doForgotPassword()" id="btn-forgot" style="background:none;border:none;color:var(--blue);font-size:13px;cursor:pointer;text-decoration:underline;font-family:inherit;">שכחתי סיסמה</button>
+      <div id="forgot-msg" style="display:none;margin-top:8px;font-size:12px;color:var(--green);text-align:center;"></div>
+    </div>
   </div>
 </div>
 
@@ -1074,6 +1078,30 @@ async function doLogin() {
   showApp(data.user);
 }
 
+async function doForgotPassword() {
+  const email = document.getElementById('auth-email').value.trim();
+  const msgEl = document.getElementById('forgot-msg');
+  const btn   = document.getElementById('btn-forgot');
+  if (!email) {
+    document.getElementById('auth-error').textContent = 'הזן אימייל קודם';
+    document.getElementById('auth-error').style.display = 'block';
+    return;
+  }
+  btn.disabled = true;
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + window.location.pathname,
+  });
+  btn.disabled = false;
+  if (error) {
+    document.getElementById('auth-error').textContent = 'שגיאה: ' + error.message;
+    document.getElementById('auth-error').style.display = 'block';
+  } else {
+    msgEl.textContent = '✅ מייל איפוס סיסמה נשלח ל-' + email;
+    msgEl.style.display = 'block';
+    document.getElementById('auth-error').style.display = 'none';
+  }
+}
+
 async function doLogout() {
   await sb.auth.signOut();
   showAuth();
@@ -1174,7 +1202,7 @@ function renderDashboard() {
       <td><strong>${esc(a.name||'?')}</strong></td>
       <td style="color:var(--text-muted);font-size:.82rem;">${esc(a.billing_email||'–')}</td>
       <td><span class="badge ${planMap[a.plan]||'badge-dim'}">${esc(a.plan||'?')}</span></td>
-      <td style="font-size:.78rem;color:var(--text-dim)">${a.created_at ? new Date(a.created_at).toLocaleDateString('he-IL') : '–'}</td>
+      <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${a.created_at ? new Date(a.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(a.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '–'}</td>
     </tr>
   `).join('');
 }
@@ -1206,7 +1234,7 @@ function renderAccountsTable(accounts) {
       <td><strong>${esc(a.name||'?')}</strong></td>
       <td style="font-size:.82rem;color:var(--text-muted)">${esc(a.billing_email||'–')}</td>
       <td><span class="badge ${planMap[a.plan]||'badge-dim'}">${esc(a.plan||'?')}</span></td>
-      <td style="font-size:.78rem;color:var(--text-dim)">${a.created_at ? new Date(a.created_at).toLocaleDateString('he-IL') : '–'}</td>
+      <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${a.created_at ? new Date(a.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(a.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '–'}</td>
       <td>
         <div class="action-btns">
           <button class="btn-icon" title="עריכה" onclick="openEditAccount('${esc(a.id)}')">✏️</button>
@@ -1298,7 +1326,7 @@ function renderInvoicesTable(invoices) {
       <td><strong>${esc(inv.tenant_name||inv.customer_name||'–')}</strong></td>
       <td style="font-weight:700;color:var(--gold)">₪${(inv.amount||0).toLocaleString('he-IL')}</td>
       <td><span class="badge ${statusMap[inv.status]||'badge-dim'}">${esc(statusLabel[inv.status]||inv.status||'?')}</span></td>
-      <td style="font-size:.78rem;color:var(--text-dim)">${inv.created_at ? new Date(inv.created_at).toLocaleDateString('he-IL') : '–'}</td>
+      <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${inv.created_at ? new Date(inv.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(inv.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '–'}</td>
       <td>
         <div class="action-btns">
           <button class="btn-icon" title="עריכה" onclick="openEditInvoice('${esc(inv.id)}')">✏️</button>
@@ -1438,7 +1466,7 @@ function renderSaasTable(tenants) {
         <td style="color:var(--text-muted)">${t.task_count||0}</td>
         <td>${mktgCell}</td>
         <td>${seatsCell}</td>
-        <td style="font-size:.78rem;color:var(--text-dim)">${t.created_at ? new Date(t.created_at).toLocaleDateString('he-IL') : '–'}</td>
+        <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${t.created_at ? new Date(t.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(t.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '–'}</td>
         <td>
           <div class="action-btns">
             <button class="btn-icon" title="פתח CRM" onclick="window.open('https://liders-crm.com/','_blank')" style="font-size:.75rem;">↗</button>
