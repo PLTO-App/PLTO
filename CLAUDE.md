@@ -580,6 +580,43 @@ Liders מתחרה ב-Pipedrive ו-monday.com בתחום ה-SMB. הם גובים 
 
 ---
 
+## מה בוצע — סשן 3/7/2026 (לילה) — תיקוני UI לולאת הפניות ולוח ההזדמנויות
+
+> ענף: `claude/migrations-ui-build-fixes-3t08np` (בנוי על `claude/migrations-ui-build-991h15`)
+
+### ✅ תיקוני באגים בעדיפות גבוהה
+1. **ReferralsList._cardHTML** — הוספת כפתורי "💬 שלח לקולגה" / "🔗 העתק" לכרטיסי
+   הפניות עם `direction==='sent'` ו-status `sent`/`opened`. הכפתורים קוראים לשתי
+   מתודות חדשות: `sendToColleague(token)` ו-`copyColleagueLink(token)` שמחפשות
+   את הפריט ב-`_items` לפי token ובונות הודעת וואטסאפ מתאימה.
+2. **LeadReferral.copyLink()** — הוסף `id="lref-copy-btn"` לכפתור ה-HTML, ו-`create()`
+   מסתיר אותו (`classList.toggle('hidden', requireConsent)`) כשנבחר אישור פורמלי,
+   מונע שליחת קישור `?lref=` לפני שהלקוח אישר.
+
+### ✅ תיקוני באגים בעדיפות בינונית
+3. **ולידציית תקרת עמלה** — הוסף בדיקת `commValue > 1000000` עם הודעה בעברית
+   `"סכום העמלה המקסימלי הוא ₪1,000,000"` גם ב-`LeadReferral.create()` וגם
+   ב-`OppBoard.publish()`.
+4. **OppBoard._renderOpen()** — מעביר `State.tenant?.industry` כ-`p_vertical` ל-
+   `list_open_opportunities`, כך שרק הזדמנויות בתחום הרלוונטי מוצגות.
+5. **ביטול מועמדות** — הוסף כפתור "🚫 בטל מועמדות" ב-`_renderOpen()` כשסטטוס
+   `pending` + מתודת `withdraw(oppId)` חדשה שקוראת ל-`withdraw_my_application`.
+
+### ✅ תיקוני עדיפות נמוכה
+6. **escapeHtml לאזור** — `viewApplications()`: הפולבק `a.applicant_region` עטוף
+   ב-`escapeHtml()` לעקביות הגנת XSS.
+7. **agreement_required** — הוסף case ב-`accept()` catch שקורא ל-`openAgreementModal()`
+   כרשת ביטחון, אם מנגנון `_inboundLocked` לא יסונכרן נכון.
+
+### 📋 נשאר לביצוע עתידי
+- `/security-review` על הזרימות החדשות (RPCs אנונימיים: `get_client_consent_preview`,
+  `respond_client_consent`, `get_lead_referral_preview`) — דורש אישור מפורש מהמשתמש
+  לפני הפעלה.
+- מסך סטטיסטיקות הפניות, converted+500 XP, התראת Make למפנה.
+- דף נחיתה ייעודי לקולגה לא-רשום.
+
+---
+
 ## כללי עבודה
 
 1. **עברית RTL** — כל טקסט UI בעברית
