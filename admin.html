@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-Frame-Options" content="DENY">
-  <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://scyfywvzoogfrlalgftv.supabase.co wss://scyfywvzoogfrlalgftv.supabase.co; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
   <title>Liders Admin Panel</title>
+  <!-- הגנת clickjacking: GitHub Pages לא תומך ב-headers, ו-frame-ancestors לא נאכף מ-meta -->
+  <style id="antiCJ">html{display:none !important}</style>
+  <script>if (self === top) { document.getElementById('antiCJ').remove(); } else { top.location = self.location; }</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.js"
@@ -536,6 +538,12 @@
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     #toast.success { border-color: rgba(34,197,94,0.4); color: var(--green); }
     #toast.error   { border-color: rgba(239,68,68,0.4);  color: var(--red); }
+    .thread-msg { max-width: 88%; padding: 8px 12px; border-radius: 12px; font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
+    .thread-msg.role-user      { align-self: flex-start; background: var(--surface); border: 1px solid var(--border2); }
+    .thread-msg.role-assistant { align-self: flex-end; background: rgba(59,125,216,0.12); color: var(--blue); }
+    .thread-msg.role-admin     { align-self: flex-end; background: rgba(34,197,94,0.12); color: var(--green); font-weight: 600; }
+    .thread-msg .tm-label { display: block; font-size: 10px; opacity: .7; margin-bottom: 2px; font-weight: 700; }
+    .badge-needs-human { background: rgba(239,68,68,0.15); color: var(--red); font-weight: 700; }
   </style>
 </head>
 <body>
@@ -547,7 +555,7 @@
   <div class="auth-card">
     <div class="auth-logo">
       <h1>Liders Admin</h1>
-      <p>פאנל ניהול פלטפורמה — גישה מורשית בלבד</p>
+      <p>פאנל ניהול פלטפורמה, גישה מורשית בלבד</p>
     </div>
     <div class="form-group">
       <label class="form-label">אימייל</label>
@@ -561,6 +569,10 @@
     </div>
     <button class="btn-auth" id="btn-login" onclick="doLogin()">כניסה לפאנל</button>
     <div id="auth-error"></div>
+    <div style="text-align:center;margin-top:14px;">
+      <button onclick="doForgotPassword()" id="btn-forgot" style="background:none;border:none;color:var(--blue);font-size:13px;cursor:pointer;text-decoration:underline;font-family:inherit;">שכחתי סיסמה</button>
+      <div id="forgot-msg" style="display:none;margin-top:8px;font-size:12px;color:var(--green);text-align:center;"></div>
+    </div>
   </div>
 </div>
 
@@ -586,6 +598,7 @@
     <button class="nav-tab" onclick="switchTab('invoices')">חשבוניות ותשלומים</button>
     <button class="nav-tab" onclick="switchTab('saas')">לקוחות SaaS 🔴</button>
     <button class="nav-tab" onclick="switchTab('support')" id="nav-support">🎫 תמיכה <span id="support-open-count" style="display:none;background:var(--red);color:#fff;border-radius:99px;font-size:10px;padding:1px 6px;margin-right:4px;"></span></button>
+    <button class="nav-tab" onclick="switchTab('roadmap')">🚧 בתהליך בנייה</button>
   </div>
 
   <!-- Main Content -->
@@ -698,7 +711,7 @@
     <!-- ── SAAS TENANTS ── -->
     <div id="section-saas" class="section">
       <div class="section-header">
-        <h2>לקוחות SaaS — נרשמו בפועל</h2>
+        <h2>לקוחות SaaS שנרשמו בפועל</h2>
         <div class="header-actions">
           <button class="btn-outline btn-sm" onclick="loadSaasTenants()">🔄 רענן</button>
         </div>
@@ -726,12 +739,13 @@
               <th>לידים</th>
               <th>משימות</th>
               <th>שיווק</th>
+              <th>מושבים</th>
               <th>נרשם</th>
               <th>פעולות</th>
             </tr>
           </thead>
           <tbody id="saas-tbody">
-            <tr><td colspan="9"><div class="empty-state"><div class="spinner"></div></div></td></tr>
+            <tr><td colspan="10"><div class="empty-state"><div class="spinner"></div></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -762,6 +776,37 @@
           </thead>
           <tbody id="support-tbody">
             <tr><td colspan="8"><div class="empty-state"><p>טוען...</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── ROADMAP ── -->
+    <div id="section-roadmap" class="section">
+      <div class="section-header">
+        <h2>🚧 בתהליך בנייה</h2>
+        <div class="header-actions">
+          <button class="btn-outline btn-sm" onclick="loadRoadmapItems()">🔄 רענן</button>
+          <button class="btn-primary btn-sm" onclick="openAddRoadmapItem()">+ הוסף פריט</button>
+        </div>
+      </div>
+      <div style="font-size:.82rem;color:var(--text-dim);margin-bottom:16px;">
+        הרשימה הזאת מוצגת לכל המשתמשים בכל המערכות (מסך Pro Hub + תיבת הצעת רעיון). כשמשתמש מציע רעיון שכבר מופיע כאן, הוא לא מקבל את ה-300 XP.
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>כותרת</th>
+              <th>תיאור</th>
+              <th>קטגוריה</th>
+              <th>מקור</th>
+              <th>מוצג</th>
+              <th>פעולות</th>
+            </tr>
+          </thead>
+          <tbody id="roadmap-tbody">
+            <tr><td colspan="6"><div class="empty-state"><div class="spinner"></div></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -854,6 +899,57 @@
   </div>
 </div>
 
+<!-- Add / Edit Roadmap Item Modal -->
+<div class="modal-overlay hidden" id="modal-roadmap-item">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-roadmap-item-title">הוסף פריט</h3>
+      <button class="modal-close" onclick="closeModal('modal-roadmap-item')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="rm-id">
+      <div class="modal-form-group">
+        <label>כותרת</label>
+        <input type="text" id="rm-title" placeholder="לדוגמה: חתימה דיגיטלית לחוזים">
+      </div>
+      <div class="modal-form-group">
+        <label>תיאור</label>
+        <textarea id="rm-description" placeholder="תיאור קצר שהמשתמשים יראו..."></textarea>
+      </div>
+      <div class="modal-form-group">
+        <label>קטגוריה</label>
+        <select id="rm-category">
+          <option value="feature">פיצ'ר חדש</option>
+          <option value="improvement">שיפור</option>
+          <option value="integration">אינטגרציה</option>
+          <option value="other">אחר</option>
+        </select>
+      </div>
+      <div class="modal-form-group">
+        <label>מקור</label>
+        <select id="rm-source">
+          <option value="internal">פנימי</option>
+          <option value="user_idea">רעיון ממשתמש</option>
+        </select>
+      </div>
+      <div class="modal-form-group">
+        <label>סדר הצגה</label>
+        <input type="number" id="rm-order" placeholder="0" style="direction:ltr;">
+      </div>
+      <div class="modal-form-group">
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;">
+          <input type="checkbox" id="rm-published" style="width:18px;height:18px;cursor:pointer;accent-color:var(--green);" checked>
+          <label for="rm-published" style="cursor:pointer;font-size:14px;">מוצג למשתמשים</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline btn-sm" onclick="closeModal('modal-roadmap-item')">ביטול</button>
+      <button class="btn-primary btn-sm" onclick="saveRoadmapItem()">שמור</button>
+    </div>
+  </div>
+</div>
+
 <!-- Tenant Management Modal -->
 <div class="modal-overlay hidden" id="modal-tenant-mgmt">
   <div class="modal">
@@ -900,15 +996,11 @@
     <div class="modal-body">
       <input type="hidden" id="reply-ticket-id">
       <div class="modal-form-group" style="margin-bottom:10px;">
-        <label style="font-size:12px;color:var(--text-muted);">הודעת הלקוח</label>
-        <div id="reply-original-msg" style="background:var(--surface2);border-radius:var(--radius);padding:10px;font-size:13px;color:var(--text-muted);margin-top:4px;max-height:80px;overflow-y:auto;"></div>
-      </div>
-      <div class="modal-form-group" style="margin-bottom:10px;">
-        <label style="font-size:12px;color:var(--text-muted);">תגובת AI</label>
-        <div id="reply-ai-msg" style="background:var(--surface2);border-radius:var(--radius);padding:10px;font-size:13px;color:var(--blue);margin-top:4px;max-height:80px;overflow-y:auto;font-style:italic;"></div>
+        <label style="font-size:12px;color:var(--text-muted);">היסטוריית השיחה (לפיקוח)</label>
+        <div id="reply-thread" style="background:var(--surface2);border-radius:var(--radius);padding:10px;margin-top:4px;max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;"></div>
       </div>
       <div class="modal-form-group">
-        <label>תגובתך (תישלח ללקוח)</label>
+        <label>תגובתך (תוצג ללקוח בתוך האפליקציה בכניסה הבאה שלו לחלונית התמיכה)</label>
         <textarea id="reply-text" placeholder="כתוב תגובה ללקוח..." style="height:90px;width:100%;resize:none;"></textarea>
       </div>
       <div style="display:flex;gap:8px;margin-top:4px;">
@@ -936,7 +1028,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const ADMIN_EMAILS = ['liders.crm@gmail.com', 'elgrablidudu@gmail.com'];
-const TABS = ['dashboard', 'accounts', 'invoices', 'saas', 'support'];
+const TABS = ['dashboard', 'accounts', 'invoices', 'saas', 'support', 'roadmap'];
 
 /* ── UTILS ── */
 function esc(s) {
@@ -986,6 +1078,30 @@ async function doLogin() {
   showApp(data.user);
 }
 
+async function doForgotPassword() {
+  const email = document.getElementById('auth-email').value.trim();
+  const msgEl = document.getElementById('forgot-msg');
+  const btn   = document.getElementById('btn-forgot');
+  if (!email) {
+    document.getElementById('auth-error').textContent = 'הזן אימייל קודם';
+    document.getElementById('auth-error').style.display = 'block';
+    return;
+  }
+  btn.disabled = true;
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + window.location.pathname,
+  });
+  btn.disabled = false;
+  if (error) {
+    document.getElementById('auth-error').textContent = 'שגיאה: ' + error.message;
+    document.getElementById('auth-error').style.display = 'block';
+  } else {
+    msgEl.textContent = '✅ מייל איפוס סיסמה נשלח ל-' + email;
+    msgEl.style.display = 'block';
+    document.getElementById('auth-error').style.display = 'none';
+  }
+}
+
 async function doLogout() {
   await sb.auth.signOut();
   showAuth();
@@ -1028,12 +1144,14 @@ function switchTab(tab) {
   if (tab === 'invoices') loadInvoices();
   if (tab === 'saas')     loadSaasTenants();
   if (tab === 'support')  loadSupportTickets();
+  if (tab === 'roadmap')  loadRoadmapItems();
 }
 
 /* ── DATA STATE ── */
 let allAccounts = [];
 let allInvoices = [];
 let allSaasTenants = [];
+let allRoadmapItems = [];
 
 /* ── LOAD ALL ── */
 async function loadAll() {
@@ -1042,6 +1160,7 @@ async function loadAll() {
     loadInvoices(),
     loadSaasTenants(),
     loadSupportTickets(),
+    loadRoadmapItems(),
   ]);
   renderDashboard();
 }
@@ -1083,7 +1202,7 @@ function renderDashboard() {
       <td><strong>${esc(a.name||'?')}</strong></td>
       <td style="color:var(--text-muted);font-size:.82rem;">${esc(a.billing_email||'–')}</td>
       <td><span class="badge ${planMap[a.plan]||'badge-dim'}">${esc(a.plan||'?')}</span></td>
-      <td style="font-size:.78rem;color:var(--text-dim)">${a.created_at ? new Date(a.created_at).toLocaleDateString('he-IL') : '–'}</td>
+      <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${a.created_at ? new Date(a.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(a.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '–'}</td>
     </tr>
   `).join('');
 }
@@ -1115,7 +1234,7 @@ function renderAccountsTable(accounts) {
       <td><strong>${esc(a.name||'?')}</strong></td>
       <td style="font-size:.82rem;color:var(--text-muted)">${esc(a.billing_email||'–')}</td>
       <td><span class="badge ${planMap[a.plan]||'badge-dim'}">${esc(a.plan||'?')}</span></td>
-      <td style="font-size:.78rem;color:var(--text-dim)">${a.created_at ? new Date(a.created_at).toLocaleDateString('he-IL') : '–'}</td>
+      <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${a.created_at ? new Date(a.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(a.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '–'}</td>
       <td>
         <div class="action-btns">
           <button class="btn-icon" title="עריכה" onclick="openEditAccount('${esc(a.id)}')">✏️</button>
@@ -1207,7 +1326,7 @@ function renderInvoicesTable(invoices) {
       <td><strong>${esc(inv.tenant_name||inv.customer_name||'–')}</strong></td>
       <td style="font-weight:700;color:var(--gold)">₪${(inv.amount||0).toLocaleString('he-IL')}</td>
       <td><span class="badge ${statusMap[inv.status]||'badge-dim'}">${esc(statusLabel[inv.status]||inv.status||'?')}</span></td>
-      <td style="font-size:.78rem;color:var(--text-dim)">${inv.created_at ? new Date(inv.created_at).toLocaleDateString('he-IL') : '–'}</td>
+      <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${inv.created_at ? new Date(inv.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(inv.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '–'}</td>
       <td>
         <div class="action-btns">
           <button class="btn-icon" title="עריכה" onclick="openEditInvoice('${esc(inv.id)}')">✏️</button>
@@ -1280,15 +1399,22 @@ async function saveInvoice() {
 }
 
 /* ── SAAS TENANTS ── */
+let allTenantSeats = {};
+
 async function loadSaasTenants() {
   const tbody = document.getElementById('saas-tbody');
-  tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="spinner"></div></div></td></tr>';
-  const { data, error } = await sb.rpc('get_saas_tenants_admin');
+  tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="spinner"></div></div></td></tr>';
+  const [{ data, error }, { data: seatData }] = await Promise.all([
+    sb.rpc('get_saas_tenants_admin'),
+    sb.rpc('admin_list_tenant_seats'),
+  ]);
   if (error) {
-    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><p style="color:var(--red)">שגיאה: ${esc(error.message)}</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><p style="color:var(--red)">שגיאה: ${esc(error.message)}</p></div></td></tr>`;
     return;
   }
   allSaasTenants = data || [];
+  allTenantSeats = {};
+  (seatData || []).forEach(s => { allTenantSeats[s.tenant_id] = s; });
   renderSaasStats(allSaasTenants);
   renderSaasTable(allSaasTenants);
 }
@@ -1310,7 +1436,7 @@ function renderSaasStats(tenants) {
 function renderSaasTable(tenants) {
   const tbody = document.getElementById('saas-tbody');
   if (!tenants.length) {
-    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="icon">🏢</div><p>אין נתונים</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="icon">🏢</div><p>אין נתונים</p></div></td></tr>';
     return;
   }
   tbody.innerHTML = tenants.map(t => {
@@ -1326,6 +1452,10 @@ function renderSaasTable(tenants) {
     const mktgCell = mktg
       ? `<button class="btn-icon" title="כבה שיווק" onclick="toggleMarketing('${t.id}',false)" style="color:var(--green);font-size:.75rem;">📣 פעיל</button>`
       : `<button class="btn-icon" title="הפעל שיווק" onclick="toggleMarketing('${t.id}',true)" style="color:var(--text-dim);font-size:.75rem;">📣 כבוי</button>`;
+    const seats = allTenantSeats[t.id];
+    const seatsCell = seats
+      ? `<span style="font-weight:600;">${seats.seats_active}/${seats.seats_max}</span>${seats.overage_seats > 0 ? `<div style="font-size:.72rem;color:var(--gold);font-weight:700;">+${seats.overage_seats} מעבר, ₪${seats.monthly_overage_charge}/חוד'</div>` : ''}`
+      : '<span style="color:var(--text-dim)">–</span>';
     return `
       <tr>
         <td><strong>${esc(t.name||'?')}</strong>${t.notes ? `<div style="font-size:.72rem;color:var(--text-dim);margin-top:2px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(t.notes)}">📝 ${esc(t.notes)}</div>` : ''}</td>
@@ -1335,7 +1465,8 @@ function renderSaasTable(tenants) {
         <td style="font-weight:600;color:${(t.lead_count||0)>0?'var(--text)':'var(--red)'}">${t.lead_count||0}</td>
         <td style="color:var(--text-muted)">${t.task_count||0}</td>
         <td>${mktgCell}</td>
-        <td style="font-size:.78rem;color:var(--text-dim)">${t.created_at ? new Date(t.created_at).toLocaleDateString('he-IL') : '–'}</td>
+        <td>${seatsCell}</td>
+        <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${t.created_at ? new Date(t.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(t.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '–'}</td>
         <td>
           <div class="action-btns">
             <button class="btn-icon" title="פתח CRM" onclick="window.open('https://liders-crm.com/','_blank')" style="font-size:.75rem;">↗</button>
@@ -1465,22 +1596,21 @@ async function loadSupportTickets() {
 
 function renderSupportStats(tickets) {
   const el = document.getElementById('support-stats-row');
-  const open    = tickets.filter(t => t.status === 'open').length;
+  const needsHuman = tickets.filter(t => t.needs_human).length;
   const aiDone  = tickets.filter(t => t.status === 'ai_handled').length;
   const replied = tickets.filter(t => t.status === 'admin_replied').length;
   const resolved= tickets.filter(t => t.status === 'resolved').length;
   el.innerHTML = `
-    <div class="stat-card red"  ><div class="stat-label">ממתינים</div><div class="stat-value">${open}</div></div>
-    <div class="stat-card blue" ><div class="stat-label">AI ענה</div><div class="stat-value">${aiDone}</div></div>
+    <div class="stat-card red"  ><div class="stat-label">🆘 דורש התערבות</div><div class="stat-value">${needsHuman}</div></div>
+    <div class="stat-card blue" ><div class="stat-label">AI מטפל</div><div class="stat-value">${aiDone}</div></div>
     <div class="stat-card gold" ><div class="stat-label">מוענו</div><div class="stat-value">${replied}</div></div>
     <div class="stat-card green"><div class="stat-label">טופלו</div><div class="stat-value">${resolved}</div></div>
   `;
-  // Badge on tab
+  // Badge on tab - only tickets that actually need your attention
   const badge = document.getElementById('support-open-count');
   if (badge) {
-    const pending = open + aiDone;
-    badge.textContent = pending;
-    badge.style.display = pending ? 'inline' : 'none';
+    badge.textContent = needsHuman;
+    badge.style.display = needsHuman ? 'inline' : 'none';
   }
 }
 
@@ -1492,18 +1622,18 @@ function renderSupportTable(tickets) {
   }
   const statusBadge = {
     open:          '<span class="badge badge-dim" style="background:#7f1d1d22;color:#ef4444;">🟡 ממתין</span>',
-    ai_handled:    '<span class="badge badge-blue">🤖 AI ענה</span>',
+    ai_handled:    '<span class="badge badge-blue">🤖 AI מטפל</span>',
     admin_replied: '<span class="badge badge-gold">✅ מוענה</span>',
     resolved:      '<span class="badge badge-green">✔ טופל</span>',
   };
   tbody.innerHTML = tickets.map(t => `
-    <tr>
+    <tr${t.needs_human ? ' style="background:rgba(239,68,68,0.06);"' : ''}>
       <td><strong>${esc(t.tenant_name||'—')}</strong></td>
       <td style="font-size:.82rem;color:var(--text-muted)">${esc(t.agent_name||'—')}<br><span style="font-size:.75rem;color:var(--text-dim)">${esc(t.agent_email||'')}</span></td>
       <td style="max-width:180px;font-size:.82rem;">${esc((t.message||'').slice(0,100))}${(t.message||'').length>100?'…':''}</td>
       <td style="max-width:160px;font-size:.8rem;color:var(--blue);font-style:italic;">${t.ai_response ? esc(t.ai_response.slice(0,80))+'…' : '<span style="color:var(--text-dim)">—</span>'}</td>
       <td style="max-width:160px;font-size:.82rem;color:var(--green);">${t.admin_response ? esc(t.admin_response.slice(0,80))+'…' : '<span style="color:var(--text-dim)">—</span>'}</td>
-      <td>${statusBadge[t.status]||esc(t.status)}</td>
+      <td>${t.needs_human ? '<span class="badge badge-needs-human">🆘 דורש התערבות</span>' : (statusBadge[t.status]||esc(t.status))}</td>
       <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${t.created_at ? new Date(t.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(t.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '—'}</td>
       <td>
         <div class="action-btns">
@@ -1514,15 +1644,32 @@ function renderSupportTable(tickets) {
     </tr>`).join('');
 }
 
+const SUPPORT_ROLE_LABEL = { assistant: '🤖 AI', admin: '👤 אתה' };
+
 function openSupportReply(ticketId) {
   const t = allSupportTickets.find(x => x.id === ticketId);
   if (!t) return;
   document.getElementById('reply-ticket-id').value = ticketId;
-  document.getElementById('reply-original-msg').textContent = t.message || '';
-  document.getElementById('reply-ai-msg').textContent = t.ai_response || '(אין תגובת AI)';
+  const msgs = Array.isArray(t.messages) && t.messages.length ? t.messages : [{ role: 'user', content: t.message || '' }];
+  document.getElementById('reply-thread').innerHTML = msgs.map(m => `
+    <div class="thread-msg role-${esc(m.role)}">
+      ${m.role !== 'user' ? `<span class="tm-label">${SUPPORT_ROLE_LABEL[m.role] || m.role}</span>` : ''}
+      ${esc(m.content || '')}
+    </div>`).join('');
   document.getElementById('reply-text').value = '';
   document.getElementById('reply-resolve').checked = false;
   openModal('modal-support-reply');
+}
+
+function notifyAgentOfReply(ticketId, responseText) {
+  const t = allSupportTickets.find(x => x.id === ticketId);
+  if (!t || !t.agent_email) return;
+  fetch('https://hook.eu1.make.com/f0nzngm6gdokri5naqu7enbay538ay8i', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ event: 'support.admin_replied', ticket_id: ticketId,
+      tenant_name: t.tenant_name, agent_name: t.agent_name, agent_email: t.agent_email,
+      response: responseText })
+  }).catch(() => {});
 }
 
 async function submitSupportReply() {
@@ -1535,7 +1682,8 @@ async function submitSupportReply() {
     p_ticket_id: ticketId, p_response: text, p_status: newStatus
   });
   if (error) { toast('שגיאה: ' + error.message, 'error'); return; }
-  toast('✅ התגובה נשלחה', 'success');
+  notifyAgentOfReply(ticketId, text);
+  toast('✅ התגובה נשלחה, הסוכן קיבל התראה לחזור לשיחה', 'success');
   closeModal('modal-support-reply');
   loadSupportTickets();
 }
@@ -1548,6 +1696,101 @@ async function resolveSupportTicket(ticketId) {
   if (error) { toast('שגיאה: ' + error.message, 'error'); return; }
   toast('✔ סומן כטופל', 'success');
   loadSupportTickets();
+}
+
+/* ═══════════════════════════════════════════
+   ROADMAP ITEMS, public "in progress" list
+═══════════════════════════════════════════ */
+async function loadRoadmapItems() {
+  const tbody = document.getElementById('roadmap-tbody');
+  tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="spinner"></div></div></td></tr>';
+  const { data, error } = await sb.rpc('admin_list_roadmap_items');
+  if (error) {
+    allRoadmapItems = [];
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><p style="color:var(--red)">שגיאה: ${esc(error.message)}</p></div></td></tr>`;
+    return;
+  }
+  allRoadmapItems = data || [];
+  renderRoadmapTable(allRoadmapItems);
+}
+
+function renderRoadmapTable(items) {
+  const tbody = document.getElementById('roadmap-tbody');
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="icon">🚧</div><p>אין פריטים ברשימה</p></div></td></tr>';
+    return;
+  }
+  const catLabel = { feature:'פיצ׳ר חדש', improvement:'שיפור', integration:'אינטגרציה', other:'אחר' };
+  const srcLabel = { internal:'פנימי', user_idea:'רעיון ממשתמש' };
+  tbody.innerHTML = items.map(it => `
+    <tr>
+      <td><strong>${esc(it.title)}</strong></td>
+      <td style="max-width:220px;font-size:.82rem;color:var(--text-muted)">${esc((it.description||'').slice(0,90))}${(it.description||'').length>90?'…':''}</td>
+      <td><span class="badge badge-dim">${esc(catLabel[it.category]||it.category)}</span></td>
+      <td style="font-size:.8rem;color:var(--text-dim)">${esc(srcLabel[it.source]||it.source)}</td>
+      <td>${it.is_published ? '<span class="badge badge-green">מוצג</span>' : '<span class="badge badge-dim">מוסתר</span>'}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-icon" title="עריכה" onclick="openEditRoadmapItem('${esc(it.id)}')">✏️</button>
+          <button class="btn-icon" title="מחיקה" onclick="deleteRoadmapItem('${esc(it.id)}')" style="color:var(--red);">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openAddRoadmapItem() {
+  document.getElementById('rm-id').value = '';
+  document.getElementById('rm-title').value = '';
+  document.getElementById('rm-description').value = '';
+  document.getElementById('rm-category').value = 'feature';
+  document.getElementById('rm-source').value = 'internal';
+  document.getElementById('rm-order').value = '0';
+  document.getElementById('rm-published').checked = true;
+  document.getElementById('modal-roadmap-item-title').textContent = 'הוסף פריט';
+  openModal('modal-roadmap-item');
+}
+
+function openEditRoadmapItem(id) {
+  const it = allRoadmapItems.find(x => x.id === id);
+  if (!it) return;
+  document.getElementById('rm-id').value = it.id;
+  document.getElementById('rm-title').value = it.title || '';
+  document.getElementById('rm-description').value = it.description || '';
+  document.getElementById('rm-category').value = it.category || 'feature';
+  document.getElementById('rm-source').value = it.source || 'internal';
+  document.getElementById('rm-order').value = it.order_idx ?? 0;
+  document.getElementById('rm-published').checked = !!it.is_published;
+  document.getElementById('modal-roadmap-item-title').textContent = 'עריכת פריט';
+  openModal('modal-roadmap-item');
+}
+
+async function saveRoadmapItem() {
+  const id = document.getElementById('rm-id').value;
+  const title = document.getElementById('rm-title').value.trim();
+  if (!title) { toast('נא מלא כותרת', 'error'); return; }
+
+  const { error } = await sb.rpc('admin_save_roadmap_item', {
+    p_id:           id || null,
+    p_title:        title,
+    p_description:  document.getElementById('rm-description').value.trim() || null,
+    p_category:     document.getElementById('rm-category').value,
+    p_source:       document.getElementById('rm-source').value,
+    p_is_published: document.getElementById('rm-published').checked,
+    p_order_idx:    parseInt(document.getElementById('rm-order').value, 10) || 0,
+  });
+  if (error) { toast('שגיאה: ' + error.message, 'error'); return; }
+  toast(id ? '✅ פריט עודכן' : '✅ פריט נוסף', 'success');
+  closeModal('modal-roadmap-item');
+  await loadRoadmapItems();
+}
+
+async function deleteRoadmapItem(id) {
+  if (!confirm('למחוק פריט זה מהרשימה?')) return;
+  const { error } = await sb.rpc('admin_delete_roadmap_item', { p_id: id });
+  if (error) { toast('שגיאה: ' + error.message, 'error'); return; }
+  toast('🗑️ פריט נמחק', 'success');
+  await loadRoadmapItems();
 }
 </script>
 </body>
