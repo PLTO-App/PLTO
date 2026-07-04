@@ -542,18 +542,24 @@ supabase/
 | marketing (תוכן) | 500 tokens | 600 tokens | ~$0.0028 |
 | **ממוצע משוקלל** | | | **~$0.0015/קריאה** |
 
+### ניתוב מודלים (עדכון 4/7/2026)
+- **Haiku 4.5** (`claude-haiku-4-5-20251001`): `general`, `quicklog`, `support` — זול, מספיק לניתוח קצר
+- **Sonnet 4.6** (`claude-sonnet-4-6`): `marketing`, `motivation` — איכות גבוהה, שווה המחיר
+- ניתוב ב-`AI.call()`: `(type === 'marketing') ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001'`
+- motivation שולח `model: 'claude-sonnet-4-6'` ישירות ב-`opts.model` (עוקף את ניתוב ה-type)
+
 ### מכסות יומיות — **לכל סוכן (agent) בנפרד, לא לכל tenant!**
 המכסה נאכפת ב-`check_and_increment_ai_usage()` RPC לפי `auth.uid()` (טבלת `ai_usage`,
 PK=`user_id,usage_date`). כל סוכן שמתחבר לחשבון מקבל את המכסה המלאה, בנפרד מסוכנים
-אחרים באותו tenant. המספרים למטה הם המכסות החיות בפועל (סשן 1/7/2026, לא ₪10/₪20/₪30
-הישנים ששויכו כאן פעם — אלה הוחלפו במחירי Solo/צוות/סוכנות למטה):
+אחרים באותו tenant. **סוכנים נוספים (₪40/חודש via `agent_invites`) מקבלים תמיד מכסת
+basic — ללא תלות בחבילת ה-tenant** (נאכף DB-side ב-`check_and_increment_ai_usage`).
 
 | תוכנית | general | marketing | quicklog | support | motivation | עלות API/חודש/סוכן (30% ניצול) |
 |--------|---------|-----------|----------|---------|------------|-----------------------------------|
-| trial | 2/יום | 3/יום | 3/יום | 2/יום | 2/יום | ~$0.17 |
-| basic (Solo) | 5/יום | 8/יום | 15/יום | 8/יום | 3/יום | ~$0.55 |
-| pro (צוות) | 10/יום | 15/יום | 30/יום | 15/יום | 3/יום | ~$1.01 |
-| premium (סוכנות) | 20/יום | 25/יום | 50/יום | 25/יום | 3/יום | ~$1.69 |
+| trial | 2/יום | 2/יום | 3/יום | 3/יום | 1/יום | ~$0.30 |
+| basic (Solo) + extra seats | 8/יום | 5/יום | 10/יום | 10/יום | 2/יום | ~$0.87 |
+| pro (צוות) | 16/יום | 10/יום | 20/יום | 20/יום | 2/יום | ~$1.90 |
+| premium (סוכנות) | 30/יום | 18/יום | 35/יום | 30/יום | 2/יום | ~$2.92 |
 
 ### מחיר המנוי בפועל היום (לא ₪10/₪20/₪30!): **Solo ₪179 / צוות ₪349 / סוכנות ₪549 לחודש**
 
@@ -744,16 +750,53 @@ Liders מתחרה ב-Pipedrive ו-monday.com בתחום ה-SMB. הם גובים 
 8. **XP על אישור בדיחה** — +200 XP. נשמר server-side (`xp_awarded=false → true`),
    נמשך בכניסה הבאה דרך `pull_joke_approval_xp()` (אותו דפוס כמו `pull_lead_referral_xp`).
 9. **שיתוף בדיחות קהילתיות** — בדיחות מאושרות נטענות לפול הרוטציה לצד הפול הסטטי.
-10. **סוכן ריביו אוטונומי** — trigger יומי (`trig_011sBqLkyFdjiaw83auSqtAy`) מופעל
-    כל יום בשעה 06:00 UTC (09:00 ישראל). סשן חדש בכל הפעלה (`create_new_session_on_fire: true`).
-    הסוכן שולף בדיחות ממתינות, בוחן איכות, מאשר עד 1 לכל משתמש ביום דרך `auto_approve_joke()`,
-    דוחה בדיחות לא מתאימות, ושולח push notification עם סיכום.
+10. **אישור בדיחות אוטונומי** — trigger Claude Code Remote `trig_011sBqLkyFdjiaw83auSqtAy`
+    נמחק. הוחלף ב-**pg_cron חינמי** (מיגרציה 068): `auto_approve_daily_jokes()` רצה
+    כל יום 07:00 UTC (10:00 ישראל קיץ). בוחן אורך 20-1200 תווים, מאשר עד 1/משתמש/יום.
+    עלות: $0 (SQL בלבד).
 
 ### 📋 מה שנשאר לעתיד
 - מסך "הבדיחות שלי" ב-index.html (רשימת הגשות + סטטוס + הודעת זכייה ב-XP)
 - שדרוג פול הבדיחות — הוספה שוטפת של בדיחות חדשות לפי פידבק המשתמשים
 - סטטיסטיקות UGC באדמין (כמה הגשות/כמה אושרו/top submitters)
-- trigger ID לתיעוד: `trig_011sBqLkyFdjiaw83auSqtAy` (cron `0 6 * * *`)
+
+---
+
+## מה בוצע — סשן 4/7/2026 (המשך) — ייעול עלויות AI + מכסות מאוזנות מחדש
+
+> ענף: `claude/daily-joke-agent-oe7jch`
+
+### ✅ הושלם
+1. **pg_cron במקום Claude trigger** — מיגרציה 068 מחליפה את trigger `trig_011sBqLkyFdjiaw83auSqtAy`
+   בפונקציית `auto_approve_daily_jokes()` שרצה ב-07:00 UTC (10:00 ישראל). עלות: $0.
+2. **מודל ניתוב Haiku/Sonnet** — `general`/`quicklog`/`support` עברו ל-Haiku 4.5 (~74% זול יותר).
+   `marketing`/`motivation` נשארים על Sonnet 4.6 (איכות משמעותית יותר טובה). ניתוב
+   ב-`AI.call()` לפי type; motivation שולח `opts.model` ישירות.
+3. **מכסות מאוזנות מחדש** — מיגרציה 069 + עדכון `AiLimits.PLANS` ב-index.html:
+   - trial: general 2, marketing 2, quicklog 3, support 3, motivation 1
+   - basic: general 8, marketing 5, quicklog 10, support 10, motivation 2
+   - pro: general 16, marketing 10, quicklog 20, support 20, motivation 2
+   - premium: general 30, marketing 18, quicklog 35, support 30, motivation 2
+4. **מכסת extra seats** — סוכן נוסף (₪40/חודש via `agent_invites`) מקבל תמיד מכסת
+   **basic** ללא תלות בחבילת ה-tenant. נאכף DB-side ב-`check_and_increment_ai_usage`
+   (בדיקת `agent_invites` לפי email + status='accepted').
+5. **סוכן מוטיבציה — חלונות זמן** — הוסר countdown הפרוגרסיבי (90/120/150/180 דק'). 
+   הוחלף במערכת 2 חלונות יומיים: **07:30** (מסר הבוקר) ו-**15:30** (מסר הצהרים) שעון
+   ישראל (DST-aware via `Intl.DateTimeFormat('Asia/Jerusalem')`). מסר בוקר שלא נוצל
+   ב-15:30 **לא מתבזבז** — שני החלונות פתוחים יחד. כפתור מושבת מחוץ לחלונות, ללא טיימר.
+6. **הצעת בדיחה UGC פשוטה** — הוסרה בחירת קטגוריה + כללי אדמין מהמודל. textarea + כפתור.
+   קטגוריה נלקחת אוטומטית מ-`State.tenant?.industry`.
+
+### 📋 עלויות AI בפועל אחרי השינוי (30% ניצול)
+| תוכנית | עלות/חודש/סוכן |
+|--------|----------------|
+| trial | ~$0.30 |
+| basic | ~$0.87 |
+| pro | ~$1.90 |
+| premium | ~$2.92 |
+
+**הנהג העיקרי בעלות: marketing (Sonnet).** כאשר משתמש לא מפעיל את תוסף השיווק — עלות
+אמיתית נמוכה בהרבה (בלי marketing = עוד ~40% חסכון).
 
 ---
 
