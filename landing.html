@@ -1648,14 +1648,42 @@
       background: rgba(255,255,255,0.07);
       border: 1px solid rgba(255,255,255,0.15);
       border-radius: 12px;
-      padding: 16px 20px;
-      font-size: 0.88rem;
+      padding: 14px 18px;
+      font-size: 0.86rem;
       color: rgba(255,255,255,0.88);
       line-height: 1.6;
       text-align: right;
       direction: rtl;
-      font-style: italic;
     }
+    .oe-examples { text-align: right; }
+    /* 6 נתיבי הפניה */
+    .referral-flows {
+      max-width: 860px;
+      margin: 0 auto 36px;
+    }
+    .rf-title {
+      font-size: 0.82rem; font-weight: 800;
+      color: var(--gray-500); text-align: center;
+      margin-bottom: 14px; letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .rf-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 640px) { .rf-grid { grid-template-columns: 1fr; } }
+    .rf-item {
+      background: var(--gray-bg);
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 12px 14px;
+      text-align: center;
+    }
+    .rf-from { font-size: 0.82rem; font-weight: 700; color: var(--navy-600); }
+    .rf-arr  { font-size: 1rem; color: var(--blue-500); margin: 0 4px; }
+    .rf-to   { font-size: 0.82rem; font-weight: 700; color: var(--navy-600); }
+    .rf-desc { font-size: 0.76rem; color: var(--text-muted); margin-top: 5px; line-height: 1.45; }
 
   </style>
 </head>
@@ -1861,34 +1889,79 @@
   <div class="section-inner">
     <p class="section-label fade-up">כך נסגרת עסקת נדל"ן</p>
     <h2 class="section-title fade-up">המשולש הקדוש — שלושה מקצועות, עסקה אחת</h2>
-    <p class="section-sub fade-up">כל עסקת נדל"ן מתחילה בסוכן שמוצא נכס, עוברת דרך עו"ד שמגן על הלקוח בחתימה, ומסתיימת אצל מעצב פנים שהופך את הדירה לבית. שלושה בעלי מקצוע, לקוח אחד, שרשרת הפניות טבעית — ועכשיו המערכת מגדילה את כולכם יחד.</p>
+    <p class="section-sub fade-up">בכל עסקת נדל"ן יש שלושה בעלי מקצוע שמלווים את אותו לקוח — וכל אחד מהם יכול להפנות לשניים האחרים. לא שרשרת חד-כיוונית, אלא משולש שלם: סוכן נדל"ן שסגר עסקה מפנה לעו"ד ולאחר מכן למעצב. עו"ד שמקבל לקוח שרוצה לקנות או למכור מפנה לסוכן מתאים. מי שעוסק בעיצוב פנים ומקבל לקוח שרוצה לקנות דירה — מפנה לסוכן. שש נתיבי הפניה, ושלושתכם מרוויחים.</p>
 
     <div class="triangle-flow fade-up">
       <div class="tf-node">
         <div class="tf-icon">🏠</div>
         <div class="tf-role">סוכן נדל"ן</div>
-        <div class="tf-action">מוצא את הנכס המתאים ומוביל את הלקוח עד העסקה</div>
+        <div class="tf-action">מחבר קונים ומוכרים לנכס הנכון — ומפנה לעו"ד לחתימה ולמעצב אחרי. מקבל הפניות מהשניים.</div>
       </div>
-      <div class="tf-arrow">←</div>
+      <div class="tf-arrow" title="הפניות בשני הכיוונים">↔</div>
       <div class="tf-node">
         <div class="tf-icon">⚖️</div>
         <div class="tf-role">עו"ד נדל"ן</div>
-        <div class="tf-action">בודק את הנכס, מנסח את החוזה ומגן על הלקוח בחתימה</div>
+        <div class="tf-action">בדיקת נאותות, חוזה והגנה משפטית — ומפנה לסוכן מי שרוצה לקנות/למכור. מקבל הפניות מסוכנים ומעיצובי פנים.</div>
       </div>
-      <div class="tf-arrow">←</div>
+      <div class="tf-arrow" title="הפניות בשני הכיוונים">↔</div>
       <div class="tf-node tf-node-gold">
         <div class="tf-icon">🎨</div>
         <div class="tf-role">עיצוב פנים</div>
-        <div class="tf-action">הופך את הדירה החדשה לבית — בהמלצה חמה מהסוכן ומהעו"ד</div>
+        <div class="tf-action">הדירה החדשה הופכת לבית — ומפנה לסוכן מי שרוצה לקנות. מקבל הפניות מסוכנים ועורכי דין.</div>
+      </div>
+    </div>
+
+    <!-- 6 נתיבי ההפניה -->
+    <div class="referral-flows fade-up">
+      <div class="rf-title">6 נתיבי ההפניה במשולש</div>
+      <div class="rf-grid">
+        <div class="rf-item">
+          <span class="rf-from">🏠 סוכן</span>
+          <span class="rf-arr">→</span>
+          <span class="rf-to">⚖️ עו"ד</span>
+          <div class="rf-desc">לקוח מצא נכס וצריך ייצוג משפטי</div>
+        </div>
+        <div class="rf-item">
+          <span class="rf-from">🏠 סוכן</span>
+          <span class="rf-arr">→</span>
+          <span class="rf-to">🎨 עיצוב פנים</span>
+          <div class="rf-desc">הלקוח סגר עסקה — עכשיו מעצבים את הבית</div>
+        </div>
+        <div class="rf-item">
+          <span class="rf-from">⚖️ עו"ד</span>
+          <span class="rf-arr">→</span>
+          <span class="rf-to">🏠 סוכן</span>
+          <div class="rf-desc">לקוח רוצה לקנות או למכור — צריך סוכן מנוסה</div>
+        </div>
+        <div class="rf-item">
+          <span class="rf-from">⚖️ עו"ד</span>
+          <span class="rf-arr">→</span>
+          <span class="rf-to">🎨 עיצוב פנים</span>
+          <div class="rf-desc">החוזה נחתם, הדירה רשומה — הגיע הזמן לעצב</div>
+        </div>
+        <div class="rf-item">
+          <span class="rf-from">🎨 עיצוב פנים</span>
+          <span class="rf-arr">→</span>
+          <span class="rf-to">🏠 סוכן</span>
+          <div class="rf-desc">לקוח שמחפש לקנות דירה — צריך סוכן מתאים</div>
+        </div>
+        <div class="rf-item">
+          <span class="rf-from">🎨 עיצוב פנים</span>
+          <span class="rf-arr">→</span>
+          <span class="rf-to">⚖️ עו"ד</span>
+          <div class="rf-desc">לקוח מצא נכס וצריך בדיקת נאותות וחוזה</div>
+        </div>
       </div>
     </div>
 
     <div class="opp-explainer fade-up">
       <div class="oe-title">📋 לוח ההזדמנויות — שוק ההפניות הפנימי של לידרס</div>
-      <div class="oe-desc">יש לקוח שצריך מישהו מחוץ לתחום שלך או מחוץ לאזור שלך? מפרסמים הזדמנות בלוח הפנימי עם עמלה — הסוכן, העו"ד או המעצב המתאים מגיב, ומסיימים בחתימה דיגיטלית מגובה משפטית. כולם מרוויחים, בלי הסכמים בוואטסאפ שנשכחים.</div>
-      <div class="oe-ex-label">דוגמה ממש מהמערכת</div>
-      <div class="oe-ex-card">
-        "יש לי קונה שמחפש 4 חדרים בנתניה, אבל אני לא מכסה את האזור. מחפש סוכן תותח בנתניה לשיתוף — עמלה: 10% מהרווח על העסקה. כל ההסכמות מגובות בחתימה דיגיטלית דרך המערכת."
+      <div class="oe-desc">יש לקוח שצריך מישהו מחוץ לתחום שלך או מחוץ לאזור? מפרסמים הזדמנות בלוח הפנימי עם עמלה — הבעל מקצוע המתאים מגיב, וכל ההסכמות מגובות בחתימה דיגיטלית. בלי הסכמים בוואטסאפ שנשכחים, בלי אי-נעימויות בסוף.</div>
+      <div class="oe-examples">
+        <div class="oe-ex-label">דוגמאות מהמערכת</div>
+        <div class="oe-ex-card">🏠 <strong>סוכן נדל"ן:</strong> "יש לי קונה שמחפש 4 חדרים בנתניה, אבל אני לא מכסה את האזור. מחפש סוכן מתאים לשיתוף — עמלה 10% מהרווח, חתימה דיגיטלית דרך המערכת."</div>
+        <div class="oe-ex-card" style="margin-top:10px;">⚖️ <strong>עו"ד נדל"ן:</strong> "קיבלתי לקוח שרוצה למכור דירה בתל אביב ומחפש סוכן אמין באזור. מוכן לשתף ליד — עמלה 15% מהעמלה הסופית של הסוכן."</div>
+        <div class="oe-ex-card" style="margin-top:10px;">🎨 <strong>עיצוב פנים:</strong> "לקוח שמחפש לקנות 3 חדרים ברמת גן — צריך סוכן מנוסה באזור. אשמח להפנות בעמלה על הסגירה."</div>
       </div>
     </div>
   </div>
