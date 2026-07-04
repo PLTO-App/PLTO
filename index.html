@@ -3094,6 +3094,111 @@
     font-variant-numeric: tabular-nums; color:rgba(255,255,255,0.65);
     font-weight:700; font-size:12px;
   }
+  /* ── Daily Joke Card ─────────────────────────────────── */
+  .joke-card {
+    background: linear-gradient(135deg, #92400E 0%, #B45309 45%, #D97706 100%);
+    border-radius: 16px;
+    padding: 16px;
+    margin: 0 16px 14px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(180,83,9,0.35);
+  }
+  .joke-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .joke-card-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .joke-card-icon {
+    font-size:28px; line-height:1;
+    animation: jokeWiggle 5s ease infinite;
+    flex-shrink: 0;
+  }
+  @keyframes jokeWiggle {
+    0%,88%,100% { transform: rotate(0deg); }
+    91%  { transform: rotate(-14deg); }
+    94%  { transform: rotate(14deg); }
+    97%  { transform: rotate(-8deg); }
+  }
+  .joke-card-title { font-size:13px; font-weight:800; color:#fff; }
+  .joke-card-sub   { font-size:10px; color:rgba(255,255,255,0.65); margin-top:1px; }
+  .joke-text-area {
+    background: rgba(255,255,255,0.13);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: #fff;
+    font-size: 13.5px;
+    line-height: 1.7;
+    font-family: inherit;
+    margin-bottom: 12px;
+    min-height: 58px;
+    white-space: pre-line;
+  }
+  .joke-card-footer {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .joke-share-btn {
+    background: #fff;
+    color: #92400E;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .joke-share-btn:hover  { transform: scale(1.04); box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
+  .joke-share-btn:active { transform: scale(0.97); }
+  .joke-submit-link {
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.72);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    margin-right: auto;
+    background: none;
+    border: none;
+    font-family: inherit;
+    padding: 0;
+  }
+  .joke-submit-link:hover { color: #fff; }
+  .joke-submitter-badge {
+    font-size: 10px;
+    color: rgba(255,255,255,0.5);
+    width: 100%;
+    margin-top: 4px;
+  }
+  .joke-card-dismiss {
+    position: absolute;
+    top: 10px; left: 12px;
+    background: none; border: none;
+    color: rgba(255,255,255,0.4);
+    font-size: 16px; cursor: pointer;
+    line-height: 1; padding: 2px 4px;
+  }
+  .joke-card-dismiss:hover { color: rgba(255,255,255,0.7); }
+  /* Joke submit modal */
+  .joke-admin-rules {
+    background: var(--gray-50);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin: 10px 0;
+    font-size: 12px;
+    color: var(--gray-500);
+    line-height: 1.6;
+  }
+
   /* Real estate shortcuts */
   .re-shortcuts { }
   .re-shortcuts-title { font-size:11px; font-weight:700; color:var(--gray-500); margin-bottom:8px; letter-spacing:0.4px; }
@@ -4191,6 +4296,24 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- DAILY JOKE CARD - one laugh a day, shareable on WhatsApp -->
+      <div class="joke-card" id="joke-card" style="display:none;">
+        <button class="joke-card-dismiss" onclick="document.getElementById('joke-card').style.display='none'" title="הסתר">×</button>
+        <div class="joke-card-header">
+          <div class="joke-card-icon">😂</div>
+          <div>
+            <div class="joke-card-title">בדיחה של היום</div>
+            <div class="joke-card-sub" id="joke-title">טוען...</div>
+          </div>
+        </div>
+        <div class="joke-text-area" id="joke-text">טוען בדיחה...</div>
+        <div class="joke-card-footer">
+          <button class="joke-share-btn" onclick="DailyJoke.share()">📤 שלח בוואטסאפ</button>
+          <button class="joke-submit-link" onclick="DailyJoke.openSubmit()">💡 יש לך בדיחה מצחיקה? ← 200 XP</button>
+        </div>
+        <div class="joke-submitter-badge" id="joke-submitter" style="display:none;"></div>
       </div>
 
       <!-- CSV IMPORT QUICK ROW - below motivation agent -->
@@ -12329,6 +12452,8 @@ const App = {
     }
     // Init motivation agent UI
     MotivationAgent.init();
+    // Init daily joke card
+    DailyJoke.init();
     // Start sparkle particle loop on motivation button
     _startMotivationSparkles();
     // Show guided tour for new users after onboarding is done
@@ -17263,6 +17388,253 @@ const MotivationAgent = {
 };
 
 /* ═══════════════════════════════════════════
+   DAILY JOKE — בדיחה יומית + הגשת קהילה
+   רוטציה חכמה: לא חוזרת עד שמציגה את כולן
+   קהילה: משתמשים מגישים → אדמין מאשר → 200 XP
+═══════════════════════════════════════════ */
+const DailyJoke = {
+  _KEY: 'liders_joke_v1',
+  _communityPool: [],
+
+  POOL: [
+    // ── סוכן נדל"ן ──────────────────────────────────────────────────────
+    { id:'j1', cat:['realestate'], title:'הלקוח האופטימי',
+      text:`קונה מגיע לפנטהאוז בקומה 20, מסתכל מהחלון ואומר בהתלהבות:\n"וואו! הנוף מפה כל כך גבוה — אני חושב שאני יכול לראות מכאן את התשואה של הנכס עוד לפני שחתמתי!"` },
+
+    { id:'j2', cat:['realestate'], title:'השבחת נכסים',
+      text:`זוג מגיע לנכס להשקעה.\nהבעל: "הקירות מתקלפים והריצוף ישן..."\nהמתווך: "מה פתאום! זה נכס בסגנון 'רטרו וינטז' אקוסטי'. צובעים קיר אחד בירוק, שמים עציץ — וערך הדירה עולה ב-200 אלף עוד לפני שהצבע התייבש."` },
+
+    { id:'j3', cat:['realestate'], title:'מהירות השוק',
+      text:`הקצב של שוק הנדל"ן היום:\nראית דירה בבוקר\nחשבת עליה בצהריים\nבערב היא כבר מופיעה בתוכניות תמ"א 38 של מישהו אחר` },
+
+    { id:'j4', cat:['realestate'], title:'חלון הזדמנויות',
+      text:`לקוח נכנס לדירה ישנה, רואה חור ענק בקיר:\n"תגיד, מה זה?"\n\nהמתווך: "זה לא חור — זה 'חלון הזדמנויות פנורמי בעיצוב דינמי'. תחתום מהר לפני שיחטפו!"` },
+
+    { id:'j5', cat:['realestate'], title:'פוטנציאל אדיר',
+      text:`קונה: "קומה רביעית בלי מעלית? איך אפשר לעלות ככה כל יום?"\n\nהמתווך: "תסתכל על חצי הכוס המלאה — זה הנכס היחיד שמגיע עם מנוי חינם לחדר כושר לכל החיים."` },
+
+    { id:'j6', cat:['realestate','general'], title:'סטטוס קשר',
+      text:`היחסים שלי עם החשבון בנק שלי הם בדיוק כמו פרויקט תמ"א 38:\nהבטיחו לי הרים וגבעות, זה לוקח שנים, וכרגע הכל חסום ומלא באבק.` },
+
+    // ── עו"ד נדל"ן ──────────────────────────────────────────────────────
+    { id:'j7', cat:['realestate_lawyer'], title:'אישור עקרוני',
+      text:`לקוח מתקשר בהתרגשות: "עורך דין יקר! הבנק אישר את המשכנתא, המוכר הסכים למחיר, ואשתי אישרה את המטבח! מתי חותמים?"\n\nעורך הדין: "תשמע, אם הצלחת לקבל אישור מאשתך על המטבח — החוזה הזה קטן עלינו. ניצחת את המערכת."` },
+
+    { id:'j8', cat:['realestate_lawyer'], title:'קבוצת רכישה',
+      text:`לקוח: "מה ההבדל בין חוזה מכר רגיל לקבוצת רכישה?"\n\nעורך הדין: "בחוזה רגיל אתה יודע מתי אתה נכנס לדירה. בקבוצת רכישה — אתה מקבל קודם כל קבוצת וואטסאפ של 80 איש שרבים על מי ישלם על המנגל בחנוכת הבית."` },
+
+    { id:'j9', cat:['realestate_lawyer'], title:'בדיקת נאותות',
+      text:`לקוח מתקשר ב-2 בלילה:\n"סליחה על השעה, אבל עברתי שוב על סעיף 14ב' בחוזה — ונרדמתי. רק רציתי להודות לך. כבר שנתיים שלא ישנתי ככה טוב."` },
+
+    { id:'j10', cat:['realestate_lawyer','general'], title:'האותיות הקטנות',
+      text:`מה המאכל האהוב על עורכי דין?\n\nחוזה קלוע (חלה) — אבל רק אם יש עליה שומשום, בכפוף לתנאים והגבלות ובאישור הרשויות.` },
+
+    { id:'j11', cat:['realestate_lawyer'], title:'סבלנות של ברזל',
+      text:`לקוח: "נו, מתי הטאבו סוף סוף יירשם?"\n\nעורך הדין: "אל תדאג, הכל בתהליך. הנינים שלך הולכים להרים כוסית בבית הזה."` },
+
+    // ── עיצוב פנים ──────────────────────────────────────────────────────
+    { id:'j12', cat:['interior'], title:'התקציב הגמיש',
+      text:`לקוח: "אני רוצה עיצוב מודרני, כפרי, יוקרתי, שיראה כמו מלון חמישה כוכבים — אבל בתקציב של איקאה."\n\nהמעצבת: "אין בעיה, אני ממליצה על סגנון ה-'עשה זאת בעצמך בחושך'."` },
+
+    { id:'j13', cat:['interior'], title:'שלום בית',
+      text:`זוג בפגישת ייעוץ:\nהבעל: "אני רוצה קירות בטון חשוף בסגנון תעשייתי."\nהאישה: "אני רוצה ורוד פסטל בסגנון פרובנס."\n\nהמעצבת: "אוקיי, נלך על סגנון 'פשרה שלום בית' — הכל לבן, ואת הריב נמשיך באולם התצוגה של הקרמיקה."` },
+
+    { id:'j14', cat:['interior'], title:'עין מקצועית',
+      text:`לקוח: "לא מבין למה צריך מעצבת — כולה לבחור צבע לקיר."\n\nהמעצבת: "יש פה קטלוג עם 45 גוונים של לבן: לבן שמנת, לבן פנינה, לבן שבור, לבן אפרפר, ולבן 'רבתי עם בעלי בטמבור'. איזה לבן בוחרים?"\n\nהלקוח: "...טוב, איפה חותמים על חוזה?"` },
+
+    { id:'j15', cat:['interior'], title:'פנטזיה מול מציאות',
+      text:`מעצבת פנים: "אז מה החזון שלכם לסלון?"\n\nהאישה: "תחושה של מרחב אינסופי, אור טבעי, שקט, רוגע ואווירת ספא יוקרתי במיקונוס."\n\nהבעל: "ואני רוצה שהטלוויזיה תהיה בגודל קיר שלם, כדי שאוכל לראות את המשחק כאילו אני על הדשא."` },
+
+    // ── כלליות ──────────────────────────────────────────────────────────
+    { id:'j16', cat:['general'], title:'יוקר המחיה',
+      text:`הלכתי היום לסופר והמחירים היו כל כך גבוהים, שהרגשתי שאני לא קונה מצרכים — אני משקיע בסבב גיוס ראשון לחביתה.` },
+
+    { id:'j17', cat:['general'], title:'מוטיבציה בוקר',
+      text:`התעוררתי היום עם כל כך הרבה מוטיבציה, אנרגיה ורצון לטרוף את העולם, שהייתי חייב לבדוק ביומן אם לא קבעתי בטעות פגישה עם עצמי בתור מנכ"ל גוגל.` },
+
+    { id:'j18', cat:['general'], title:'חשיבה חיובית',
+      text:`מדענים גילו שחיוך בבוקר משפר את הפרודוקטיביות ב-30%.\n\nאז הנה — חייכת. עכשיו נשאר לך רק להבין מה לעשות עם כל הזמן הפנוי שיישאר אחרי שתסיים הכל ברעל.` },
+
+    { id:'j19', cat:['general'], title:'אנרגיה חיובית',
+      text:`החלטתי לפתוח את היום עם כל כך הרבה אנרגיות חיוביות, שגם אם הוויז יגיד לי 'חשב מסלול מחדש' — אני אגיד לו:\n"לא, חביבי. אתה תחשב מסלול מחדש. אני יודע בדיוק לאן אני הולך היום."` },
+
+    { id:'j20', cat:['general'], title:'פידבק לקוח',
+      text:`לקוח אחרי עסקה מוצלחת: "הכל היה מושלם! אני נותן לך 4.5 מ-5."\n\nאני: "מה הפחית חצי נקודה?"\n\nלקוח: "לא רציתי להפריז, חשבתי שאין 5 בחיים האמיתיים."` },
+
+    { id:'j21', cat:['general'], title:'זמינות 24/7',
+      text:`לקוח: "אני צריך שתהיה זמין לי 24/7."\nאני: "כמובן!"\n\nשבת בצהריים, אני בים, הוא כותב.\nעניתי תוך 9 שניות.\n\nלקוח: "סבבה, לא דחוף. ביי"` },
+  ],
+
+  _today() { return new Date().toISOString().split('T')[0]; },
+
+  _getState() {
+    try {
+      const d = JSON.parse(localStorage.getItem(this._KEY) || '{}');
+      return {
+        shownIds:  Array.isArray(d.shownIds) ? d.shownIds : [],
+        todayDate: d.todayDate || '',
+        todayId:   d.todayId   || null,
+      };
+    } catch { return { shownIds:[], todayDate:'', todayId:null }; }
+  },
+
+  _saveState(s) { localStorage.setItem(this._KEY, JSON.stringify(s)); },
+
+  _getPool() {
+    const ind = State.tenant?.industry || 'general';
+    const catFilter = {
+      realestate:         ['realestate','general'],
+      realestate_lawyer:  ['realestate_lawyer','general'],
+      interior:           ['interior','general'],
+    }[ind] || ['general'];
+
+    const staticFiltered = this.POOL.filter(j =>
+      j.cat.some(c => catFilter.includes(c))
+    );
+    const communityFiltered = this._communityPool.filter(j =>
+      catFilter.includes(j.cat)
+    );
+    return [...staticFiltered, ...communityFiltered];
+  },
+
+  getToday() {
+    const state = this._getState();
+    const today = this._today();
+    if (state.todayDate === today && state.todayId) {
+      const all = [...this.POOL, ...this._communityPool];
+      const found = all.find(j => j.id === state.todayId);
+      if (found) return found;
+    }
+    return this._pickAndSave(state, today);
+  },
+
+  _pickAndSave(state, today) {
+    const pool = this._getPool();
+    let available = pool.filter(j => !state.shownIds.includes(j.id));
+    if (available.length === 0) {
+      // Exhausted — reset, keep last 3 to avoid immediate repeats
+      state.shownIds = state.shownIds.slice(-3);
+      available = pool.filter(j => !state.shownIds.includes(j.id));
+    }
+    const joke = available[Math.floor(Math.random() * available.length)];
+    state.todayDate = today;
+    state.todayId   = joke.id;
+    state.shownIds  = [...state.shownIds, joke.id];
+    this._saveState(state);
+    return joke;
+  },
+
+  _render() {
+    const card = document.getElementById('joke-card');
+    if (!card) return;
+
+    const joke    = this.getToday();
+    const titleEl = document.getElementById('joke-title');
+    const textEl  = document.getElementById('joke-text');
+    const subEl   = document.getElementById('joke-submitter');
+
+    if (titleEl) titleEl.textContent = joke.title || '😂';
+    if (textEl)  textEl.textContent  = joke.text || '';
+
+    if (subEl) {
+      if (joke.submitter) {
+        subEl.textContent = `נשלח על ידי ${joke.submitter} 💛`;
+        subEl.style.display = '';
+      } else {
+        subEl.style.display = 'none';
+      }
+    }
+    card.style.display = '';
+  },
+
+  async init() {
+    if (State.isDemo) return;
+    this._render(); // render immediately with static pool
+    try {
+      const { data } = await sbClient.rpc('list_approved_jokes');
+      if (data?.length) {
+        this._communityPool = data.map(j => ({
+          id:        'cj_' + j.id,
+          cat:       j.category,
+          title:     '💛 מהקהילה',
+          text:      j.joke_text,
+          submitter: j.submitter_name || null,
+        }));
+      }
+    } catch (_e) {}
+    this._pullApprovalXp();
+  },
+
+  share() {
+    const joke = this.getToday();
+    const msg  = `😂 הבדיחה של היום:\n\n${joke.title}\n${joke.text}\n\n📲 נשלח מ-Liders CRM — ניהול לידים לאנשי מקצוע\n👉 liders-crm.com`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+    toast('נפתח וואטסאפ לשיתוף 😄', 'success', 2000);
+  },
+
+  openSubmit() {
+    openModal('modal-joke-submit');
+    const ta = document.getElementById('joke-submit-text');
+    if (ta) { ta.value = ''; ta.focus(); }
+    const cc = document.getElementById('joke-char-count');
+    if (cc)  cc.textContent = '0 / 1200';
+    const cat = document.getElementById('joke-submit-cat');
+    if (cat) cat.value = State.tenant?.industry || 'general';
+  },
+
+  async submit() {
+    const text = (document.getElementById('joke-submit-text')?.value || '').trim();
+    const cat  = document.getElementById('joke-submit-cat')?.value || 'general';
+
+    if (text.length < 20)   { toast('הבדיחה קצרה מדי — הוסף עוד קצת 😄', 'warning'); return; }
+    if (text.length > 1200) { toast('הבדיחה ארוכה מדי (מקסימום 1200 תווים)', 'warning'); return; }
+
+    const btn = document.getElementById('joke-submit-btn');
+    if (btn) btn.disabled = true;
+    try {
+      const { data, error } = await sbClient.rpc('submit_community_joke', {
+        p_text: text, p_category: cat,
+      });
+      if (error || !data?.ok) {
+        if (data?.reason === 'daily_limit') {
+          toast('שלחת 3 בדיחות היום — המקסימום ליום אחד 😄', 'warning', 4000);
+        } else {
+          toast('שגיאה בשליחה, נסה שוב', 'error');
+        }
+        return;
+      }
+      closeModal('modal-joke-submit');
+      toast('😂 הבדיחה שלך נשלחה לאישור! אם תתפרסם — תקבל 200 XP 🎉', 'success', 5000);
+    } catch (_e) {
+      toast('שגיאה בשליחה', 'error');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  },
+
+  async _pullApprovalXp() {
+    if (State.isDemo || !DB.tenantId) return;
+    try {
+      const { data } = await sbClient.rpc('pull_joke_approval_xp');
+      const count = Number(data) || 0;
+      if (count <= 0) return;
+      const xpGained = count * 200;
+      const gd = Gamify.get();
+      gd.xp += xpGained;
+      Gamify.save();
+      Gamify.renderSidebar();
+      Gamify.renderWidget();
+      Gamify.checkMilestones();
+      floatXP(xpGained);
+      toast(
+        `🎉 ${count > 1 ? `${count} הבדיחות שלך אושרו` : 'הבדיחה שלך אושרה'} ופורסמה! +${xpGained} XP 😂🏆`,
+        'success', 5000
+      );
+    } catch (_e) {}
+  },
+};
+
+/* ═══════════════════════════════════════════
    GUIDED TOUR MODULE, first-time walkthrough
 ═══════════════════════════════════════════ */
 const GuidedTour = {
@@ -17886,6 +18258,47 @@ window.PrivacyShield = PrivacyShield;
       <path id="spo-p" d="M24 38l11 11 18-22" stroke="#22C55E" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <div class="spo-ok-lbl" id="spo-ok-lbl">נשמר בהצלחה</div>
+  </div>
+</div>
+
+<!-- ═══ JOKE SUBMIT MODAL ═══ -->
+<div class="modal-overlay" id="modal-joke-submit" onclick="if(event.target===this)closeModal('modal-joke-submit')">
+  <div class="modal" style="max-width:440px;">
+    <button class="modal-close" onclick="closeModal('modal-joke-submit')">×</button>
+    <h3 style="margin:0 0 6px;font-size:18px;">😂 הגש בדיחה לקהילה</h3>
+    <p style="font-size:13px;color:var(--gray-500);margin:0 0 14px;line-height:1.55;">
+      שלח בדיחה מצחיקה — אם תאושר, תפורסם לכל המשתמשים ותקבל <strong>200 XP</strong> 🏆
+    </p>
+
+    <div style="margin-bottom:10px;">
+      <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px;">קטגוריה</label>
+      <select id="joke-submit-cat" class="input-field" style="width:100%;">
+        <option value="general">כלליות — מתאים לכולם</option>
+        <option value="realestate">סוכן נדל"ן</option>
+        <option value="realestate_lawyer">עו"ד נדל"ן</option>
+        <option value="interior">עיצוב פנים</option>
+      </select>
+    </div>
+
+    <textarea id="joke-submit-text"
+      class="input-field"
+      rows="6"
+      maxlength="1200"
+      placeholder="כתוב כאן את הבדיחה, הסיפור המצחיק מול לקוח, או הרגע שגרם לך לחייך..."
+      style="width:100%;resize:vertical;"
+      oninput="document.getElementById('joke-char-count').textContent=(this.value.length)+' / 1200'"></textarea>
+    <div style="font-size:11px;color:var(--gray-400);text-align:left;margin-top:3px;" id="joke-char-count">0 / 1200</div>
+
+    <div class="joke-admin-rules">
+      ✅ בדיחות מקוריות שמתאימות לשיתוף<br>
+      ✅ ללא גסויות, ללא פוליטיקה, ללא שמות ספציפיים<br>
+      ❌ לא העתקה מבדיחות ידועות ברשת
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px;">
+      <button class="btn-outline" onclick="closeModal('modal-joke-submit')">ביטול</button>
+      <button class="btn-primary" id="joke-submit-btn" onclick="DailyJoke.submit()">😂 שלח לאישור</button>
+    </div>
   </div>
 </div>
 

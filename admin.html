@@ -599,6 +599,7 @@
     <button class="nav-tab" onclick="switchTab('saas')">לקוחות SaaS 🔴</button>
     <button class="nav-tab" onclick="switchTab('support')" id="nav-support">🎫 תמיכה <span id="support-open-count" style="display:none;background:var(--red);color:#fff;border-radius:99px;font-size:10px;padding:1px 6px;margin-right:4px;"></span></button>
     <button class="nav-tab" onclick="switchTab('roadmap')">🚧 בתהליך בנייה</button>
+    <button class="nav-tab" onclick="switchTab('jokes')" id="nav-jokes">😂 בדיחות</button>
   </div>
 
   <!-- Main Content -->
@@ -809,6 +810,22 @@
             <tr><td colspan="6"><div class="empty-state"><div class="spinner"></div></div></td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- ── JOKES ── -->
+    <div id="section-jokes" class="section">
+      <div class="section-header">
+        <h2>😂 בדיחות קהילה</h2>
+        <div class="header-actions">
+          <button class="btn-outline btn-sm" onclick="loadCommunityJokes()">🔄 רענן</button>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--text-dim);margin:0 0 16px;line-height:1.5;">
+        בדיחות שמשתמשים הגישו לאישור. אישור → מתפרסם לכל המשתמשים + 200 XP למגיש.
+      </p>
+      <div id="jokes-list" style="display:flex;flex-direction:column;gap:12px;">
+        <p style="color:var(--text-dim);text-align:center;padding:40px;">לחץ "רענן" לטעינה</p>
       </div>
     </div>
 
@@ -1028,7 +1045,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const ADMIN_EMAILS = ['liders.crm@gmail.com', 'elgrablidudu@gmail.com'];
-const TABS = ['dashboard', 'accounts', 'invoices', 'saas', 'support', 'roadmap'];
+const TABS = ['dashboard', 'accounts', 'invoices', 'saas', 'support', 'roadmap', 'jokes'];
 
 /* ── UTILS ── */
 function esc(s) {
@@ -1145,6 +1162,7 @@ function switchTab(tab) {
   if (tab === 'saas')     loadSaasTenants();
   if (tab === 'support')  loadSupportTickets();
   if (tab === 'roadmap')  loadRoadmapItems();
+  if (tab === 'jokes')    loadCommunityJokes();
 }
 
 /* ── DATA STATE ── */
@@ -1791,6 +1809,94 @@ async function deleteRoadmapItem(id) {
   if (error) { toast('שגיאה: ' + error.message, 'error'); return; }
   toast('🗑️ פריט נמחק', 'success');
   await loadRoadmapItems();
+}
+
+/* ── COMMUNITY JOKES ── */
+let allCommunityJokes = [];
+
+async function loadCommunityJokes() {
+  const pin = document.getElementById('pin-input')?.value;
+  if (!pin) { toast('נדרש PIN לטעינה', 'warning'); return; }
+  try {
+    const { data, error } = await sb.rpc('admin_list_community_jokes', { p_pin: pin });
+    if (error) { toast('שגיאה: ' + error.message, 'error'); return; }
+    allCommunityJokes = data || [];
+    renderCommunityJokes();
+  } catch (e) { toast('שגיאת רשת', 'error'); }
+}
+
+function renderCommunityJokes() {
+  const el = document.getElementById('jokes-list');
+  if (!el) return;
+  if (!allCommunityJokes.length) {
+    el.innerHTML = '<p style="text-align:center;color:var(--text-dim);padding:40px;">אין בדיחות עדיין</p>';
+    return;
+  }
+
+  const catLabel = {
+    realestate: 'סוכן נדל"ן',
+    realestate_lawyer: 'עו"ד נדל"ן',
+    interior: 'עיצוב פנים',
+    general: 'כלליות',
+  };
+
+  const pending  = allCommunityJokes.filter(j => j.status === 'pending');
+  const approved = allCommunityJokes.filter(j => j.status === 'approved');
+  const rejected = allCommunityJokes.filter(j => j.status === 'rejected');
+
+  const renderRow = j => `
+    <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--card-bg);">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;
+          background:${j.status==='pending'?'#FEF3C7':j.status==='approved'?'#DCFCE7':'#FEE2E2'};
+          color:${j.status==='pending'?'#92400E':j.status==='approved'?'#166534':'#991B1B'};">
+          ${j.status==='pending'?'⏳ ממתין':j.status==='approved'?'✅ אושר':'❌ נדחה'}
+        </span>
+        <span style="font-size:11px;background:var(--gray-100);padding:2px 8px;border-radius:99px;">
+          ${esc(catLabel[j.category] || j.category)}
+        </span>
+        <span style="font-size:11.5px;color:var(--text-dim);">👤 ${esc(j.submitter_name || 'אנונימי')}</span>
+        <span style="font-size:11px;color:var(--text-dim);margin-right:auto;">
+          ${new Date(j.created_at).toLocaleDateString('he-IL')}
+        </span>
+        ${j.xp_awarded ? '<span style="font-size:11px;color:#D97706;">✨ XP נמסר</span>' : ''}
+      </div>
+      <div style="font-size:13.5px;line-height:1.65;white-space:pre-line;margin-bottom:${j.status==='pending'?'12px':'0'};">${esc(j.joke_text)}</div>
+      ${j.status === 'pending' ? `
+        <div style="display:flex;gap:8px;">
+          <button class="btn-sm" style="background:#16a34a;color:#fff;border:none;"
+            onclick="approveJoke('${j.id}')">✅ אשר + 200 XP</button>
+          <button class="btn-sm btn-outline"
+            onclick="rejectJoke('${j.id}')">❌ דחה</button>
+        </div>` : ''}
+    </div>`;
+
+  let html = '';
+  if (pending.length)  html += `<h3 style="margin:0 0 8px;font-size:14px;">⏳ ממתינים לאישור (${pending.length})</h3>${pending.map(renderRow).join('')}`;
+  if (approved.length) html += `<h3 style="margin:20px 0 8px;font-size:14px;color:#16a34a;">✅ אושרו (${approved.length})</h3>${approved.map(renderRow).join('')}`;
+  if (rejected.length) html += `<h3 style="margin:20px 0 8px;font-size:14px;color:#dc2626;">❌ נדחו (${rejected.length})</h3>${rejected.map(renderRow).join('')}`;
+  el.innerHTML = html;
+}
+
+async function approveJoke(jokeId) {
+  const pin = document.getElementById('pin-input')?.value;
+  try {
+    const { data } = await sb.rpc('admin_approve_community_joke', { p_pin: pin, p_joke_id: jokeId });
+    if (data?.ok) {
+      toast('✅ הבדיחה אושרה! המגיש יקבל 200 XP בכניסה הבאה', 'success', 4000);
+      await loadCommunityJokes();
+    } else {
+      toast('שגיאה: ' + (data?.reason || 'unknown'), 'error');
+    }
+  } catch (e) { toast('שגיאת רשת', 'error'); }
+}
+
+async function rejectJoke(jokeId) {
+  const pin = document.getElementById('pin-input')?.value;
+  try {
+    const { data } = await sb.rpc('admin_reject_community_joke', { p_pin: pin, p_joke_id: jokeId });
+    if (data?.ok) { toast('הבדיחה נדחתה', 'info'); await loadCommunityJokes(); }
+  } catch (e) { toast('שגיאת רשת', 'error'); }
 }
 </script>
 </body>
