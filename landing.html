@@ -87,6 +87,11 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
+    :focus-visible {
+      outline: 2px solid var(--blue, #2563EB);
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
 
     body {
       font-family: 'Rubik', 'Heebo', sans-serif;
@@ -2980,6 +2985,16 @@
   <div class="footer-links">
     <a href="https://liders-crm.com">כניסה למערכת</a>
     <a href="https://liders-crm.com/privacy-policy.html">מדיניות פרטיות</a>
+    <a href="https://liders-crm.com/#a11y-statement" onclick="document.getElementById('a11y-statement')?.scrollIntoView({behavior:'smooth'});return false;">הצהרת נגישות</a>
+  </div>
+  <div id="a11y-statement" style="margin:18px auto 10px;max-width:560px;padding:14px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;text-align:right;">
+    <div style="font-size:12px;font-weight:800;color:rgba(255,255,255,0.60);margin-bottom:6px;">♿ הצהרת נגישות</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.38);line-height:1.7;">
+      Liders CRM פועלת בהתאם לחוק שוויון זכויות לאנשים עם מוגבלות, תשנ"ח-1998, ולתקנות הנגישות לשירות באינטרנט.
+      רמת תאימות מוצהרת: <strong style="color:rgba(255,255,255,0.55);">WCAG 2.1 AA (חלקית)</strong> · תקן ת"י 5568.
+      המערכת כוללת מצב ניגודיות גבוהה, הגדלת טקסט, ניווט מקלדת מלא ותמיכה בקוראי מסך.
+      לפניות נגישות — כניסה למערכת ← מרכז כלים.
+    </div>
   </div>
   <div class="footer-copy">© 2026 Liders CRM · כל הזכויות שמורות</div>
 </footer>

@@ -395,6 +395,16 @@
     a { color: inherit; text-decoration: none; }
     button { font-family: var(--font); cursor: pointer; border: none; outline: none; }
     input, textarea, select { font-family: var(--font); outline: none; direction: rtl; }
+    /* ─── KEYBOARD FOCUS RING ───────────────────────────────────────────────
+       :focus-visible fires only for keyboard navigation, not mouse clicks.
+       Overrides the outline:none above so Tab users always see where they are.
+       In body.theme-accessible the !important yellow ring (set earlier) wins.
+    ─────────────────────────────────────────────────────────────────────── */
+    :focus-visible {
+      outline: 2px solid var(--blue-500);
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
     img { display: block; max-width: 100%; }
     ul, ol { list-style: none; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -15333,15 +15343,22 @@ const Settings = {
           </div>
         </div>
       </div>
-      <div class="a11y-declaration">
-        <h3>♿ נגישות ושוויון הזדמנויות</h3>
-        <p>מערכת Liders CRM אינה מסתפקת בהנגשה בסיסית. אנו מציעים פרופיל חוויית משתמש מותאם אישית (Tailored UX) לבעלי מוגבלויות ראייה, שמיעה ודיבור, כדי להבטיח שוויון הזדמנויות מלא וערך מקצועי זהה לכל משתמש.</p>
+      <div class="a11y-declaration" role="region" aria-label="הצהרת נגישות">
+        <h3>♿ הצהרת נגישות — Liders CRM</h3>
+        <p>מערכת Liders CRM פועלת בהתאם לחוק שוויון זכויות לאנשים עם מוגבלות, תשנ"ח-1998, ולתקנות הנגישות לשירות באינטרנט. אנו מחויבים להבטיח שכל משתמש, ללא תלות ביכולותיו הגופניות, ייהנה מגישה מלאה ושוויונית למערכת.</p>
+        <p style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:10px;">רמת התאימות המוצהרת: <strong style="color:rgba(255,255,255,0.85);">WCAG 2.1 ברמה AA (חלקית)</strong> · תקן ת"י 5568 · עודכן לאחרונה: יולי 2026</p>
         <ul>
-          <li>ניגודיות גבוהה (High Contrast) — צבעים המאושרים לתקן WCAG AA</li>
-          <li>הגדלת טקסט ב-15% ללחיצה אחת</li>
-          <li>סימון פוקוס ברור לניווט מקלדת</li>
-          <li>ההעדפה נשמרת אוטומטית בין כניסות</li>
+          <li>ניגודיות גבוהה (High Contrast) — ניגודיות צבעים המאושרת לתקן WCAG AA</li>
+          <li>הגדלת טקסט ב-15% ללחיצה אחת (Chrome, Edge, Safari)</li>
+          <li>סימון פוקוס גלוי לניווט מקלדת בכל מצב — טבעת כחולה במצב רגיל, צהובה בולטת במצב נגישות</li>
+          <li>תגיות ARIA ותיוג סמנטי לקוראי מסך (NVDA, JAWS, VoiceOver)</li>
+          <li>ניווט מלא ממקלדת: Tab, Enter, Space — כולל כל כפתורי הניווט והמודלים</li>
+          <li>קישור "דלג לתוכן הראשי" בלחיצה ראשונה על Tab</li>
+          <li>העדפת הנגישות נשמרת אוטומטית בין כניסות</li>
+          <li>הודעות מערכת (toast) מוכרזות אוטומטית לקוראי מסך</li>
         </ul>
+        <p style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:14px;"><strong style="color:rgba(255,255,255,0.75);">מגבלות ידועות:</strong> הגדלת הטקסט אינה פועלת בדפדפן Firefox (מגבלת דפדפן) — ניגודיות הצבעים פועלת בכל הדפדפנים. לבעלי מוגבלות קשה יותר, מומלץ לשלב עם הגדרות הנגישות של מערכת ההפעלה.</p>
+        <p style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:14px;"><strong style="color:rgba(255,255,255,0.75);">פניות נגישות:</strong> נתקלתם בבעיה? נשמח לטפל — פנו דרך מסך ה<button onclick="App.go('tools')" style="background:none;border:none;color:var(--blue-500,#60A5FA);font-size:12px;cursor:pointer;padding:0;text-decoration:underline;">"מרכז כלים"</button> או שלחו הודעה ישירות לתמיכה. נטפל בפנייתכם תוך 5 ימי עבודה.</p>
         <button id="a11y-decl-toggle" class="a11y-decl-toggle"
                 aria-pressed="${State.isAccessibleMode}"
                 onclick="AccessibilityMode.toggle()">
