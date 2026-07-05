@@ -88,9 +88,14 @@ async function getAccessToken(
   return tokens.access_token;
 }
 
-async function gmailGet(token: string, path: string, params?: Record<string, string>) {
+async function gmailGet(token: string, path: string, params?: Record<string, string | string[]>) {
   const u = new URL(`https://gmail.googleapis.com/gmail/v1/users/me/${path}`);
-  if (params) Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
+  if (params) {
+    Object.entries(params).forEach(([k, v]) => {
+      if (Array.isArray(v)) v.forEach((val) => u.searchParams.append(k, val));
+      else u.searchParams.set(k, v);
+    });
+  }
   const res = await fetch(u, { headers: { Authorization: `Bearer ${token}` } });
   return res.json();
 }
@@ -177,8 +182,10 @@ Deno.serve(async (req: Request) => {
         // Fetch first message of each thread for headers
         const detailed = await Promise.all(
           threads.map(async (t: { id: string }) => {
-            const thread = await gmailGet(token, `threads/${t.id}`, { format: 'metadata',
-              metadataHeaders: 'From,Subject,Date' });
+            const thread = await gmailGet(token, `threads/${t.id}`, {
+              format: 'metadata',
+              metadataHeaders: ['From', 'Subject', 'Date'],
+            });
             const msg = thread.messages?.[0];
             const headers = Object.fromEntries(
               (msg?.payload?.headers ?? []).map((h: { name: string; value: string }) => [h.name, h.value]),
