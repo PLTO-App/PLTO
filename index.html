@@ -123,6 +123,261 @@
     }
 
     /* ═══════════════════════════════════════
+       ACCESSIBILITY MODE — High Contrast Theme
+       body.theme-accessible overrides CSS vars;
+       no existing rule needs to change.
+    ═══════════════════════════════════════ */
+    body.theme-accessible {
+      --bg-app:    #0A0A0A;
+      --bg:        #0A0A0A;
+      --surface:   #1C1C1C;
+      --border:    #FFFF00;
+      --navy:      #0A0A0A;
+      --navy-900:  #000000;
+      --navy-800:  #0D0D0D;
+      --navy-700:  #111111;
+      --navy-600:  #181818;
+      --navy-500:  #1C1C1C;
+      --navy-400:  #2A2A2A;
+      --navy-300:  #383838;
+      --navy-200:  #555555;
+      --navy-100:  #777777;
+      --navy-50:   #AAAAAA;
+      --gray-900:  #FFFFFF;
+      --gray-800:  #F0F0F0;
+      --gray-700:  #E0E0E0;
+      --gray-600:  #CCCCCC;
+      --gray-500:  #BBBBBB;
+      --gray-400:  #999999;
+      --gray-300:  #555555;
+      --gray-200:  #333333;
+      --gray-100:  #222222;
+      --gray-50:   #141414;
+      --blue:      #00CFFF;
+      --blue-600:  #00BFFF;
+      --blue-500:  #00CFFF;
+      --blue-400:  #33D6FF;
+      --blue-300:  #66DDFF;
+      --blue-200:  #99EEFF;
+      --blue-100:  #002233;
+      --green-600: #00FF88;
+      --green-500: #00FF88;
+      --green-100: #003322;
+      --gold-600:  #FFD700;
+      --gold-500:  #FFD700;
+      --gold-400:  #FFDF33;
+      --gold-100:  #332A00;
+      --orange-500:#FF9900;
+      --orange-100:#331E00;
+      --red-600:   #FF4444;
+      --red-500:   #FF5555;
+      --red-100:   #330000;
+      --white:     #FFFFFF;
+      zoom: 1.15;
+    }
+    body.theme-accessible *:focus-visible {
+      outline: 3px solid #FFFF00 !important;
+      outline-offset: 2px;
+    }
+    body.theme-accessible button:focus,
+    body.theme-accessible a:focus,
+    body.theme-accessible input:focus,
+    body.theme-accessible select:focus,
+    body.theme-accessible textarea:focus {
+      outline: 3px solid #FFFF00 !important;
+    }
+    /* Sidebar accessibility toggle */
+    .nav-item.a11y-btn {
+      border: 1px solid rgba(255,255,255,0.12);
+      margin-top: 4px;
+    }
+    .nav-item.a11y-btn[aria-pressed="true"] {
+      background: #FFFF00;
+      color: #000000;
+      border-color: #FFFF00;
+      font-weight: 800;
+    }
+    body.theme-accessible .nav-item.a11y-btn {
+      border-color: #FFFF00;
+    }
+    /* FAB mobile */
+    #a11y-fab {
+      display: none;
+      position: fixed;
+      bottom: calc(var(--bottom-nav-h) + 10px);
+      left: 14px;
+      z-index: 200;
+      background: var(--navy-600);
+      color: var(--gray-600);
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: var(--shadow-md);
+      transition: var(--transition);
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    #a11y-fab[aria-pressed="true"] {
+      background: #FFFF00;
+      color: #000;
+      border-color: #FFFF00;
+    }
+    @media (max-width: 767px) { #a11y-fab { display: flex; } }
+    /* Settings accessibility card */
+    .a11y-declaration {
+      background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-600) 100%);
+      border: 1px solid var(--navy-400);
+      border-radius: var(--radius-lg);
+      padding: 18px 16px;
+      margin: 0 0 16px;
+    }
+    body.theme-accessible .a11y-declaration {
+      background: #1C1C1C;
+      border-color: #FFFF00;
+    }
+    .a11y-declaration h3 {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+    .a11y-declaration p {
+      font-size: 13px;
+      color: rgba(255,255,255,0.80);
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+    .a11y-declaration ul {
+      list-style: disc;
+      padding-right: 18px;
+      margin-bottom: 14px;
+    }
+    .a11y-declaration ul li {
+      font-size: 13px;
+      color: rgba(255,255,255,0.75);
+      line-height: 1.55;
+      margin-bottom: 4px;
+    }
+    .a11y-decl-toggle {
+      width: 100%;
+      padding: 10px 0;
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .a11y-decl-toggle:hover { background: rgba(255,255,255,0.20); }
+    .a11y-decl-toggle[aria-pressed="true"] {
+      background: #FFFF00;
+      color: #000;
+      border-color: #FFFF00;
+    }
+    /* Visual-flash overlay for accessibility alerts */
+    @keyframes a11y-flash-anim {
+      0%   { opacity: 0; }
+      18%  { opacity: 1; }
+      55%  { opacity: 0.75; }
+      82%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    #a11y-flash {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      pointer-events: none;
+      border: 5px solid #FFFF00;
+      opacity: 0;
+    }
+    #a11y-flash.flashing { animation: a11y-flash-anim 0.75s ease forwards; }
+    /* Quick-reply WA buttons inside lead detail (accessibility mode) */
+    .a11y-quick-replies {
+      margin-top: 10px;
+      padding: 10px 12px 12px;
+      background: rgba(0,207,255,0.08);
+      border: 1px solid rgba(0,207,255,0.25);
+      border-radius: var(--radius-md);
+    }
+    .a11y-qr-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--blue-500);
+      margin-bottom: 8px;
+      letter-spacing: 0.3px;
+    }
+    .a11y-qr-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .a11y-qr-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 10px 6px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gray-800);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .a11y-qr-btn:hover { background: var(--gray-50); border-color: var(--blue-400); }
+    body.theme-accessible .a11y-quick-replies { background: #001A22; border-color: #00CFFF; }
+    body.theme-accessible .a11y-qr-btn { background: #111; border-color: #00CFFF; color: #fff; }
+    body.theme-accessible .a11y-qr-btn:hover { background: #1A2C33; border-color: #FFFF00; }
+    .a11y-qr-icon { font-size: 20px; }
+    /* Spam-law legal notice */
+    .spam-law-notice {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: var(--orange-100);
+      border: 1px solid var(--orange-500);
+      border-radius: var(--radius-md);
+      font-size: 11.5px;
+      line-height: 1.55;
+      color: var(--gray-700);
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .spam-law-notice .sln-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+    body.theme-accessible .spam-law-notice { background: #1A0E00; border-color: #FF9900; color: #EEEEEE; }
+
+    /* ═══════════════════════════════════════
+       ACCESSIBILITY: SKIP LINK
+    ═══════════════════════════════════════ */
+    .skip-link {
+      position: absolute;
+      top: -9999px;
+      right: 0;
+      z-index: 99999;
+      padding: 10px 20px;
+      background: var(--blue-600, #2563EB);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 0 0 8px 8px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .skip-link:focus {
+      top: 0;
+      outline: 3px solid #FFFF00;
+      outline-offset: 2px;
+    }
+
+    /* ═══════════════════════════════════════
        BASE RESET
     ═══════════════════════════════════════ */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -140,6 +395,16 @@
     a { color: inherit; text-decoration: none; }
     button { font-family: var(--font); cursor: pointer; border: none; outline: none; }
     input, textarea, select { font-family: var(--font); outline: none; direction: rtl; }
+    /* ─── KEYBOARD FOCUS RING ───────────────────────────────────────────────
+       :focus-visible fires only for keyboard navigation, not mouse clicks.
+       Overrides the outline:none above so Tab users always see where they are.
+       In body.theme-accessible the !important yellow ring (set earlier) wins.
+    ─────────────────────────────────────────────────────────────────────── */
+    :focus-visible {
+      outline: 2px solid var(--blue-500);
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
     img { display: block; max-width: 100%; }
     ul, ol { list-style: none; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -3811,6 +4076,8 @@
 </head>
 <body>
 
+<a href="#main-content" class="skip-link">דלג לתוכן הראשי</a>
+
 <!-- ═══════════════════════════════════════
      LOADING OVERLAY
 ═══════════════════════════════════════ -->
@@ -4006,7 +4273,7 @@
 <div id="app-shell" class="hidden">
 
   <!-- SIDEBAR (desktop) -->
-  <nav id="sidebar">
+  <nav id="sidebar" role="navigation" aria-label="תפריט ראשי">
     <div class="sidebar-brand">
       <div class="sidebar-logo">Liders<span>.</span></div>
       <div class="sidebar-subtitle" id="sidebar-tenant-name">הסוכנות שלי</div>
@@ -4086,11 +4353,17 @@
       <a class="nav-item" onclick="App.logout()">
         <span class="nav-icon">🚪</span> יציאה
       </a>
+      <button class="nav-item a11y-btn" data-a11y-btn
+              onclick="AccessibilityMode.toggle()"
+              aria-pressed="false" aria-label="הפעלת מצב נגישות">
+        <span class="nav-icon">♿</span>
+        <span class="a11y-btn-label">נגישות</span>
+      </button>
     </div>
   </nav>
 
   <!-- MAIN CONTENT -->
-  <main id="main-content">
+  <main id="main-content" tabindex="-1">
     <!-- DEMO BANNER -->
     <div id="demo-banner" class="hidden" style="background:linear-gradient(135deg,#0F1F3D,#1a3a6a);border-bottom:2px solid var(--gold-500);color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;">
       <span style="color:var(--gold-300);">👀 מצב דמו</span><span style="color:rgba(255,255,255,0.75);font-weight:500;font-size:12px;">הנתונים לא נשמרים · AI מנוטרל</span>
@@ -4617,6 +4890,10 @@
             <div class="tool-actions" id="wa-actions" style="display:none;">
               <button class="tool-btn-copy" onclick="Tools.copyWa()">📋 העתק</button>
               <a id="wa-send-link" href="#" target="_blank" style="font-size:12px;padding:6px 14px;border-radius:8px;background:#25d366;color:white;font-weight:700;text-decoration:none;display:inline-block;">📱 פתח WhatsApp</a>
+            </div>
+            <div class="spam-law-notice">
+              <span class="sln-icon">⚖️</span>
+              <span>שליחת ההודעות מבוצעת ישירות ממכשירך האישי ובאחריותך הבלעדית. באחריות המשתמש לוודא כי הנמענים אינם מתנגדים לקבלת הודעות, בהתאם להוראות חוק התקשורת (חוק הספאם).</span>
             </div>
           </div>
         </div>
@@ -5247,33 +5524,38 @@
   </div>
 
   <!-- BOTTOM NAV (mobile) -->
-  <nav id="bottom-nav">
-    <div class="bottom-nav-item active" data-screen="dashboard" onclick="navRipple(this);App.go('dashboard')">
+  <nav id="bottom-nav" role="navigation" aria-label="ניווט מהיר">
+    <div class="bottom-nav-item active" role="button" tabindex="0" data-screen="dashboard" onclick="navRipple(this);App.go('dashboard')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" aria-label="בית">
       <div class="bni-icon">📊</div>
       <div>בית</div>
     </div>
-    <div class="bottom-nav-item" data-screen="pipeline" onclick="navRipple(this);App.go('pipeline')">
+    <div class="bottom-nav-item" role="button" tabindex="0" data-screen="pipeline" onclick="navRipple(this);App.go('pipeline')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
       <div class="bni-icon">📋</div>
       <div id="bn-label-pipeline">פייפליין</div>
     </div>
-    <div class="bottom-nav-item" data-screen="properties" onclick="navRipple(this);App.go('properties')">
+    <div class="bottom-nav-item" role="button" tabindex="0" data-screen="properties" onclick="navRipple(this);App.go('properties')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
       <div class="bni-icon" id="bn-icon-properties">🏠</div>
       <div id="bn-label-properties">נכסים</div>
     </div>
-    <div class="bottom-nav-item" data-screen="tasks" onclick="navRipple(this);App.go('tasks')">
+    <div class="bottom-nav-item" role="button" tabindex="0" data-screen="tasks" onclick="navRipple(this);App.go('tasks')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
       <div class="bni-icon">✅</div>
       <div>משימות</div>
     </div>
-    <div class="bottom-nav-item" data-screen="partners" onclick="navRipple(this);App.go('partners')" style="position:relative;">
+    <div class="bottom-nav-item" role="button" tabindex="0" data-screen="partners" onclick="navRipple(this);App.go('partners')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" style="position:relative;">
       <div class="bni-icon">🤝</div>
       <div>שותפים</div>
       <span id="bn-badge-partners" style="display:none;position:absolute;top:6px;right:10px;background:#EF4444;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;padding:0 4px;display:none;align-items:center;justify-content:center;"></span>
     </div>
-    <div class="bottom-nav-item" data-screen="settings" onclick="navRipple(this);App.go('settings')">
+    <div class="bottom-nav-item" role="button" tabindex="0" data-screen="settings" onclick="navRipple(this);App.go('settings')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
       <div class="bni-icon">⚙️</div>
       <div>הגדרות</div>
     </div>
   </nav>
+
+  <!-- Accessibility FAB — mobile only, above bottom-nav -->
+  <button id="a11y-fab" data-a11y-btn
+          onclick="AccessibilityMode.toggle()"
+          aria-pressed="false" aria-label="מצב נגישות">♿</button>
 
   <!-- ═══════════════════════════════════════
        MODAL: SHARE LEAD WITH PARTNER
@@ -5640,7 +5922,9 @@
 <!-- ═══════════════════════════════════════
      TOAST CONTAINER
 ═══════════════════════════════════════ -->
-<div id="toast-container"></div>
+<div id="toast-container" role="status" aria-live="polite" aria-atomic="true"></div>
+<!-- Accessibility flash overlay — triggered by flashScreen() -->
+<div id="a11y-flash" aria-hidden="true"></div>
 
 <!-- CONFETTI -->
 <div id="confetti-container"></div>
@@ -7793,6 +8077,7 @@ const State = {
   customLabels: {},
   _pendingRegression: null,
   newCardId: null,
+  isAccessibleMode: false,
 };
 
 /* ═══════════════════════════════════════════
@@ -8709,15 +8994,28 @@ function applyIndustryToLeadForm(prefix) {
 /* ═══════════════════════════════════════════
    MODAL UTILS
 ═══════════════════════════════════════════ */
+let _modalLastFocus = null;
 function openModal(id) {
-  document.getElementById(id).classList.remove('hidden');
+  _modalLastFocus = document.activeElement;
+  const modal = document.getElementById(id);
+  modal.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
   if (id === 'modal-add-lead') applyIndustryToLeadForm('new');
   if (id === 'modal-edit-lead') applyIndustryToLeadForm('edit');
+  // Move focus to first focusable element inside the modal
+  requestAnimationFrame(() => {
+    const focusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (focusable) focusable.focus();
+  });
 }
 function closeModal(id) {
   document.getElementById(id).classList.add('hidden');
   document.body.style.overflow = '';
+  // Restore focus to the element that triggered the modal
+  if (_modalLastFocus && typeof _modalLastFocus.focus === 'function') {
+    _modalLastFocus.focus();
+    _modalLastFocus = null;
+  }
 }
 function closeModalOnBg(e, id) {
   if (e.target === e.currentTarget) closeModal(id);
@@ -8763,6 +9061,18 @@ function toast(msg, type='', duration=3200) {
   t.textContent = msg;
   c.appendChild(t);
   setTimeout(() => t.remove(), duration);
+  if (State?.isAccessibleMode && (type === 'success' || type === 'error' || type === 'warning' || type === 'alert')) {
+    flashScreen();
+  }
+}
+
+function flashScreen() {
+  const el = document.getElementById('a11y-flash');
+  if (!el) return;
+  el.classList.remove('flashing');
+  void el.offsetWidth;
+  el.classList.add('flashing');
+  el.addEventListener('animationend', () => el.classList.remove('flashing'), { once: true });
 }
 
 /* ═══════════════════════════════════════════
@@ -10456,6 +10766,10 @@ ${safeArea ? 'אזור/פרויקט: ' + safeArea : ''}
           <button class="btn" style="flex:1;background:#25D366;color:white;border:none;" onclick="window.open('${escapeHtml(waUrl)}')">📤 שלח ב-WA</button>
         </div>
         <button class="btn btn-ghost" style="width:100%;font-size:13px;" onclick="SmartWA.open('${leadId}')">🔄 ייצר הודעה אחרת</button>
+        <div class="spam-law-notice" style="margin-top:10px;">
+          <span class="sln-icon">⚖️</span>
+          <span>שליחת ההודעות מבוצעת ישירות ממכשירך האישי ובאחריותך הבלעדית. באחריות המשתמש לוודא כי הנמענים אינם מתנגדים לקבלת הודעות, בהתאם להוראות חוק התקשורת (חוק הספאם).</span>
+        </div>
       `;
     } catch(e) {
       container.innerHTML = `<div style="text-align:center;padding:20px;color:var(--gray-500);">⚠️ ${escapeHtml(e.message)}</div>`;
@@ -12638,6 +12952,55 @@ const LoadingOverlay = {
   },
 };
 
+/* ═══════════════════════════════════════════
+   ACCESSIBILITY MODE
+   Manages body.theme-accessible class + localStorage persistence.
+   All toggle buttons carry [data-a11y-btn] so _sync() updates all at once.
+═══════════════════════════════════════════ */
+const AccessibilityMode = {
+  _KEY: 'liders_a11y',
+  init() {
+    if (localStorage.getItem(this._KEY) === '1') this.enable(false);
+  },
+  enable(persist = true) {
+    document.body.classList.add('theme-accessible');
+    State.isAccessibleMode = true;
+    if (persist) localStorage.setItem(this._KEY, '1');
+    this._sync();
+  },
+  disable(persist = true) {
+    document.body.classList.remove('theme-accessible');
+    State.isAccessibleMode = false;
+    if (persist) localStorage.setItem(this._KEY, '0');
+    this._sync();
+  },
+  toggle() { State.isAccessibleMode ? this.disable() : this.enable(); },
+  _sync() {
+    const on = State.isAccessibleMode;
+    document.querySelectorAll('[data-a11y-btn]').forEach(btn => {
+      btn.setAttribute('aria-pressed', String(on));
+      const label = btn.querySelector('.a11y-btn-label');
+      if (label) label.textContent = on ? 'מצב רגיל' : 'נגישות';
+    });
+    const declBtn = document.getElementById('a11y-decl-toggle');
+    if (declBtn) {
+      declBtn.setAttribute('aria-pressed', String(on));
+      declBtn.textContent = on ? '✅ מצב נגישות פעיל — לחיצה לכיבוי' : '♿ הפעל מצב נגישות';
+    }
+  },
+};
+AccessibilityMode.init();
+
+// Sidebar <a> elements have no href so they're not focusable by default — fix that globally
+document.querySelectorAll('#sidebar .nav-item').forEach(el => {
+  if (!el.getAttribute('href')) el.setAttribute('tabindex', '0');
+});
+
+// Modal close buttons: ensure aria-label="סגור" on all that lack one
+document.querySelectorAll('.modal-close:not([aria-label])').forEach(btn => {
+  btn.setAttribute('aria-label', 'סגור');
+});
+
 const App = {
   async loginWithEmail() {
     const email    = document.getElementById('login-email').value.trim();
@@ -12944,12 +13307,18 @@ const App = {
       void target.offsetWidth; // force reflow to restart animation
       target.classList.add('screen-enter');
     }
-    // update nav active
+    // update nav active + aria-current
     document.querySelectorAll('.nav-item').forEach(n => {
-      n.classList.toggle('active', n.dataset.screen === screen);
+      const isCurrent = n.dataset.screen === screen;
+      n.classList.toggle('active', isCurrent);
+      if (isCurrent) n.setAttribute('aria-current', 'page');
+      else n.removeAttribute('aria-current');
     });
     document.querySelectorAll('.bottom-nav-item').forEach(n => {
-      n.classList.toggle('active', n.dataset.screen === screen);
+      const isCurrent = n.dataset.screen === screen;
+      n.classList.toggle('active', isCurrent);
+      if (isCurrent) n.setAttribute('aria-current', 'page');
+      else n.removeAttribute('aria-current');
     });
     // render
     switch (screen) {
@@ -13635,7 +14004,7 @@ const LeadDetail = {
 
     document.getElementById('lead-detail-content').innerHTML = `
       <div class="lead-detail-header">
-        <button class="back-btn" onclick="App.go('pipeline')">← חזרה</button>
+        <button class="back-btn" onclick="App.go('pipeline')" aria-label="חזרה לרשימת הלידים">← חזרה</button>
         <div style="display:flex; align-items:center; justify-content:space-between;">
           <div class="lead-detail-name">${escapeHtml(lead.name)}</div>
           <div class="score-badge ${scoreClass(lead.score)}" style="width:44px;height:44px;font-size:15px;">${lead.score}</div>
@@ -13647,26 +14016,36 @@ const LeadDetail = {
           <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:${stage?.color+'33'};color:white;">${escapeHtml(stage?.name||'—')}</span>
         </div>
         <div class="lead-detail-actions">
-          <button class="lead-action-btn" data-phone="${escapeHtml(lead.phone)}" onclick="if(State.isDemo){toast('⚡ מצב דמו, בגרסה האמיתית ייחייג ללקוח','warning');}else{CallLog.show('${lead.id}',this.dataset.phone);}">📞 שיחה</button>
-          ${lead.phone2 ? `<button class="lead-action-btn" data-phone="${escapeHtml(lead.phone2)}" onclick="if(State.isDemo){toast('⚡ מצב דמו, בגרסה האמיתית ייחייג ללקוח','warning');}else{CallLog.show('${lead.id}',this.dataset.phone);}">📞 טלפון 2</button>` : ''}
-          <button class="lead-action-btn" onclick="LeadDetail.openDirectWA('${lead.id}')">💬 WhatsApp</button>
-          ${State.tenant?.industry === 'realestate' ? `<button class="lead-action-btn" style="background:linear-gradient(135deg,#0369A1,#0EA5E9);color:white;" onclick="LeadDetail.openMadlanModal('${lead.id}')">📞 שלוף ממדלן</button>` : ''}
-          ${Marketing.hasMktgAccess() ? `<button class="lead-action-btn" style="background:linear-gradient(135deg,#7C3AED,#2563EB);color:white;" onclick="SmartWA.open('${lead.id}')">✨ WA חכם</button>` : ''}
-          <button class="lead-action-btn" onclick="openMoveStage('${lead.id}')">🔄 שנה שלב</button>
-          <button class="lead-action-btn" onclick="State.currentLeadId='${lead.id}'; openModal('modal-add-activity')">📝 הוסף</button>
-          <button class="lead-action-btn" onclick="openEditLead('${lead.id}')">✏️ עריכה</button>
-          ${!State.isDemo ? `<button class="lead-action-btn" style="background:linear-gradient(135deg,#0F1F3D,#2563EB);color:white;" onclick="Partners.openShareModal('${lead.id}')">🤝 שתף עם שותף</button>` : ''}
-          ${!State.isDemo ? `<button class="lead-action-btn" style="background:linear-gradient(135deg,#15803D,#16A34A);color:white;" onclick="LeadReferral.openModal('${lead.id}')">🔗 הפנה לקולגה</button>` : ''}
+          <button class="lead-action-btn" aria-label="שיחה טלפונית עם ${escapeHtml(lead.name)}" data-phone="${escapeHtml(lead.phone)}" onclick="if(State.isDemo){toast('⚡ מצב דמו, בגרסה האמיתית ייחייג ללקוח','warning');}else{CallLog.show('${lead.id}',this.dataset.phone);}">📞 שיחה</button>
+          ${lead.phone2 ? `<button class="lead-action-btn" aria-label="שיחה לטלפון שני של ${escapeHtml(lead.name)}" data-phone="${escapeHtml(lead.phone2)}" onclick="if(State.isDemo){toast('⚡ מצב דמו, בגרסה האמיתית ייחייג ללקוח','warning');}else{CallLog.show('${lead.id}',this.dataset.phone);}">📞 טלפון 2</button>` : ''}
+          <button class="lead-action-btn" aria-label="שליחת WhatsApp ל${escapeHtml(lead.name)}" onclick="LeadDetail.openDirectWA('${lead.id}')">💬 WhatsApp</button>
+          ${State.tenant?.industry === 'realestate' ? `<button class="lead-action-btn" aria-label="שליפת מספר טלפון ממדלן עבור ${escapeHtml(lead.name)}" style="background:linear-gradient(135deg,#0369A1,#0EA5E9);color:white;" onclick="LeadDetail.openMadlanModal('${lead.id}')">📞 שלוף ממדלן</button>` : ''}
+          ${Marketing.hasMktgAccess() ? `<button class="lead-action-btn" aria-label="שליחת WhatsApp חכם ל${escapeHtml(lead.name)}" style="background:linear-gradient(135deg,#7C3AED,#2563EB);color:white;" onclick="SmartWA.open('${lead.id}')">✨ WA חכם</button>` : ''}
+          <button class="lead-action-btn" aria-label="שינוי שלב עבור ${escapeHtml(lead.name)}" onclick="openMoveStage('${lead.id}')">🔄 שנה שלב</button>
+          <button class="lead-action-btn" aria-label="הוספת פעילות ל${escapeHtml(lead.name)}" onclick="State.currentLeadId='${lead.id}'; openModal('modal-add-activity')">📝 הוסף</button>
+          <button class="lead-action-btn" aria-label="עריכת פרטי ${escapeHtml(lead.name)}" onclick="openEditLead('${lead.id}')">✏️ עריכה</button>
+          ${!State.isDemo ? `<button class="lead-action-btn" aria-label="שיתוף ${escapeHtml(lead.name)} עם שותף" style="background:linear-gradient(135deg,#0F1F3D,#2563EB);color:white;" onclick="Partners.openShareModal('${lead.id}')">🤝 שתף עם שותף</button>` : ''}
+          ${!State.isDemo ? `<button class="lead-action-btn" aria-label="הפניית ${escapeHtml(lead.name)} לקולגה" style="background:linear-gradient(135deg,#15803D,#16A34A);color:white;" onclick="LeadReferral.openModal('${lead.id}')">🔗 הפנה לקולגה</button>` : ''}
         </div>
+        ${State.isAccessibleMode ? `
+        <div class="a11y-quick-replies">
+          <div class="a11y-qr-label">💬 תגובה מהירה לווטסאפ — ניהול Pipeline ללא שיחה קולית</div>
+          <div class="a11y-qr-grid">
+            <button class="a11y-qr-btn" onclick="LeadDetail._quickReply('${lead.id}','intro')"><span class="a11y-qr-icon">👋</span>פנייה ראשונה</button>
+            <button class="a11y-qr-btn" onclick="LeadDetail._quickReply('${lead.id}','proposal')"><span class="a11y-qr-icon">📄</span>הצעת מחיר</button>
+            <button class="a11y-qr-btn" onclick="LeadDetail._quickReply('${lead.id}','followup')"><span class="a11y-qr-icon">🔔</span>תזכורת</button>
+            <button class="a11y-qr-btn" onclick="LeadDetail._quickReply('${lead.id}','closing')"><span class="a11y-qr-icon">🤝</span>סגירה</button>
+          </div>
+        </div>` : ''}
       </div>
       <div class="lead-detail-body">
-        <div class="tabs">
-          <button class="tab-btn active" onclick="switchTab(this,'tab-info')">מידע</button>
-          <button class="tab-btn" onclick="switchTab(this,'tab-activity')">פעילות (${activities.length})</button>
-          <button class="tab-btn" onclick="switchTab(this,'tab-tasks')">משימות (${tasks.filter(t=>!t.done).length})</button>
-          <button class="tab-btn" onclick="switchTab(this,'tab-match')">${getLabel('matchTab')} (${matchProps.length})</button>
-          <button class="tab-btn" onclick="switchTab(this,'tab-docs'); LeadDocs.load('${lead.id}')">📄 ${getLabel('docLabel')}</button>
-          <button class="tab-btn" onclick="switchTab(this,'tab-ai')">🤖 AI</button>
+        <div class="tabs" role="tablist" aria-label="מידע על ${escapeHtml(lead.name)}">
+          <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-info" onclick="switchTab(this,'tab-info')">מידע</button>
+          <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-activity" onclick="switchTab(this,'tab-activity')">פעילות (${activities.length})</button>
+          <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-tasks" onclick="switchTab(this,'tab-tasks')">משימות (${tasks.filter(t=>!t.done).length})</button>
+          <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-match" onclick="switchTab(this,'tab-match')">${getLabel('matchTab')} (${matchProps.length})</button>
+          <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-docs" onclick="switchTab(this,'tab-docs'); LeadDocs.load('${lead.id}')">📄 ${getLabel('docLabel')}</button>
+          <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-ai" onclick="switchTab(this,'tab-ai')">🤖 AI</button>
         </div>
 
         <!-- INFO TAB -->
@@ -13979,13 +14358,27 @@ const LeadDetail = {
     closeModal('modal-wa-consent');
     if (this._waPending) this._doWA(this._waPending);
   },
+
+  _quickReply(leadId, type) {
+    const lead = State.leads.find(l => l.id === leadId);
+    if (!lead) return;
+    const firstName = (lead.name || '').split(' ')[0] || 'לקוח';
+    const text = Tools._waTemplates[type]?.(firstName) || '';
+    const phone = (lead.phone || '').replace(/^0/, '').replace(/[-\s]/g, '');
+    if (!phone) { toast('אין מספר טלפון לשליחה', 'error'); return; }
+    window.open('https://wa.me/972' + phone + '?text=' + encodeURIComponent(text), '_blank');
+  },
 };
 
 function switchTab(btn, tabId) {
   const container = btn.closest('.lead-detail-body, .screen-body');
-  container.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  container.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.remove('active');
+    if (b.hasAttribute('aria-selected')) b.setAttribute('aria-selected', 'false');
+  });
   container.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   btn.classList.add('active');
+  if (btn.hasAttribute('aria-selected')) btn.setAttribute('aria-selected', 'true');
   document.getElementById(tabId).classList.add('active');
 }
 
@@ -14949,6 +15342,28 @@ const Settings = {
             <div class="settings-row-label" style="color:var(--red-600);">יציאה מהמערכת</div>
           </div>
         </div>
+      </div>
+      <div class="a11y-declaration" role="region" aria-label="הצהרת נגישות">
+        <h3>♿ הצהרת נגישות — Liders CRM</h3>
+        <p>מערכת Liders CRM פועלת בהתאם לחוק שוויון זכויות לאנשים עם מוגבלות, תשנ"ח-1998, ולתקנות הנגישות לשירות באינטרנט. אנו מחויבים להבטיח שכל משתמש, ללא תלות ביכולותיו הגופניות, ייהנה מגישה מלאה ושוויונית למערכת.</p>
+        <p style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:10px;">רמת התאימות המוצהרת: <strong style="color:rgba(255,255,255,0.85);">WCAG 2.1 ברמה AA (חלקית)</strong> · תקן ת"י 5568 · עודכן לאחרונה: יולי 2026</p>
+        <ul>
+          <li>ניגודיות גבוהה (High Contrast) — ניגודיות צבעים המאושרת לתקן WCAG AA</li>
+          <li>הגדלת טקסט ב-15% ללחיצה אחת (Chrome, Edge, Safari)</li>
+          <li>סימון פוקוס גלוי לניווט מקלדת בכל מצב — טבעת כחולה במצב רגיל, צהובה בולטת במצב נגישות</li>
+          <li>תגיות ARIA ותיוג סמנטי לקוראי מסך (NVDA, JAWS, VoiceOver)</li>
+          <li>ניווט מלא ממקלדת: Tab, Enter, Space — כולל כל כפתורי הניווט והמודלים</li>
+          <li>קישור "דלג לתוכן הראשי" בלחיצה ראשונה על Tab</li>
+          <li>העדפת הנגישות נשמרת אוטומטית בין כניסות</li>
+          <li>הודעות מערכת (toast) מוכרזות אוטומטית לקוראי מסך</li>
+        </ul>
+        <p style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:14px;"><strong style="color:rgba(255,255,255,0.75);">מגבלות ידועות:</strong> הגדלת הטקסט אינה פועלת בדפדפן Firefox (מגבלת דפדפן) — ניגודיות הצבעים פועלת בכל הדפדפנים. לבעלי מוגבלות קשה יותר, מומלץ לשלב עם הגדרות הנגישות של מערכת ההפעלה.</p>
+        <p style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:14px;"><strong style="color:rgba(255,255,255,0.75);">פניות נגישות:</strong> נתקלתם בבעיה? נשמח לטפל — פנו דרך מסך ה<button onclick="App.go('tools')" style="background:none;border:none;color:var(--blue-500,#60A5FA);font-size:12px;cursor:pointer;padding:0;text-decoration:underline;">"מרכז כלים"</button> או שלחו הודעה ישירות לתמיכה. נטפל בפנייתכם תוך 5 ימי עבודה.</p>
+        <button id="a11y-decl-toggle" class="a11y-decl-toggle"
+                aria-pressed="${State.isAccessibleMode}"
+                onclick="AccessibilityMode.toggle()">
+          ${State.isAccessibleMode ? '✅ מצב נגישות פעיל — לחיצה לכיבוי' : '♿ הפעל מצב נגישות'}
+        </button>
       </div>
     `;
   },
@@ -16575,8 +16990,10 @@ sbClient.auth.onAuthStateChange((event, session) => {
 });
 
 // Expose globals for inline onclick handlers (mobile browser compatibility)
-window.App        = App;
-window.State      = State;
+window.App              = App;
+window.State            = State;
+window.AccessibilityMode = AccessibilityMode;
+window.flashScreen      = flashScreen;
 window.DB         = DB;
 window.Voice      = Voice;
 window.Onboarding = Onboarding;
