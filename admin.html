@@ -611,6 +611,7 @@
     <button class="nav-tab" onclick="switchTab('saas')">לקוחות SaaS 🔴</button>
     <button class="nav-tab" onclick="switchTab('support')" id="nav-support">🎫 תמיכה <span id="support-open-count" style="display:none;background:var(--red);color:#fff;border-radius:99px;font-size:10px;padding:1px 6px;margin-right:4px;"></span></button>
     <button class="nav-tab" onclick="switchTab('roadmap')">🚧 בתהליך בנייה</button>
+    <button class="nav-tab" onclick="switchTab('cro');AdminCRO.load()">📊 CRO</button>
   </div>
 
   <!-- Main Content -->
@@ -822,6 +823,58 @@
           </tbody>
         </table>
       </div>
+    </div>
+
+    <!-- ── CRO ── -->
+    <div id="section-cro" class="section">
+      <div class="section-header">
+        <h2>📊 CRO — אופטימיזציית המרות</h2>
+        <div class="header-actions">
+          <select id="cro-days-select" onchange="AdminCRO.load()" style="font-size:.82rem;border:1px solid var(--border);border-radius:6px;padding:4px 8px;background:var(--bg-card);color:var(--text);">
+            <option value="7">7 ימים אחרונים</option>
+            <option value="14">14 ימים</option>
+            <option value="30">30 ימים</option>
+          </select>
+          <button class="btn-outline btn-sm" onclick="AdminCRO.load()">🔄 רענן</button>
+        </div>
+      </div>
+
+      <!-- Funnel Cards -->
+      <div id="cro-funnel" style="display:flex;gap:0;align-items:stretch;overflow-x:auto;padding-bottom:8px;margin-bottom:24px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;flex-wrap:wrap;gap:4px;">
+        <div style="color:var(--text-dim);font-size:.85rem;">טוען נתוני funnel...</div>
+      </div>
+
+      <!-- A/B Tests -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <h3 style="margin:0;font-size:1rem;">ניסויי A/B</h3>
+        <button class="btn-primary btn-sm" onclick="AdminCRO.openAbModal(null)">+ ניסוי חדש</button>
+      </div>
+      <div class="table-wrap" style="margin-bottom:28px;">
+        <table>
+          <thead>
+            <tr>
+              <th>שם הניסוי</th>
+              <th>Variant A</th>
+              <th>Variant B</th>
+              <th>חשיפות A/B</th>
+              <th>המרות A/B</th>
+              <th>סטטוס</th>
+              <th>זוכה</th>
+              <th>פעולות</th>
+            </tr>
+          </thead>
+          <tbody id="ab-tests-tbody">
+            <tr><td colspan="8"><div class="empty-state"><div class="spinner"></div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Hypothesis Backlog -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <h3 style="margin:0;font-size:1rem;">לוח השערות (Backlog)</h3>
+        <span style="font-size:.8rem;color:var(--text-dim);">ניסויים ממתינים לתור</span>
+      </div>
+      <div id="ab-backlog" style="display:flex;flex-direction:column;gap:8px;"></div>
     </div>
 
   </div><!-- /main -->
@@ -1040,7 +1093,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const ADMIN_EMAILS = ['liders.crm@gmail.com', 'elgrablidudu@gmail.com'];
-const TABS = ['dashboard', 'accounts', 'invoices', 'saas', 'support', 'roadmap'];
+const TABS = ['dashboard', 'accounts', 'invoices', 'saas', 'support', 'roadmap', 'cro'];
 
 /* ── UTILS ── */
 function esc(s) {
@@ -1838,5 +1891,195 @@ function togglePasswordVisibility() {
   }
 })();
 </script>
+
+<!-- A/B Test Modal -->
+<div class="modal-overlay hidden" id="modal-ab-test">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-ab-title">ניסוי A/B חדש</h3>
+      <button class="modal-close" onclick="closeModal('modal-ab-test')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ab-id">
+      <div class="modal-form-group">
+        <label>שם הניסוי</label>
+        <input type="text" id="ab-name" placeholder="לדוגמה: כפתור CTA בדף הנחיתה">
+      </div>
+      <div class="modal-form-group">
+        <label>השערה</label>
+        <textarea id="ab-hypothesis" placeholder="אם נשנה X, אנו מצפים ש-Y יגדל כי Z..."></textarea>
+      </div>
+      <div class="modal-form-group">
+        <label>Variant A (הנוכחי)</label>
+        <input type="text" id="ab-variant-a" placeholder="תיאור גרסה A">
+      </div>
+      <div class="modal-form-group">
+        <label>Variant B (השינוי)</label>
+        <input type="text" id="ab-variant-b" placeholder="תיאור גרסה B">
+      </div>
+      <div class="modal-form-group">
+        <label>סטטוס</label>
+        <select id="ab-status">
+          <option value="backlog">Backlog — ממתין</option>
+          <option value="active">Active — פעיל</option>
+          <option value="concluded">Concluded — הסתיים</option>
+        </select>
+      </div>
+      <div class="modal-form-group" id="ab-winner-wrap" style="display:none;">
+        <label>זוכה</label>
+        <select id="ab-winner">
+          <option value="">לא הוחלט</option>
+          <option value="a">Variant A</option>
+          <option value="b">Variant B</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline btn-sm" onclick="closeModal('modal-ab-test')">ביטול</button>
+      <button class="btn-primary btn-sm" onclick="AdminCRO.saveAbTest()">שמור</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── AdminCRO ── */
+const AdminCRO = {
+  async load() {
+    const days = parseInt(document.getElementById('cro-days-select')?.value || '7', 10);
+    await Promise.all([this._loadFunnel(days), this._loadAbTests()]);
+  },
+
+  async _loadFunnel(days) {
+    const funnelEl = document.getElementById('cro-funnel');
+    if (!funnelEl) return;
+    funnelEl.innerHTML = '<div style="color:var(--text-dim);font-size:.85rem;">טוען...</div>';
+    const { data, error } = await sb.rpc('get_funnel_summary', { p_days: days });
+    if (error || !data) {
+      funnelEl.innerHTML = `<div style="color:var(--red);font-size:.85rem;">שגיאה: ${esc(String(error?.message || 'שגיאה בטעינה'))}</div>`;
+      return;
+    }
+    const d = data;
+    const steps = [
+      { label: 'קליקי CTA בנחיתה', val: d.landing_cta_clicks, icon: '🖱️' },
+      { label: 'צפיות מסך כניסה', val: d.login_views,          icon: '👁️' },
+      { label: 'הרשמות הושלמו',   val: d.signup_completed,      icon: '✅' },
+      { label: 'סיימו אונבורדינג',val: d.onboarding_done,       icon: '🎯' },
+      { label: 'ביטאו עניין שדרוג',val: d.upgrade_intents,      icon: '💎' },
+      { label: 'Demo→הרשמה',      val: d.demo_to_signup,        icon: '🚀' },
+    ];
+    funnelEl.innerHTML = steps.map((s, i) => {
+      const prev = i > 0 ? steps[i - 1].val : null;
+      const drop = (prev && prev > 0 && s.val != null) ? Math.round((1 - s.val / prev) * 100) : null;
+      return `
+        <div style="flex:1;min-width:120px;text-align:center;padding:12px 8px;border-right:${i<steps.length-1?'1px solid var(--border)':'none'};">
+          <div style="font-size:1.4rem;">${s.icon}</div>
+          <div style="font-size:1.5rem;font-weight:800;color:var(--text);margin:4px 0;">${s.val ?? '—'}</div>
+          <div style="font-size:.75rem;color:var(--text-dim);line-height:1.3;">${esc(s.label)}</div>
+          ${drop !== null ? `<div style="font-size:.7rem;color:${drop>50?'var(--red)':'var(--text-dim)'};margin-top:4px;">▼ ${drop}% נשירה</div>` : ''}
+        </div>`;
+    }).join('') + (d.top_abandon_step ? `
+        <div style="width:100%;padding:10px 16px;background:rgba(255,160,0,.08);border-radius:8px;font-size:.82rem;color:var(--text-dim);margin-top:8px;">
+          ⚠️ נקודת נשירה מובילה: שלב ${esc(String(d.top_abandon_step))} באונבורדינג
+        </div>` : '');
+  },
+
+  async _loadAbTests() {
+    const tbody = document.getElementById('ab-tests-tbody');
+    const backlog = document.getElementById('ab-backlog');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="spinner"></div></div></td></tr>';
+    if (backlog) backlog.innerHTML = '';
+
+    const { data, error } = await sb.rpc('admin_list_ab_tests');
+    if (error) {
+      tbody.innerHTML = `<tr><td colspan="8" style="color:var(--red);">שגיאה: ${esc(String(error.message))}</td></tr>`;
+      return;
+    }
+    const tests = data || [];
+    const active = tests.filter(t => t.status === 'active' || t.status === 'concluded');
+    const back   = tests.filter(t => t.status === 'backlog');
+
+    if (active.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="color:var(--text-dim);text-align:center;padding:20px;">אין ניסויים פעילים</td></tr>';
+    } else {
+      tbody.innerHTML = active.map(t => {
+        const crA = t.exposures_a > 0 ? ((t.conversions_a / t.exposures_a) * 100).toFixed(1) + '%' : '—';
+        const crB = t.exposures_b > 0 ? ((t.conversions_b / t.exposures_b) * 100).toFixed(1) + '%' : '—';
+        const statusBadge = { active: '🟢 פעיל', concluded: '⚪ הסתיים' };
+        return `<tr>
+          <td style="font-weight:600;">${esc(t.name)}</td>
+          <td style="font-size:.82rem;">${esc(t.variant_a || '—')}</td>
+          <td style="font-size:.82rem;">${esc(t.variant_b || '—')}</td>
+          <td style="font-size:.82rem;">${t.exposures_a ?? 0} / ${t.exposures_b ?? 0}</td>
+          <td style="font-size:.82rem;">${crA} / ${crB}</td>
+          <td>${statusBadge[t.status] || t.status}</td>
+          <td>${t.winner ? (t.winner === 'a' ? '🏆 A' : '🏆 B') : '—'}</td>
+          <td><button class="btn-outline btn-sm" onclick="AdminCRO.openAbModal(${JSON.stringify(t)})">עריכה</button></td>
+        </tr>`;
+      }).join('');
+    }
+
+    if (backlog && back.length > 0) {
+      backlog.innerHTML = back.map(t => `
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;">
+          <div style="flex:1;">
+            <div style="font-weight:600;font-size:.9rem;">${esc(t.name)}</div>
+            ${t.hypothesis ? `<div style="font-size:.8rem;color:var(--text-dim);margin-top:2px;">${esc(t.hypothesis)}</div>` : ''}
+          </div>
+          <button class="btn-primary btn-sm" onclick="AdminCRO.activateTest('${t.id}')">הפעל</button>
+          <button class="btn-outline btn-sm" onclick="AdminCRO.openAbModal(${JSON.stringify(t)})">עריכה</button>
+        </div>`).join('');
+    } else if (backlog) {
+      backlog.innerHTML = '<div style="color:var(--text-dim);font-size:.85rem;padding:12px 0;">אין ניסויים בתור — הוסף ניסוי חדש כדי לתכנן את הניסוי הבא</div>';
+    }
+  },
+
+  openAbModal(test) {
+    document.getElementById('ab-id').value          = test?.id || '';
+    document.getElementById('ab-name').value        = test?.name || '';
+    document.getElementById('ab-hypothesis').value  = test?.hypothesis || '';
+    document.getElementById('ab-variant-a').value   = test?.variant_a || '';
+    document.getElementById('ab-variant-b').value   = test?.variant_b || '';
+    document.getElementById('ab-status').value      = test?.status || 'backlog';
+    document.getElementById('ab-winner').value      = test?.winner || '';
+    document.getElementById('modal-ab-title').textContent = test?.id ? 'עריכת ניסוי' : 'ניסוי A/B חדש';
+    const winnerWrap = document.getElementById('ab-winner-wrap');
+    if (winnerWrap) winnerWrap.style.display = (test?.status === 'concluded') ? '' : 'none';
+    document.getElementById('ab-status').onchange = function() {
+      if (winnerWrap) winnerWrap.style.display = this.value === 'concluded' ? '' : 'none';
+    };
+    document.getElementById('modal-ab-test').classList.remove('hidden');
+  },
+
+  async saveAbTest() {
+    const id       = document.getElementById('ab-id').value || null;
+    const name     = document.getElementById('ab-name').value.trim();
+    const status   = document.getElementById('ab-status').value;
+    if (!name) { alert('נא להזין שם לניסוי'); return; }
+    const { error } = await sb.rpc('admin_upsert_ab_test', {
+      p_id:         id || null,
+      p_name:       name,
+      p_hypothesis: document.getElementById('ab-hypothesis').value.trim() || null,
+      p_variant_a:  document.getElementById('ab-variant-a').value.trim() || null,
+      p_variant_b:  document.getElementById('ab-variant-b').value.trim() || null,
+      p_status:     status,
+      p_winner:     (status === 'concluded' ? document.getElementById('ab-winner').value || null : null),
+    });
+    if (error) { alert('שגיאה: ' + error.message); return; }
+    closeModal('modal-ab-test');
+    await this._loadAbTests();
+  },
+
+  async activateTest(id) {
+    const { error } = await sb.rpc('admin_upsert_ab_test', {
+      p_id: id, p_name: null, p_hypothesis: null,
+      p_variant_a: null, p_variant_b: null, p_status: 'active', p_winner: null,
+    });
+    if (error) { alert('שגיאה: ' + error.message); return; }
+    await this._loadAbTests();
+  },
+};
+</script>
+
 </body>
 </html>
