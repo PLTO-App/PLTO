@@ -4197,17 +4197,20 @@
     <div class="login-form">
       <div class="google-btn-wrap">
         <span class="google-hammer-icon">🔨</span>
-        <button id="btn-login-google" type="button" class="btn-google" style="touch-action:manipulation; padding:13px; font-size:15px;">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-          </svg>
-          כניסה / הרשמה עם Google
-        </button>
+        <div style="position:relative;">
+          <span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;font-size:10px;font-weight:800;padding:2px 10px;border-radius:99px;white-space:nowrap;z-index:1;">מהיר יותר</span>
+          <button id="btn-login-google" type="button" class="btn-google" style="touch-action:manipulation; padding:13px; font-size:15px; width:100%;">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            כניסה / הרשמה עם Google
+          </button>
+        </div>
       </div>
-      <div class="login-divider">או עם אימייל וסיסמה</div>
+      <div class="login-divider">לחלופין, עם אימייל וסיסמה</div>
       <div class="form-group">
         <label class="form-label">אימייל</label>
         <input type="email" id="login-email" class="form-input" placeholder="israel@example.com"
@@ -6288,8 +6291,8 @@
       <li>✅ סוכן חכם ותיקי נכסים</li>
       <li>✅ ייצוא נתונים וכלים מקצועיים</li>
     </ul>
-    <button onclick="DemoLock.signup()" style="width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,var(--navy),#2563EB);color:white;font-size:15px;font-weight:800;border:none;cursor:pointer;margin-bottom:10px;">🚀 פתח חשבון ניסיון, חינם</button>
-    <button onclick="DemoLock.hide()" style="width:100%;padding:10px;border-radius:12px;background:var(--gray-100);color:var(--gray-500);font-size:13px;font-weight:600;border:none;cursor:pointer;">המשך לסייר בדמו</button>
+    <button onclick="DemoLock.signup()" style="width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,var(--navy),#2563EB);color:white;font-size:15px;font-weight:800;border:none;cursor:pointer;margin-bottom:12px;">🚀 פתח חשבון ניסיון, חינם</button>
+    <button type="button" onclick="DemoLock.hide()" style="background:none;border:none;color:var(--gray-400);font-size:12px;cursor:pointer;padding:6px;text-decoration:underline;font-family:inherit;">המשך לסייר בדמו</button>
   </div>
 </div>
 
@@ -8322,6 +8325,8 @@ const Billing = {
   },
 
   openCheckout(planId = 'pro') {
+    const _daysLeft = this.isActiveTrial() ? Math.ceil((new Date(State.tenant?.trial_ends_at) - Date.now()) / 86400000) : 0;
+    FunnelTracker.track('upgrade_intent', { plan: planId, days_left: _daysLeft, is_expired: !this.isActiveTrial() }, State.tenant?.id || null);
     if (this.isActiveTrial()) {
       this.showTrialNoCreditCardModal();
       return;
@@ -8530,81 +8535,6 @@ const Onboarding = {
       },
     },
     {
-      title: 'יש לך כבר רשימת לקוחות? 📊',
-      subtitle: 'ייבוא חכם מאקסל / CSV — ה-AI מזהה את העמודות בעצמו',
-      render() {
-        const count = State.leads?.length || 0;
-        const ind   = localStorage.getItem('liders_industry') || 'other';
-        const intro = {
-          realestate:        'יש לך רשימת קונים שעבדת איתהם לאורך השנים? בוא נעביר אותם ל-Liders בלחיצה אחת.',
-          realestate_lawyer: 'יש לך רשימת לקוחות ותיקים ישנה בטבלת אקסל? נכניס אותם ל-Liders בשניות.',
-          interior:          'יש לך רשימת לקוחות ופרויקטים ישנה? נעביר אותם ל-Liders בלחיצה — ה-AI מסדר הכל.',
-          other:             'עד היום ניהלת את הלקוחות שלך בטבלת אקסל? בוא נעביר אותם ל-Liders תוך כמה שניות.',
-        }[ind] || 'עד היום ניהלת את הלקוחות שלך בטבלת אקסל? בוא נעביר אותם ל-Liders תוך כמה שניות.';
-        return `
-          <div style="text-align:center;padding:6px 0 4px;">
-            <div style="font-size:44px;margin-bottom:10px;">📊✨</div>
-            ${count > 0 ? `
-            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:14px;margin-bottom:18px;">
-              <div style="font-weight:800;color:#15803d;font-size:15px;">✅ ${count} לידים יובאו בהצלחה!</div>
-              <div style="font-size:12.5px;color:#16a34a;margin-top:2px;">ה-AI סידר אותם בפייפליין, אפשר לראות הכל אחרי ההגדרה</div>
-            </div>` : `
-            <div style="color:var(--gray-500);font-size:0.88rem;line-height:1.75;margin-bottom:18px;">
-              ${intro}<br>
-              <strong>ה-AI קורא את הקובץ, מזהה לבד אילו עמודות הן שם, טלפון, מייל ועוד</strong> — בלי סידור נוסף.
-            </div>`}
-            <button class="btn btn-primary" style="padding:14px 28px;font-size:1rem;" onclick="Onboarding._openImportFromOnboarding()">
-              📁 ${count > 0 ? 'ייבוא קובץ נוסף' : 'בחירת קובץ אקסל / CSV'}
-            </button>
-          </div>`;
-      },
-    },
-    {
-      title: 'אוטומציות WhatsApp ⚡',
-      subtitle: 'חבר את Make.com לשליחת הודעות אוטומטיות',
-      render() {
-        const ind = localStorage.getItem('liders_industry') || 'other';
-        const useCases = {
-          realestate:        'עדכוני נכסים חדשים, תזכורות לביקור, אישור הצעת מחיר — הכל אוטומטי ב-WhatsApp',
-          realestate_lawyer: 'עדכוני תיק, תזכורות מועדים חשובים, בקשת מסמכים חסרים — ישירות ל-WhatsApp של הלקוח',
-          interior:          'עדכוני פרויקט, תזכורות פגישת תכנון, שליחת דוגמאות השראה — אוטומטי ב-WhatsApp',
-          other:             'הודעות WhatsApp אוטומטיות ללידים — תזכורות, מעקב ועדכוני עסקה',
-        }[ind] || 'הודעות WhatsApp אוטומטיות ללידים — תזכורות, מעקב ועדכוני עסקה';
-        return `
-          <div>
-            <p style="color:var(--gray-500);font-size:0.88rem;margin-bottom:4px;line-height:1.6;">
-              חיבור Make.com מאפשר שליחת הודעות WhatsApp אוטומטיות:
-            </p>
-            <div style="background:var(--blue-50);border:1px solid var(--blue-200);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:0.84rem;color:var(--blue-700);font-weight:600;">
-              💬 ${useCases}
-            </div>
-            <label class="form-label">Webhook URL של Make.com (אופציונלי)</label>
-            <input class="form-input" id="ob-webhook" placeholder="https://hook.eu1.make.com/..." dir="ltr">
-            <div style="margin-top:16px;padding:12px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0;">
-              <p style="margin:0;font-size:0.82rem;color:#15803d;">
-                💡 <strong>איך מגדירים?</strong> לך ל-make.com → צור Scenario → Webhook trigger → העתק את ה-URL לכאן
-              </p>
-            </div>
-            <div style="margin-top:14px;text-align:center;padding:10px 0;">
-              <span style="font-size:0.88rem;color:var(--gray-400);">אפשר לדלג עכשיו ולהגדיר מאוחר יותר דרך</span>
-              <span onclick="document.getElementById('modal-onboarding').classList.add('hidden');localStorage.setItem('onboarding_done','1');App.go('settings');" style="font-size:0.88rem;color:var(--blue-500);text-decoration:underline;cursor:pointer;font-weight:600;"> הגדרות ←</span>
-            </div>
-          </div>`;
-      },
-      validate() {
-        const webhook = document.getElementById('ob-webhook')?.value?.trim();
-        if (webhook) {
-          if (Make._isUnsafeUrl(webhook)) {
-            toast('Webhook URL לא תקין, נדרש HTTPS לדומיין ציבורי', 'error');
-            return false;
-          }
-          Onboarding._data.webhook = webhook;
-          localStorage.setItem('make_webhook_url', webhook);
-        }
-        return true;
-      },
-    },
-    {
       title: 'הכיר את הסוכן שלך 🤖',
       subtitle: 'הסוכן החכם שמנטר ומניע אותך',
       render() {
@@ -8736,6 +8666,7 @@ const Onboarding = {
   // from login (DB.ensureAgent), so this only skips the personalization
   // steps; the user can fill in industry/pipeline/webhook later via settings.
   skip() {
+    FunnelTracker.track('onboarding_abandoned', { step: this._step + 1, industry: localStorage.getItem('liders_industry') || null });
     document.getElementById('modal-onboarding').classList.add('hidden');
     localStorage.setItem('onboarding_done', '1');
   },
@@ -8760,6 +8691,7 @@ const Onboarding = {
   async next() {
     const s = this._steps[this._step];
     if (s.validate && !s.validate()) return;
+    FunnelTracker.track('onboarding_step_completed', { step: this._step + 1 });
     if (this._step === this._steps.length - 1) {
       localStorage.setItem('onboarding_done', '1');
 
@@ -8825,6 +8757,7 @@ const Onboarding = {
       await minDelay;
       if (setupEl) setupEl.classList.add('hidden');
       toast('🎉 ברוכים הבאים ל-Liders!', 'success');
+      setTimeout(() => toast('📁 יש לך רשימת לקוחות? ניתן לייבא בהגדרות', 'info', 5000), 3500);
       setTimeout(() => GuidedTour.start(), 1800);
       const action = this._pendingAction;
       this._pendingAction = null;
@@ -12059,6 +11992,7 @@ const DemoLock = {
         msgEl.innerHTML = 'חשבון ניסיון חינמי ל-30 יום<br>עם גישה מלאה לכל הכלים';
       }
     }
+    FunnelTracker.track('demo_lock_hit', { feature_name: customMsg ? customMsg.slice(0, 60) : 'generic' });
     el.classList.remove('hidden'); document.body.style.overflow = 'hidden';
   },
   hide() {
@@ -12066,6 +12000,7 @@ const DemoLock = {
     if (el) { el.classList.add('hidden'); document.body.style.overflow = ''; }
   },
   signup() {
+    FunnelTracker.track('demo_to_signup', {});
     this.hide();
     DemoSaveHook.dismiss();
     document.getElementById('app-shell')?.classList.add('hidden');
@@ -13001,12 +12936,45 @@ document.querySelectorAll('.modal-close:not([aria-label])').forEach(btn => {
   btn.setAttribute('aria-label', 'סגור');
 });
 
+/* ═══════════════════════════════════════════
+   FUNNEL TRACKER — CRO instrumentation
+   שולח אירועי funnel גם ל-GA4 וגם ל-Supabase.
+   Fire-and-forget — לעולם לא חוסם את ה-UI.
+═══════════════════════════════════════════ */
+const FunnelTracker = {
+  _SESSION_KEY: 'liders_cro_session',
+  get sessionId() {
+    let sid = sessionStorage.getItem(this._SESSION_KEY);
+    if (!sid) { sid = crypto.randomUUID(); sessionStorage.setItem(this._SESSION_KEY, sid); }
+    return sid;
+  },
+  track(eventName, data = {}, tenantId = null) {
+    try {
+      // GA4
+      if (typeof gtag === 'function') {
+        gtag('event', eventName, { event_category: 'funnel', ...data });
+      }
+      // Supabase (fire-and-forget)
+      const tid = tenantId || State?.tenant?.id || null;
+      if (typeof sbClient !== 'undefined') {
+        sbClient.rpc('track_funnel_event', {
+          p_session_id: this.sessionId,
+          p_event_name: eventName,
+          p_event_data: data,
+          p_tenant_id:  tid,
+        }).catch(() => {});
+      }
+    } catch (_) {}
+  },
+};
+
 const App = {
   async loginWithEmail() {
     const email    = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value.trim();
     if (!email) { toast('נא להזין אימייל', 'error'); return; }
     if (!password) { toast('נא להזין סיסמה', 'error'); return; }
+    FunnelTracker.track('signup_method_chosen', { method: 'email' });
     await this._authAndEnter(email, password);
   },
   async signupWithEmail() {
@@ -13039,6 +13007,7 @@ const App = {
     DemoSaveHook.init();
   },
   async loginWithGoogle() {
+    FunnelTracker.track('signup_method_chosen', { method: 'google' });
     const btn = document.querySelector('.btn-google');
     if (btn) { btn.disabled = true; btn.style.opacity = '0.7'; }
     const REDIRECT = window.location.origin.includes('localhost')
@@ -13085,6 +13054,7 @@ const App = {
       LoadingOverlay.show('טוען נתונים...');
       const user = data.user;
       const { isNew } = await DB.ensureAgent(user.email, user.email.split('@')[0]);
+      if (isNew) FunnelTracker.track('signup_completed', { method: 'email' });
       AuditLog.log('auth.login');
       const loaded = await DB.loadAll();
       State.stages     = loaded.stages;
@@ -13283,6 +13253,7 @@ const App = {
     DB.stageRev = {};
     document.getElementById('app-shell').classList.add('hidden');
     document.getElementById('screen-login').classList.remove('hidden');
+    FunnelTracker.track('login_screen_view', { source: 'logout' });
   },
   go(screen, params = {}) {
     // Demo: allow only dashboard, pipeline and marketing (as teasers); block all else
@@ -16936,6 +16907,7 @@ sbClient.auth.onAuthStateChange((event, session) => {
         LoadingOverlay.show('מתחבר...');
         try {
           const { isNew } = await DB.ensureAgent(session.user.email, session.user.user_metadata?.full_name || session.user.email.split('@')[0]);
+          if (isNew) FunnelTracker.track('signup_completed', { method: 'google' });
           AuditLog.log('auth.login');
           const loaded = await DB.loadAll();
           State.stages     = loaded.stages;
@@ -17025,6 +16997,16 @@ window.DemoLock   = DemoLock;
   bind('btn-login-email', function(){ App.loginWithEmail(); });
   bind('btn-login-demo',   function(){ App.loginDemo(); });
   bind('btn-login-google', function(){ App.loginWithGoogle(); });
+})();
+
+// Track login screen view on initial page load (when no session is restored)
+(function trackLoginView() {
+  const loginScreen = document.getElementById('screen-login');
+  if (loginScreen && !loginScreen.classList.contains('hidden')) {
+    const ref = document.referrer;
+    const src = ref.includes('liders-crm.com') || ref.includes('/landing') ? 'landing' : (ref ? 'referral' : 'direct');
+    FunnelTracker.track('login_screen_view', { source: src });
+  }
 })();
 
 // Privacy shield - blurs the screen when the window/tab loses focus,

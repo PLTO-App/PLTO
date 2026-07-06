@@ -3476,5 +3476,80 @@
 })();
 </script>
 
+<!-- Google Analytics 4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-HK3080C4GJ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-HK3080C4GJ');
+</script>
+
+<script>
+/* CTA Funnel Tracking — landing.html
+   Maps each CTA link to a section label and fires:
+   - gtag('event', 'landing_cta_click', { event_category, cta_text, section })
+   - Supabase track_funnel_event RPC (fire-and-forget, no blocking)
+*/
+(function() {
+  var SUPABASE_URL = 'https://scyfywvzoogfrlalgftv.supabase.co';
+  var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjeWZ5d3Z6b29nZnJsYWxnZnR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyMTM3NTIsImV4cCI6MjA2Njc4OTc1Mn0.5aGMSrqSgYdIbZ5qAI1WX2ZBfp6-5TEaqQxOuMfKXkk';
+
+  function getSessionId() {
+    var KEY = 'liders_cro_session';
+    var sid = sessionStorage.getItem(KEY);
+    if (!sid) { sid = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, function(c){return(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16);}); sessionStorage.setItem(KEY, sid); }
+    return sid;
+  }
+
+  function trackCta(section, ctaText) {
+    var sid = getSessionId();
+    var data = { section: section, cta_text: ctaText };
+    if (typeof gtag === 'function') {
+      gtag('event', 'landing_cta_click', { event_category: 'landing_cta', section: section, cta_text: ctaText });
+    }
+    fetch(SUPABASE_URL + '/rest/v1/rpc/track_funnel_event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON },
+      body: JSON.stringify({ p_session_id: sid, p_event_name: 'landing_cta_click', p_event_data: data }),
+      keepalive: true
+    }).catch(function(){});
+  }
+
+  // Map: CSS selector → section name
+  var ctaMap = [
+    { sel: '.nav-cta',                                    section: 'nav' },
+    { sel: '.pulse-cta.cta-drop-target.has-rocket',       section: 'hero' },
+    { sel: '.shots-cta .shimmer-cta',                     section: 'preview_shots' },
+    { sel: '.section-cta-wrap .btn-primary:not(.has-rocket)', section: 'referral_loop' },
+    { sel: '.section-cta-wrap:last-child .btn-primary',   section: 'features' },
+    { sel: '.plan-btn.outline:first-of-type',             section: 'pricing_solo' },
+    { sel: '.plan-btn.primary.tractor-btn',               section: 'pricing_team' },
+    { sel: '.plan-btn.outline:last-of-type',              section: 'pricing_agency' },
+    { sel: '.cps-btn',                                    section: 'pricing_enterprise' },
+    { sel: '.btn-marketing',                              section: 'marketing_addon' },
+    { sel: '.plan-btn.primary:not(.tractor-btn)',         section: 'services' },
+    { sel: '.btn-primary.shimmer-cta:last-of-type',       section: 'closing' },
+  ];
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('a[href="https://liders-crm.com"]').forEach(function(el) {
+      el.addEventListener('click', function() {
+        var section = 'unknown';
+        for (var i = 0; i < ctaMap.length; i++) {
+          try { if (el.matches(ctaMap[i].sel)) { section = ctaMap[i].section; break; } } catch(e) {}
+        }
+        // Fallback: find nearest section ancestor with an id
+        if (section === 'unknown') {
+          var p = el.closest('section, nav, footer');
+          section = (p && p.id) ? p.id : (p ? p.tagName.toLowerCase() : 'unknown');
+        }
+        trackCta(section, (el.textContent || '').trim().slice(0, 80));
+      });
+    });
+  });
+})();
+</script>
+
 </body>
 </html>
