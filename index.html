@@ -640,6 +640,7 @@
 
     /* Property Card */
     .property-card {
+      position: relative;
       background: var(--surface); border-radius: var(--radius-lg);
       box-shadow: var(--shadow-sm); border: 1px solid var(--border);
       overflow: hidden; cursor: pointer; transition: var(--transition);
@@ -6963,7 +6964,7 @@
           <label class="form-label">קומה</label>
           <input type="number" id="new-prop-floor" class="form-input" placeholder="3" min="0">
         </div>
-        <div class="form-group">
+        <div class="form-group" id="fg-new-prop-city">
           <label class="form-label">עיר</label>
           <input type="text" id="new-prop-city" class="form-input" placeholder="תל אביב">
         </div>
@@ -7041,7 +7042,7 @@
           <label class="form-label">קומה</label>
           <input type="number" id="edit-prop-floor" class="form-input" min="0">
         </div>
-        <div class="form-group">
+        <div class="form-group" id="fg-edit-prop-city">
           <label class="form-label">עיר</label>
           <input type="text" id="edit-prop-city" class="form-input">
         </div>
@@ -8951,7 +8952,7 @@ const PROPERTY_CONFIG = {
     statusLabel: 'סטטוס',
     statusOptions: [{v:'available',l:'זמין'},{v:'under_offer',l:'בהצעה'},{v:'sold',l:'נמכר'},{v:'rented',l:'מושכר'}],
     statusClass: { available:'badge-status-available', under_offer:'badge-status-offer', sold:'badge-status-sold', rented:'badge-status-sold' },
-    priceLabel: 'מחיר (₪)', priceRequired: true,
+    priceLabel: 'מחיר (₪)', priceRequired: true, pricePlaceholder: '2000000',
     showRooms: true, showArea: true, showFloor: true, showImages: true,
     imagesLabel: 'תמונות נכס',
   },
@@ -8962,7 +8963,7 @@ const PROPERTY_CONFIG = {
     statusLabel: 'סטטוס',
     statusOptions: [{v:'planning',l:'בתכנון'},{v:'in_progress',l:'בביצוע'},{v:'completed',l:'הושלם'},{v:'on_hold',l:'בהמתנה'}],
     statusClass: { planning:'badge-status-new', in_progress:'badge-status-offer', completed:'badge-status-available', on_hold:'badge-status-sold' },
-    priceLabel: 'תקציב (₪)', priceRequired: false,
+    priceLabel: 'תקציב (₪)', priceRequired: false, pricePlaceholder: '80000',
     showRooms: true, showArea: true, showFloor: false, showImages: true,
     imagesLabel: 'תמונות השראה',
   },
@@ -8973,7 +8974,7 @@ const PROPERTY_CONFIG = {
     statusLabel: 'סטטוס',
     statusOptions: [{v:'open',l:'פתוח'},{v:'in_progress',l:'בטיפול'},{v:'completed',l:'הושלם'},{v:'on_hold',l:'מוקפא'}],
     statusClass: { open:'badge-status-new', in_progress:'badge-status-offer', completed:'badge-status-available', on_hold:'badge-status-sold' },
-    priceLabel: 'שכר טרחה (₪)', priceRequired: false,
+    priceLabel: 'שכר טרחה (₪)', priceRequired: false, pricePlaceholder: '15000',
     showRooms: false, showArea: false, showFloor: false, showImages: false,
     imagesLabel: '',
   },
@@ -9018,6 +9019,11 @@ function applyIndustryToPropertyForm(prefix) {
   showFg(`fg-${prefix}-prop-floor`,  cfg.showFloor);
   showFg(`fg-${prefix}-prop-images`, cfg.showImages);
   setText(`lbl-${prefix}-prop-images`, cfg.imagesLabel);
+  // "floor" and "city" share a form-row; when floor is hidden, city must span
+  // both columns or it collapses into floor's grid slot leaving a blank gap.
+  const cityFg = document.getElementById(`fg-${prefix}-prop-city`);
+  if (cityFg) cityFg.style.gridColumn = cfg.showFloor ? '' : '1 / -1';
+  if (prefix === 'new') setPh('new-prop-price', cfg.pricePlaceholder);
 
   if (prefix === 'new') setText('new-prop-save-btn', `שמור ${propName}`);
 }
@@ -16716,6 +16722,10 @@ function openEditProperty(propId) {
   const p = State.properties.find(x => x.id === propId);
   if (!p) return;
   State.currentPropId = propId;
+  // Rebuild the type/status dropdown options for the current industry BEFORE
+  // setting values below, otherwise p.type/p.status silently fail to match
+  // whatever industry (e.g. realestate) the static HTML options still show.
+  applyIndustryToPropertyForm('edit');
   document.getElementById('edit-prop-title').value       = p.title || '';
   document.getElementById('edit-prop-type').value        = p.type  || 'apartment';
   document.getElementById('edit-prop-status').value      = p.status || 'available';
