@@ -5636,12 +5636,21 @@
           </div>
           <div class="form-group">
             <label class="form-label">למי מפנים?</label>
-            <select id="lref-vertical" class="form-input">
+            <select id="lref-vertical" class="form-input" onchange="LeadReferral.onVerticalChange()">
               <option value="">בחר תחום...</option>
               <option value="realestate_lawyer">⚖️ עו"ד נדל"ן</option>
               <option value="interior">🎨 עיצוב פנים</option>
               <option value="realestate">🏠 סוכן נדל"ן</option>
+              <option value="other">🔨 בעל מקצוע אחר (שיפוצניק, קבלן, וכו')</option>
             </select>
+          </div>
+          <div class="form-group hidden" id="lref-profession-wrap">
+            <label class="form-label">מה תחום המקצוע?</label>
+            <input type="text" id="lref-profession" class="form-input" maxlength="80"
+                   placeholder="למשל: שיפוצניק, מתקין חלונות, אדריכל...">
+            <div style="font-size:11.5px;color:var(--gray-500);margin-top:4px;">
+              🔗 הקישור יישלח לדף חתימה ייעודי — לא נדרש חשבון Liders.
+            </div>
           </div>
           <div class="form-group">
             <label class="form-label">שם הקולגה</label>
@@ -5666,7 +5675,7 @@
           <div class="form-group hidden" id="lref-commission-value-wrap">
             <label class="form-label" id="lref-commission-value-label">אחוז</label>
             <input type="number" id="lref-commission-value" class="form-input" min="0" step="0.1" placeholder="לדוגמה: 10">
-            <div style="font-size:11.5px;color:var(--gray-500);margin-top:4px;">
+            <div id="lref-commission-hint" style="font-size:11.5px;color:var(--gray-500);margin-top:4px;">
               🔒 כשיש עמלה, הקולגה חייב לחתום דיגיטלית על הסכם עמלה קצר לפני שהליד נחשף אליו.
             </div>
           </div>
@@ -9883,13 +9892,21 @@ const ReferralsList = {
     converted:          { t: 'הפכה לעסקה 🎉',            c: '#166534', bg: '#DCFCE7' },
     expired:            { t: 'פג תוקף',                  c: '#64748B', bg: '#F1F5F9' },
     cancelled:          { t: 'בוטל',                    c: '#64748B', bg: '#F1F5F9' },
+    signed_external:    { t: 'נחתם (חיצוני) ✓',          c: '#166534', bg: '#DCFCE7' },
   },
 
   _cardHTML(r) {
     const s = this._STATUS[r.status] || { t: r.status, c: '#64748B', bg: '#F1F5F9' };
     const dirLabel = r.direction === 'sent' ? 'שלחת ל' : 'קיבלת מ';
+    const isExternal = r.to_vertical === 'other';
+    const verticalLabel = isExternal
+      ? (r.external_profession || 'בעל מקצוע')
+      : (LeadReferral.VERTICALS[r.to_vertical] || r.to_vertical || '');
     const comm = r.commission_type && r.commission_type !== 'none'
       ? `<div style="font-size:11.5px;color:#9A3412;margin-top:3px;">💰 ${r.commission_type === 'percent' ? r.commission_value + '%' : '₪' + r.commission_value}</div>`
+      : '';
+    const externalBadge = isExternal
+      ? `<span style="font-size:10.5px;background:#F1F5F9;color:#475569;border-radius:4px;padding:2px 6px;margin-right:4px;">חיצוני</span>`
       : '';
     const canResume = r.direction === 'received' && r.token && ['sent', 'opened', 'awaiting_signature'].includes(r.status);
     const canSend   = r.direction === 'sent'     && r.token && ['sent', 'opened'].includes(r.status);
@@ -9898,26 +9915,35 @@ const ReferralsList = {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
           <div style="min-width:0;">
             <div style="font-size:13.5px;font-weight:700;color:var(--navy-500);">${escapeHtml(r.lead_name || 'ליד')}</div>
-            <div style="font-size:11.5px;color:var(--gray-500);margin-top:2px;">${dirLabel} ${escapeHtml(r.other_party || '—')} · ${escapeHtml(LeadReferral.VERTICALS[r.to_vertical] || r.to_vertical || '')}</div>
+            <div style="font-size:11.5px;color:var(--gray-500);margin-top:2px;">${externalBadge}${dirLabel} ${escapeHtml(r.other_party || '—')} · ${escapeHtml(verticalLabel)}</div>
             ${comm}
           </div>
           <span class="share-status-badge" style="background:${s.bg};color:${s.c};flex-shrink:0;">${s.t}</span>
         </div>
         ${canResume ? `<button class="btn btn-primary" style="width:100%;margin-top:10px;font-size:12.5px;padding:8px;" onclick="ReferralsList.resume('${r.token}')">${r.status === 'awaiting_signature' ? '✍️ להשלמת החתימה' : '📥 לצפייה ולקבלה'}</button>` : ''}
-        ${canSend ? `<div style="display:flex;gap:8px;margin-top:10px;"><button class="btn btn-primary" style="flex:1;font-size:12.5px;padding:8px;" onclick="ReferralsList.sendToColleague('${r.token}')">💬 שלח לקולגה</button><button class="btn btn-ghost" style="font-size:12.5px;padding:8px;" onclick="ReferralsList.copyColleagueLink('${r.token}')">🔗 העתק</button></div>` : ''}
+        ${canSend ? `<div style="display:flex;gap:8px;margin-top:10px;"><button class="btn btn-primary" style="flex:1;font-size:12.5px;padding:8px;" onclick="ReferralsList.sendToColleague('${r.token}')">${isExternal ? '📋 שלח לחתימה' : '💬 שלח לקולגה'}</button><button class="btn btn-ghost" style="font-size:12.5px;padding:8px;" onclick="ReferralsList.copyColleagueLink('${r.token}')">🔗 העתק</button></div>` : ''}
       </div>`;
   },
 
   sendToColleague(token) {
     const r = this._items.find(i => i.token === token);
     if (!r) return;
-    const link = `https://liders-crm.com/?lref=${token}`;
-    const msg = `היי ${r.other_party || 'קולגה'} 👋\nיש לי לקוח בשבילך: ${r.lead_name || 'לקוח'}.\nכל הפרטים בקישור (Liders CRM):\n${link}`;
+    const isExternal = r.to_vertical === 'other';
+    const link = isExternal
+      ? `https://liders-crm.com/sign.html?lref=${token}`
+      : `https://liders-crm.com/?lref=${token}`;
+    const msg = isExternal
+      ? `היי ${r.other_party || 'קולגה'} 👋\nיש לי לקוח שמחפש ${r.external_profession || 'שירות'}. לקבלת הפרטים, נדרשת חתימה על הסכם עמלה קצר:\n${link}`
+      : `היי ${r.other_party || 'קולגה'} 👋\nיש לי לקוח בשבילך: ${r.lead_name || 'לקוח'}.\nכל הפרטים בקישור (Liders CRM):\n${link}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   },
 
   copyColleagueLink(token) {
-    const link = `https://liders-crm.com/?lref=${token}`;
+    const r = this._items.find(i => i.token === token);
+    const isExternal = r?.to_vertical === 'other';
+    const link = isExternal
+      ? `https://liders-crm.com/sign.html?lref=${token}`
+      : `https://liders-crm.com/?lref=${token}`;
     navigator.clipboard?.writeText(link).then(() => toast('🔗 הקישור הועתק', 'success'))
       .catch(() => toast(link, 'info', 6000));
   },
@@ -12376,7 +12402,13 @@ const LeadReferral = {
   _token: null,
   _lastMsg: '',
   _INBOUND_KEY: 'liders_inbound_lref',
-  VERTICALS: { realestate: 'סוכן נדל"ן', realestate_lawyer: 'עו"ד נדל"ן', interior: 'עיצוב פנים' },
+  VERTICALS: {
+    realestate:        'סוכן נדל"ן',
+    realestate_lawyer: 'עו"ד נדל"ן',
+    interior:          'עיצוב פנים',
+    other:             'בעל מקצוע'
+  },
+  _isExternal: false,
 
   _consentMode: 'self',
   _waTargetPhone: '',
@@ -12385,17 +12417,32 @@ const LeadReferral = {
     if (State.isDemo) { toast('הפניית לידים זמינה בחשבון אמיתי', 'info'); return; }
     this._leadId = leadId;
     this._token = null;
+    this._isExternal = false;
     document.getElementById('lref-step-1').classList.remove('hidden');
     document.getElementById('lref-step-2').classList.add('hidden');
     document.getElementById('lref-btn-create').classList.remove('hidden');
     document.getElementById('lref-btn-done').classList.add('hidden');
-    ['lref-vertical','lref-name','lref-phone','lref-context','lref-commission-value'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    ['lref-vertical','lref-name','lref-phone','lref-context','lref-commission-value','lref-profession'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     document.getElementById('lref-commission-type').value = 'none';
     document.getElementById('lref-consent-self').checked = false;
     document.getElementById('lref-consent-formal').checked = false;
+    document.getElementById('lref-profession-wrap').classList.add('hidden');
     this._consentMode = null;
     this.toggleCommissionValue();
     openModal('modal-lead-referral');
+  },
+
+  onVerticalChange() {
+    const v = document.getElementById('lref-vertical').value;
+    this._isExternal = (v === 'other');
+    document.getElementById('lref-profession-wrap').classList.toggle('hidden', !this._isExternal);
+    // For external, commission is strongly recommended — update hint text
+    const hint = document.getElementById('lref-commission-hint');
+    if (hint) {
+      hint.textContent = this._isExternal
+        ? '🔒 הנמען יקבל קישור לדף חתימה ייעודי. פרטי הלקוח ייחשפו רק לאחר חתימתו על ההסכם.'
+        : '🔒 כשיש עמלה, הקולגה חייב לחתום דיגיטלית על הסכם עמלה קצר לפני שהליד נחשף אליו.';
+    }
   },
 
   toggleCommissionValue() {
@@ -12411,15 +12458,21 @@ const LeadReferral = {
   },
 
   async create() {
-    const vertical  = document.getElementById('lref-vertical').value;
-    const name      = document.getElementById('lref-name').value.trim();
-    const phone     = document.getElementById('lref-phone').value.trim();
-    const ctx       = document.getElementById('lref-context').value.trim();
-    const commType  = document.getElementById('lref-commission-type').value;
+    const vertical   = document.getElementById('lref-vertical').value;
+    const name       = document.getElementById('lref-name').value.trim();
+    const phone      = document.getElementById('lref-phone').value.trim();
+    const ctx        = document.getElementById('lref-context').value.trim();
+    const commType   = document.getElementById('lref-commission-type').value;
     const commValRaw = document.getElementById('lref-commission-value').value;
+    const profession = document.getElementById('lref-profession')?.value.trim() || '';
+    const isExternal = this._isExternal;
+
     if (!vertical) { toast('בחר את תחום הקולגה', 'error'); return; }
     if (!name)     { toast('יש להזין את שם הקולגה', 'error'); return; }
+    if (isExternal && !profession) { toast('יש לציין את תחום המקצוע', 'error'); return; }
+    if (isExternal && commType === 'none') { toast('לשליחה לבעל מקצוע חיצוני יש להגדיר עמלת הפניה', 'error'); return; }
     if (!this._consentMode) { toast('יש לבחור כיצד קיבלת/תקבל את הסכמת הלקוח', 'error'); return; }
+
     let commValue = null;
     if (commType !== 'none') {
       commValue = parseFloat(commValRaw);
@@ -12434,22 +12487,38 @@ const LeadReferral = {
     btn.disabled = true; btn.textContent = 'יוצר...';
     try {
       const { data, error } = await sbClient.rpc('create_lead_referral', {
-        p_lead_id: this._leadId, p_to_vertical: vertical,
-        p_to_name: name, p_to_phone: phone || null, p_context: ctx || null,
-        p_commission_type: commType, p_commission_value: commValue,
-        p_require_consent: requireConsent
+        p_lead_id:             this._leadId,
+        p_to_vertical:         vertical,
+        p_to_name:             name,
+        p_to_phone:            phone || null,
+        p_context:             ctx || null,
+        p_commission_type:     commType,
+        p_commission_value:    commValue,
+        p_require_consent:     requireConsent,
+        p_external_profession: isExternal ? profession : null
       });
       if (error) throw error;
       this._token = data.token;
-      const link = `https://liders-crm.com/?lref=${data.token}`;
+
+      // External recipients go to sign.html; internal to index.html
+      const link = isExternal
+        ? `https://liders-crm.com/sign.html?lref=${data.token}`
+        : `https://liders-crm.com/?lref=${data.token}`;
 
       if (requireConsent && data.consent_token) {
         const consentLink = `https://liders-crm.com/?consent=${data.consent_token}`;
         this._waTargetPhone = lead.phone;
-        this._lastMsg = `היי ${lead.name.split(' ')[0]} 👋\nלצורך המשך טיפול מקצועי, אני מבקש/ת את אישורך להעביר את פרטיך (שם וטלפון בלבד) ל${LeadReferral.VERTICALS[vertical]} שותף.\nלאישור, לחץ/י כאן:\n${consentLink}`;
+        this._lastMsg = `היי ${lead.name.split(' ')[0]} 👋\nלצורך המשך טיפול מקצועי, אני מבקש להעביר את פרטיך (שם וטלפון בלבד) ל${profession || LeadReferral.VERTICALS[vertical]} שותף.\nלאישור:\n${consentLink}`;
         document.getElementById('lref-step2-emoji').textContent = '📨';
         document.getElementById('lref-step2-title').textContent = 'נשלחת בקשת אישור ללקוח';
         document.getElementById('lref-step2-sub').textContent = 'שלח את הקישור ללקוח בוואטסאפ. ברגע שיאשר, תוכל לשלוח את קישור ההפניה לקולגה ממסך "ההפניות שלי".';
+      } else if (isExternal) {
+        this._waTargetPhone = phone;
+        const commLabel = commType === 'percent' ? `${commValue}% מהתמורה` : `₪${commValue}`;
+        this._lastMsg = `היי ${name} 👋\nיש לי לקוח שמחפש ${profession} — אשמח להפנות אותם אליך.\nכדי לקבל את פרטי הלקוח, נדרשת חתימה קצרה על הסכם עמלת הפניה (${commLabel} בסגירת עסקה).\nלחתימה ולקבלת הפרטים:\n${link}`;
+        document.getElementById('lref-step2-emoji').textContent = '📋';
+        document.getElementById('lref-step2-title').textContent = 'הסכם מוכן לחתימה!';
+        document.getElementById('lref-step2-sub').textContent = `שלח את הקישור ל${name} בוואטסאפ. ברגע שיחתום, ההסכם יישמר ופרטי הלקוח ייחשפו אליו 🔒`;
       } else {
         this._waTargetPhone = phone;
         this._lastMsg = `היי ${name} 👋\nיש לי לקוח בשבילך: אני מפנה אליך את ${lead ? lead.name : 'הלקוח'}${ctx ? ' — ' + ctx : ''}.\nכל הפרטים בקישור (Liders CRM):\n${link}`;
@@ -12482,7 +12551,9 @@ const LeadReferral = {
 
   copyLink() {
     if (!this._token) return;
-    const link = `https://liders-crm.com/?lref=${this._token}`;
+    const link = this._isExternal
+      ? `https://liders-crm.com/sign.html?lref=${this._token}`
+      : `https://liders-crm.com/?lref=${this._token}`;
     navigator.clipboard?.writeText(link).then(() => toast('🔗 הקישור הועתק', 'success'))
       .catch(() => toast(link, 'info', 6000));
   },
