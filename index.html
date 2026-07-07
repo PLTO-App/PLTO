@@ -5260,7 +5260,7 @@
           <div style="text-align:center;padding:40px 0;color:var(--gray-400);">
             <div style="font-size:40px;margin-bottom:12px;">📤</div>
             <div style="font-size:14px;">עדיין לא שיתפת לידים</div>
-            <div style="font-size:12px;margin-top:4px;">פתח כרטיס ליד ולחץ "שתף עם שותף"</div>
+            <div style="font-size:12px;margin-top:4px;">פתח כרטיס ליד ולחיצה על "שתף עם שותף"</div>
           </div>
         </div>
       </div>
@@ -6046,7 +6046,7 @@
   </div>
 
   <!-- FAB -->
-  <button class="fab" id="fab-btn" onclick="openModal('modal-add-lead')" title="ליד חדש">+</button>
+  <button class="fab" id="fab-btn" onclick="fabAction()" title="ליד חדש">+</button>
 
   <!-- Support FAB - hidden until logged in -->
   <button class="support-fab hidden" id="support-fab-btn" onclick="Support.open()" title="שלח פנייה לתמיכה">
@@ -6785,7 +6785,7 @@
         <div>1️⃣ פתח את הנכס של הלקוח במדלן</div>
         <div>2️⃣ מצא את מספר הטלפון של המוכר או הסוכן</div>
         <div>3️⃣ העתק את המספר</div>
-        <div>4️⃣ הדבק אותו בשדה למטה ולחץ שמור</div>
+        <div>4️⃣ הדבק בשדה למטה ולחיצה על שמור</div>
       </div>
       <label class="form-label">מספר טלפון</label>
       <input type="tel" id="madlan-phone-input" class="form-input" placeholder="050-0000000"
@@ -7246,7 +7246,7 @@
         <button class="btn btn-ghost" onclick="closeModal('modal-edit-property')">ביטול</button>
         <button id="edit-prop-save-btn" class="btn btn-primary" style="flex:1;" onclick="saveEditProperty()">שמור שינויים</button>
       </div>
-      <button class="btn btn-ghost" style="width:100%; color:var(--red-500); font-size:13px;" onclick="deleteProperty()">🗑 מחק נכס</button>
+      <button class="btn btn-ghost" id="delete-prop-btn" style="width:100%; color:var(--red-500); font-size:13px;" onclick="deleteProperty()">🗑 מחק נכס</button>
     </div>
   </div>
 </div>
@@ -9213,11 +9213,21 @@ function applyIndustryToPropertyForm(prefix) {
   if (prefix === 'new') setPh('new-prop-price', cfg.pricePlaceholder);
 
   if (prefix === 'new') setText('new-prop-save-btn', `שמור ${propName}`);
+  if (prefix === 'edit') setText('delete-prop-btn', `🗑 מחק ${propName}`);
 }
 
 /* ═══════════════════════════════════════════
    MODAL UTILS
 ═══════════════════════════════════════════ */
+function fabAction() {
+  if (State.screen === 'properties') {
+    PropImages.resetNew();
+    openModal('modal-add-property');
+  } else {
+    openModal('modal-add-lead');
+  }
+}
+
 let _modalLastFocus = null;
 function openModal(id) {
   _modalLastFocus = document.activeElement;
@@ -9782,7 +9792,7 @@ const Partners = {
         <div style="text-align:center;padding:40px 0;color:var(--gray-400);">
           <div style="font-size:40px;margin-bottom:12px;">📤</div>
           <div style="font-size:14px;">עדיין לא שיתפת לידים</div>
-          <div style="font-size:12px;margin-top:4px;">פתח כרטיס ליד ולחץ "🤝 שתף עם שותף"</div>
+          <div style="font-size:12px;margin-top:4px;">פתח כרטיס ליד ולחיצה על "🤝 שתף עם שותף"</div>
         </div>`;
       return;
     }
@@ -10052,7 +10062,7 @@ const ReferralsList = {
         <div style="text-align:center;padding:40px 0;color:var(--gray-400);">
           <div style="font-size:40px;margin-bottom:12px;">🔗</div>
           <div style="font-size:14px;">עדיין אין הפניות</div>
-          <div style="font-size:12px;margin-top:4px;">פתח כרטיס ליד ולחץ "🔗 הפנה לקולגה"</div>
+          <div style="font-size:12px;margin-top:4px;">פתח כרטיס ליד ולחיצה על "🔗 הפנה לקולגה"</div>
         </div>`;
       return;
     }
@@ -13395,7 +13405,7 @@ const App = {
         if (result.error) {
           const sm = result.error.message || '';
           toast(sm.includes('already') || sm.includes('registered')
-            ? 'סיסמה שגויה, לחץ "שכחתי סיסמה" לאיפוס'
+            ? 'סיסמה שגויה — ניתן לאפס דרך "שכחתי סיסמה"'
             : 'שגיאה: ' + sm, 'error');
           return;
         }
@@ -13403,7 +13413,7 @@ const App = {
       const { data } = result;
       if (!data?.user) { toast('שגיאת התחברות, אפשר לנסות שנית', 'error'); return; }
       if (!data?.session) {
-        toast('📧 נשלח אימייל אישור, אשר ואז התחבר שוב', 'success');
+        toast('📧 נשלח אימייל אישור — יש לאשר ולהתחבר שוב', 'success');
         return;
       }
       // show loading overlay while fetching data
@@ -16213,7 +16223,7 @@ ${fileData}
             ondrop="event.preventDefault();this.classList.remove('drag-over');LeadImport.handleFile({files:event.dataTransfer.files})"
             for="import-file-input">
             <div class="import-dropzone-icon">📊</div>
-            <div class="import-dropzone-title">גרור קובץ לכאן, או לחץ לבחירה</div>
+            <div class="import-dropzone-title">גרור קובץ לכאן, או לחיצה לבחירה</div>
             <div class="import-dropzone-sub">
               כבר יש רשימת לידים ב-Excel או ב-CSV?<br>
               ✨ המערכת תזהה אוטומטית את העמודות — שם, טלפון, מייל, אזור ועוד.
@@ -16226,7 +16236,7 @@ ${fileData}
           </label>
           <div class="import-drive-section">
             <div style="font-size:12.5px;font-weight:700;color:var(--gray-700);margin-bottom:8px;">📂 טעינה מ-Google Drive</div>
-            <div style="font-size:12px;color:var(--gray-500);margin-bottom:8px;line-height:1.5;">פתח את הקובץ ב-Drive, לחץ ימני → "קבל קישור" → שנה ל"כל מי שיש לו הקישור" → הדבק כאן:</div>
+            <div style="font-size:12px;color:var(--gray-500);margin-bottom:8px;line-height:1.5;">פתח את הקובץ ב-Drive, לחיצה ימנית → "קבל קישור" → שנה ל"כל מי שיש לו הקישור" → הדבק כאן:</div>
             <div class="import-drive-row">
               <input class="import-drive-input" id="import-drive-url" type="url" placeholder="https://drive.google.com/file/d/..." dir="ltr">
               <button class="btn btn-ghost btn-sm" onclick="LeadImport.fetchFromDrive()">טען</button>
@@ -17064,12 +17074,12 @@ async function deleteProperty() {
   const propId = State.currentPropId;
   const prop = State.properties.find(x => x.id === propId);
   if (!prop) return;
-  if (!confirm(`למחוק את הנכס "${prop.title}"?`)) return;
+  if (!confirm(`למחוק את ה${getLabel('property')} "${prop.title}"?`)) return;
   try {
     await DB.deleteProperty(propId);
     State.properties = State.properties.filter(x => x.id !== propId);
     closeModal('modal-edit-property');
-    toast('🗑 הנכס נמחק', 'success');
+    toast(`🗑 ה${getLabel('property')} נמחק`, 'success');
     if (State.screen === 'properties') PropertiesScreen.render();
   } catch(e) {
     toast('שגיאה במחיקה: ' + e.message, 'error');
@@ -18503,7 +18513,7 @@ const QuickLog = {
           ? new Date(mtg.date_iso).toLocaleString('he-IL', { weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' })
           : '';
         const locPart = mtg.location ? ` ב${mtg.location}` : '';
-        const waMsg = `שלום ${lead.name} 😊\nנקבעה פגישתנו${mtgDateStr ? ` ל${mtgDateStr}` : ''}${locPart}.\nמאשר/ת? ✅ כן / ❌ לא מתאים`;
+        const waMsg = `שלום ${lead.name} 😊\nנקבעה פגישתנו${mtgDateStr ? ` ל${mtgDateStr}` : ''}${locPart}.\nמאשרים? ✅ כן / ❌ לא מתאים`;
         const gcalBtn = document.getElementById('ql-gcal-btn');
         if (mtg.date_iso) { gcalBtn.href = gcalUrl; gcalBtn.style.display = ''; }
         else gcalBtn.style.display = 'none';
