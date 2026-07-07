@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>חתימת הסכם עמלת הפניה — Liders CRM</title>
+  <meta name="description" content="חתימה דיגיטלית על הסכם עמלת הפניה">
+  <meta name="robots" content="noindex,nofollow">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://scyfywvzoogfrlalgftv.supabase.co; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Supabase (same version as index.html) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.js"
+          integrity="sha384-6D1MHtBWkb5O5CDgZ1iEBE8GkKq7CMwXtWFcCMSBnVPcpBs50n2yiO+FNLHK/2H"
+          crossorigin="anonymous"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:      #0F1F3D;
+      --navy-600:  #1a3460;
+      --blue:      #2563EB;
+      --blue-700:  #1d4ed8;
+      --green:     #16a34a;
+      --green-100: #dcfce7;
+      --green-700: #15803d;
+      --red:       #dc2626;
+      --red-50:    #fef2f2;
+      --gray-50:   #f8fafc;
+      --gray-100:  #f1f5f9;
+      --gray-200:  #e2e8f0;
+      --gray-400:  #94a3b8;
+      --gray-500:  #64748b;
+      --gray-600:  #475569;
+      --gray-700:  #334155;
+      --gray-900:  #0f172a;
+      --white:     #ffffff;
+      --radius:    12px;
+      --shadow:    0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    html, body {
+      min-height: 100vh;
+      font-family: 'Heebo', sans-serif;
+      background: #f0f4ff;
+      color: var(--gray-900);
+      direction: rtl;
+    }
+
+    /* ─── Layout ─── */
+    .page-wrap {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 48px;
+    }
+
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 520px;
+    }
+
+    /* ─── Header ─── */
+    .sign-header {
+      background: var(--navy);
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 24px 24px 20px;
+      text-align: center;
+    }
+    .sign-logo {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: -0.5px;
+    }
+    .sign-logo span { color: #60a5fa; }
+    .sign-sub {
+      font-size: 12.5px;
+      color: rgba(255,255,255,0.6);
+      margin-top: 3px;
+    }
+
+    /* ─── Body ─── */
+    .card-body { padding: 24px; }
+
+    /* ─── States ─── */
+    #state-loading, #state-ready, #state-success, #state-error { display: none; }
+    #state-loading.active, #state-ready.active,
+    #state-success.active, #state-error.active { display: block; }
+
+    /* Loading */
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--gray-200);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 40px auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Preview banner */
+    .preview-banner {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+    }
+    .preview-banner .pb-from {
+      font-size: 13px;
+      color: var(--gray-500);
+    }
+    .preview-banner .pb-name {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--navy);
+      margin: 2px 0 6px;
+    }
+    .preview-banner .pb-commission {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #fef9c3;
+      border: 1px solid #fde047;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #854d0e;
+    }
+
+    /* Agreement text box */
+    .agreement-box {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 12px;
+      color: var(--gray-700);
+      line-height: 1.75;
+      white-space: pre-wrap;
+      max-height: 220px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      direction: rtl;
+    }
+
+    /* Form */
+    .form-section { margin-bottom: 20px; }
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-700);
+      margin-bottom: 6px;
+    }
+    .form-label .opt {
+      font-size: 11.5px;
+      font-weight: 400;
+      color: var(--gray-400);
+    }
+    .form-input {
+      width: 100%;
+      padding: 10px 13px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      font-family: 'Heebo', sans-serif;
+      font-size: 14px;
+      color: var(--gray-900);
+      direction: rtl;
+      transition: border-color 0.15s;
+      outline: none;
+    }
+    .form-input:focus { border-color: var(--blue); }
+
+    /* Canvas */
+    .sig-canvas-wrap {
+      border: 1.5px solid var(--gray-200);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--white);
+      touch-action: none;
+    }
+    #sig-canvas {
+      display: block;
+      width: 100%;
+      height: 140px;
+      cursor: crosshair;
+    }
+    .sig-clear-btn {
+      width: 100%;
+      margin-top: 6px;
+      padding: 8px;
+      background: none;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      font-family: 'Heebo', sans-serif;
+      font-size: 12.5px;
+      color: var(--gray-500);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .sig-clear-btn:hover { background: var(--gray-50); }
+
+    /* Legal note */
+    .legal-note {
+      font-size: 11px;
+      color: var(--gray-400);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    /* Buttons */
+    .btn-sign {
+      width: 100%;
+      padding: 13px;
+      background: var(--blue);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      font-family: 'Heebo', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+    }
+    .btn-sign:hover:not(:disabled) { background: var(--blue-700); }
+    .btn-sign:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* Success */
+    .success-icon {
+      font-size: 52px;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .success-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--green);
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .success-sub {
+      font-size: 13px;
+      color: var(--gray-500);
+      text-align: center;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .lead-details-card {
+      background: var(--green-100);
+      border: 1px solid #bbf7d0;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .lead-details-card .ldc-label {
+      font-size: 11.5px;
+      color: var(--green-700);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .lead-details-card .ldc-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .lead-details-card .ldc-row:last-child { margin-bottom: 0; }
+    .lead-details-card .ldc-key {
+      font-size: 12.5px;
+      color: var(--green-700);
+      min-width: 60px;
+    }
+    .lead-details-card .ldc-val {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--navy);
+      flex: 1;
+    }
+    .btn-call {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px;
+      background: #25D366;
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      font-family: 'Heebo', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      margin-bottom: 10px;
+      transition: opacity 0.15s;
+    }
+    .btn-call:hover { opacity: 0.88; }
+    .btn-join {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px;
+      background: var(--navy);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      font-family: 'Heebo', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .btn-join:hover { background: var(--navy-600); }
+
+    /* Error */
+    .error-icon { font-size: 44px; text-align: center; margin-bottom: 10px; }
+    .error-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--red);
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .error-msg {
+      font-size: 13px;
+      color: var(--gray-500);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    .page-footer {
+      margin-top: 24px;
+      font-size: 11.5px;
+      color: var(--gray-400);
+      text-align: center;
+      line-height: 1.6;
+    }
+    .page-footer a { color: var(--blue); text-decoration: none; }
+  </style>
+</head>
+<body>
+<div class="page-wrap">
+  <div class="card">
+    <div class="sign-header">
+      <div class="sign-logo">Liders<span>.</span></div>
+      <div class="sign-sub">חתימת הסכם עמלת הפניה</div>
+    </div>
+
+    <div class="card-body">
+
+      <!-- ── Loading ── -->
+      <div id="state-loading">
+        <div class="spinner"></div>
+      </div>
+
+      <!-- ── Ready: agreement + signature form ── -->
+      <div id="state-ready">
+        <div class="preview-banner">
+          <div class="pb-from">הפניה מאת</div>
+          <div class="pb-name" id="rdy-referrer"></div>
+          <div style="font-size:13px;color:var(--gray-600);margin-bottom:8px;">
+            מעביר/ת אליך ליד: <strong id="rdy-lead-name"></strong>
+          </div>
+          <div class="pb-commission">
+            💰 עמלת הפניה: <span id="rdy-commission"></span>
+          </div>
+        </div>
+
+        <p style="font-size:13px;color:var(--gray-600);margin-bottom:10px;line-height:1.6;">
+          לפני שפרטי הלקוח ייחשפו, נדרשת חתימתך על הסכם עמלה קצר:
+        </p>
+
+        <div class="agreement-box" id="rdy-agreement-text"></div>
+
+        <div class="form-section">
+          <label class="form-label" for="sig-name">שם מלא לחתימה</label>
+          <input type="text" id="sig-name" class="form-input" placeholder="ישראל ישראלי" autocomplete="name">
+        </div>
+
+        <div class="form-section">
+          <label class="form-label" for="sig-phone">
+            טלפון <span class="opt">(לא חובה — לנוחות המפנה)</span>
+          </label>
+          <input type="tel" id="sig-phone" class="form-input" placeholder="050-0000000"
+                 style="direction:ltr;text-align:right;" autocomplete="tel">
+        </div>
+
+        <div class="form-section">
+          <label class="form-label">חתימה ידנית</label>
+          <div class="sig-canvas-wrap">
+            <canvas id="sig-canvas" width="480" height="140"></canvas>
+          </div>
+          <button type="button" class="sig-clear-btn" onclick="SignPad.clear()">🗑️ נקה חתימה</button>
+        </div>
+
+        <div class="legal-note">
+          החתימה הדיגיטלית, בצירוף שמך, כתובת ה-IP ומועד החתימה, נשמרים כראיה משפטית מחייבת.
+          Liders CRM היא פלטפורמה טכנולוגית בלבד ואינה צד להסכם.
+        </div>
+
+        <button class="btn-sign" id="btn-sign" onclick="Page.sign()">✅ חתימה וקבלת פרטי הלקוח</button>
+      </div>
+
+      <!-- ── Success ── -->
+      <div id="state-success">
+        <div class="success-icon">🎉</div>
+        <div class="success-title">ההסכם נחתם!</div>
+        <div class="success-sub">
+          עמלת ההפניה מוסכמת.<br>
+          הנה פרטי הלקוח:
+        </div>
+        <div class="lead-details-card">
+          <div class="ldc-label">פרטי הלקוח המועבר</div>
+          <div class="ldc-row">
+            <div class="ldc-key">שם</div>
+            <div class="ldc-val" id="suc-name"></div>
+          </div>
+          <div class="ldc-row" id="suc-phone-row">
+            <div class="ldc-key">טלפון</div>
+            <div class="ldc-val" id="suc-phone"></div>
+          </div>
+          <div class="ldc-row" id="suc-area-row">
+            <div class="ldc-key">אזור</div>
+            <div class="ldc-val" id="suc-area"></div>
+          </div>
+          <div class="ldc-row">
+            <div class="ldc-key">עמלה</div>
+            <div class="ldc-val" id="suc-commission"></div>
+          </div>
+        </div>
+
+        <a id="suc-wa-btn" class="btn-call" href="#" target="_blank" rel="noopener">
+          💬 שלח הודעת וואטסאפ ללקוח
+        </a>
+
+        <div style="text-align:center;font-size:12.5px;color:var(--gray-400);margin:10px 0 12px;">
+          ─── מנהל/ת הפניות? ───
+        </div>
+
+        <a class="btn-join" href="https://liders-crm.com/" target="_blank" rel="noopener">
+          🚀 נהל את ההפניות שלך ב-Liders CRM — 30 יום חינם
+        </a>
+      </div>
+
+      <!-- ── Error ── -->
+      <div id="state-error">
+        <div class="error-icon">⚠️</div>
+        <div class="error-title" id="err-title">שגיאה</div>
+        <div class="error-msg" id="err-msg"></div>
+        <div style="text-align:center;margin-top:20px;">
+          <a href="https://liders-crm.com/" style="color:var(--blue);font-size:13px;">
+            לאתר Liders CRM
+          </a>
+        </div>
+      </div>
+
+    </div><!-- /card-body -->
+  </div><!-- /card -->
+
+  <div class="page-footer">
+    הסכם זה מופעל דרך <a href="https://liders-crm.com/">Liders CRM</a><br>
+    פלטפורמה לניהול לידים ועמלות הפניה לאנשי מקצוע
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const SUPABASE_URL = 'https://scyfywvzoogfrlalgftv.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjeWZ5d3Z6b29nZnJsYWxnZnR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MDA3MzAsImV4cCI6MjA5NjA3NjczMH0._D8ho0Yj8fEk7nd6-vmkjKkKyjfvHDmSq9Y8h5XzQCM';
+const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── Signature Pad ──────────────────────────────────────────────────────────
+const SignPad = {
+  _canvas: null, _ctx: null, _drawing: false, _empty: true,
+  _lastX: 0, _lastY: 0,
+
+  init() {
+    this._canvas = document.getElementById('sig-canvas');
+    this._ctx    = this._canvas.getContext('2d');
+    this._resize();
+    this._ctx.strokeStyle = '#0F1F3D';
+    this._ctx.lineWidth   = 2;
+    this._ctx.lineCap     = 'round';
+    this._ctx.lineJoin    = 'round';
+
+    const on = (el, ev, fn) => el.addEventListener(ev, fn, { passive: false });
+    on(this._canvas, 'mousedown',  e => this._start(e));
+    on(this._canvas, 'mousemove',  e => this._move(e));
+    on(this._canvas, 'mouseup',    () => this._end());
+    on(this._canvas, 'mouseleave', () => this._end());
+    on(this._canvas, 'touchstart', e => { e.preventDefault(); this._start(e.touches[0]); });
+    on(this._canvas, 'touchmove',  e => { e.preventDefault(); this._move(e.touches[0]); });
+    on(this._canvas, 'touchend',   () => this._end());
+    window.addEventListener('resize', () => this._resize());
+  },
+
+  _resize() {
+    const rect = this._canvas.getBoundingClientRect();
+    const dpr  = window.devicePixelRatio || 1;
+    this._canvas.width  = rect.width  * dpr;
+    this._canvas.height = rect.height * dpr;
+    this._ctx.scale(dpr, dpr);
+    this._ctx.strokeStyle = '#0F1F3D';
+    this._ctx.lineWidth   = 2;
+    this._ctx.lineCap     = 'round';
+    this._ctx.lineJoin    = 'round';
+    this._empty = true;
+  },
+
+  _pos(e) {
+    const rect = this._canvas.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  },
+
+  _start(e) {
+    const p = this._pos(e);
+    this._drawing = true; this._empty = false;
+    this._ctx.beginPath();
+    this._ctx.moveTo(p.x, p.y);
+    this._lastX = p.x; this._lastY = p.y;
+  },
+
+  _move(e) {
+    if (!this._drawing) return;
+    const p = this._pos(e);
+    this._ctx.lineTo(p.x, p.y);
+    this._ctx.stroke();
+    this._lastX = p.x; this._lastY = p.y;
+  },
+
+  _end() { this._drawing = false; },
+
+  clear() {
+    const dpr  = window.devicePixelRatio || 1;
+    const rect = this._canvas.getBoundingClientRect();
+    this._ctx.clearRect(0, 0, rect.width * dpr, rect.height * dpr);
+    this._empty = true;
+  },
+
+  isEmpty() { return this._empty; },
+  toDataURL() { return this._canvas.toDataURL('image/png'); }
+};
+
+// ── Page controller ───────────────────────────────────────────────────────
+const Page = {
+  _token: null,
+
+  show(id) {
+    ['state-loading','state-ready','state-success','state-error'].forEach(s => {
+      document.getElementById(s).classList.toggle('active', s === id);
+    });
+  },
+
+  showError(title, msg) {
+    document.getElementById('err-title').textContent = title;
+    document.getElementById('err-msg').textContent   = msg;
+    this.show('state-error');
+  },
+
+  async init() {
+    this.show('state-loading');
+    const params = new URLSearchParams(location.search);
+    this._token  = params.get('lref') || '';
+
+    if (!this._token || !/^[a-f0-9]{32}$/.test(this._token)) {
+      this.showError('קישור לא תקין', 'הקישור שנשלח אליך אינו תקין. בקש מהמפנה לשלוח מחדש.');
+      return;
+    }
+
+    try {
+      const { data, error } = await sbClient.rpc('get_referral_agreement_anon', { p_token: this._token });
+      if (error) throw error;
+
+      document.getElementById('rdy-referrer').textContent     = data.referrer_name || 'לקוח Liders';
+      document.getElementById('rdy-lead-name').textContent    = data.lead_first_name || 'לקוח';
+      document.getElementById('rdy-commission').textContent   = data.commission_label || '';
+      document.getElementById('rdy-agreement-text').textContent = data.agreement_text || '';
+
+      this.show('state-ready');
+      SignPad.init();
+    } catch (e) {
+      const m = e.message || '';
+      if (m.includes('referral_expired')) {
+        this.showError('הקישור פג תוקף', 'קישורי ההפניה תקפים ל-14 יום. בקש מהמפנה לשלוח קישור חדש.');
+      } else if (m.includes('referral_used')) {
+        this.showError('ההפניה כבר טופלה', 'הסכם זה כבר נחתם או נדחה בעבר.');
+      } else if (m.includes('no_agreement_needed')) {
+        this.showError('אין הסכם להצגה', 'הפניה זו אינה כוללת עמלה ואינה דורשת חתימה.');
+      } else {
+        this.showError('שגיאה בטעינת ההסכם', 'אירעה שגיאה טכנית. נסה לרענן את הדף. אם הבעיה נמשכת — בקש מהמפנה לשלוח קישור חדש.');
+      }
+    }
+  },
+
+  async sign() {
+    const name  = document.getElementById('sig-name').value.trim();
+    const phone = document.getElementById('sig-phone').value.trim();
+    if (!name)          { this._flash('יש להזין שם מלא לחתימה'); return; }
+    if (SignPad.isEmpty()) { this._flash('נא לחתום בתיבת החתימה'); return; }
+
+    const btn = document.getElementById('btn-sign');
+    btn.disabled = true; btn.textContent = 'חותם...';
+
+    try {
+      const { data, error } = await sbClient.rpc('sign_referral_agreement_anon', {
+        p_token:           this._token,
+        p_signer_name:     name,
+        p_signer_phone:    phone || null,
+        p_signature_image: SignPad.toDataURL()
+      });
+      if (error) throw error;
+
+      // Populate success state
+      document.getElementById('suc-name').textContent       = data.lead_name  || '—';
+      document.getElementById('suc-phone').textContent      = data.lead_phone || '—';
+      document.getElementById('suc-commission').textContent = data.commission_label || '—';
+
+      if (data.lead_area) {
+        document.getElementById('suc-area').textContent = data.lead_area;
+      } else {
+        document.getElementById('suc-area-row').style.display = 'none';
+      }
+      if (!data.lead_phone) {
+        document.getElementById('suc-phone-row').style.display = 'none';
+      }
+
+      // WhatsApp link
+      const digits = (data.lead_phone || '').replace(/\D/g,'');
+      const waBase = digits ? `https://wa.me/972${digits.replace(/^0/,'')}` : 'https://wa.me/';
+      const waMsg  = `היי ${(data.lead_name||'').split(' ')[0]} 👋\nאני ${name}, קיבלתי את פרטיך בהפניה מ-${data.referrer_name || 'קולגה'}.\nאשמח להתחבר ולסייע!`;
+      document.getElementById('suc-wa-btn').href = `${waBase}?text=${encodeURIComponent(waMsg)}`;
+      if (!digits) document.getElementById('suc-wa-btn').style.display = 'none';
+
+      this.show('state-success');
+    } catch (e) {
+      const m = e.message || '';
+      if (m.includes('referral_used') || m.includes('agreement_not_pending')) {
+        this.showError('ההפניה כבר טופלה', 'הסכם זה כבר נחתם קודם לכן.');
+      } else if (m.includes('referral_expired')) {
+        this.showError('הקישור פג תוקף', 'בקש מהמפנה לשלוח קישור חדש.');
+      } else {
+        btn.disabled = false; btn.textContent = '✅ חתימה וקבלת פרטי הלקוח';
+        this._flash('שגיאה: ' + m);
+      }
+    }
+  },
+
+  _flash(msg) {
+    const el = document.getElementById('flash-msg');
+    if (!el) {
+      const div = document.createElement('div');
+      div.id = 'flash-msg';
+      div.style.cssText = 'background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;font-size:13px;color:#dc2626;margin-bottom:14px;text-align:center;';
+      document.getElementById('btn-sign').insertAdjacentElement('beforebegin', div);
+      div.textContent = msg;
+      setTimeout(() => div.remove(), 4000);
+    } else {
+      el.textContent = msg;
+      setTimeout(() => el.remove(), 4000);
+    }
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => Page.init());
+</script>
+</body>
+</html>
