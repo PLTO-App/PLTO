@@ -2111,6 +2111,43 @@
       .tri-n3   { transform: translateX(-50%) scale(1) !important; }
       .tri-edge { stroke-dashoffset: 0; transition: none; }
       .tri-flows-track { animation: none; }
+      .tri-bubble { animation: none !important; display: none; }
+    }
+
+    /* בועות עמלה צפות בתוך המשולש */
+    .tri-bubbles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+      overflow: hidden;
+    }
+    .tri-bubble {
+      position: absolute;
+      background: var(--white);
+      border: 1.5px solid var(--gold-400);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--navy);
+      white-space: nowrap;
+      box-shadow: 0 3px 14px rgba(196,154,42,0.32);
+      opacity: 0;
+    }
+    .tb-1 { right: 28%; top: 48%; animation: tribubble 9s ease-out 3.5s infinite; }
+    .tb-2 { right: 46%; top: 56%; animation: tribubble 9s ease-out 7s   infinite; }
+    .tb-3 { right: 36%; top: 40%; animation: tribubble 9s ease-out 10.5s infinite; }
+    .tb-4 { right: 24%; top: 60%; animation: tribubble 9s ease-out 14s   infinite; }
+    @keyframes tribubble {
+      0%   { opacity: 0; transform: translateY(0)    scale(0.75); }
+      10%  { opacity: 1; transform: translateY(-10px) scale(1);   }
+      68%  { opacity: 1; transform: translateY(-42px) scale(1);   }
+      92%  { opacity: 0; transform: translateY(-60px) scale(0.95);}
+      100% { opacity: 0; transform: translateY(-60px);            }
+    }
+    @media (max-width: 600px) {
+      .tri-bubble { font-size: 10.5px; padding: 4px 9px; }
     }
     /* ═══ end TRI-STAGE ═══ */
 
@@ -2835,22 +2872,25 @@
         <path id="triE2" class="tri-edge" d="M 130,55 L 300,308" stroke-dasharray="415" stroke-dashoffset="415"/>
         <path id="triE3" class="tri-edge" d="M 300,308 L 470,55" stroke-dasharray="415" stroke-dashoffset="415"/>
         <g opacity="0">
-          <animateMotion dur="2.8s" repeatCount="indefinite" begin="2.2s"><mpath href="#triE1"/></animateMotion>
+          <animateMotion dur="2.8s" repeatCount="indefinite" begin="2.2s" rotate="none"><mpath href="#triE1"/></animateMotion>
           <animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="2.2s" fill="freeze"/>
-          <circle r="12" fill="#C49A2A"/>
-          <text font-size="13" text-anchor="middle" dominant-baseline="central" fill="#fff" font-weight="900" font-family="Rubik,Heebo,sans-serif">₪</text>
+          <circle r="20" fill="rgba(255,255,255,0.92)"/>
+          <circle r="16" fill="#F59E0B"/>
+          <text font-size="15" text-anchor="middle" dy="0.38em" fill="#fff" font-weight="900" font-family="Arial,sans-serif">₪</text>
         </g>
         <g opacity="0">
-          <animateMotion dur="3.5s" repeatCount="indefinite" begin="3.8s"><mpath href="#triE2"/></animateMotion>
+          <animateMotion dur="3.5s" repeatCount="indefinite" begin="3.8s" rotate="none"><mpath href="#triE2"/></animateMotion>
           <animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="3.8s" fill="freeze"/>
-          <circle r="12" fill="#D4A843"/>
-          <text font-size="13" text-anchor="middle" dominant-baseline="central" fill="#fff" font-weight="900" font-family="Rubik,Heebo,sans-serif">₪</text>
+          <circle r="20" fill="rgba(255,255,255,0.92)"/>
+          <circle r="16" fill="#D97706"/>
+          <text font-size="15" text-anchor="middle" dy="0.38em" fill="#fff" font-weight="900" font-family="Arial,sans-serif">₪</text>
         </g>
         <g opacity="0">
-          <animateMotion dur="3.2s" repeatCount="indefinite" begin="5.4s"><mpath href="#triE3"/></animateMotion>
+          <animateMotion dur="3.2s" repeatCount="indefinite" begin="5.4s" rotate="none"><mpath href="#triE3"/></animateMotion>
           <animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="5.4s" fill="freeze"/>
-          <circle r="12" fill="#A07820"/>
-          <text font-size="13" text-anchor="middle" dominant-baseline="central" fill="#fff" font-weight="900" font-family="Rubik,Heebo,sans-serif">₪</text>
+          <circle r="20" fill="rgba(255,255,255,0.92)"/>
+          <circle r="16" fill="#C49A2A"/>
+          <text font-size="15" text-anchor="middle" dy="0.38em" fill="#fff" font-weight="900" font-family="Arial,sans-serif">₪</text>
         </g>
       </svg>
       <div class="tri-node tri-n1">
@@ -2867,6 +2907,14 @@
         <div class="tn-icon">🎨</div>
         <div class="tn-role">עיצוב פנים</div>
         <div class="tn-hint">הופך את הבית לחלום</div>
+      </div>
+
+      <!-- בועות עמלה צפות בתוך המשולש -->
+      <div class="tri-bubbles" aria-hidden="true">
+        <div class="tri-bubble tb-1">💰 קיבלת 10% עמלה על הפניה</div>
+        <div class="tri-bubble tb-2">🎉 הרווחת ₪2,500 על הסגירה</div>
+        <div class="tri-bubble tb-3">✓ ליד הועבר בהצלחה</div>
+        <div class="tri-bubble tb-4">💸 5% עמלה על הפניה</div>
       </div>
     </div>
 
