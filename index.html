@@ -4197,6 +4197,18 @@
       🎁 הגעת עם קוד המלצה של חבר!<br>
       <span style="font-weight:400;opacity:.9;">+100 XP בונוס ברוכים הבאים + 20% הנחה על החודש הראשון</span>
     </div>
+    <!-- Agency invite banner — shown when arriving via ?ainvite= link -->
+    <div id="agency-invite-banner" style="display:none;background:linear-gradient(135deg,var(--navy-800,#0F1F3D),#1e3a6e);color:#fff;border-radius:14px;padding:16px 18px;margin-bottom:16px;text-align:center;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-18px;right:-18px;font-size:64px;opacity:.07;line-height:1;">🏢</div>
+      <div style="font-size:13px;font-weight:800;margin-bottom:4px;line-height:1.4;" id="agency-invite-agency-name"></div>
+      <div style="font-size:12px;opacity:.8;margin-bottom:10px;">מציעה Liders CRM כחלק מההצטרפות לצוות</div>
+      <div style="display:flex;justify-content:center;gap:14px;font-size:11px;margin-bottom:8px;flex-wrap:wrap;">
+        <span style="background:rgba(255,255,255,.12);border-radius:20px;padding:3px 10px;">✅ פייפליין מוכן</span>
+        <span style="background:rgba(255,255,255,.12);border-radius:20px;padding:3px 10px;">✅ AI מובנה</span>
+        <span style="background:rgba(255,255,255,.12);border-radius:20px;padding:3px 10px;">🎁 30 יום חינם</span>
+      </div>
+      <div style="font-size:11px;opacity:.6;">יש להירשם למטה כדי להצטרף לסוכנות</div>
+    </div>
     <div style="text-align:center;margin-bottom:18px;">
       <div style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#d1fae5,#a7f3d0);color:#065f46;font-size:12px;font-weight:800;padding:6px 14px;border-radius:99px;">
         🎁 30 יום ניסיון בחינם, ללא כרטיס אשראי
@@ -6073,6 +6085,18 @@
           <option value="viewer">צופה</option>
         </select>
         <button class="btn btn-primary btn-sm" style="width:100%;" onclick="Team.invite()">📨 שלח הזמנה</button>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+          <div style="font-size:11.5px;color:var(--gray-500);margin-bottom:7px;text-align:center;">— או שתף קישור גיוס ישירות —</div>
+          <button class="btn btn-ghost btn-sm" style="width:100%;font-size:12px;" onclick="Team.generateInviteLink()">🔗 צור קישור גיוס לסוכן חדש</button>
+          <div id="team-invite-link-result" style="display:none;margin-top:10px;background:var(--gray-50);border-radius:10px;padding:10px 12px;">
+            <div style="font-size:11px;color:var(--gray-500);margin-bottom:6px;">קישור גיוס (תוקף 30 יום, שימוש חד-פעמי):</div>
+            <div id="team-invite-link-url" style="font-size:11px;color:var(--blue-600);word-break:break-all;margin-bottom:8px;direction:ltr;text-align:left;background:#fff;border-radius:6px;padding:6px 8px;border:1px solid var(--border);"></div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-ghost btn-sm" style="flex:1;font-size:11px;" onclick="Team.copyInviteLink()">📋 העתק</button>
+              <button class="btn btn-ghost btn-sm" style="flex:1;font-size:11px;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;" onclick="Team.shareInviteLinkWA()">💬 שלח WhatsApp</button>
+            </div>
+          </div>
+        </div>
       </div>
       <div style="margin-top:16px;">
         <div class="form-label" style="margin-bottom:8px;">הזמנות ממתינות</div>
@@ -7494,14 +7518,20 @@ const DB = {
   // that starts NOW, not whenever the shared demo tenant happened to start.
   // Returning users (existing agent_users row) are untouched - idempotent.
   async ensureAgent(email, name, agencyName) {
+    const ainviteToken = AgentInvite.getToken();
     const { data, error } = await sbClient.rpc('ensure_agent_and_tenant',
-      { p_agency_name: agencyName || null, p_name: name || email.split('@')[0] });
+      { p_agency_name: agencyName || null, p_name: name || email.split('@')[0], p_ainvite_token: ainviteToken || null });
     if (error) throw error;
     if (data) {
       this.agentId  = data.agent_id;
       this.tenantId = data.tenant_id;
+      if (data.joined_via_token) AgentInvite.clear();
     }
-    return { isNew: !!data?.is_new };
+    return {
+      isNew:            !!data?.is_new,
+      joinedViaToken:   !!data?.joined_via_token,
+      joinedTenantName: data?.tenant_name || null,
+    };
   },
 
   // Persists the agency profile the onboarding wizard collects. Deliberately
@@ -13231,7 +13261,7 @@ const App = {
       // show loading overlay while fetching data
       LoadingOverlay.show('טוען נתונים...');
       const user = data.user;
-      const { isNew } = await DB.ensureAgent(user.email, user.email.split('@')[0]);
+      const { isNew, joinedViaToken, joinedTenantName } = await DB.ensureAgent(user.email, user.email.split('@')[0]);
       if (isNew) FunnelTracker.track('signup_completed', { method: 'email' });
       AuditLog.log('auth.login');
       const loaded = await DB.loadAll();
@@ -13254,7 +13284,9 @@ const App = {
       // Seed localStorage from DB so Make.getWebhook() works offline too
       if (t?.make_webhook_url) localStorage.setItem('make_webhook_url', t.make_webhook_url);
       if (t?.whatsapp_number)  localStorage.setItem('whatsapp_number',  t.whatsapp_number);
-      State.isNewTenant = isNew;
+      State.isNewTenant    = isNew;
+      State.joinedViaToken = joinedViaToken;
+      State.joinedTenantName = joinedTenantName;
       this._showApp();
       await LoadingOverlay.hide();
     } catch(e) {
@@ -13318,6 +13350,11 @@ const App = {
     this.updateBadges();
     // Start 14-day marketing trial for new users (localStorage-based)
     if (!State.isDemo) Marketing.initTrial();
+    // Welcome toast for agents joining via recruitment link
+    if (!State.isDemo && State.joinedViaToken && State.joinedTenantName) {
+      setTimeout(() => toast(`🎉 ברוכים הבאים! הצטרפת לסוכנות ${State.joinedTenantName}`, 'success', 6000), 900);
+      setTimeout(() => toast('המערכת כבר מוגדרת עבורך — אפשר להתחיל לעבוד 🚀', 'info', 5000), 3500);
+    }
     // Show onboarding wizard for new users (not in demo)
     if (!State.isDemo) setTimeout(() => Onboarding.show(), 800);
     // Show billing reminder for days 7-1 (not in demo)
@@ -17099,7 +17136,7 @@ sbClient.auth.onAuthStateChange((event, session) => {
       setTimeout(async () => {
         LoadingOverlay.show('מתחבר...');
         try {
-          const { isNew } = await DB.ensureAgent(session.user.email, session.user.user_metadata?.full_name || session.user.email.split('@')[0]);
+          const { isNew, joinedViaToken, joinedTenantName } = await DB.ensureAgent(session.user.email, session.user.user_metadata?.full_name || session.user.email.split('@')[0]);
           if (isNew) FunnelTracker.track('signup_completed', { method: 'google' });
           AuditLog.log('auth.login');
           const loaded = await DB.loadAll();
@@ -17119,7 +17156,9 @@ sbClient.auth.onAuthStateChange((event, session) => {
             : { name: 'הסוכנות שלי', plan: 'trial', marketing_addon: false };
           if (t?.make_webhook_url) localStorage.setItem('make_webhook_url', t.make_webhook_url);
           if (t?.whatsapp_number)  localStorage.setItem('whatsapp_number',  t.whatsapp_number);
-          State.isNewTenant = isNew;
+          State.isNewTenant    = isNew;
+          State.joinedViaToken = joinedViaToken;
+          State.joinedTenantName = joinedTenantName;
           App._showApp();
           document.getElementById('support-fab-btn')?.classList.remove('hidden');
           setTimeout(() => { Gamify.init(); Referral.claimWelcomeBonus(); }, 800);
@@ -17236,6 +17275,8 @@ window.DemoLock   = DemoLock;
 Referral.checkInboundRef();
 // Check for inbound lead-referral token (?lref=) — לולאת הפניות
 LeadReferral.checkInbound();
+// Check for inbound agency recruitment link (?ainvite=) — קישור גיוס
+AgentInvite.checkInbound();
 // עמוד ציבורי לאישור לקוח (?consent=) — ללא התחברות
 ClientConsent.check();
 // Hide referral "new" badge if user already visited
@@ -18862,6 +18903,47 @@ window.IdeaBox = IdeaBox;
 /* ═══════════════════════════════════════════
    TEAM, invite teammates + seat usage
 ═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════════
+   AGENT INVITE LINK MODULE
+   Handles ?ainvite=<32hex> recruitment links.
+   Agency owner generates a link → new agent
+   clicks it → sees welcome banner → signs up
+   → joins the agency tenant automatically.
+═══════════════════════════════════════════ */
+const AgentInvite = {
+  _KEY: 'liders_ainvite',
+  _previewData: null,
+
+  checkInbound() {
+    const params = new URLSearchParams(location.search);
+    const token = params.get('ainvite');
+    if (!token || token.length !== 32 || !/^[0-9a-f]+$/.test(token)) return;
+    sessionStorage.setItem(this._KEY, token);
+    this._fetchAndShowBanner(token);
+    // Clean the token from URL to avoid re-triggering on reload
+    params.delete('ainvite');
+    const newSearch = params.toString();
+    history.replaceState(null, '', location.pathname + (newSearch ? '?' + newSearch : ''));
+  },
+
+  async _fetchAndShowBanner(token) {
+    try {
+      const { data } = await sbClient.rpc('get_invite_preview', { p_token: token });
+      if (!data?.valid) { sessionStorage.removeItem(this._KEY); return; }
+      this._previewData = data;
+      const banner = document.getElementById('agency-invite-banner');
+      const nameEl = document.getElementById('agency-invite-agency-name');
+      if (banner) banner.style.display = '';
+      if (nameEl) nameEl.textContent = data.agency_name + ' מזמינה אותך להצטרף לצוות';
+    } catch(_e) { /* non-fatal */ }
+  },
+
+  getToken()    { return sessionStorage.getItem(this._KEY) || null; },
+  getPreview()  { return this._previewData; },
+  clear()       { sessionStorage.removeItem(this._KEY); this._previewData = null; },
+};
+window.AgentInvite = AgentInvite;
+
 const Team = {
   _data: null,
   _ROLE_LABELS: { owner: 'מנהל', admin: 'אדמין', agent: 'סוכן', viewer: 'צופה' },
@@ -18987,6 +19069,47 @@ const Team = {
     } catch(e) {
       toast('שגיאה: ' + (e.message || ''), 'error');
     }
+  },
+
+  _currentInviteLink: null,
+
+  async generateInviteLink() {
+    const resultDiv = document.getElementById('team-invite-link-result');
+    const urlDiv    = document.getElementById('team-invite-link-url');
+    const btn = document.querySelector('#team-invite-form .btn-ghost[onclick*="generateInviteLink"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'יוצר קישור...'; }
+    try {
+      const { data, error } = await sbClient.rpc('create_invite_link', { p_role: 'agent' });
+      if (error) throw error;
+      const url = `${location.origin}/?ainvite=${data.token}`;
+      this._currentInviteLink = url;
+      if (urlDiv) urlDiv.textContent = url;
+      if (resultDiv) resultDiv.style.display = '';
+      toast('✅ קישור גיוס נוצר בהצלחה', 'success');
+    } catch(e) {
+      const msg = e.message || '';
+      if (msg.includes('seat_limit_reached')) {
+        toast('הגעת למקסימום המושבים בחבילה הנוכחית', 'warning', 5000);
+      } else {
+        toast('שגיאה: ' + msg, 'error');
+      }
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '🔗 צור קישור גיוס לסוכן חדש'; }
+    }
+  },
+
+  copyInviteLink() {
+    if (!this._currentInviteLink) return;
+    navigator.clipboard?.writeText(this._currentInviteLink)
+      .then(() => toast('📋 הקישור הועתק', 'success'))
+      .catch(() => toast('לא ניתן להעתיק — בחר ידנית', 'warning'));
+  },
+
+  shareInviteLinkWA() {
+    if (!this._currentInviteLink) return;
+    const agencyName = State.tenant?.name || 'הסוכנות שלנו';
+    const msg = `היי 👋\n${agencyName} מציעה לך להצטרף עם Liders CRM — מערכת ניהול הלידים שלנו.\nמהרשמה ועד לסגירת עסקה, הכל כבר מוגדר עבורך.\n\nלהצטרפות (חינם 30 יום):\n${this._currentInviteLink}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   },
 };
 window.Team = Team;
