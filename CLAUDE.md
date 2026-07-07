@@ -937,6 +937,40 @@ Liders מתחרה ב-Pipedrive ו-monday.com בתחום ה-SMB. הם גובים 
 
 ---
 
+## מה בוצע — סשן 7/7/2026 (ג') — שדרוג עמוד הכניסה לרמת SaaS פרמיום
+
+> ענף: `claude/login-page-design-b9qm78` (מוזג ל-main)
+
+### ✅ שינויים ב-`index.html` (203 שורות הוספה, 46 מחיקה)
+
+**A — השפעה גבוהה:**
+1. **Badge חדש** — `"⚡ נבנה עבור שוק הנדל"ן הישראלי"` (ניטרלי-תחומי, כולל 3 תחומים מבלי לדיר)
+2. **Tagline חדש** — `"לידים שמגיעים. עסקאות שנסגרות."` (קצר, ריתמי, ללא קלישאות)
+3. **Logo** — הקטנה: 66px → 58px, letter-spacing -5px → -3.5px
+4. **Hero padding** — 44px → 28px (תיקון mobile — הכרטיס לא נדחק מתחת ל-fold)
+5. **login-scene** — גובה 130px → 112px; כיתוב `"עסקה נסגרה ✓"` מופיע ב-73% מהאנימציה
+6. **Login Card Glass** — `backdrop-filter: blur(24px) saturate(160%)`, border שקוף, box-shadow 3 שכבות קל יותר, padding 24→28px
+7. **Trial badge** — class `login-trial-badge` + `@keyframes trial-shine` (sweep אור כל 4 שניות), font-size 12→13px, padding גדול יותר
+8. **Google button** — הוחלף `g-bounce` → `@keyframes g-glow-pulse` (3s ambient glow כחול); ripple effect ב-JS על mousedown/touchstart
+
+**B — השפעה בינונית:**
+9. **כרטיסי רקע** — 4 כרטיסים, כל אחד מייצג תחום שונה: 🏠 נדל"ן, ⚖️ עו"ד, 🎨 עיצוב פנים, 📅 תזכורת. הוסרו חצים (כלל CLAUDE.md).
+10. **Pills** — הוחלפו 4 feature-pills → 3 vertical-pills: `🏠 סוכני נדל"ן` / `🎨 מעצבי פנים` / `⚖️ עורכי דין`. hover + `pill-float` animation.
+11. **Stars social proof** — `<div class="login-stars-section">` עם 12 `✦` עולים ב-CSS בלבד + `"נבנה במיוחד עבור אנשי מקצוע בישראל"` + שמות 3 התחומים. (**אין** דירוג כוכבים / מספרי משתמשים מזויפים)
+12. **Input focus state** — `border-color: var(--blue-400)` + `box-shadow: 0 0 0 3px rgba(37,99,235,.16)` ב-`#screen-login .form-input:focus`
+13. **Demo button** — ניקוי: הוסרו 2 פסקאות noise; נשאר רק "👀 צפייה בדמו קצרה קודם" + שורה "הדמו מציג חלק מהיכולות בלבד."
+
+**C — פוליש:**
+14. **Orbs** — opacity גבוה יותר (.18/.11/.13), `filter: blur(40px)`, timing: `cubic-bezier(0.4, 0, 0.6, 1)`
+15. **CTA primary** — gradient + hover lift + glow כחול (סקופ `#screen-login` בלבד)
+16. **Reduced motion** — כל האנימציות החדשות מכוסות ב-`@media (prefers-reduced-motion: reduce)`
+
+### 📋 לסשנים הבאים
+- `liders-ui-reviewer` על עמוד הכניסה — טרם הופעל (ידרוש אישור מפורש)
+- כפתור "פרטים →" ב-Billing modal — מפר כלל חץ, אך מחוץ לסקופ הסשן הנוכחי
+
+---
+
 ## כללי עבודה
 
 1. **עברית RTL** — כל טקסט UI בעברית
