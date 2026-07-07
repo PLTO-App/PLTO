@@ -1656,6 +1656,31 @@
     }
     @media (max-width: 480px) { .cta-crane { display: none; } .cta-drop-target { animation: none; } .cta-stage::after { display: none; } }
 
+    /* ══ Hero CTA — בורדו ══ */
+    .hero .btn-primary {
+      background: linear-gradient(135deg, #C41E3A 0%, #8B1A2B 100%);
+      box-shadow: 0 8px 32px rgba(196,30,58,0.48);
+    }
+    .hero .btn-primary:hover {
+      box-shadow: 0 12px 40px rgba(196,30,58,0.68);
+    }
+    .hero .cta-drop-target {
+      animation: ctaImpact 7s ease-in-out infinite, heroCraneGlow 2.6s ease-in-out infinite;
+    }
+    .hero .cta-drop-target:hover { animation-play-state: paused; }
+    .hero .btn-primary.pulse-cta::after {
+      animation: heroBurgundyPulse 2.4s ease-out infinite !important;
+    }
+    @keyframes heroBurgundyPulse {
+      0%   { box-shadow: 0 0 0 0 rgba(196,30,58,0.65); }
+      70%  { box-shadow: 0 0 0 22px rgba(196,30,58,0); }
+      100% { box-shadow: 0 0 0 0 rgba(196,30,58,0); }
+    }
+    @keyframes heroCraneGlow {
+      0%, 100% { box-shadow: 0 8px 32px rgba(196,30,58,0.48); }
+      50%       { box-shadow: 0 12px 55px rgba(196,30,58,0.82), 0 0 35px rgba(196,30,58,0.38); }
+    }
+
     /* ══════════════════════════════
        רצועת אתר בנייה: טרקטור, משאית ופועל (מעבר לתמחור)
     ══════════════════════════════ */
@@ -2498,9 +2523,9 @@
     <span class="cta-stage">
       <span class="cta-crane" aria-hidden="true">
         <span class="crane-cable"></span>
-        <span class="crane-load">30 יום 🎁</span>
+        <span class="crane-load">עסקה</span>
       </span>
-      <a href="https://liders-crm.com" class="btn-primary pulse-cta cta-drop-target has-rocket">מתחילים 30 יום בחינם<span class="rocket-icon" aria-hidden="true">🚀</span></a>
+      <a href="https://liders-crm.com" class="btn-primary pulse-cta cta-drop-target">קח אותי למערכת</a>
     </span>
   </div>
   <p class="hero-micro hero-trust">30 יום ניסיון &bull; ללא אשראי &bull; ללא התחייבות</p>
@@ -2572,7 +2597,7 @@
 <section class="demo-section" id="demo">
   <div class="section-inner">
     <h2 class="section-title fade-up">טעימה קטנה ממה שמחכה לכם בפנים</h2>
-    <p class="section-sub fade-up">דשבורד, פייפליין, לוח שנה ועוד. זו רק ההתחלה, את החוויה המלאה מגלים רק מבפנים.</p>
+    <p class="section-sub fade-up">קצת מתוך ״לב״ המערכת<br>את כל שאר ההפתעות אנחנו חושפים בפנים.</p>
 
     <div class="screen-reel fade-up">
       <div class="reel-window">
