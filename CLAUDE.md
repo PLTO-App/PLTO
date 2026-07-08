@@ -1059,6 +1059,19 @@ Liders מתחרה ב-Pipedrive ו-monday.com בתחום ה-SMB. הם גובים 
 - `liders-leads-daily-digest` → `plto-leads-daily-digest`
 - `liders-cro-weekly-digest` → `plto-cro-weekly-digest`
 
+### ⚠️ CNAME file — שינוי ידני חובה (טרם בוצע!)
+
+> **קובץ `CNAME` בשורש הריפו עדיין מכיל `liders-crm.com`** — זה מכוון ונכון לעכשיו.
+> **אסור לשנות אותו לפני שה-DNS של `plto.app` חי ומאומת** — אחרת האתר יירד לגמרי.
+>
+> **מה לעשות (בסדר הזה בלבד):**
+> 1. ראשית: הוסף CNAME record ב-DNS (Namecheap/Cloudflare): `plto.app` → `liders-crm.github.io`
+> 2. המתן לפחות 5–10 דקות ואמת שהדומיין עולה
+> 3. רק אז: ערוך את קובץ `CNAME` → שנה את התוכן מ-`liders-crm.com` ל-`plto.app` → commit + push
+>
+> **⛔ הסיכון:** שינוי CNAME file לפני שה-DNS מוגדר גורם ל-GitHub Pages לנתק את הדומיין הישן
+> (liders-crm.com יפסיק לעבוד) מבלי שהחדש (plto.app) כלל פועל — downtime מיותר.
+
 ### 🔴 נותר לביצוע ידני (לפני יום ראשון)
 
 | עדיפות | משימה | היכן |
