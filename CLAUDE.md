@@ -1086,33 +1086,24 @@ Liders מתחרה ב-Pipedrive ו-monday.com בתחום ה-SMB. הם גובים 
 > **⛔ הסיכון:** שינוי CNAME file לפני שה-DNS מוגדר גורם ל-GitHub Pages לנתק את הדומיין הישן
 > (liders-crm.com יפסיק לעבוד) מבלי שהחדש (plto.app) כלל פועל — downtime מיותר.
 
-### 🔴 נותר לביצוע ידני (לפני יום ראשון)
+### ✅ סטטוס השקה — עדכון 8/7/2026
 
-| עדיפות | משימה | היכן |
-|--------|-------|------|
-| 🔴 **חייב** | Merge PR `claude/system-name-change-kyc9tn` → main | GitHub |
-| 🔴 **חייב** | הרץ migration 074 בשלמות ב-Supabase SQL Editor | Supabase Dashboard → SQL Editor |
-| 🔴 **חייב** | Deploy שתי Edge Functions: `ai-proxy` + `twilio-whatsapp` | `supabase functions deploy ai-proxy && supabase functions deploy twilio-whatsapp` |
-| 🔴 **חייב** | DNS — הפנה `plto.app` → `liders-crm.github.io` (CNAME record) | Namecheap/Cloudflare |
-| 🔴 **חייב** | CNAME file — שנה מ-`liders-crm.com` ל-`plto.app` (עושים **אחרי** DNS חי) | קובץ `CNAME` בריפו, commit + push |
-| 🟡 **חשוב** | Gmail — הגדר forwarding מ-`liders.crm@gmail.com` → `info@plto.app` | Gmail Settings |
-| 🟡 **חשוב** | Supabase Auth — שנה sender name בתבניות אימייל מ-"Liders CRM" → "PLTO" | Supabase Dashboard → Auth → Email Templates |
-| 🟡 **חשוב** | Make.com — עדכן 2 סצנריות (שמות + נמענים → `info@plto.app`) | eu1.make.com |
-| 🟢 **אחרי** | הרץ migration 075 (rename crons) | Supabase SQL Editor |
-| 🟢 **אחרי** | הסר `liders-crm.com` מ-ALLOWED_ORIGINS בשתי Edge Functions | קוד + deploy |
-| 🟢 **אחרי** | החלף תמונות: `icon-192.png`, `icon-512.png`, `og-image.jpg` | icons/ folder |
-| 🟢 **אחרי** | GitHub repo rename + Supabase project rename | הגדרות |
+| סטטוס | משימה |
+|--------|-------|
+| ✅ **בוצע** | PR #45 מוזג ל-main |
+| ✅ **בוצע** | Migration 074 הוחלה על ה-DB החי |
+| ✅ **בוצע** | `ai-proxy` v26 פרוס |
+| ✅ **בוצע** | `twilio-whatsapp` v13 פרוס |
+| ✅ **בוצע** | Migration 075 הורצה ידנית (rename crons לידי plto-*) |
+| ⏳ **ממתין** | DNS — Cloudflare CNAME `plto.app` → `liders-crm.github.io` (הוגדר, ממתין להתפשטות 1–24 שעות) |
+| ⏳ **אחרי DNS חי** | CNAME file בריפו — שנה מ-`liders-crm.com` ל-`plto.app` (commit + push) |
+| 🟡 **ידני** | Supabase Auth — שנה sender name → "PLTO" (Auth → Email Templates) |
+| 🟡 **ידני** | Make.com — עדכן 2 סצנריות (שמות + נמענים → `info@plto.app`) |
+| 🟢 **אחרי DNS מאומת** | הסר `liders-crm.com` מ-ALLOWED_ORIGINS + deploy מחדש |
+| 🟢 **אחרי** | החלף תמונות: `icon-192.png`, `icon-512.png`, `og-image.jpg` |
+| 🟢 **אחרי** | GitHub repo rename + Supabase project rename |
 
-### 📌 סדר ביצוע מומלץ ליום ראשון
-1. Merge PR → GitHub Pages מתעדכן
-2. Deploy Edge Functions (Supabase CLI)
-3. הרץ migration 074 (SQL Editor)
-4. DNS: CNAME record `plto.app` → `liders-crm.github.io`
-5. **המתן** עד שה-DNS מתפשט (5–30 דקות)
-6. עדכן CNAME file → `plto.app` → commit + push
-7. אמת: https://plto.app עולה ✅
-8. הרץ migration 075 (rename crons)
-9. הסר `liders-crm.com` מ-ALLOWED_ORIGINS → deploy Edge Functions שוב
+> **⚠️ CNAME file** — עדיין מכיל `liders-crm.com`. לשנות **רק** אחרי שה-DNS חי ומאומת.
 
 ---
 
