@@ -336,10 +336,14 @@ constraint שבור על `tenants.industry` (ראה בהמשך).
 ### 📧 מיילים של הבעלים
 | שימוש | כתובת |
 |-------|--------|
-| **עסקי (Make.com / התראות / דוחות)** | `liders.crm@gmail.com` |
-| פרטי (Supabase auth, GitHub) | `elgrablidudu@gmail.com` |
+| **עסקי ראשי (Google Workspace PLTO)** | `info@plto.app` |
+| **Gmail מתווך (forwarding → info@plto.app)** | `liders.crm@gmail.com` |
+| Supabase auth + GitHub (כניסה) | `elgrablidudu@gmail.com` |
 
-> **כל דוח אוטומטי, התראה, Make.com webhook שנשלח למייל — תמיד ל-`liders.crm@gmail.com`**
+> **כל דוח אוטומטי, התראה, Make.com webhook שנשלח למייל — תמיד ל-`info@plto.app`**
+>
+> `liders.crm@gmail.com` מגדיר forwarding ל-`info@plto.app` — אין צורך לשנות את Supabase auth.
+> מיילים עתידיים שיצטרפו: `support@plto.app`, `admin@plto.app` וכו' (כל אחד בעת יצירת האוטומציה)
 
 ---
 

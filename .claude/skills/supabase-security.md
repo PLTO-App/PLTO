@@ -69,7 +69,7 @@ const supabase = createClient(
 async function adminLogin(pin: string) {
   // hash PIN before comparing
   const { data, error } = await supabase.auth.signInWithPassword({
-    email: 'admin@liders.co.il',
+    email: 'info@plto.app',
     password: pin,
   });
   return { data, error };
