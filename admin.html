@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://scyfywvzoogfrlalgftv.supabase.co wss://scyfywvzoogfrlalgftv.supabase.co; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
-  <title>Liders Admin Panel</title>
+  <title>PLTO Admin Panel</title>
   <!-- הגנת clickjacking: GitHub Pages לא תומך ב-headers, ו-frame-ancestors לא נאכף מ-meta -->
   <style id="antiCJ">html{display:none !important}</style>
   <script>if (self === top) { document.getElementById('antiCJ').remove(); } else { top.location = self.location; }</script>
@@ -563,12 +563,12 @@
 <div id="auth-screen">
   <div class="auth-card">
     <div class="auth-logo">
-      <h1>Liders Admin</h1>
+      <h1>PLT<span style="color:#60A5FA">O</span> Admin</h1>
       <p>פאנל ניהול פלטפורמה, גישה מורשית בלבד</p>
     </div>
     <div class="form-group">
       <label class="form-label">אימייל</label>
-      <input type="email" id="auth-email" class="form-input" placeholder="admin@liders.co.il"
+      <input type="email" id="auth-email" class="form-input" placeholder="admin@plto.co.il"
         onkeydown="if(event.key==='Enter') doLogin()">
     </div>
     <div class="form-group">
@@ -595,7 +595,7 @@
   <!-- Topbar -->
   <div class="topbar">
     <div class="topbar-brand">
-      Liders <span>Admin Panel</span>
+      PLT<span style="color:#60A5FA">O</span> <span style="opacity:0.7">Admin Panel</span>
     </div>
     <div class="topbar-right">
       <span id="user-email-display"></span>

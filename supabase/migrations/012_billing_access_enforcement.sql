@@ -1,4 +1,4 @@
--- Liders CRM — Migration 012: Server-side billing access enforcement
+-- PLTO — Migration 012: Server-side billing access enforcement
 --
 -- Problem: the trial/retention paywall (Billing.isExpired() / showPaywall())
 -- is enforced ONLY in the browser. RLS on operational tables checks

@@ -1,4 +1,4 @@
--- Liders CRM — Migration 006: Tasks & Reminders
+-- PLTO — Migration 006: Tasks & Reminders
 
 CREATE TABLE IF NOT EXISTS tasks (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),

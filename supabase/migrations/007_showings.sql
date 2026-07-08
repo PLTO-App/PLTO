@@ -1,4 +1,4 @@
--- Liders CRM — Migration 007: Showings (Property Visits)
+-- PLTO — Migration 007: Showings (Property Visits)
 -- Track when a lead views a property
 
 CREATE TABLE IF NOT EXISTS showings (

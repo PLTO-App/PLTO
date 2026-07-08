@@ -147,7 +147,7 @@ async function checkAutomationHealth() {
 // mcp: mcp__Notion__notion-update-page
 
 async function updateNotionDashboard(stats: PipelineStats) {
-  // mcp__Notion__notion-search({ query: 'Liders CRM Dashboard' })
+  // mcp__Notion__notion-search({ query: 'PLTO Dashboard' })
   // מצא pageId
   // mcp__Notion__notion-update-page({
   //   pageId,
@@ -172,7 +172,7 @@ async function syncLeadsToAirtable() {
   const leads = await getActiveLeads(tenantId);
 
   // 2. עדכן/צור ב-Airtable
-  // mcp__Airtable__search_bases({ query: 'Liders CRM' })
+  // mcp__Airtable__search_bases({ query: 'PLTO' })
   // mcp__Airtable__update_records_for_table(...)
 }
 ```
@@ -182,7 +182,7 @@ async function syncLeadsToAirtable() {
 ## Live Status Report — `/crm-live-data status`
 
 ```
-📊 דוח מערכת — Liders CRM
+📊 דוח מערכת — PLTO
 ═══════════════════════════════
 📅 תאריך: [היום]
 

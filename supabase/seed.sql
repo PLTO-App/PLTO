@@ -1,12 +1,12 @@
 -- ══════════════════════════════════════════════════
---  Liders CRM — Seed Data
+--  PLTO — Seed Data
 --  Last exported: 2026-06-10
 --  Run AFTER 001_schema.sql
 -- ══════════════════════════════════════════════════
 
 -- ── crm_settings ──────────────────────────────────
 INSERT INTO crm_settings (id, company_name, tagline)
-VALUES (1, 'Liders CRM', 'הפלטפורמה שהופכת לידים לעסקאות')
+VALUES (1, 'PLTO', 'הפלטפורמה שהופכת לידים לעסקאות')
 ON CONFLICT (id) DO UPDATE
   SET company_name = EXCLUDED.company_name,
       tagline      = EXCLUDED.tagline;

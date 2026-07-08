@@ -1,8 +1,8 @@
-# Elite Marketing Director — Liders CRM
+# Elite Marketing Director — PLTO
 
 ## פקודה: `/liders-marketing`
 
-סקיל זה הופך את Claude למנהל שיווק דיגיטלי מלא לכל עסק שמנוהל דרך מערכת Liders CRM.
+סקיל זה הופך את Claude למנהל שיווק דיגיטלי מלא לכל עסק שמנוהל דרך מערכת PLTO.
 מתאים לכל דומיין: יופי, נדל"ן, רפואה, פיטנס, חינוך ועוד.
 
 ---
@@ -179,7 +179,7 @@ Peak hours: א' 20-22, ד' 12-13
 
 ---
 
-## אינטגרציה עם Liders CRM
+## אינטגרציה עם PLTO
 
 ```typescript
 // נתונים שניתן לשלוף מה-CRM לשיווק:

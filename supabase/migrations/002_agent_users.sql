@@ -1,4 +1,4 @@
--- Liders CRM — Migration 002: Agent Users
+-- PLTO — Migration 002: Agent Users
 -- Sales agents and brokers belonging to a tenant
 
 CREATE TABLE IF NOT EXISTS agent_users (

@@ -1,4 +1,4 @@
--- Liders CRM — Migration 010: register_demo_agent() bootstrap function
+-- PLTO — Migration 010: register_demo_agent() bootstrap function
 --
 -- Backfilled into the repo to match what is actually live (this file was
 -- missing from supabase/migrations/ even though the function existed in

@@ -1,5 +1,5 @@
 {
-  "name": "Liders CRM — Lead Notifications",
+  "name": "PLTO — Lead Notifications",
   "flow": [
     {
       "id": 1,
@@ -14,7 +14,7 @@
         "designer": { "x": -400, "y": 0 },
         "restore": {
           "parameters": {
-            "hook": { "label": "Liders CRM Webhook" }
+            "hook": { "label": "PLTO Webhook" }
           }
         }
       }

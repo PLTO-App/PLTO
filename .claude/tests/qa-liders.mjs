@@ -1,5 +1,5 @@
 /**
- * Liders CRM — QA Agent
+ * PLTO — QA Agent
  * בדיקת E2E מלאה — מריץ על localhost עם Supabase mock
  * שימוש: node qa-liders.mjs
  */
@@ -456,7 +456,7 @@ page.on('console', m => {
   if (m.type() === 'error') console.error(`  [browser:err] ${m.text().substring(0, 120)}`);
 });
 
-console.log('\n🤖 Liders CRM QA Agent');
+console.log('\n🤖 PLTO QA Agent');
 console.log('═'.repeat(60));
 
 await testLogin();

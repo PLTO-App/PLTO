@@ -1,4 +1,4 @@
--- Liders CRM — Migration 009: Consolidated RLS + Security Hardening
+-- PLTO — Migration 009: Consolidated RLS + Security Hardening
 -- Run after all other migrations
 
 -- ─────────────────────────────────────────────

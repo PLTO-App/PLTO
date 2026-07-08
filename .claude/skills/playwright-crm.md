@@ -1,8 +1,8 @@
-# Playwright E2E Testing — Liders CRM
+# Playwright E2E Testing — PLTO
 
 ## פקודה: `/playwright-crm`
 
-בדיקות E2E אוטומטיות לכל flows של מערכת Liders CRM.
+בדיקות E2E אוטומטיות לכל flows של מערכת PLTO.
 
 ---
 

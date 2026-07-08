@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# Liders CRM — Skills Installer
+# PLTO — Skills Installer
 # מושך את כל הסקילים העדכניים מה-repo הראשי
 # ============================================================
 # שימוש:
@@ -16,7 +16,7 @@ SKILLS_DIR="$TARGET_DIR/.claude/skills"
 CLAUDE_DIR="$TARGET_DIR/.claude"
 
 echo ""
-echo "🔧 Liders CRM Skills Installer"
+echo "🔧 PLTO Skills Installer"
 echo "================================"
 echo "📁 Target: $TARGET_DIR"
 echo ""

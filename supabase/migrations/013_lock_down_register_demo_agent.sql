@@ -1,4 +1,4 @@
--- Liders CRM — Migration 013: Lock down register_demo_agent()
+-- PLTO — Migration 013: Lock down register_demo_agent()
 --
 -- Two critical findings on this SECURITY DEFINER bootstrap function
 -- (verified directly against the live DB — supabase-security.md flagged

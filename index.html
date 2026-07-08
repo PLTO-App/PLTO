@@ -28,6 +28,7 @@
   <meta name="twitter:image" content="https://liders-crm.com/icons/og-image.jpg">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
   <!-- Google Analytics GA4 - החלף G-HK3080C4GJ ב-Measurement ID שלך -->
@@ -883,7 +884,7 @@
       font-size: 22px; font-weight: 900; color: var(--white);
       letter-spacing: -0.5px;
     }
-    .sidebar-logo span { color: var(--gold-400); }
+    .sidebar-logo span { color: var(--blue-400, #60A5FA); }
     .sidebar-subtitle { font-size: 11px; color: var(--navy-200); margin-top: 2px; }
     .sidebar-nav { flex: 1; padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
     .nav-item {
@@ -998,7 +999,7 @@
       letter-spacing: -3.5px; line-height: .9;
       animation: lh-enter .7s cubic-bezier(.34,1.56,.64,1) both;
     }
-    .lh-logo em { color: #F59E0B; font-style: normal; }
+    .lh-logo em { color: #60A5FA; font-style: normal; }
     @keyframes lh-enter {
       from { opacity: 0; transform: translateY(24px) scale(.88); }
       to   { opacity: 1; transform: translateY(0) scale(1); }
@@ -1593,7 +1594,7 @@
     #loading-overlay.fade-out { opacity: 0; pointer-events: none; }
     #loading-overlay.hidden { display: none; }
     .loader-logo { font-size: 48px; font-weight: 900; color: #fff; letter-spacing: -2px; }
-    .loader-logo span { color: var(--gold-500); }
+    .loader-logo span { color: #60A5FA; }
     .loader-dots { display: flex; gap: 10px; }
     .loader-dots span {
       width: 10px; height: 10px; border-radius: 50%; background: var(--gold-400);
@@ -1656,7 +1657,7 @@
     #privacy-shield.active { opacity: 1; visibility: visible; pointer-events: all; }
     #privacy-shield .shield-icon { font-size: 38px; line-height: 1; }
     #privacy-shield .shield-logo { font-size: 30px; font-weight: 900; color: #fff; letter-spacing: -1.5px; line-height: 1; }
-    #privacy-shield .shield-logo span { color: var(--gold-500); }
+    #privacy-shield .shield-logo span { color: #60A5FA; }
     #privacy-shield .shield-msg { font-size: 15px; font-weight: 700; color: #fff; max-width: 320px; line-height: 1.6; }
     #privacy-shield .shield-sub { font-size: 13px; color: var(--navy-200); max-width: 290px; line-height: 1.6; }
 
@@ -1946,7 +1947,7 @@
       text-align: center; font-size: 20px; font-weight: 900;
       color: rgba(255,255,255,0.9); letter-spacing: -0.5px; margin-bottom: 24px;
     }
-    .paywall-logo-top span { color: #F59E0B; }
+    .paywall-logo-top span { color: #60A5FA; }
     .paywall-hero { text-align: center; margin-bottom: 28px; }
     .paywall-hero-icon { font-size: 54px; margin-bottom: 12px; line-height: 1; }
     .paywall-hero-title {
@@ -2059,7 +2060,7 @@
       font-size: 40px; font-weight: 900; color: white; letter-spacing: -1px;
       margin-bottom: 6px;
     }
-    .setup-logo span { color: #D4A82A; }
+    .setup-logo span { color: #60A5FA; }
     .setup-subtitle {
       font-size: 17px; font-weight: 500; color: rgba(255,255,255,0.85);
       margin-bottom: 32px;
@@ -4243,7 +4244,7 @@
     <div class="loader-building loader-b4"></div>
     <div class="loader-building loader-b5"></div>
   </div>
-  <div class="loader-logo">PLTO</div>
+  <div class="loader-logo">PLT<span>O</span></div>
   <div class="loader-text">בונים לך את הדשבורד...</div>
 </div>
 
@@ -4252,7 +4253,7 @@
 ═══════════════════════════════════════ -->
 <div id="privacy-shield" dir="rtl">
   <div class="shield-icon">🔒</div>
-  <div class="shield-logo">PLTO</div>
+  <div class="shield-logo">PLT<span>O</span></div>
   <div class="shield-msg">התצוגה מוסתרת זמנית להגנה על פרטיות הנתונים שלך ושל הלקוחות שלך</div>
   <div class="shield-sub">המסך יחזור להופיע ברגע שתחזר לחלון הזה</div>
 </div>
@@ -4298,7 +4299,7 @@
 
   <!-- ─── HERO ─── -->
   <div class="login-hero">
-    <div class="lh-logo">PLTO</div>
+    <div class="lh-logo">PLT<em>O</em></div>
     <div class="lh-badge">⚡ נבנה עבור שוק הנדל"ן הישראלי</div>
     <div class="lh-tagline">העסקה הבאה מתחילה כאן.</div>
     <div class="lh-microcopy">30 יום ניסיון בחינם&nbsp;•&nbsp;התחלה תוך פחות מדקה</div>
@@ -4431,7 +4432,7 @@
 ═══════════════════════════════════════ -->
 <div id="screen-setup" class="hidden">
   <div style="font-size:54px;margin-bottom:20px;">⚙️</div>
-  <div class="setup-logo">PLTO</div>
+  <div class="setup-logo">PLT<span>O</span></div>
   <div class="setup-subtitle">מכין עבורך את המערכת כעת</div>
   <div class="setup-bar-wrap"><div id="setup-bar"></div></div>
   <div id="setup-steps" style="display:flex;flex-direction:column;gap:12px;min-width:230px;"></div>
@@ -4445,7 +4446,7 @@
   <!-- SIDEBAR (desktop) -->
   <nav id="sidebar" role="navigation" aria-label="תפריט ראשי">
     <div class="sidebar-brand">
-      <div class="sidebar-logo">PLTO</div>
+      <div class="sidebar-logo">PLT<span>O</span></div>
       <div class="sidebar-subtitle" id="sidebar-tenant-name">הסוכנות שלי</div>
     </div>
     <div class="sidebar-nav">
@@ -6062,7 +6063,7 @@
   <div class="paywall-wrapper">
 
     <!-- לוגו -->
-    <div class="paywall-logo-top">PLTO</div>
+    <div class="paywall-logo-top">PLT<span>O</span></div>
 
     <!-- Hero -->
     <div class="paywall-hero">

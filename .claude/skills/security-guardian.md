@@ -1,4 +1,4 @@
-# Security Guardian — Liders CRM
+# Security Guardian — PLTO
 
 ## פקודה: `/security-guardian`
 
@@ -48,7 +48,7 @@
 
 ---
 
-## Threat Model — Liders CRM
+## Threat Model — PLTO
 
 ### Attack Vectors
 

@@ -1,12 +1,12 @@
-# Figma UI/UX Skill — Liders CRM
+# Figma UI/UX Skill — PLTO
 
 ## פקודה: `/figma-crm-ui`
 
-עיצוב UI/UX עם Figma MCP + Canva MCP, RTL מלא, design tokens של Liders CRM.
+עיצוב UI/UX עם Figma MCP + Canva MCP, RTL מלא, design tokens של PLTO.
 
 ---
 
-## Design Tokens — Liders CRM
+## Design Tokens — PLTO
 
 ```css
 /* פלטת צבעים */
@@ -138,7 +138,7 @@ input[type="tel"] { direction: ltr; text-align: right; }
 ## Figma File Structure (מומלץ)
 
 ```
-📁 Liders CRM — Design System
+📁 PLTO — Design System
   📄 Design Tokens
   📄 Components Library
     🔲 Lead Card

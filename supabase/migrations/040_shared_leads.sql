@@ -1,6 +1,6 @@
 -- Migration 040: Shared Leads — inter-tenant collaboration
 --
--- Enables two Liders CRM tenants to collaborate on a single lead.
+-- Enables two PLTO tenants to collaborate on a single lead.
 -- Security model:
 --   • Owner creates a share protected by a bcrypt-hashed 4-6 digit PIN
 --   • A short human-readable share_code (8 chars) is sent out-of-band to the partner
@@ -161,7 +161,7 @@ BEGIN
     p_lead_id, v_tenant_id,
     v_lead.name, v_lead.phone, v_lead.budget_min, v_lead.budget_max,
     coalesce(v_stage_name, 'ליד'), v_lead.notes,
-    coalesce(v_tenant.name, 'משתמש Liders CRM'), v_tenant.industry,
+    coalesce(v_tenant.name, 'משתמש PLTO'), v_tenant.industry,
     crypt(p_pin, gen_salt('bf'))
   )
   RETURNING share_code INTO v_code;

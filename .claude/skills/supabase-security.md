@@ -1,4 +1,4 @@
-# Supabase Security — Liders CRM
+# Supabase Security — PLTO
 
 ## פקודה: `/supabase-security`
 

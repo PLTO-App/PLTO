@@ -103,7 +103,7 @@ CREATE OR REPLACE FUNCTION public._build_referral_agreement_text(
   p_referrer_name text, p_to_vertical text, p_lead_first_name text,
   p_commission_type text, p_commission_value numeric
 ) RETURNS text LANGUAGE sql STABLE AS $fn$
-  SELECT 'הסכם עמלת הפניה — Liders CRM' || E'\n'
+  SELECT 'הסכם עמלת הפניה — PLTO' || E'\n'
       || '════════════════════════════' || E'\n\n'
       || 'המפנה: ' || p_referrer_name || E'\n'
       || 'המקבל: ' || _vertical_label_he(p_to_vertical) || ' (שמו המלא יופיע בחתימה)' || E'\n'
@@ -116,7 +116,7 @@ CREATE OR REPLACE FUNCTION public._build_referral_agreement_text(
       || '4. התשלום יבוצע בתוך 30 יום ממועד קבלת התמורה בעסקה, כנגד חשבונית כדין.' || E'\n'
       || '5. המקבל מתחייב לטפל בליד במקצועיות ולעדכן את המפנה על סגירת עסקה שמקורה בהפניה.' || E'\n'
       || '6. הסכם זה תקף להפניה זו בלבד ואינו יוצר יחסי שותפות או שליחות בין הצדדים.' || E'\n'
-      || '7. Liders CRM היא פלטפורמה טכנולוגית בלבד ואינה צד להסכם, אינה גובה את העמלה ואינה אחראית לאכיפתו.' || E'\n'
+      || '7. PLTO היא פלטפורמה טכנולוגית בלבד ואינה צד להסכם, אינה גובה את העמלה ואינה אחראית לאכיפתו.' || E'\n'
       || '8. החתימה הדיגיטלית שלהלן, בצירוף תיעוד מועד החתימה וזהות החותם, מהווה אישור הדדי מחייב בין הצדדים.' || E'\n';
 $fn$;
 REVOKE EXECUTE ON FUNCTION public._build_referral_agreement_text(text,text,text,text,numeric) FROM PUBLIC, anon, authenticated;

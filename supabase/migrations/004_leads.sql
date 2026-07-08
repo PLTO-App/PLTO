@@ -1,4 +1,4 @@
--- Liders CRM — Migration 004: Leads (Contacts)
+-- PLTO — Migration 004: Leads (Contacts)
 -- The core entity: potential buyers, sellers, or clients
 
 CREATE TABLE IF NOT EXISTS leads (
