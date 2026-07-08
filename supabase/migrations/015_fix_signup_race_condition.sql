@@ -1,4 +1,4 @@
--- Liders CRM — Migration 015: Fix signup race condition in ensure_agent_and_tenant
+-- PLTO — Migration 015: Fix signup race condition in ensure_agent_and_tenant
 --
 -- security-hardener review of migration 014 found a real concurrency bug:
 -- ensure_agent_and_tenant()'s "idempotent fast path" was a plain

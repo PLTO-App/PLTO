@@ -1,4 +1,4 @@
--- Liders CRM — Migration 019: security-hardener + adversary followup fixes
+-- PLTO — Migration 019: security-hardener + adversary followup fixes
 --
 -- 1. Add 'premium' to tenants_plan_check — webhook maps REPLACE_PRICE_ID_PREMIUM
 --    to 'premium' but the constraint only allowed trial/basic/pro/cancelled,

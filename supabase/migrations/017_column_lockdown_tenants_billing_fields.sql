@@ -1,4 +1,4 @@
--- Liders CRM — Migration 017: Column-level lockdown of tenants billing fields
+-- PLTO — Migration 017: Column-level lockdown of tenants billing fields
 --
 -- security-adversary review flagged that the "agents read own tenant" RLS
 -- policy (migration 014) is row-level only — RLS structurally cannot

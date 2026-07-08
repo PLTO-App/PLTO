@@ -1,4 +1,4 @@
--- Liders CRM — Migration 005: Properties (Listings)
+-- PLTO — Migration 005: Properties (Listings)
 -- Real estate listings managed by the agency
 
 CREATE TABLE IF NOT EXISTS properties (

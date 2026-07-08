@@ -1,4 +1,4 @@
--- Liders CRM — Migration 018: Unique index on tenants.billing_email
+-- PLTO — Migration 018: Unique index on tenants.billing_email
 --
 -- The Stripe webhook cross-check (introduced in stripe-webhook/index.ts)
 -- verifies that session.customer_email matches the tenant's billing_email

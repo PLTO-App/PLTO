@@ -71,7 +71,7 @@ BEGIN
       'phone',             v_lead.phone,
       'area',              v_lead.desired_area,
       'context',           left(coalesce(p_context, ''), 300),
-      'referrer_name',     coalesce(v_tenant.name, 'משתמש Liders CRM'),
+      'referrer_name',     coalesce(v_tenant.name, 'משתמש PLTO'),
       'referrer_industry', coalesce(v_tenant.industry, 'other')
     ),
     p_to_vertical, left(coalesce(p_to_name,''), 80), left(coalesce(p_to_phone,''), 30)

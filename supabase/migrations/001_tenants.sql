@@ -1,4 +1,4 @@
--- Liders CRM — Migration 001: Tenants
+-- PLTO — Migration 001: Tenants
 -- Multi-tenant SaaS: each business gets an isolated tenant
 
 CREATE TABLE IF NOT EXISTS tenants (

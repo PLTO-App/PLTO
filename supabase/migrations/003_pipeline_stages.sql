@@ -1,4 +1,4 @@
--- Liders CRM — Migration 003: Pipeline Stages
+-- PLTO — Migration 003: Pipeline Stages
 -- Customizable sales pipeline stages per tenant
 
 CREATE TABLE IF NOT EXISTS pipeline_stages (

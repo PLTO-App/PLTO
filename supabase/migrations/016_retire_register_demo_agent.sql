@@ -1,4 +1,4 @@
--- Liders CRM — Migration 016: Retire register_demo_agent()
+-- PLTO — Migration 016: Retire register_demo_agent()
 --
 -- security-adversary review of migrations 014/015 found a real, live attack
 -- surface: register_demo_agent() (migrations 010/013) is fully superseded by

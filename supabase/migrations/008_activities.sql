@@ -1,4 +1,4 @@
--- Liders CRM — Migration 008: Activity Log
+-- PLTO — Migration 008: Activity Log
 -- Full audit trail of every interaction with a lead
 
 CREATE TABLE IF NOT EXISTS activities (

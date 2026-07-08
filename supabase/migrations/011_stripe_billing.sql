@@ -1,4 +1,4 @@
--- Liders CRM — Migration 011: Stripe Billing
+-- PLTO — Migration 011: Stripe Billing
 -- Adds billing columns to tenants for Stripe integration
 
 ALTER TABLE tenants

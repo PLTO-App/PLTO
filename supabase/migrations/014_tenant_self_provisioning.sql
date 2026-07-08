@@ -1,4 +1,4 @@
--- Liders CRM — Migration 014: Real per-tenant self-provisioning
+-- PLTO — Migration 014: Real per-tenant self-provisioning
 --
 -- Problem: every signup currently lands in the single shared DEMO_TENANT via
 -- register_demo_agent() (migration 010/013) — there is no real multi-tenant

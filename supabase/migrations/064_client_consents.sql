@@ -3,7 +3,7 @@
 -- Privacy/anti-spam gate: before a lead is transferred to a partner, the
 -- client themselves can be asked to approve the transfer. The referrer's
 -- WhatsApp opens with a ready message to the CLIENT containing a secure
--- one-time link (https://liders-crm.com/?consent={token}); the client taps
+-- one-time link (https://plto.app/?consent={token}); the client taps
 -- approve/decline on a dedicated page (no login). Approval releases the
 -- referral (awaiting_consent → sent); decline blocks it (consent_declined).
 --
@@ -86,7 +86,7 @@ BEGIN
       'phone',             v_lead.phone,
       'area',              v_lead.desired_area,
       'context',           left(coalesce(p_context, ''), 300),
-      'referrer_name',     coalesce(v_tenant.name, 'משתמש Liders CRM'),
+      'referrer_name',     coalesce(v_tenant.name, 'משתמש PLTO'),
       'referrer_industry', coalesce(v_tenant.industry, 'other')
     ),
     p_to_vertical, left(coalesce(p_to_name,''), 80), left(coalesce(p_to_phone,''), 30),
@@ -105,7 +105,7 @@ BEGIN
       v_referral_id, p_tenant_id, p_user_id,
       p_commission_type, p_commission_value,
       _build_referral_agreement_text(
-        coalesce(v_tenant.name, 'משתמש Liders CRM'), p_to_vertical,
+        coalesce(v_tenant.name, 'משתמש PLTO'), p_to_vertical,
         split_part(coalesce(v_lead.name,''), ' ', 1),
         p_commission_type, p_commission_value
       )
@@ -114,7 +114,7 @@ BEGIN
 
   IF p_require_consent THEN
     v_consent_text := 'היי ' || split_part(coalesce(v_lead.name,''), ' ', 1) || ', '
-      || coalesce(v_tenant.name, 'משתמש Liders CRM')
+      || coalesce(v_tenant.name, 'משתמש PLTO')
       || ' מבקש את אישורך להעביר את פרטיך (שם וטלפון בלבד) ל'
       || _vertical_label_he(p_to_vertical)
       || ' שותף, לצורך המשך טיפול מקצועי. הפרטים יועברו רק אם תאשר.';

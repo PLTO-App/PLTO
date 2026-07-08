@@ -64,7 +64,7 @@ CREATE OR REPLACE FUNCTION public._build_referral_agreement_text(
   p_commission_type text, p_commission_value numeric,
   p_to_profession text DEFAULT NULL
 ) RETURNS text LANGUAGE sql STABLE AS $fn$
-  SELECT 'הסכם עמלת הפניה — Liders CRM' || E'\n'
+  SELECT 'הסכם עמלת הפניה — PLTO' || E'\n'
       || '════════════════════════════' || E'\n\n'
       || 'המפנה: ' || p_referrer_name || E'\n'
       || 'המקבל: ' || coalesce(nullif(trim(p_to_profession),''), _vertical_label_he(p_to_vertical))
@@ -78,7 +78,7 @@ CREATE OR REPLACE FUNCTION public._build_referral_agreement_text(
       || '4. התשלום יבוצע בתוך 30 יום ממועד קבלת התמורה בעסקה, כנגד חשבונית כדין.' || E'\n'
       || '5. המקבל מתחייב לטפל בליד במקצועיות ולעדכן את המפנה על סגירת עסקה שמקורה בהפניה.' || E'\n'
       || '6. הסכם זה תקף להפניה זו בלבד ואינו יוצר יחסי שותפות או שליחות בין הצדדים.' || E'\n'
-      || '7. Liders CRM היא פלטפורמה טכנולוגית בלבד ואינה צד להסכם, אינה גובה את העמלה ואינה אחראית לאכיפתו.' || E'\n'
+      || '7. PLTO היא פלטפורמה טכנולוגית בלבד ואינה צד להסכם, אינה גובה את העמלה ואינה אחראית לאכיפתו.' || E'\n'
       || '8. החתימה הדיגיטלית שלהלן, בצירוף תיעוד מועד החתימה וזהות החותם, מהווה אישור הדדי מחייב בין הצדדים.' || E'\n';
 $fn$;
 REVOKE EXECUTE ON FUNCTION public._build_referral_agreement_text(text,text,text,text,numeric,text) FROM PUBLIC, anon, authenticated;
@@ -133,7 +133,7 @@ BEGIN
       'phone',             v_lead.phone,
       'area',              v_lead.desired_area,
       'context',           left(coalesce(p_context, ''), 300),
-      'referrer_name',     coalesce(v_tenant.name, 'משתמש Liders CRM'),
+      'referrer_name',     coalesce(v_tenant.name, 'משתמש PLTO'),
       'referrer_industry', coalesce(v_tenant.industry, 'other')
     ),
     p_to_vertical,
@@ -155,7 +155,7 @@ BEGIN
       v_referral_id, p_tenant_id, p_user_id,
       p_commission_type, p_commission_value,
       _build_referral_agreement_text(
-        coalesce(v_tenant.name, 'משתמש Liders CRM'), p_to_vertical,
+        coalesce(v_tenant.name, 'משתמש PLTO'), p_to_vertical,
         split_part(coalesce(v_lead.name,''), ' ', 1),
         p_commission_type, p_commission_value,
         p_external_profession
@@ -165,7 +165,7 @@ BEGIN
 
   IF p_require_consent THEN
     v_consent_text := 'היי ' || split_part(coalesce(v_lead.name,''), ' ', 1) || ', '
-      || coalesce(v_tenant.name, 'משתמש Liders CRM')
+      || coalesce(v_tenant.name, 'משתמש PLTO')
       || ' מבקש את אישורך להעביר את פרטיך (שם וטלפון בלבד) ל'
       || coalesce(nullif(trim(p_external_profession),''), _vertical_label_he(p_to_vertical))
       || ' שותף, לצורך המשך טיפול מקצועי. הפרטים יועברו רק אם תאשר.';

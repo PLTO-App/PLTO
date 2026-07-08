@@ -1,8 +1,8 @@
-# Liders CRM — SaaS Architecture Skill
+# PLTO — SaaS Architecture Skill
 
 ## פקודה: `/liders-crm`
 
-סקיל זה מספק ארכיטקטורה, entities ו-workflow לבניית features במערכת **Liders CRM** — פלטפורמת SaaS מולטי-טנאנט לניהול לידים ומכירות נדל"ן.
+סקיל זה מספק ארכיטקטורה, entities ו-workflow לבניית features במערכת **PLTO** — פלטפורמת SaaS מולטי-טנאנט לניהול לידים ומכירות נדל"ן.
 
 ---
 

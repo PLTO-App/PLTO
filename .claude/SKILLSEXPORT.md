@@ -46,7 +46,7 @@ npx skills add supabase/agent-skills
 | **Security Guardian** | `/security-guardian` | הגנת data, checklist, incident response | 2026-06-02 |
 | **Design System Pro** | `/design-system` | tokens מדויקים, components, RTL specs | 2026-06-02 |
 | **CRM Live Data** ⭐ | `/crm-live-data` | שאיבת נתונים חיים מכל MCPs (Supabase, Calendar, Gmail, Make, Notion, Airtable) | 2026-06-02 |
-| **Liders Marketing** | `/liders-marketing` | מנהל שיווק דיגיטלי אוניברסלי לכל עסק ב-Liders CRM — אסטרטגיה, תוכן, קופי, עיצוב, ניתוח | 2026-06-03 |
+| **Liders Marketing** | `/liders-marketing` | מנהל שיווק דיגיטלי אוניברסלי לכל עסק ב-PLTO — אסטרטגיה, תוכן, קופי, עיצוב, ניתוח | 2026-06-03 |
 
 ### 📦 סקילים מ-npm (`.agents/skills/`)
 

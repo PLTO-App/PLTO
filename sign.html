@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title>חתימת הסכם עמלת הפניה — Liders CRM</title>
+  <title>חתימת הסכם עמלת הפניה — PLTO</title>
   <meta name="description" content="חתימה דיגיטלית על הסכם עמלת הפניה">
   <meta name="robots" content="noindex,nofollow">
   <meta http-equiv="Content-Security-Policy"
@@ -359,7 +359,7 @@
 <div class="page-wrap">
   <div class="card">
     <div class="sign-header">
-      <div class="sign-logo">Liders<span>.</span></div>
+      <div class="sign-logo">PLT<span style="color:#2563EB">O</span></div>
       <div class="sign-sub">חתימת הסכם עמלת הפניה</div>
     </div>
 
@@ -412,7 +412,7 @@
 
         <div class="legal-note">
           החתימה הדיגיטלית, בצירוף שמך, כתובת ה-IP ומועד החתימה, נשמרים כראיה משפטית מחייבת.
-          Liders CRM היא פלטפורמה טכנולוגית בלבד ואינה צד להסכם.
+          PLTO היא פלטפורמה טכנולוגית בלבד ואינה צד להסכם.
         </div>
 
         <button class="btn-sign" id="btn-sign" onclick="Page.sign()">✅ חתימה וקבלת פרטי הלקוח</button>
@@ -454,8 +454,8 @@
           ─── מנהל/ת הפניות? ───
         </div>
 
-        <a class="btn-join" href="https://liders-crm.com/" target="_blank" rel="noopener">
-          🚀 נהל את ההפניות שלך ב-Liders CRM — 30 יום חינם
+        <a class="btn-join" href="https://plto.app/" target="_blank" rel="noopener">
+          🚀 נהל את ההפניות שלך ב-PLTO — 30 יום חינם
         </a>
       </div>
 
@@ -465,8 +465,8 @@
         <div class="error-title" id="err-title">שגיאה</div>
         <div class="error-msg" id="err-msg"></div>
         <div style="text-align:center;margin-top:20px;">
-          <a href="https://liders-crm.com/" style="color:var(--blue);font-size:13px;">
-            לאתר Liders CRM
+          <a href="https://plto.app/" style="color:var(--blue);font-size:13px;">
+            לאתר PLTO
           </a>
         </div>
       </div>
@@ -475,7 +475,7 @@
   </div><!-- /card -->
 
   <div class="page-footer">
-    הסכם זה מופעל דרך <a href="https://liders-crm.com/">Liders CRM</a><br>
+    הסכם זה מופעל דרך <a href="https://plto.app/">PLTO</a><br>
     פלטפורמה לניהול לידים ועמלות הפניה לאנשי מקצוע
   </div>
 </div>
@@ -589,7 +589,7 @@ const Page = {
       const { data, error } = await sbClient.rpc('get_referral_agreement_anon', { p_token: this._token });
       if (error) throw error;
 
-      document.getElementById('rdy-referrer').textContent     = data.referrer_name || 'לקוח Liders';
+      document.getElementById('rdy-referrer').textContent     = data.referrer_name || 'לקוח PLTO';
       document.getElementById('rdy-lead-name').textContent    = data.lead_first_name || 'לקוח';
       document.getElementById('rdy-commission').textContent   = data.commission_label || '';
       document.getElementById('rdy-agreement-text').textContent = data.agreement_text || '';
