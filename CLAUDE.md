@@ -1102,6 +1102,37 @@ Liders מתחרה ב-Pipedrive ו-monday.com בתחום ה-SMB. הם גובים 
 
 ---
 
+## מה בוצע — סשן 9/7/2026 — DNS, אייקונים, ניקוי טרום-השקה (ענף: `claude/dns-approval-plto-launch-3pxl30`)
+
+### ✅ הושלם אוטומטית (ללא צורך בפעולה ידנית)
+
+1. **CNAME file** — שונה מ-`liders-crm.com` ל-`plto.app` (הסיבה המרכזית ל-525 לפני כן)
+2. **`icons/icon-192.png`** — הופק מחדש מ-`favicon.svg` עם branding PLTO (cairosvg, 192×192)
+3. **`icons/icon-512.png`** — הופק מחדש (512×512)
+4. **`icons/og-image.jpg`** — תמונת OG חדשה לגמרי: 1200×630, רקע navy, לוגו PLTO, tagline בעברית, plto.app (46KB)
+5. **`assets/screenshots/`** — נמחקה התיקייה כולה (~3MB שלא הייתה בשימוש: 5 קבצי PNG שלא הוזכרו בשום מקום)
+6. **`index.html` — UTM tracking** — הוסר `liders-crm.com` מבדיקת ה-referrer (שריד ישן)
+7. **`production/LAUNCH_CHECKLIST.md`** — נוצר קובץ מקיף עם כל סטטוס ההשקה, משימות ידניות, מבנה קבצים, ואבטחה
+
+### 🔍 בדיקת סטטוס DNS שבוצעה בסשן זה
+
+- **ה-nameservers של `plto.app` כבר עלו** (בוצע יום קודם עם Gemini ב-Namecheap → Cloudflare)
+- **אומת דרך pg_net**: `plto.app` מחזיר 525 עם `server: cloudflare` + `cf-ray` — כלומר Cloudflare מקבל את הבקשות תקין
+- **סיבת ה-525**: Cloudflare על "Full (Strict)" אבל GitHub Pages עוד לא הספיק להפיק תעודת Let's Encrypt ל-`plto.app`
+
+### 🔴 נשאר לביצוע ידני (סשן הבא)
+
+| פעולה | היכן | הערה |
+|-------|------|------|
+| **Cloudflare SSL → "Full"** (זמנית) | Cloudflare → plto.app → SSL/TLS → Overview | מפתור 525 מיד; לחזור ל-"Full (Strict)" אחרי שהאתר עולה |
+| **אמת plto.app עולה** | pg_net או דפדפן | `status_code = 200`, `server = cloudflare` |
+| **Supabase Auth email** | Supabase Dashboard → Auth → Email Templates | שנה sender מ-"Liders CRM" ל-"PLTO" |
+| **Make.com — 2 סצנריות** | eu1.make.com/1851801/scenarios/ | שמות + נמען → `info@plto.app` |
+| **הסר `liders-crm.com` מ-ALLOWED_ORIGINS** | `ai-proxy` + `twilio-whatsapp` | רק אחרי שplto.app מאושר! → deploy שתי functions |
+| **חזור ל-"Full (Strict)"** | Cloudflare SSL/TLS | אחרי שהאתר עולה תקין |
+
+---
+
 ## Quick Commands
 
 ```bash
