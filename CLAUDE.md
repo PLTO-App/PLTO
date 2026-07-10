@@ -1201,6 +1201,56 @@ Liders מתחרה ב-Pipedrive ו-monday.com בתחום ה-SMB. הם גובים 
 
 ---
 
+## מה בוצע — סשן 10/7/2026 (ב') — בדיקת טרום-השקה מקיפה (ריבראנד + טקסטים + חי)
+
+> ענף: `claude/system-testing-pre-launch-3zo30r`. בוצע ללא הפעלת Agent tool כלל — כל הבדיקה
+> נעשתה עם Grep/Read/Bash/Supabase MCP/Make MCP ישירות, בהתאם לכלל האישור המפורש ב-CLAUDE.md.
+> תוצאה מלאה: `production/LAUNCH_CHECKLIST.md` (עודכן במלואו לסטטוס 10/7).
+
+### ✅ נבדק ואומת נקי
+- אפס מופעים גלויים-למשתמש של "Liders"/"לידרס" בכל 5 קובצי ה-HTML (index/landing/admin/
+  sign/privacy-policy) — הנותר הוא רק `localStorage` keys פנימיים ו-`ADMIN_EMAILS` guard,
+  מתועד ומכוון
+- אפס שגיאות כתיב ב-"PLTO" בכל הריפו (נבדק OPLT/PLOT/PTLO/PLTOO וכו') — אין באג מהסוג
+  שהמשתמש חשש ממנו
+- title/meta/OG tags תקינים ב-5 דפי ה-HTML
+- `node --check` עבר נקי על כל ה-JS המוטמע ב-4 קבצי ה-HTML הראשיים
+- סכימת `leads`/`properties` הושוותה ישירות מול קוד השמירה (`DB.addLead`/`updateLead`/
+  `addProperty`/`updateProperty`) — כל שדה שנשמר (כולל `inspiration_url`,
+  `commission_renewal_date/notes`, `last_contact`) קיים בפועל בטבלה החיה
+- **האתר החי `plto.app` עולה תקין!** (היה 525 בסשן הקודם) — אומת דרך `pg_net`:
+  status 200 על `plto.app`, `www.plto.app`, `/admin.html`, `/landing.html`, `/sign.html`,
+  `server: cloudflare`, תוכן PLTO אמיתי, אין "Liders"
+- Edge Functions `ai-proxy` + `twilio-whatsapp` — `liders-crm.com` **כבר הוסר בפועל**
+  מ-`ALLOWED_ORIGINS` ונפרס היום 07:53 (היה עדיין ברשימת ה-TODO ב-CLAUDE.md — כבר בוצע)
+- Make.com — שתי הסצנריות מאומתות בשם "PLTO — ..." ופעילות (0 שגיאות ב-Lead Notifications,
+  1681 הרצות)
+
+### 🔧 תוקן — 5 הפרות כלל "ניקוי סימנים רובוטיים" (היו קיימים, לא נבדקו קודם)
+חצים (`←`) על 4 אלמנטים לחיצים ב-`index.html` (widget פרסים, PRO hub, מודל רעיונות, קישור
+מדיניות פרטיות) — הוסרו לגמרי לפי הכלל. מקף רגיל " - " בטקסט שיווקי ב-`landing.html`
+(סקשן כאב הליד) — הוחלף בפסיק.
+
+### ⚠️ נמצא, לא תוקן — דורש החלטת משתמש/פעולה ידנית
+1. **כותרות אבטחה Cloudflare (Transform Rule) עדיין לא פעילות** — headers חיים נבדקו,
+   `strict-transport-security`/`x-frame-options`/`content-security-policy` כולם null.
+   ה-meta CSP עדיין ההגנה היחידה בפועל (תואם למתועד).
+2. **Migration 075 עדיין לא הוחלה** — מיגרציות חיות קופצות מ-074 ישר ל-076. תואם למתועד
+   כ"טרם בוצע", לא רגרסיה.
+3. **Leaked password protection כבוי** ב-Supabase Auth — שיפור זול, לא חוסם השקה.
+4. **6 פונקציות DB בלי `search_path` מפורש** — סיכון תיאורטי נמוך, ניקיון עתידי.
+5. **3 Edge Functions לא מתועדות ב-CLAUDE.md**: `admin-ops`, `gmail-oauth-callback`,
+   `gmail-proxy` — כולן ACTIVE ב-production. כדאי לוודא שאלו פיצ'רים מכוונים (כנראה תיבת
+   דואר AI) ולעדכן תיעוד — **לא נבדק תוכנן בסשן זה**.
+
+### ⏸️ לא בוצע — מגבלת סביבה
+בדיקת קליק-דרך אמיתית בדפדפן (הרשמה→אונבורדינג→הוספת ליד→רענון→פייפליין) **לא בוצעה** —
+לסשן זה אין גישת רשת ישירה לאתרים חיצוניים (רק `pg_net` מ-Supabase, שמחזיר HTML גולמי בלבד,
+לא יכול להריץ JS/ללחוץ כפתורים). רשימת בדיקות ידניות מלאה נמצאת ב-
+`production/LAUNCH_CHECKLIST.md` תחת "נשאר לביצוע ידני".
+
+---
+
 ## Quick Commands
 
 ```bash
