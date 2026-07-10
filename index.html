@@ -17703,6 +17703,9 @@ if ('serviceWorker' in navigator) {
   // Already installed as standalone - never show
   if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) return;
 
+  // Installed before (even if this particular tab isn't the standalone launch) - never show again
+  if (localStorage.getItem('pwa_installed') === '1') return;
+
   // Dismissed recently - stay quiet for a couple of days, then ask again
   const RESHOW_MS = 2 * 24 * 60 * 60 * 1000; // 2 days
   const dismissedAt = Number(localStorage.getItem('pwa_banner_dismissed_at') || 0);
@@ -17713,6 +17716,13 @@ if ('serviceWorker' in navigator) {
   if (!isIOS && !isAndroid) return; // desktop, skip
 
   let deferredPrompt = null;
+
+  // Fires when the app is actually installed, whether via our button or the
+  // browser's own install menu - hide for good either way.
+  window.addEventListener('appinstalled', function () {
+    localStorage.setItem('pwa_installed', '1');
+    banner.classList.add('hidden');
+  });
 
   if (isAndroid) {
     window.addEventListener('beforeinstallprompt', function (e) {
