@@ -9495,11 +9495,27 @@ const AI = {
 
   async writeRescue(lead) {
     const days = lead.last_contact ? Math.abs(diffDays(lead.last_contact)) : 30;
+    const _ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+    const contextLine = _ind === 'realestate_lawyer'
+      ? `תחום: עריכת דין נדל"ן | שם: ${lead.name}`
+      : _ind === 'interior'
+      ? `תחום: עיצוב פנים | שם: ${lead.name} | תקציב: ${lead.budget_max ? formatMoney(lead.budget_max) : 'לא ידוע'}`
+      : `שם: ${lead.name} | אזור: ${lead.desired_area || 'לא ידוע'} | תקציב: ${lead.budget_max ? formatMoney(lead.budget_max) : 'לא ידוע'}`;
+    const updateLine = _ind === 'realestate_lawyer'
+      ? 'הצג עדכון משפטי רלוונטי (שינוי תקנות, עדכון רשם המקרקעין, פסיקה חדשה) כסיבה לפנות'
+      : _ind === 'interior'
+      ? 'הצג טרנד עיצובי חדש או פריט עיצוב מעניין כסיבה לפנות'
+      : 'הצג עדכון שוק קטן כסיבה לפנות';
+    const referralLine = _ind === 'realestate_lawyer'
+      ? 'בסוף ההודעה, הוסף שורה קצרה ועדינה שמזמינה להמליץ לחברים/משפחה אם יש היכרות עם מישהו שזקוק לייעוץ משפטי בנדל"ן.'
+      : _ind === 'interior'
+      ? 'בסוף ההודעה, הוסף שורה קצרה ועדינה שמזמינה להמליץ לחברים/משפחה אם יש היכרות עם מישהו שמתכנן פרויקט עיצוב.'
+      : 'בסוף ההודעה, הוסף שורה קצרה ועדינה שמזמינה להמליץ לחברים/משפחה אם יש היכרות עם מישהו שמחפש נכס.';
     return this.call([{ role: 'user', content:
       `כתוב הודעת WhatsApp להחייאת ליד שלא פעיל ${days} ימים.
-שם: ${lead.name} | אזור: ${lead.desired_area || 'לא ידוע'} | תקציב: ${lead.budget_max ? formatMoney(lead.budget_max) : 'לא ידוע'}
-כללים: חמה ולא פולשנית, אל תאמר "לא שמעתי ממך", הצג עדכון שוק קטן כסיבה לפנות, מקסימום 3 שורות.
-בסוף ההודעה, הוסף שורה קצרה ועדינה שמזמינה להמליץ לחברים/משפחה אם יש היכרות עם מישהו שמחפש נכס.`
+${contextLine}
+כללים: חמה ולא פולשנית, אל תאמר "לא שמעתי ממך", הצג ${updateLine}, מקסימום 3 שורות.
+${referralLine}`
     }], 220);
   },
 
@@ -9600,7 +9616,20 @@ const Tools = {
     followup: n => `היי ${n||'שם'} 😊\nרק רציתי לוודא שקיבלת את מה ששלחתי.\nיש לי כמה עדכונים קטנים שחשבתי שיעניינו אותך, מתי יהיה נוח לך לדקה?`,
     proposal: n => `היי ${n||'שם'},\nשלחתי לך קצת קודם את ההצעה, הכל מגיע בסדר?\nאם יש לך שאלות או רוצה לשנות משהו, אני כאן 🙌`,
     closing:  n => `היי ${n||'שם'}, תודה על הפגישה, ממש נהניתי!\nכמו שדיברנו, אני שולח לך עכשיו את הפרטים הסופיים.\nאשמח לדעת, מה עוד צריך ממני כדי להתקדם? 🤝`,
-    cold_referral: n => `היי ${n||'שם'}! 😊\nזמן מה לא דיברנו, רציתי לבדוק שלומך.\nיש עדכונים מעניינים באזור שביקשת — אשמח לעדכן.\n\nאם יש היכרות עם מישהו שמחפש לקנות או למכור — אשמח שתיצרו קשר 🙏`,
+    cold_referral: n => {
+      const _i = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+      const update = _i === 'realestate_lawyer'
+        ? 'יש עדכון משפטי רלוונטי שעשוי לעניין — אשמח לשתף.'
+        : _i === 'interior'
+        ? 'יש כמה טרנדים חדשים בעיצוב שרציתי לשתף איתכם.'
+        : 'יש עדכונים מעניינים באזור שביקשת — אשמח לעדכן.';
+      const referral = _i === 'realestate_lawyer'
+        ? 'אם יש היכרות עם מישהו שזקוק לייעוץ משפטי בנדל"ן — אשמח שתיצרו קשר 🙏'
+        : _i === 'interior'
+        ? 'אם יש היכרות עם מישהו שמתכנן פרויקט עיצוב — אשמח שתיצרו קשר 🙏'
+        : 'אם יש היכרות עם מישהו שמחפש לקנות או למכור — אשמח שתיצרו קשר 🙏';
+      return `היי ${n||'שם'}! 😊\nזמן מה לא דיברנו, רציתי לבדוק שלומך.\n${update}\n\n${referral}`;
+    },
   },
 
   waTemplate(type) {
@@ -14541,6 +14570,7 @@ const LeadDetail = {
     const activities = State.activities.filter(a => a.lead_id === leadId)
       .sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
     const matchProps = this.matchProperties(lead);
+    const ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
 
     document.getElementById('lead-detail-content').innerHTML = `
       <div class="lead-detail-header">
@@ -14669,6 +14699,7 @@ const LeadDetail = {
 
         <!-- MATCH TAB -->
         <div class="tab-content" id="tab-match">
+          ${ind === 'realestate' ? `
           <!-- נכסים שהוצגו בפועל -->
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
             <div style="font-weight:700;font-size:14px;color:var(--navy-700);">📍 נכסים שהוצגו ללקוח</div>
@@ -14680,6 +14711,11 @@ const LeadDetail = {
               ${matchProps.length ? `נמצאו ${matchProps.length} נכסים תואמים לפי תקציב ואזור:` : ''}
             </div>
           </div>
+          ` : `
+          <div style="font-size:13px;color:var(--gray-500);margin-bottom:10px;">
+            ${matchProps.length ? `נמצאו ${matchProps.length} נכסים תואמים לפי תקציב ואזור:` : ''}
+          </div>
+          `}
           ${matchProps.length ? `
             <div style="display:flex;flex-direction:column;gap:10px;">
               ${matchProps.map(p => `
