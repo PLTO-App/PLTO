@@ -977,13 +977,20 @@
     }
     .login-card {
       width: calc(100% - 32px); max-width: 390px;
-      background: rgba(255,255,255,.95);
-      backdrop-filter: blur(24px) saturate(160%);
-      -webkit-backdrop-filter: blur(24px) saturate(160%);
-      border: 1px solid rgba(255,255,255,.22);
+      background: linear-gradient(
+        180deg,
+        rgba(255,255,255,0.10) 0px,
+        rgba(255,255,255,0.78) 64px,
+        rgba(255,255,255,0.97) 110px,
+        rgba(255,255,255,0.97) 100%
+      );
+      backdrop-filter: blur(28px) saturate(180%);
+      -webkit-backdrop-filter: blur(28px) saturate(180%);
+      border: 1px solid rgba(255,255,255,.18);
+      border-top-color: rgba(255,255,255,.12);
       border-radius: 26px; padding: 20px 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.08), 0 20px 48px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.55);
-      position: relative; z-index: 1;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08), 0 20px 48px rgba(0,0,0,.28);
+      position: relative; z-index: 2;
       animation: lh-enter .7s .45s cubic-bezier(.34,1.56,.64,1) both;
     }
     .login-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; color: var(--gray-900); }
@@ -1265,8 +1272,9 @@
 
     /* ─── LOGIN CARD TITLE ─── */
     .login-card-title {
-      font-size: 15px; font-weight: 800; color: var(--navy-700, #1e3a5f);
+      font-size: 15px; font-weight: 800; color: rgba(255,255,255,.92);
       text-align: center; margin: 0 0 10px; letter-spacing: -.2px;
+      text-shadow: 0 1px 10px rgba(0,0,0,.22);
     }
 
     /* ─── REDUCED MOTION ─── */
@@ -4212,19 +4220,6 @@
   <div class="lbg-orb" style="width:200px;height:200px;top:38%;left:-90px;background:radial-gradient(circle,rgba(245,158,11,.11),transparent 70%);animation-duration:14s;animation-delay:-5s;"></div>
   <div class="lbg-orb" style="width:180px;height:180px;bottom:15%;right:-60px;background:radial-gradient(circle,rgba(37,99,235,.13),transparent 70%);animation-duration:9s;animation-delay:-2s;"></div>
 
-  <!-- Floating deal cards — one per vertical + activity -->
-  <div class="lbg-deal" style="top:250px;right:4px;--r:-3deg;animation-duration:6.5s;font-size:9px;padding:5px 8px;">
-    🏠 פנטהאוז · ₪5.5M<br><span>עסקה נסגרה ✓</span>
-  </div>
-  <div class="lbg-deal" style="top:305px;left:4px;--r:2deg;animation-duration:8s;animation-delay:-3.5s;font-size:9px;padding:5px 8px;">
-    ⚖️ חוזה מכר · נאות אפק<br><span>חתימה מרחוק ✓</span>
-  </div>
-  <div class="lbg-deal" style="bottom:220px;left:5px;--r:-1deg;animation-duration:7s;animation-delay:-1.5s;">
-    🎨 פרויקט עיצוב · לוד<br><span>לקוח אישר ✓</span>
-  </div>
-  <div class="lbg-deal" style="bottom:160px;right:3px;--r:1deg;animation-duration:9s;animation-delay:-7s;font-size:9px;padding:5px 8px;opacity:.7;">
-    📅 פגישה נקבעה · מחר<br><span>תזכורת נשלחה ✓</span>
-  </div>
 
   <!-- ─── HERO ─── -->
   <div class="login-hero">
