@@ -599,7 +599,7 @@ const Page = {
     } catch (e) {
       const m = e.message || '';
       if (m.includes('referral_expired')) {
-        this.showError('הקישור פג תוקף', 'קישורי ההפניה תקפים ל-14 יום. יש לבקש מהמפנה לשלוח קישור חדש.');
+        this.showError('הקישור פג תוקף', 'קישורי ההפניה תקפים ל-7 ימים. יש לבקש מהמפנה לשלוח קישור חדש.');
       } else if (m.includes('referral_used')) {
         this.showError('ההפניה כבר טופלה', 'הסכם זה כבר נחתם או נדחה בעבר.');
       } else if (m.includes('no_agreement_needed')) {
