@@ -74,6 +74,17 @@ CREATE TABLE referrals (
 3. **ליטוש**: מסך סטטיסטיקות, XP והישגים, התראת Make למפנה כשההפניה מתקבלת.
    ⏳ בוצע רק ‎+250 XP על הפניה שהתקבלה (`pull_lead_referral_xp`).
 
+> **עדכון 12/7/2026**: הסכמה בפועל התרחבה מעבר למה שמתועד למעלה — `to_vertical`
+> תומך גם ב-`'other'` (קולגה בתחום חיצוני לשלושת היעד, עם `p_external_profession`
+> חופשי), נוסף בסשן `072_external_referral_signing.sql`. באותו סשן נוצרו
+> **overloads** חדשים ל-`create_lead_referral`/`_create_lead_referral_core`/
+> `_build_referral_agreement_text` בלי שהישנים הוסרו — הגרסאות הישנות עדיין
+> הכילו טקסט הסכם ממותג "Liders CRM" (לא PLTO) ונשארו רדומות ב-DB. אומת
+> שה-frontend קרא תמיד לגרסה החדשה (בטוח), אבל נמחקו לגמרי ב-`080_drop_
+> legacy_liders_branded_referral_overloads.sql` כניקוי יזום. **לקח לפעם
+> הבאה**: כשמוסיפים פרמטר אופציונלי לפונקציה קיימת ע"י overload, למחוק את
+> הגרסה הישנה באותה מיגרציה במקום להשאיר אותה רדומה.
+
 ---
 
 ## 2️⃣ התאמת נכס ↔ לידים (סוכן נדל"ן)
