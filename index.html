@@ -8394,7 +8394,7 @@ const Billing = {
     const plan = State.tenant?.plan;
     if (!plan) return false;
     const email = (State.agent?.email || '').toLowerCase();
-    if (['liders.crm@gmail.com','elgrablidudu@gmail.com'].includes(email)) return false;
+    if (['info@plto.app','elgrablidudu@gmail.com'].includes(email)) return false;
     if (plan === 'internal' || plan === 'lifetime') return false;
     if (this.isPaid()) return false;
     if (plan === 'cancelled') return true;
@@ -9775,7 +9775,7 @@ const AiLimits = {
     lifetime: { general: 20, marketing: 25, quicklog: 50, support: 10, motivation: 3  },
     internal: { general: 999, marketing: 999, quicklog: 999, support: 999, motivation: 999 },
   },
-  _ADMIN: ['liders.crm@gmail.com','elgrablidudu@gmail.com'],
+  _ADMIN: ['info@plto.app','elgrablidudu@gmail.com'],
   _k: 'liders_ai_v1',
   _today: () => new Date().toISOString().split('T')[0],
   _isAdmin() { return this._ADMIN.includes((State.agent?.email||'').toLowerCase()); },
@@ -15816,7 +15816,7 @@ const Settings = {
           <div class="settings-arrow">›</div>
         </div>
       </div>
-      ${['liders.crm@gmail.com','elgrablidudu@gmail.com'].includes((State.agent?.email||'').toLowerCase()) ? `
+      ${['info@plto.app','elgrablidudu@gmail.com'].includes((State.agent?.email||'').toLowerCase()) ? `
       <div class="settings-section">
         <div class="settings-section-title">ניהול פלטפורמה</div>
         <div class="settings-row" onclick="window.open('./admin.html','_blank')" style="cursor:pointer;">
