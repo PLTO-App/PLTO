@@ -16148,12 +16148,29 @@ const LeadImport = {
     }
   },
 
+  _xlsxLoadPromise: null,
+  // Lazy-loads SheetJS only when a user actually picks an Excel file — no reason
+  // to ship ~880KB to everyone who never imports from xlsx/xls.
+  _loadXLSX() {
+    if (window.XLSX) return Promise.resolve();
+    if (this._xlsxLoadPromise) return this._xlsxLoadPromise;
+    this._xlsxLoadPromise = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+      s.integrity = 'sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw';
+      s.crossOrigin = 'anonymous';
+      s.onload = () => resolve();
+      s.onerror = () => { this._xlsxLoadPromise = null; reject(new Error('load_failed')); };
+      document.head.appendChild(s);
+    });
+    return this._xlsxLoadPromise;
+  },
+
   handleFile(input) {
     const file = input.files?.[0];
     if (!file) return;
     if (/\.xlsx?$/i.test(file.name) || file.type.includes('spreadsheetml') || file.type.includes('ms-excel')) {
-      toast('קובץ Excel זוהה — לייבוא: פתיחה ב-Google Sheets, קובץ, הורדה, CSV, ולאחר מכן העלאת קובץ ה-CSV', 'info', 7000);
-      input.value = '';
+      this._handleExcelFile(file);
       return;
     }
     this._startTs = Date.now();
@@ -16176,6 +16193,39 @@ const LeadImport = {
     };
     reader.onerror = () => toast('שגיאה בקריאת הקובץ', 'error');
     reader.readAsText(file, 'UTF-8');
+  },
+
+  async _handleExcelFile(file) {
+    this._startTs = Date.now();
+    try {
+      await this._loadXLSX();
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: 'array' });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rowsRaw = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false });
+      const cleaned = rowsRaw
+        .map(r => r.map(c => String(c ?? '').trim()))
+        .filter(r => r.some(c => c !== ''));
+      if (!cleaned.length) {
+        toast('לא נמצאו נתונים בקובץ ה-Excel', 'error');
+        return;
+      }
+      this._headers = cleaned[0];
+      this._rows = cleaned.slice(1);
+      if (!this._headers.length || !this._rows.length) {
+        toast('לא נמצאו נתונים בקובץ ה-Excel', 'error');
+        return;
+      }
+      this._autoMap();
+      this._step = 2;
+      this._aiMapping = true;
+      this._render();
+      await this._aiMap();
+      this._aiMapping = false;
+      if (this._step === 2) this._render();
+    } catch (err) {
+      toast('שגיאה בקריאת קובץ ה-Excel, יש לוודא שזהו קובץ xlsx/xls תקין ולא פגום', 'error');
+    }
   },
 
   // Asks Claude to map ambiguous column headers to system fields, on top of
@@ -16335,7 +16385,7 @@ ${fileData}
             <span class="btn btn-primary" style="display:inline-block;pointer-events:none;">📁 בחירת קובץ</span>
             <input type="file" id="import-file-input" accept=".csv,.txt,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style="display:none;" onchange="LeadImport.handleFile(this)">
             <div class="import-dropzone-formats">
-              📄 CSV · Excel (יש להוריד כ-CSV קודם) · ייצוא מיד2, Google Sheets ועוד
+              📄 CSV · Excel (xlsx/xls) · ייצוא מיד2, Google Sheets ועוד
             </div>
           </label>
           <div class="import-drive-section">

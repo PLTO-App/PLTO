@@ -198,7 +198,10 @@
 2. חשב hash: `cat node_modules/@supabase/supabase-js/dist/umd/supabase.js | openssl dgst -sha384 -binary | openssl base64 -A`
 3. עדכן את `integrity="sha384-..."` ב-index.html (שתי שורות בתחילת ה-`<body>` תחת CSS)
 
-גרסאות נוכחיות: supabase-js@**2.108.2**, chart.js@**4.5.1**
+גרסאות נוכחיות: supabase-js@**2.108.2**, chart.js@**4.5.1**, xlsx (SheetJS)@**0.18.5**
+(נטען lazy, רק כשנבחר קובץ xlsx/xls — `LeadImport._loadXLSX()` ב-index.html, לא בשתי
+השורות הקבועות ב-`<body>`. אותו תהליך `npm install xlsx@<VER>` + חישוב hash על
+`node_modules/xlsx/dist/xlsx.full.min.js` כשמעדכנים גרסה.)
 
 ---
 
@@ -2042,6 +2045,39 @@ Supabase מתעלם ממנו ונופל בחזרה ל-Site URL ברירת המח
 > מיגרציה 063) לא נגעתי בה בכוונה — אומת שהעמודה הזו לא נקראת בפועל בשום
 > RPC פעיל (הלוגיקה האמיתית עברה לגמרי ל-`lead_referrals.expires_at` דרך
 > מיגרציה 072), כך שהיא כבר מתה ואין טעם לתחזק אותה.
+
+---
+
+## מה בוצע — סשן 12/7/2026 (ט') — ייבוא לידים: Excel נקרא ישירות בדפדפן
+
+> ענף: `claude/lead-upload-google-drive-9tey29`. הצטמצם לפי בחירת המשתמש
+> מבין 3 חלקים אפשריים (Excel / Google Drive / זיהוי מתמונה) — ראה "נשאר לביצוע" למטה.
+
+### 🐛 האבחנה
+"ייבוא לידים מקובץ" (`LeadImport`) חסם קבצי Excel לגמרי: `handleFile()` זיהה
+`.xlsx/.xls` והציג toast שדורש מהמשתמש לפתוח ב-Google Sheets, להוריד כ-CSV,
+ואז להעלות מחדש — לא "לא עובד", אלא חסימה מכוונת אבל מסורבלת.
+
+### ✅ תוקן
+נוספה ספריית **SheetJS (xlsx@0.18.5)**, **נטענת lazy** (`LeadImport._loadXLSX()`
+מזריק `<script>` דינמי עם `integrity` רק כשנבחר קובץ xlsx/xls בפועל — לא נוסף
+לשתי שורות ה-CDN הקבועות ב-`<body>`, כדי לא לשלוח ~880KB לכל טעינת דף). קובץ
+Excel נקרא עכשיו ישירות (`_handleExcelFile()`: `XLSX.read` על ה-`ArrayBuffer`,
+`sheet_to_json` עם `header:1`) ועובר באותו pipeline בדיוק כמו CSV (`_autoMap`,
+`_aiMap`, מיפוי עמודות, תצוגה מקדימה). הוסר ה-toast החוסם, עודכן טקסט הדרופזון.
+
+### 🔬 בדיקה
+נבנה קובץ xlsx בדיקה (עברית: שם/טלפון/אימייל/אזור) עם ספריית `xlsx` דרך
+Node, והורץ מול `LeadImport._handleExcelFile()` ב-Playwright (offline,
+CDN מוזרק מקומית כי jsdelivr חסום ב-sandbox) — headers/rows/מיפוי אוטומטי
+תקינים, `_step` מתקדם ל-2 כצפוי.
+
+### 📋 נשאר לביצוע (הוצג למשתמש כאפשרויות, לא נבחרו הפעם)
+1. **Google Drive** — הדבקת קישור עדיין נכשלת ברוב המקרים (חסימת CORS
+   של הדפדפן על הורדה ישירה מ-Drive). תיקון אמיתי דורש Edge Function חדשה
+   שמתווכת את ההורדה בצד השרת.
+2. **זיהוי לידים מתוך תמונה/צילום מסך (AI Vision)** — דורש הרחבת `ai-proxy`
+   לקבל תמונה + שליחה ל-Claude עם ראייה, ומכסת AI חדשה (מיגרציית DB).
 
 ---
 
