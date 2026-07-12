@@ -201,12 +201,13 @@
     body.theme-accessible .nav-item.a11y-btn {
       border-color: #FFFF00;
     }
-    /* FAB mobile */
+    /* FAB mobile — stacked above the "+ ליד" FAB (56px tall, bottom: bottom-nav-h+16px)
+       so the two never overlap on the dashboard, where both are visible together. */
     #a11y-fab {
       display: none;
       position: fixed;
-      bottom: calc(var(--bottom-nav-h) + 10px);
-      left: 14px;
+      bottom: calc(var(--bottom-nav-h) + 82px);
+      left: 26px;
       z-index: 200;
       background: var(--navy-600);
       color: var(--gray-600);
