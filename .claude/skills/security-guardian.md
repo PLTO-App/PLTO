@@ -74,7 +74,7 @@
 ```
 ריסק: גישה לפאנל אדמין SaaS
 מניעה:
-- אימות אימייל בלבד (liders.crm@gmail.com / elgrablidudu@gmail.com)
+- אימות אימייל בלבד (info@plto.app / elgrablidudu@gmail.com)
 - RPCs מגבילים גישה ל-2 כתובות
 - Session timeout
 ```
