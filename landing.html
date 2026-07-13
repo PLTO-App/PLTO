@@ -141,13 +141,17 @@
       background: transparent;
       color: rgba(255,255,255,0.80);
       border: 1px solid rgba(255,255,255,0.22);
-      padding: 8px 14px;
-      border-radius: 99px;
-      font-family: 'Rubik', 'Heebo', sans-serif;
-      font-size: 13px;
-      font-weight: 600;
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
       cursor: pointer;
       transition: all 0.2s;
+      flex-shrink: 0;
     }
     .nav-a11y-btn:hover { border-color: rgba(255,255,255,0.55); color: #fff; }
     .nav-a11y-btn[aria-pressed="true"] { background: #FFFF00; color: #000; border-color: #FFFF00; font-weight: 800; }
@@ -200,7 +204,7 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 120px 24px 80px;
+      padding: 110px 24px 46px;
       position: relative;
       overflow: hidden;
     }
@@ -331,7 +335,7 @@
        תצוגות מותאמות לתחום (mock UI)
     ══════════════════════════════ */
     .vertical-previews {
-      margin-top: 52px;
+      margin-top: 34px;
       width: 100%;
       max-width: 900px;
       display: grid;
@@ -413,7 +417,7 @@
        כאב (הזדהות)
     ══════════════════════════════ */
     .section {
-      padding: 44px 24px;
+      padding: 34px 24px;
     }
     .section-inner {
       max-width: 900px;
@@ -441,7 +445,7 @@
       color: var(--text-muted);
       text-align: center;
       max-width: 560px;
-      margin: 0 auto 32px;
+      margin: 0 auto 24px;
       line-height: 1.7;
     }
 
@@ -484,7 +488,7 @@
     ══════════════════════════════ */
     .demo-section {
       background: var(--gray-bg);
-      padding: 56px 24px;
+      padding: 38px 24px;
     }
     /* ══════════════════════════════
        קרוסלת מסכים
@@ -663,6 +667,7 @@
       background: linear-gradient(180deg, var(--navy-100) 0%, var(--gray-bg) 100%);
       overflow: hidden;
       content-visibility: auto;
+      contain-intrinsic-size: auto 260px;
     }
     .ss-skyline {
       position: absolute; bottom: 36px; right: 5%;
@@ -736,7 +741,7 @@
     @keyframes bb-cycle-a { 0%, 42% { opacity: 1; transform: translateY(0); } 50%, 100% { opacity: 0; transform: translateY(-4px); } }
     @keyframes bb-cycle-b { 0%, 42% { opacity: 0; transform: translateY(4px); } 50%, 92% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(4px); } }
     @media (max-width: 700px) {
-      .street-scene { height: 200px; }
+      .street-scene { height: 200px; contain-intrinsic-size: auto 200px; }
       .ss-skyline { right: 3%; gap: 5px; }
       .ss-building { width: 26px; }
       .ss-b1 { height: 40px; } .ss-b2 { height: 64px; } .ss-b3 { height: 82px; } .ss-b4 { height: 52px; } .ss-b5 { height: 70px; }
@@ -753,7 +758,7 @@
     ══════════════════════════════ */
     .agents-section {
       background: linear-gradient(160deg, var(--navy-900) 0%, var(--navy-700) 100%);
-      padding: 56px 24px;
+      padding: 40px 24px;
       position: relative;
       overflow: hidden;
     }
@@ -770,15 +775,17 @@
     .agents-section .section-label { color: var(--gold-400); font-size: 15px; font-weight: 800; }
 
     .agents-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 14px;
-      max-width: 980px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      max-width: 740px;
       margin: 0 auto;
       position: relative;
       z-index: 1;
     }
     .agent-card {
+      flex: 0 1 228px;
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.10);
       border-radius: var(--radius);
@@ -793,6 +800,13 @@
     .agents-closing {
       text-align: center; font-size: 16px; font-weight: 800; color: var(--gold-400);
       margin-top: 28px; position: relative; z-index: 1;
+    }
+    @media (max-width: 700px) {
+      .agents-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; max-width: 100%; }
+      .agent-card { flex-basis: auto; padding: 12px 10px; border-radius: var(--radius-sm); }
+      .agent-icon { font-size: 19px; margin-bottom: 5px; }
+      .agent-title { font-size: 12.5px; margin-bottom: 3px; line-height: 1.3; }
+      .agent-desc { font-size: 10.5px; line-height: 1.4; }
     }
 
     /* ══════════════════════════════
@@ -836,7 +850,7 @@
     ══════════════════════════════ */
     .pricing-section {
       background: var(--gray-bg);
-      padding: 56px 24px;
+      padding: 40px 24px;
     }
     .plans-grid {
       display: grid;
@@ -1016,7 +1030,7 @@
     ══════════════════════════════ */
     .closing {
       background: linear-gradient(145deg, var(--navy-900) 0%, var(--navy-700) 100%);
-      padding: 80px 24px;
+      padding: 54px 24px;
       text-align: center;
       position: relative;
       overflow: hidden;
@@ -1039,7 +1053,7 @@
       position: relative;
       z-index: 1;
     }
-    .closing h2 .gold { color: var(--gold); }
+    .closing h2 .gold { color: var(--white); }
     .closing p {
       font-size: 17px;
       color: rgba(255,255,255,0.60);
@@ -1084,9 +1098,9 @@
     @media (max-width: 600px) {
       .stats-inner { grid-template-columns: repeat(3, 1fr); }
       .stat-num { font-size: 26px; }
-      .section, .demo-section, .agents-section, .pricing-section { padding: 44px 20px; }
-      .closing { padding: 60px 20px; }
-      .section-sub { margin-bottom: 28px; }
+      .section, .demo-section, .agents-section, .pricing-section { padding: 28px 20px; }
+      .closing { padding: 40px 20px; }
+      .section-sub { margin-bottom: 22px; }
       .feature-groups { gap: 24px; }
     }
 
@@ -1203,8 +1217,9 @@
        רצועת אמון / אבטחה
     ══════════════════════════════ */
     .trust-strip {
-      background: var(--gray-bg);
-      padding: 48px 24px;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      padding: 40px 24px;
       text-align: center;
     }
     .trust-title {
@@ -1252,7 +1267,7 @@
     .ap-pain { font-size: 15px; color: var(--gray,#64748B); font-style: italic; line-height: 1.55; margin-bottom: 12px; border-right: 3px solid #E2E8F0; padding-right: 10px; }
     .ap-solution { font-size: 14px; color: #1E40AF; font-weight: 600; line-height: 1.5; }
     .ap-solution::before { content: "✓  "; }
-    #features { border-top: 1px solid var(--border); }
+    #features { background: var(--gray-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
     .about-pre-title {
       text-align: center;
       font-size: 13px;
@@ -1736,6 +1751,7 @@
       background: linear-gradient(180deg, var(--white) 0%, var(--gray-bg) 100%);
       overflow: hidden;
       content-visibility: auto;
+      contain-intrinsic-size: auto 130px;
     }
     .cd-sign {
       position: absolute; top: 18px; left: 0; right: 0;
@@ -1795,6 +1811,7 @@
       gap: 22px;
       overflow: hidden;
       content-visibility: auto;
+      contain-intrinsic-size: auto 84px;
     }
     .ho-figure {
       width: 50px; height: 50px;
@@ -1848,7 +1865,7 @@
       .ho-to   { animation: none !important; }
     }
     @media (max-width: 480px) {
-      .handoff-divider { gap: 14px; height: 72px; }
+      .handoff-divider { gap: 14px; height: 72px; contain-intrinsic-size: auto 72px; }
       .ho-track { width: 84px; }
       .ho-figure { width: 42px; height: 42px; font-size: 22px; }
     }
@@ -2066,7 +2083,15 @@
     ══════════════════════════════ */
     .industry-section {
       background: var(--navy-800);
-      padding: 64px 0;
+      padding: 46px 0;
+      position: relative;
+    }
+    .industry-section::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 15%; left: 15%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212,168,67,0.55), transparent);
     }
     .industry-section .section-label { color: var(--gold-400); font-size: 15px; font-weight: 800; }
     .industry-section .section-title { color: var(--white); }
@@ -2461,7 +2486,7 @@
        כאב הפניות מחוץ לאזור
     ══════════════════════════════ */
     .referral-pain-section {
-      background: var(--white);
+      background: var(--navy-50);
     }
     .rp-inner {
       max-width: 760px;
@@ -2620,7 +2645,7 @@
   <div style="display:flex;align-items:center;gap:10px;">
     <button class="nav-a11y-btn" data-a11y-btn
             onclick="toggleA11y()" aria-pressed="false"
-            aria-label="הפעלת מצב נגישות">♿ נגישות</button>
+            aria-label="הפעלת מצב נגישות">♿</button>
     <a href="https://plto.app" class="nav-cta">מתחילים בחינם</a>
   </div>
 </nav>
@@ -2681,6 +2706,9 @@
 
   </div>
 </section>
+
+<!-- מעבר מכהה לבהיר -->
+<div class="sect-blend-light" aria-hidden="true"></div>
 
 <!-- תצוגת המערכת -->
 <section class="demo-section" id="demo">
@@ -2810,36 +2838,17 @@
 <section class="section">
   <div class="section-inner">
     <div class="excel-title-row fade-up">
-      <h2 class="section-title" style="margin-bottom:0;">מתי בפעם האחרונה<br>גיליון אקסל סגר לך עסקה</h2>
+      <h2 class="section-title" style="margin-bottom:0;">במקום להתעסק עם כמה מערכות<br>הכל מגיע במערכת אחת</h2>
       <span class="mini-excel-wrap" aria-hidden="true">
-        <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="56" height="56" rx="7" fill="white" stroke="#217346" stroke-width="2.5"/>
-          <rect x="1.25" y="1.25" width="53.5" height="14" rx="5" fill="#217346"/>
-          <text x="28" y="11.5" text-anchor="middle" fill="white" font-size="7.5" font-family="Arial,sans-serif" font-weight="bold">XLS</text>
-          <line x1="19" y1="15" x2="19" y2="56" stroke="#C8D3C9" stroke-width="1"/>
-          <line x1="37" y1="15" x2="37" y2="56" stroke="#C8D3C9" stroke-width="1"/>
-          <line x1="0" y1="26" x2="56" y2="26" stroke="#C8D3C9" stroke-width="1"/>
-          <line x1="0" y1="37" x2="56" y2="37" stroke="#C8D3C9" stroke-width="1"/>
-          <line x1="0" y1="48" x2="56" y2="48" stroke="#C8D3C9" stroke-width="1"/>
-          <rect x="20" y="27" width="16" height="9" fill="#FFF3CD" rx="1"/>
-          <rect x="1" y="38" width="17" height="9" fill="#FFCCCC" rx="1"/>
-          <rect x="38" y="27" width="17" height="9" fill="#E8F5E9" rx="1"/>
-          <rect x="20" y="49" width="16" height="6" fill="#FFF3CD" rx="1"/>
-          <line x1="3" y1="21" x2="15" y2="21" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
-          <line x1="21" y1="21" x2="33" y2="21" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
-          <line x1="39" y1="21" x2="53" y2="21" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
-          <line x1="3" y1="30" x2="13" y2="30" stroke="#94A3B8" stroke-width="1" stroke-linecap="round"/>
-          <line x1="21" y1="30" x2="30" y2="30" stroke="#D97706" stroke-width="1.5" stroke-linecap="round"/>
-          <line x1="39" y1="30" x2="51" y2="30" stroke="#94A3B8" stroke-width="1" stroke-linecap="round"/>
-          <line x1="3" y1="41" x2="15" y2="41" stroke="#DC2626" stroke-width="1.5" stroke-linecap="round"/>
-          <line x1="39" y1="41" x2="52" y2="41" stroke="#94A3B8" stroke-width="1" stroke-linecap="round"/>
-          <line x1="3" y1="52" x2="11" y2="52" stroke="#94A3B8" stroke-width="1" stroke-linecap="round"/>
-          <line x1="21" y1="52" x2="33" y2="52" stroke="#94A3B8" stroke-width="1" stroke-linecap="round"/>
-          <text x="27" y="45" text-anchor="middle" fill="#DC2626" font-size="9" font-weight="bold" font-family="Arial,sans-serif">?</text>
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="16" height="16" rx="5" fill="#2563EB"/>
+          <rect x="22" y="2" width="16" height="16" rx="5" fill="#1C3E6B"/>
+          <rect x="2" y="22" width="16" height="16" rx="5" fill="#C49A2A"/>
+          <rect x="22" y="22" width="16" height="16" rx="5" fill="#16A34A"/>
         </svg>
       </span>
     </div>
-    <p class="section-sub fade-up">אקסל שומר נתונים, אבל לא מקדם אף עסקה. PLTO הולך איתך מהכנסת הליד עד סגירת העסקה.</p>
+    <p class="section-sub fade-up">אקסל, קבוצת וואטסאפ ופתקים בראש, הכל מתאחד לפייפליין אחד שמכניס לידים ומוציא עסקאות סגורות.</p>
     <div class="pain-grid">
       <div class="pain-card fade-up">
         <span class="pain-emoji">😵</span>
@@ -2901,10 +2910,13 @@
   </div>
 </div>
 
+<!-- מעבר מבהיר לכהה -->
+<div class="sect-blend-dark" aria-hidden="true"></div>
+
 <!-- 5 הסוכנים -->
 <section class="agents-section" id="agents">
   <div class="section-inner">
-    <h2 class="section-title fade-up">5 סוכנים חכמים שעובדים בשבילך, בלי לקחת משכורת 👌</h2>
+    <h2 class="section-title fade-up">5 סוכנים חכמים שעובדים בשבילך, בלי לקחת משכורת</h2>
     <p class="section-sub fade-up">לכל סוכן תפקיד ברור, שמבוצע במקצועיות.</p>
     <div class="agents-grid fade-up">
       <div class="agent-card">
