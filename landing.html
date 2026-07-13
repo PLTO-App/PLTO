@@ -1570,15 +1570,29 @@
       100% { opacity: 0; transform: scale(0.85) rotate(0deg) translateY(-18px); }
     }
 
-    /* ═══ FEATURES CAROUSEL ═══ */
-    .feat-carousel { position: relative; overflow: hidden; min-height: 300px; }
-    .feat-carousel .feature-group { display: none; }
-    .feat-carousel .feature-group.ft-active {
+    /* ═══ FEATURES CAROUSEL ═══
+       display:grid + כל הקבוצות מוערמות באותו תא, כדי שגובה הקונטיינר
+       תמיד יהיה לפי הקבוצה הגבוהה מכולן ולא ישתנה במעבר בין טאבים
+       (זו הייתה סיבת קפיצת הגלילה: display:none/block בין קבוצות עם
+       כמות כרטיסים שונה שינה את הגובה בכל החלפה אוטומטית) */
+    .feat-carousel { position: relative; display: grid; }
+    .feat-carousel .feature-group {
+      grid-area: 1 / 1 / 2 / 2;
       display: block;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .feat-carousel .feature-group.ft-active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
       animation: featSlideIn 0.42s cubic-bezier(0.4,0,0.2,1) both;
     }
     .feat-carousel .feature-group.ft-prev {
-      display: block;
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
       animation: featSlideInRtl 0.42s cubic-bezier(0.4,0,0.2,1) both;
     }
     @keyframes featSlideIn    { from { opacity:0; transform:translateX(-26px); } to { opacity:1; transform:translateX(0); } }
