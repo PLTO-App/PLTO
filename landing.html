@@ -87,7 +87,7 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; scroll-padding-top: 76px; }
     :focus-visible {
       outline: 2px solid var(--blue, #2563EB);
       outline-offset: 3px;
@@ -156,6 +156,57 @@
     .nav-a11y-btn:hover { border-color: rgba(255,255,255,0.55); color: #fff; }
     .nav-a11y-btn[aria-pressed="true"] { background: #FFFF00; color: #000; border-color: #FFFF00; font-weight: 800; }
 
+    .nav-menu-btn {
+      background: transparent;
+      color: rgba(255,255,255,0.80);
+      border: 1px solid rgba(255,255,255,0.22);
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .nav-menu-btn:hover { border-color: rgba(255,255,255,0.55); color: #fff; }
+    .nav-menu-btn[aria-expanded="true"] { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .nav-menu-panel {
+      position: absolute;
+      top: 100%;
+      right: 0; left: 0;
+      background: rgba(10,20,38,0.98);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      padding: 8px 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      transform: translateY(-8px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s;
+      max-height: calc(100vh - 80px);
+      overflow-y: auto;
+    }
+    .nav-menu-panel.open { opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0); }
+    .nav-menu-panel a {
+      color: rgba(255,255,255,0.85);
+      text-decoration: none;
+      font-family: 'Rubik', 'Heebo', sans-serif;
+      font-size: 15.5px;
+      font-weight: 600;
+      padding: 13px 10px;
+      border-radius: 10px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-menu-panel a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .nav-menu-panel a + a { border-top: 1px solid rgba(255,255,255,0.06); }
+
     /* ═══════════════════════════════════════
        ACCESSIBILITY MODE — High Contrast
     ═══════════════════════════════════════ */
@@ -197,17 +248,17 @@
        גיבור
     ══════════════════════════════ */
     .hero {
-      min-height: 100vh;
       background: linear-gradient(145deg, var(--navy-900) 0%, var(--navy-700) 60%, var(--navy-600) 100%);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 110px 24px 46px;
+      padding: 92px 24px 40px;
       position: relative;
       overflow: hidden;
     }
+    @media (min-width: 900px) { .hero { min-height: 88vh; } }
     .hero::before {
       content: '';
       position: absolute;
@@ -381,6 +432,82 @@
       .vp-value-headline { font-size: 10px; }
       .vp-value-sub { font-size: 8.5px; line-height: 1.3; }
     }
+    .vp-value.vp-clickable {
+      border: none;
+      font-family: 'Rubik', 'Heebo', sans-serif;
+      width: 100%;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    }
+    .vp-value.vp-clickable:hover, .vp-value.vp-clickable:focus-visible {
+      background: rgba(255,255,255,0.10);
+      border-color: rgba(255,255,255,0.22);
+      transform: translateY(-2px);
+    }
+
+    /* ══════════════════════════════
+       חלונית מורחבת לתצוגות תחום (hero)
+    ══════════════════════════════ */
+    .vp-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(6,15,28,0.72);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 300;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.22s ease, visibility 0.22s;
+    }
+    .vp-modal-overlay.open { opacity: 1; visibility: visible; }
+    .vp-modal {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      padding: 36px 28px 28px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      position: relative;
+      box-shadow: var(--shadow-xl);
+      transform: scale(0.94) translateY(10px);
+      transition: transform 0.25s ease;
+    }
+    .vp-modal-overlay.open .vp-modal { transform: scale(1) translateY(0); }
+    .vp-modal-close {
+      position: absolute;
+      top: 14px; left: 14px;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--gray-card);
+      color: var(--text-muted);
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, color 0.2s;
+    }
+    .vp-modal-close:hover { background: var(--border); color: var(--text); }
+    .vp-modal-icon { font-size: 42px; margin-bottom: 14px; }
+    .vp-modal-title { font-size: clamp(20px, 3vw, 24px); font-weight: 900; color: var(--navy); margin-bottom: 18px; line-height: 1.3; }
+    .vp-modal-list { list-style: none; text-align: right; margin-bottom: 22px; }
+    .vp-modal-list li {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .vp-modal-list li:last-child { border-bottom: none; }
+    .vp-modal-list li::before { content: "✓"; color: var(--green); font-weight: 800; flex-shrink: 0; }
+    .vp-modal .btn-primary { font-size: 15px; padding: 12px 30px; box-shadow: none; }
 
     /* ══════════════════════════════
        רצועת מספרים
@@ -2643,10 +2770,21 @@
 <nav>
   <div class="nav-logo">PLT<span>O</span></div>
   <div style="display:flex;align-items:center;gap:10px;">
+    <button class="nav-menu-btn" onclick="toggleNavMenu()" aria-expanded="false"
+            aria-controls="navMenuPanel" aria-label="פתיחת תפריט ניווט">☰</button>
     <button class="nav-a11y-btn" data-a11y-btn
             onclick="toggleA11y()" aria-pressed="false"
             aria-label="הפעלת מצב נגישות">♿</button>
     <a href="https://plto.app" class="nav-cta">מתחילים בחינם</a>
+  </div>
+  <div class="nav-menu-panel" id="navMenuPanel" aria-hidden="true">
+    <a href="#demo" onclick="closeNavMenu()">הצצה למערכת</a>
+    <a href="#agents" onclick="closeNavMenu()">5 הסוכנים שלנו</a>
+    <a href="#industries" onclick="closeNavMenu()">התחומים שלנו</a>
+    <a href="#features" onclick="closeNavMenu()">מה מקבלים בפנים</a>
+    <a href="#how" onclick="closeNavMenu()">איך זה עובד</a>
+    <a href="#pricing" onclick="closeNavMenu()">תמחור</a>
+    <a href="#faq" onclick="closeNavMenu()">שאלות נפוצות</a>
   </div>
 </nav>
 
@@ -2680,28 +2818,28 @@
     <!-- סוכן נדל"ן -->
     <div class="vp-wrap fade-up">
       <div class="vp-label">🏠 סוכן נדל&quot;ן</div>
-      <div class="vp-value">
+      <button type="button" class="vp-value vp-clickable" onclick="openVpModal('realestate')">
         <div class="vp-value-headline">אף ליד לא מתקרר</div>
         <div class="vp-value-sub">זיהוי אוטומטי של לידים שדורשים חזרה, בזמן</div>
-      </div>
+      </button>
     </div>
 
     <!-- עיצוב פנים -->
     <div class="vp-wrap fade-up">
       <div class="vp-label">🛋 עיצוב פנים</div>
-      <div class="vp-value">
+      <button type="button" class="vp-value vp-clickable" onclick="openVpModal('interior')">
         <div class="vp-value-headline">השראה שהופכת לפרויקט</div>
         <div class="vp-value-sub">לוח השראה מ-Pinterest, מחובר ישר לכרטיס הלקוח</div>
-      </div>
+      </button>
     </div>
 
     <!-- עו"ד נדל"ן -->
     <div class="vp-wrap fade-up">
       <div class="vp-label">⚖️ עו&quot;ד נדל&quot;ן</div>
-      <div class="vp-value">
+      <button type="button" class="vp-value vp-clickable" onclick="openVpModal('lawyer')">
         <div class="vp-value-headline">כל תיק במעקב מלא</div>
         <div class="vp-value-sub">מבדיקת נאותות ועד החתימה, בלי לאבד פרט</div>
-      </div>
+      </button>
     </div>
 
   </div>
@@ -2949,7 +3087,7 @@
 </section>
 
 <!-- תחומי עיסוק -->
-<section class="industry-section">
+<section class="industry-section" id="industries">
   <div class="section-inner">
     <h2 class="section-title fade-up">המשולש הקדוש</h2>
     <p class="section-sub fade-up" style="font-size:clamp(18px,2.6vw,24px);font-weight:800;color:rgba(255,255,255,0.80);margin-bottom:36px;">שלושה תחומים שמשלימים כל עסקה מוצלחת</p>
@@ -3212,7 +3350,7 @@
 </section>
 
 <!-- איך זה עובד -->
-<section class="section how-section">
+<section class="section how-section" id="how">
   <div class="section-inner">
     <p class="section-label fade-up">פשוט כמו שזה נשמע</p>
     <h2 class="section-title fade-up">שלושה צעדים לא יותר</h2>
@@ -3796,6 +3934,103 @@
   };
 
   ABEngine.apply({ landing_hero_cta: '#hero-cta-btn' });
+})();
+</script>
+
+<!-- חלונית מורחבת לתצוגות תחום (hero) -->
+<div class="vp-modal-overlay" id="vpModalOverlay" onclick="closeVpModal()">
+  <div class="vp-modal" role="dialog" aria-modal="true" aria-labelledby="vpModalTitle" onclick="event.stopPropagation()">
+    <button type="button" class="vp-modal-close" onclick="closeVpModal()" aria-label="סגירה">✕</button>
+    <div class="vp-modal-icon" id="vpModalIcon" aria-hidden="true"></div>
+    <h3 class="vp-modal-title" id="vpModalTitle"></h3>
+    <ul class="vp-modal-list" id="vpModalList"></ul>
+    <a href="https://plto.app" class="btn-primary">התחלה בחינם</a>
+  </div>
+</div>
+
+<script>
+/* תפריט ניווט עליון — קפיצה לכל סקשן בדף */
+(function() {
+  var panel = document.getElementById('navMenuPanel');
+  var btn = document.querySelector('.nav-menu-btn');
+  if (!panel || !btn) return;
+
+  window.toggleNavMenu = function() {
+    var isOpen = panel.classList.toggle('open');
+    btn.setAttribute('aria-expanded', String(isOpen));
+    panel.setAttribute('aria-hidden', String(!isOpen));
+  };
+  window.closeNavMenu = function() {
+    panel.classList.remove('open');
+    btn.setAttribute('aria-expanded', 'false');
+    panel.setAttribute('aria-hidden', 'true');
+  };
+  document.addEventListener('click', function(e) {
+    if (panel.classList.contains('open') && !panel.contains(e.target) && e.target !== btn) {
+      closeNavMenu();
+    }
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeNavMenu();
+  });
+})();
+
+/* חלוניות מורחבות לתצוגות תחום בהירו */
+(function() {
+  var VP_DATA = {
+    realestate: {
+      icon: '🏠',
+      title: 'אף ליד לא מתקרר',
+      items: [
+        'זיהוי אוטומטי של לידים שדורשים חזרה, לפני שהם מתקררים',
+        'ציון AI לכל ליד לפי סיכוי סגירה, כדי לדעת למי לפנות קודם',
+        'תזכורות חכמות בדיוק בזמן הנכון, בלי לפספס הזדמנות'
+      ]
+    },
+    interior: {
+      icon: '🛋',
+      title: 'השראה שהופכת לפרויקט',
+      items: [
+        'לוח השראה מ-Pinterest, מחובר ישר לכרטיס הלקוח',
+        'מעקב מקונספט ראשוני ועד לביצוע בפועל',
+        'כל פרויקט מאורגן במקום אחד, בלי לאבד קבצים'
+      ]
+    },
+    lawyer: {
+      icon: '⚖️',
+      title: 'כל תיק במעקב מלא',
+      items: [
+        'מבדיקת נאותות ועד החתימה, בלי לאבד פרט',
+        'תזכורות אוטומטיות לתאריכים קריטיים בתיק',
+        'מסמכים וחוזים מאורגנים ומאובטחים במקום אחד'
+      ]
+    }
+  };
+  var overlay = document.getElementById('vpModalOverlay');
+  var iconEl = document.getElementById('vpModalIcon');
+  var titleEl = document.getElementById('vpModalTitle');
+  var listEl = document.getElementById('vpModalList');
+  if (!overlay) return;
+
+  window.openVpModal = function(key) {
+    var d = VP_DATA[key];
+    if (!d) return;
+    iconEl.textContent = d.icon;
+    titleEl.textContent = d.title;
+    listEl.innerHTML = '';
+    d.items.forEach(function(t) {
+      var li = document.createElement('li');
+      li.textContent = t;
+      listEl.appendChild(li);
+    });
+    overlay.classList.add('open');
+  };
+  window.closeVpModal = function() {
+    overlay.classList.remove('open');
+  };
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeVpModal();
+  });
 })();
 </script>
 
