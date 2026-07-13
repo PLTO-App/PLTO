@@ -424,7 +424,6 @@ supabase/
 |----------|-------|-------|
 | `ai-proxy` | קריאה ל-Claude Haiku 4.5 | פעיל ✅ |
 | `stripe-webhook` | demo/test בלבד | demo ⚠️ |
-| `cro-report-email` | שולחת דוח CRO שבועי (funnel + A/B) ל-info@plto.app, נקראת רק מ-pg_cron (086) | פעיל ✅ |
 
 > הטבלה הזו לא מתעדכנת אוטומטית — יש גם `twilio-whatsapp`, `gmail-proxy`,
 > `gmail-oauth-callback` פעילות (ראה סעיפי הסשנים למעלה לפרטים על כל אחת).
@@ -2295,24 +2294,48 @@ Playwright offline (כמו סשנים קודמים): 5 תרחישים (לא-מנ
    `Playwright` (offline, עם stubs) אימת גם את ה-DOM/click/localStorage בפועל
    בשני הדפים.
 
-### 🔴 נמצא, לא תוקן — דורש פעולה מהמשתמש
-**Gmail OAuth refresh token פג (`invalid_grant`)** — הדוח נכשל בפועל בבדיקה
-(500, `refresh failed: invalid_grant`) כי ה-refresh token של `gmail_tokens`
-(`liders.crm@gmail.com`) לא תקף יותר (רוענן לאחרונה 10/7, נכשל ב-13/7 — 3
-ימים, תואם למגבלת Google של 7 ימים על refresh tokens כש-OAuth consent screen
-במצב "Testing" ולא "Production/Verified"). **זה כנראה משפיע גם על תכונת
-תיבת ה-Gmail הקיימת באפליקציה** (`GmailInbox`), לא רק על הדוח החדש. תיקון:
-לבקר ב-`https://scyfywvzoogfrlalgftv.supabase.co/functions/v1/gmail-oauth-callback`
-מחובר לחשבון `liders.crm@gmail.com` כדי לבצע OAuth מחדש ולקבל token טרי.
-לתיקון קבוע: לשקול להוציא את ה-OAuth consent screen מ-"Testing" ל-"Production"
-ב-Google Cloud Console (כרוך באימות Google לתחומי הרשאה רגישים כמו
-gmail.send/gmail.modify).
+### ⚠️ Gmail OAuth refresh token פג (`invalid_grant`) — לא תוקן, כבר לא רלוונטי
+הדוח נכשל בפועל בבדיקה (500, `refresh failed: invalid_grant`) כי ה-refresh
+token של `gmail_tokens` (`liders.crm@gmail.com`) לא תקף יותר (רוענן לאחרונה
+10/7, נכשל ב-13/7 — תואם למגבלת Google של 7 ימים על refresh tokens כש-OAuth
+consent screen במצב "Testing" ולא "Production/Verified" **או** "Internal").
+**זה כנראה משפיע גם על תכונת תיבת ה-Gmail הקיימת באפליקציה** (`GmailInbox`) —
+לא קשור לדוח ה-CRO. תיקון (אם/כשיהיה רלוונטי בעתיד): לבקר ב-
+`https://scyfywvzoogfrlalgftv.supabase.co/functions/v1/gmail-oauth-callback`
+מחובר לחשבון המתאים כדי לבצע OAuth מחדש. לתיקון קבוע: ב-Google Cloud Console
+→ OAuth consent screen → User Type — אם `info@plto.app` נמצא באותו ארגון
+Workspace שהפרויקט תחתיו, מעבר ל-"Internal" (לא "External") מבטל את מגבלת
+7 הימים לגמרי בלי צורך באימות Google. המשתמש בחר לא לטפל בזה כרגע (ראה מטה).
+
+### ✅ עדכון 13/7/2026 — הדוח השבועי הוסר לגמרי (הוחלט מול המשתמש)
+המשתמש החליט לא לתחזק חיבור Gmail חוזר כל שבוע רק בשביל דוח לא הכרחי — מנוע
+ה-A/B testing עצמו לא תלוי במייל בכלל, כל התוצאות זמינות תמיד ב-admin.html.
+מיגרציה `088_remove_ab_report_email_infra.sql` (הוחלה על ה-DB החי) הסירה:
+- cron `plto-ab-report-weekly`
+- הפונקציות `send_ab_test_report_email()`, `verify_cron_report_secret()`
+- הפונקציה המתה `send_cro_weekly_digest()` (069) — ה-cron שלה כבר בוטל
+  קודם, נשארה שריד בלי קורא
+- ה-Vault secret `cro_report_internal_secret`
+- קובץ המקור `supabase/functions/cro-report-email/` הוסר מהריפו
+
+**⚠️ לא הוסר, דורש מחיקה ידנית אם רוצים**: ה-Edge Function `cro-report-email`
+עצמה עדיין פרוסה בפועל ב-Supabase (Dashboard → Edge Functions) — אין כלי MCP
+להסרת Edge Function. היא **מנוטרלת לגמרי בפועל** (כל בקשה אליה נכשלת כי
+`verify_cron_report_secret` שהיא מסתמכת עליו לאימות כבר לא קיים), אבל אם
+רוצים ניקיון מוחלט אפס-footprint — יש למחוק אותה ידנית מה-Dashboard.
+לא נמצאו שאריות רלוונטיות נוספות מהנושא הזה. **הערה נפרדת, לא טופלה בכוונה**:
+קיימת גם Edge Function בשם `temp-selftest` שלא מתועדת בשום מקום ב-CLAUDE.md —
+נראית כמו שריד מבדיקה ישנה, אבל לא נחקר תוכנה ולא הוסרה כי היא לא קשורה
+לנושא הסשן הזה (Gmail/CRO) ולא נתבקש ניקוי רוחבי של כל הריפו.
 
 ### 📋 לסשן הבא
-- להחליט אם להפעיל בפועל את טסט ה-CTA שנשאר מוכן ב-backlog.
+- להחליט אם להפעיל בפועל את טסט ה-CTA שנשאר מוכן ב-backlog (בדיקה דרך
+  admin.html בלבד, לא מייל).
 - לשקול להוסיף עוד `test_key` נתמכים ברשימת ה-select באדמין ככל שנוספים עוד
   מקומות לבדיקה (כרגע רק 2: hero CTA בנחיתה, login CTA באפליקציה).
-- דוח שבועי לא יגיע בפועל עד שה-Gmail OAuth יחובר מחדש (סעיף למעלה).
+- אם אי פעם ירצו לחדש דוח אוטומטי למייל: לבדוק קודם User Type ב-Google Cloud
+  Console (ראה למעלה) לפני שבונים מחדש את התשתית שהוסרה.
+- `temp-selftest` (Edge Function לא מתועדת) — להחליט אם לחקור/להסיר בסשן נפרד.
 
 ---
 
