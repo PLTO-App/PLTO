@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://scyfywvzoogfrlalgftv.supabase.co https://www.google-analytics.com https://www.googletagmanager.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
   <title>PLTO: הפלטפורמה שהופכת לידים לעסקאות</title>
   <meta name="description" content="מערכת CRM לעולם הנדל״ן: סוכני נדל״ן, עו״ד נדל״ן ומעצבי פנים. 5 סוכני AI שמנהלים את הפייפליין בשבילך. 30 יום חינם, ללא כרטיס אשראי.">
   <meta property="og:type" content="website">
@@ -2644,7 +2644,7 @@
         <span class="crane-cable"></span>
         <span class="crane-load">עסקה</span>
       </span>
-      <a href="https://plto.app" class="btn-primary pulse-cta cta-drop-target">כניסה ישירה למערכת</a>
+      <a href="https://plto.app" id="hero-cta-btn" class="btn-primary pulse-cta cta-drop-target">כניסה ישירה למערכת</a>
     </span>
   </div>
   <p class="hero-micro hero-trust">30 יום ניסיון &bull; ללא כרטיס אשראי &bull; ללא התחייבות</p>
@@ -3713,6 +3713,77 @@
       });
     });
   });
+})();
+</script>
+
+<script>
+/* A/B Testing Engine — landing.html
+   מקצה כל מבקר לוריאנט (יציב ב-localStorage, לא משתנה בין ביקורים חוזרים),
+   מציג את הטקסט מה-DB רק אם יש טסט פעיל עם test_key תואם, ושולח
+   ab_exposure/ab_converted דרך אותה תשתית funnel tracking (track_funnel_event)
+   שכבר משמשת את מעקב ה-CTA למעלה. אם אין טסט פעיל למפתח — הדף מציג את
+   הטקסט הסטטי הקיים ב-HTML בלי שום שינוי. ניהול הטסטים (יצירה/הפעלה/וריאנטים)
+   קורה ב-admin.html → CRO → A/B Tests.
+*/
+(function() {
+  var SUPABASE_URL = 'https://scyfywvzoogfrlalgftv.supabase.co';
+  var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjeWZ5d3Z6b29nZnJsYWxnZnR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyMTM3NTIsImV4cCI6MjA2Njc4OTc1Mn0.5aGMSrqSgYdIbZ5qAI1WX2ZBfp6-5TEaqQxOuMfKXkk';
+  var STORAGE_PREFIX = 'plto_ab_';
+
+  function getSessionId() {
+    var KEY = 'liders_cro_session';
+    var sid = sessionStorage.getItem(KEY);
+    if (!sid) { sid = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, function(c){return(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16);}); sessionStorage.setItem(KEY, sid); }
+    return sid;
+  }
+
+  function getBucket(testKey) {
+    var key = STORAGE_PREFIX + testKey;
+    var v = localStorage.getItem(key);
+    if (v === 'a' || v === 'b') return v;
+    v = (crypto.getRandomValues(new Uint32Array(1))[0] % 2 === 0) ? 'a' : 'b';
+    try { localStorage.setItem(key, v); } catch (e) {}
+    return v;
+  }
+
+  function track(eventName, testId, variant) {
+    fetch(SUPABASE_URL + '/rest/v1/rpc/track_funnel_event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON },
+      body: JSON.stringify({ p_session_id: getSessionId(), p_event_name: eventName, p_event_data: { test_id: testId, variant: variant } }),
+      keepalive: true
+    }).catch(function(){});
+  }
+
+  var exposed = {};
+
+  window.ABEngine = {
+    // map: { test_key: '#css-selector' } — לכל מפתח שנתמך על הדף הזה
+    apply: function(map) {
+      fetch(SUPABASE_URL + '/rest/v1/rpc/get_active_ab_tests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON },
+        body: '{}'
+      }).then(function(r) { return r.json(); }).then(function(tests) {
+        (tests || []).forEach(function(t) {
+          var sel = map[t.test_key];
+          if (!sel) return;
+          var el = document.querySelector(sel);
+          if (!el) return;
+          var variant = getBucket(t.test_key);
+          var text = variant === 'a' ? t.variant_a : t.variant_b;
+          if (text) el.textContent = text;
+          exposed[t.test_key] = { id: t.id, variant: variant };
+          track('ab_exposure', t.id, variant);
+          el.addEventListener('click', function() {
+            track('ab_converted', t.id, variant);
+          });
+        });
+      }).catch(function(){});
+    }
+  };
+
+  ABEngine.apply({ landing_hero_cta: '#hero-cta-btn' });
 })();
 </script>
 
