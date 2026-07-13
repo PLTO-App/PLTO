@@ -2078,7 +2078,14 @@
     .industry-section {
       background: var(--navy-800);
       padding: 46px 0;
-      border-top: 1px solid rgba(255,255,255,0.08);
+      position: relative;
+    }
+    .industry-section::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 15%; left: 15%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212,168,67,0.55), transparent);
     }
     .industry-section .section-label { color: var(--gold-400); font-size: 15px; font-weight: 800; }
     .industry-section .section-title { color: var(--white); }
@@ -2473,7 +2480,7 @@
        כאב הפניות מחוץ לאזור
     ══════════════════════════════ */
     .referral-pain-section {
-      background: var(--white);
+      background: var(--navy-50);
     }
     .rp-inner {
       max-width: 760px;
@@ -2896,6 +2903,9 @@
     </div>
   </div>
 </div>
+
+<!-- מעבר מבהיר לכהה -->
+<div class="sect-blend-dark" aria-hidden="true"></div>
 
 <!-- 5 הסוכנים -->
 <section class="agents-section" id="agents">
