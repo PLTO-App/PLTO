@@ -2777,12 +2777,12 @@
     <a href="https://plto.app" class="nav-cta">מתחילים בחינם</a>
   </div>
   <div class="nav-menu-panel" id="navMenuPanel" aria-hidden="true">
-    <a href="#agents" onclick="closeNavMenu()">5 הסוכנים שלנו</a>
-    <a href="#industries" onclick="closeNavMenu()">התחומים שלנו</a>
-    <a href="#features" onclick="closeNavMenu()">מה מקבלים בפנים</a>
-    <a href="#how" onclick="closeNavMenu()">איך זה עובד</a>
-    <a href="#pricing" onclick="closeNavMenu()">תמחור</a>
-    <a href="#faq" onclick="closeNavMenu()">שאלות נפוצות</a>
+    <a href="#agents">5 הסוכנים שלנו</a>
+    <a href="#industries">התחומים שלנו</a>
+    <a href="#features">מה מקבלים בפנים</a>
+    <a href="#how">איך זה עובד</a>
+    <a href="#pricing">תמחור</a>
+    <a href="#faq">שאלות נפוצות</a>
   </div>
 </nav>
 
@@ -3936,6 +3936,20 @@
   });
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeNavMenu();
+  });
+
+  // גלילה לסקשן בלי לשנות את כתובת ה-URL (בלי #hash)
+  var NAV_OFFSET = 76;
+  panel.querySelectorAll('a[href^="#"]').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var target = document.querySelector(link.getAttribute('href'));
+      if (target) {
+        var y = target.getBoundingClientRect().top + window.scrollY - NAV_OFFSET;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+      closeNavMenu();
+    });
   });
 })();
 
