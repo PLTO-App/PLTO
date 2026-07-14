@@ -6268,6 +6268,7 @@
       <!-- State: input -->
       <div id="ql-state-input">
         <p style="font-size:13px;color:var(--gray-500);margin-bottom:10px;">תיאור קצר של מה שהיה בשיחה/פגישה, שם הלקוח, מה דיברתם, עדכונים חשובים. AI יסדר ויכניס לליד הנכון.</p>
+        <div id="ql-usage" style="font-size:0.78rem;color:var(--gray-400);text-align:center;margin-bottom:8px;"></div>
         <textarea id="ql-input"
           placeholder='לדוגמה: "שוחחתי עם אבי לוי, הצעתי לו נכסים לפי האיזור שביקש. מוכן להעלות טיפה בתקציב אם תבוא עסקה טובה..."'
           style="width:100%;height:128px;border:1.5px solid var(--border);border-radius:var(--radius-md);padding:10px 12px;font-size:13px;font-family:inherit;resize:none;direction:rtl;color:var(--gray-900);background:var(--surface);transition:border-color .15s;"
@@ -6392,6 +6393,7 @@
       <div class="modal-title" id="reward-gen-title">🎁 פרס</div>
       <button class="modal-close" onclick="closeModal('modal-reward-gen')">×</button>
     </div>
+    <div id="reward-gen-usage" style="font-size:0.8rem;color:var(--gray-500);text-align:center;margin-bottom:10px;"></div>
     <div id="reward-gen-inputs" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
     <button class="tool-btn tool-btn-primary" id="reward-gen-btn" onclick="RewardGen.generate()">✨ יצירה עבורי</button>
     <div class="mktg-output" id="reward-gen-out"></div>
@@ -7110,6 +7112,10 @@
         <label class="form-label" id="lbl-new-prop-images">תמונות נכס <span style="color:var(--gray-400);font-weight:400;">(עד 5)</span></label>
         <div id="new-prop-gallery" class="prop-gallery-grid"></div>
       </div>
+      <div class="form-group" id="fg-new-prop-tour">
+        <label class="form-label" id="lbl-new-prop-tour">קישור לסיור וירטואלי 360°</label>
+        <input type="url" id="new-prop-tour-url" class="form-input" placeholder="https://my.matterport.com/show/?m=..." dir="ltr">
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-add-property')">ביטול</button>
@@ -7187,6 +7193,10 @@
       <div class="form-group" id="fg-edit-prop-images">
         <label class="form-label" id="lbl-edit-prop-images">תמונות נכס <span style="color:var(--gray-400);font-weight:400;">(עד 5)</span></label>
         <div id="edit-prop-gallery" class="prop-gallery-grid"></div>
+      </div>
+      <div class="form-group" id="fg-edit-prop-tour">
+        <label class="form-label" id="lbl-edit-prop-tour">קישור לסיור וירטואלי 360°</label>
+        <input type="url" id="edit-prop-tour-url" class="form-input" placeholder="https://my.matterport.com/show/?m=..." dir="ltr">
       </div>
     </div>
     <div class="modal-footer" style="flex-direction:column; gap:8px;">
@@ -7916,6 +7926,7 @@ const DB = {
         image_url: p.image_url || null,
         image_urls: p.image_urls?.length ? p.image_urls : (p.image_url ? [p.image_url] : []),
         madlan_url: p.madlan_url || null,
+        virtual_tour_url: p.virtual_tour_url || null,
         source_lead_id: p.source_lead_id || null,
       })),
       activities: (actsR.data || []).map(a => ({
@@ -8039,6 +8050,7 @@ const DB = {
       image_url: prop.image_url || null,
       image_urls: prop.image_urls || [],
       madlan_url: prop.madlan_url || null,
+      virtual_tour_url: prop.virtual_tour_url || null,
       source_lead_id: prop.source_lead_id || null,
     }).select().single();
     if (error) throw error;
@@ -8052,6 +8064,7 @@ const DB = {
       image_url: data.image_url || null,
       image_urls: data.image_urls || [],
       madlan_url: data.madlan_url || null,
+      virtual_tour_url: data.virtual_tour_url || null,
       source_lead_id: data.source_lead_id || null,
     };
   },
@@ -8068,6 +8081,7 @@ const DB = {
       address: updates.address,
       city: updates.city,
       description: updates.description,
+      virtual_tour_url: updates.virtual_tour_url || null,
       ...(updates.image_url  !== undefined ? { image_url:  updates.image_url  } : {}),
       ...(updates.image_urls !== undefined ? { image_urls: updates.image_urls } : {}),
     }).eq('id', propId).eq('tenant_id', this.tenantId);
@@ -9236,6 +9250,7 @@ const PROPERTY_CONFIG = {
     priceLabel: 'מחיר (₪)', priceRequired: true, pricePlaceholder: '2000000',
     showRooms: true, showArea: true, showFloor: true, showImages: true,
     imagesLabel: 'תמונות נכס',
+    showVirtualTour: true, tourLabel: 'קישור לסיור וירטואלי 360°',
   },
   interior: {
     titlePlaceholder: 'לדוגמה: שיפוץ סלון בסגנון מינימליסטי',
@@ -9247,6 +9262,7 @@ const PROPERTY_CONFIG = {
     priceLabel: 'תקציב (₪)', priceRequired: false, pricePlaceholder: '80000',
     showRooms: true, showArea: true, showFloor: false, showImages: true,
     imagesLabel: 'תמונות השראה',
+    showVirtualTour: true, tourLabel: 'קישור לסיור וירטואלי 360°',
   },
   realestate_lawyer: {
     titlePlaceholder: 'לדוגמה: ליווי רכישת דירה, רחוב הרצל 10',
@@ -9258,6 +9274,7 @@ const PROPERTY_CONFIG = {
     priceLabel: 'שכר טרחה (₪)', priceRequired: false, pricePlaceholder: '15000',
     showRooms: false, showArea: false, showFloor: false, showImages: false,
     imagesLabel: '',
+    showVirtualTour: false, tourLabel: '',
   },
 };
 PROPERTY_CONFIG.other = PROPERTY_CONFIG.realestate;
@@ -9300,6 +9317,8 @@ function applyIndustryToPropertyForm(prefix) {
   showFg(`fg-${prefix}-prop-floor`,  cfg.showFloor);
   showFg(`fg-${prefix}-prop-images`, cfg.showImages);
   setText(`lbl-${prefix}-prop-images`, cfg.imagesLabel);
+  showFg(`fg-${prefix}-prop-tour`, cfg.showVirtualTour);
+  setText(`lbl-${prefix}-prop-tour`, cfg.tourLabel);
   // "floor" and "city" share a form-row; when floor is hidden, city must span
   // both columns or it collapses into floor's grid slot leaving a blank gap.
   const cityFg = document.getElementById(`fg-${prefix}-prop-city`);
@@ -9325,6 +9344,25 @@ function fabAction() {
 let _modalLastFocus = null;
 function openModal(id) {
   _modalLastFocus = document.activeElement;
+  // The guided tour and level-up celebration overlays both sit above modals
+  // (z-index 99980 / 9998 vs 200) with pointer-events:all, so a modal opened
+  // while either is showing would be fully unclickable underneath it - end
+  // them instead of trapping the user.
+  if (document.getElementById('tour-overlay') && typeof GuidedTour !== 'undefined') {
+    GuidedTour.done(false);
+  }
+  const levelupOverlay = document.getElementById('levelup-overlay');
+  if (levelupOverlay && levelupOverlay.classList.contains('show') && typeof Gamify !== 'undefined') {
+    Gamify.closeLevelUp();
+  }
+  const milestoneOverlay = document.getElementById('milestone-overlay');
+  if (milestoneOverlay && milestoneOverlay.classList.contains('show') && typeof Gamify !== 'undefined') {
+    Gamify.closeMilestone();
+  }
+  const annualUpsellOverlay = document.getElementById('annual-upsell-modal');
+  if (annualUpsellOverlay && annualUpsellOverlay.classList.contains('show') && typeof AnnualUpsell !== 'undefined') {
+    AnnualUpsell.dismiss();
+  }
   const modal = document.getElementById(id);
   modal.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
@@ -11129,8 +11167,10 @@ ${safeArea ? 'אזור/פרויקט: ' + safeArea : ''}
       const cleanMsg = stripAiMessageArtifacts(msg);
       const phone = (lead.phone || '').replace(/^0/, '').replace(/-/g, '');
       const waUrl = 'https://wa.me/972' + phone + '?text=' + encodeURIComponent(cleanMsg);
+      const usageLabel = AiLimits.limitLabel('marketing');
       container.innerHTML = `
         <div style="background:var(--gray-50);border-radius:12px;padding:14px;font-size:14px;line-height:1.7;color:var(--gray-800);white-space:pre-wrap;direction:rtl;text-align:right;margin-bottom:14px;">${escapeHtml(cleanMsg)}</div>
+        <div style="font-size:0.8rem;color:var(--gray-500);text-align:center;margin-bottom:10px;">✨ <span class="mktg-usage-counter">${usageLabel}</span> · אותה מכסה של כלי השיווק</div>
         <p style="font-size:11px;color:var(--gray-400);margin:0 0 10px;text-align:center;">✏️ סוכן השיווק יכול לפעמים לא לדייק, אפשר לערוך את ההודעה ב-WhatsApp לפני השליחה</p>
         <div style="display:flex;gap:8px;margin-bottom:8px;">
           <button class="btn" style="flex:1;border:1px solid var(--border);" onclick="navigator.clipboard.writeText(this.dataset.msg);toast('✅ הועתק','success')" data-msg="${escapeHtml(cleanMsg)}">📋 העתקה</button>
@@ -11142,6 +11182,7 @@ ${safeArea ? 'אזור/פרויקט: ' + safeArea : ''}
           <span>שליחת ההודעות מבוצעת ישירות ממכשירך האישי ובאחריותך הבלעדית. באחריות המשתמש לוודא כי הנמענים אינם מתנגדים לקבלת הודעות, בהתאם להוראות חוק התקשורת (חוק הספאם).</span>
         </div>
       `;
+      Marketing._updateUsageLabels();
     } catch(e) {
       container.innerHTML = `<div style="text-align:center;padding:20px;color:var(--gray-500);">⚠️ ${escapeHtml(e.message)}</div>`;
     }
@@ -11378,7 +11419,15 @@ const Gamify = {
     setTimeout(() => el.classList.remove('show'), 4000);
   },
 
-  showLevelUp(level) {
+  showLevelUp(level, _retries = 0) {
+    // Full-screen celebration (z-index 9998, pointer-events:all) would trap
+    // the user behind an unclickable screen if it appears while a modal
+    // (z-index 200) is open - defer instead of showing blind. Same class of
+    // bug as GuidedTour vs. modals.
+    if (document.querySelector('.modal-overlay:not(.hidden)')) {
+      if (_retries < 20) setTimeout(() => this.showLevelUp(level, _retries + 1), 1000);
+      return;
+    }
     document.getElementById('levelup-icon').textContent = level.icon;
     document.getElementById('levelup-name').textContent = level.name;
     document.getElementById('levelup-sub').textContent  = `ברכות! הגעת לרמה "${level.name}", ממשיכים לנצח! 💪`;
@@ -11709,7 +11758,14 @@ const Gamify = {
     }
   },
 
-  showMilestone(m) {
+  showMilestone(m, _retries = 0) {
+    // Same modal-collision guard as showLevelUp - this overlay (z-index 9999,
+    // pointer-events:all) would trap the user behind an unclickable screen
+    // if it appears while a modal (z-index 200) is open.
+    if (document.querySelector('.modal-overlay:not(.hidden)')) {
+      if (_retries < 20) setTimeout(() => this.showMilestone(m, _retries + 1), 1000);
+      return;
+    }
     const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
     set('milestone-fireworks', m.icon);
     set('milestone-xp-badge', m.xp.toLocaleString('he-IL') + ' XP');
@@ -11963,6 +12019,8 @@ ${v.topics ? `נושאים מועדפים: ${v.topics}` : ''}
     const outEl = document.getElementById('reward-gen-out');
     if (outEl) { outEl.textContent = ''; outEl.classList.remove('visible'); }
     document.getElementById('reward-gen-act')?.classList.remove('visible');
+    const usageEl = document.getElementById('reward-gen-usage');
+    if (usageEl) usageEl.textContent = AiLimits.limitLabel('general');
     openModal('modal-reward-gen');
   },
 
@@ -11984,6 +12042,8 @@ ${v.topics ? `נושאים מועדפים: ${v.topics}` : ''}
         outEl.textContent = text;
         document.getElementById('reward-gen-act')?.classList.add('visible');
       }
+      const usageEl = document.getElementById('reward-gen-usage');
+      if (usageEl) usageEl.textContent = AiLimits.limitLabel('general');
     } catch(e) {
       toast(e.message, 'error');
       if (outEl) { outEl.textContent = ''; outEl.classList.remove('visible'); }
@@ -13396,6 +13456,16 @@ const AnnualUpsell = {
         cta:   'עדכנו אותי כשזה יוצא 📬',
       },
     };
+
+    // Same modal-collision guard as GuidedTour/showLevelUp/showMilestone -
+    // this backdrop (z-index 9000, pointer-events once shown) would trap the
+    // user behind an unclickable screen if it appears while a modal is open.
+    if (document.querySelector('.modal-overlay:not(.hidden)')) {
+      this._deferRetries = (this._deferRetries || 0) + 1;
+      if (this._deferRetries <= 20) setTimeout(() => this.show(trigger), 1000);
+      return;
+    }
+    this._deferRetries = 0;
 
     const v = VARIANTS[trigger] || VARIANTS.settings_cta;
     document.getElementById('aum-icon').textContent  = v.icon;
@@ -15343,6 +15413,7 @@ const PropertiesScreen = {
             ${cfg.showFloor && p.floor > 0 ? `<div class="property-spec">🏢 קומה ${p.floor}</div>` : ''}
           </div>` : ''}
           ${p.description ? `<div style="font-size:12px;color:var(--gray-500);margin-top:6px;line-height:1.4;">${escapeHtml(p.description.slice(0,80))}${p.description.length > 80 ? '...' : ''}</div>` : ''}
+          ${p.virtual_tour_url ? `<a href="${escapeHtml(safeUrl(p.virtual_tour_url))}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#7C3AED;background:#F5F3FF;padding:3px 9px;border-radius:99px;margin-top:6px;font-weight:600;">🎥 סיור 360°</a>` : ''}
           <button class="prop-share-btn" onclick="event.stopPropagation();shareProperty('${p.id}')">📤 שיתוף</button>
         </div>
       </div>
@@ -17839,6 +17910,8 @@ async function addProperty() {
   const price = parseFloat(document.getElementById('new-prop-price').value) || 0;
   if (!title) { toast('נא להזין כותרת', 'error'); return; }
   if (propConfig().priceRequired && !price) { toast('נא להזין מחיר', 'error'); return; }
+  const tourUrl = document.getElementById('new-prop-tour-url').value.trim();
+  if (tourUrl && safeUrl(tourUrl) === '#') { toast('קישור הסיור הווירטואלי לא תקין', 'error'); return; }
   const saveBtn = document.querySelector('#modal-add-property .btn-primary');
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'שומר...'; }
   SaveAnim.show();
@@ -17855,6 +17928,7 @@ async function addProperty() {
       address:     document.getElementById('new-prop-address').value.trim(),
       city:        document.getElementById('new-prop-city').value.trim(),
       description: document.getElementById('new-prop-description').value.trim(),
+      virtual_tour_url: tourUrl || null,
     };
     const prop = await DB.addProperty(propData);
     if (PropImages.newFiles.length) {
@@ -17872,7 +17946,7 @@ async function addProperty() {
     }
     State.properties.unshift(prop);
     closeModal('modal-add-property');
-    ['new-prop-title','new-prop-price','new-prop-rooms','new-prop-area','new-prop-floor','new-prop-address','new-prop-city','new-prop-description']
+    ['new-prop-title','new-prop-price','new-prop-rooms','new-prop-area','new-prop-floor','new-prop-address','new-prop-city','new-prop-description','new-prop-tour-url']
       .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     PropImages.resetNew();
     await new Promise(r => setTimeout(r, Math.max(0, 1500 - (Date.now() - t0))));
@@ -17906,6 +17980,7 @@ function openEditProperty(propId) {
   document.getElementById('edit-prop-address').value     = p.address || '';
   document.getElementById('edit-prop-city').value        = p.city   || '';
   document.getElementById('edit-prop-description').value = p.description || '';
+  document.getElementById('edit-prop-tour-url').value    = p.virtual_tour_url || '';
   PropImages.resetEdit(p.image_urls?.length ? p.image_urls : (p.image_url ? [p.image_url] : []));
   openModal('modal-edit-property');
 }
@@ -17919,6 +17994,8 @@ async function saveEditProperty() {
   const price = parseFloat(document.getElementById('edit-prop-price').value) || 0;
   if (!title) { toast('נא להזין כותרת', 'error'); return; }
   if (propConfig().priceRequired && !price) { toast('נא להזין מחיר', 'error'); return; }
+  const tourUrl = document.getElementById('edit-prop-tour-url').value.trim();
+  if (tourUrl && safeUrl(tourUrl) === '#') { toast('קישור הסיור הווירטואלי לא תקין', 'error'); return; }
   const saveBtn = document.getElementById('edit-prop-save-btn');
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'שומר...'; }
   SaveAnim.show();
@@ -17936,6 +18013,7 @@ async function saveEditProperty() {
       address:     document.getElementById('edit-prop-address').value.trim(),
       city:        document.getElementById('edit-prop-city').value.trim(),
       description: document.getElementById('edit-prop-description').value.trim(),
+      virtual_tour_url: tourUrl || null,
       image_url:   allUrls[0] || null,
       image_urls:  allUrls,
     };
@@ -18044,6 +18122,7 @@ function shareProperty(propId) {
     cfg.showFloor && p.floor > 0 ? `🏢 קומה ${p.floor}` : '',
     (p.address || p.city) ? `📍 ${[p.address, p.city].filter(Boolean).join(', ')}` : '',
     p.description ? `\n${p.description.slice(0, 200)}` : '',
+    p.virtual_tour_url && safeUrl(p.virtual_tour_url) !== '#' ? `\n🎥 סיור וירטואלי 360°: ${p.virtual_tour_url}` : '',
     '\n📞 לפרטים נוספים צרו קשר',
   ].filter(Boolean);
   const text = lines.join('\n');
@@ -18239,8 +18318,10 @@ sbClient.auth.onAuthStateChange((event, session) => {
           State.tasks      = loaded.tasks;
           State.properties = loaded.properties;
           State.activities = loaded.activities;
-          const name = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
-          State.agent  = { name, email: session.user.email, initials: name[0].toUpperCase(), role: 'סוכן' };
+          const agentRow = loaded.agent;
+          const roleMap = { owner: 'מנהל', agent: 'סוכן', admin: 'אדמין' };
+          const name = agentRow?.name || session.user.user_metadata?.full_name || session.user.email.split('@')[0];
+          State.agent  = { name, email: session.user.email, initials: calcInitials(name), role: roleMap[agentRow?.role] || 'סוכן', rawRole: agentRow?.role || 'agent' };
           const t = loaded.tenant;
           State.tenant = t
             ? { id: t.id, name: t.name, slug: t.slug, plan: t.plan, trial_ends_at: t.trial_ends_at,
@@ -19223,10 +19304,16 @@ const QuickLog = {
   open() {
     if (demoGuard()) return;
     this._resetToInput(true);
+    this._updateUsageLabel();
     openModal('modal-quicklog');
   },
 
-  openNew() { this._resetToInput(true); },
+  _updateUsageLabel() {
+    const el = document.getElementById('ql-usage');
+    if (el) el.textContent = AiLimits.limitLabel('quicklog');
+  },
+
+  openNew() { this._resetToInput(true); this._updateUsageLabel(); },
 
   _setState(s) {
     ['input','loading','pick','confirm','done'].forEach(name => {
@@ -19802,6 +19889,17 @@ const GuidedTour = {
 
   start() {
     if (!this.shouldShow()) return;
+    // Its overlay (z-index 99980, pointer-events:all) sits above modals
+    // (z-index 200) with no cutout - launching on top of an already-open
+    // modal would trap the user behind an unclickable screen. Retry shortly
+    // instead of starting blind, and give up quietly after a while rather
+    // than looping forever if a modal is somehow always open.
+    if (document.querySelector('.modal-overlay:not(.hidden)')) {
+      this._deferredRetries = (this._deferredRetries || 0) + 1;
+      if (this._deferredRetries <= 20) setTimeout(() => this.start(), 1000);
+      return;
+    }
+    this._deferredRetries = 0;
     this._step = 0;
     this._cachedSteps = this._getSteps();
     this._render();
