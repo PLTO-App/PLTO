@@ -12020,7 +12020,11 @@ const LeadDocs = {
       await DB.addActivity({ lead_id: leadId, type: 'note', content: `📄 מסמך הועלה: ${file.name}` });
       this.load(leadId);
     } catch(e) {
-      toast('שגיאה בהעלאה: ' + e.message, 'error');
+      if (e?.message === 'Failed to fetch') {
+        toast('⚠️ בעיית חיבור לאינטרנט, יש לבדוק את החיבור ולנסות שוב', 'error');
+      } else {
+        toast('שגיאה בהעלאה: ' + e.message, 'error');
+      }
     }
   },
 
