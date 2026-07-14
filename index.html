@@ -6606,6 +6606,7 @@
     <div class="modal-handle"></div>
     <div class="modal-header"><div class="modal-title">📞 שלוף טלפון ממדלן</div></div>
     <div class="modal-body" style="padding:16px;">
+      <div id="madlan-phone-lead-name" style="font-size:13px;color:var(--gray-500);margin-bottom:10px;text-align:center;"></div>
       <div style="background:var(--blue-50,#EFF6FF);border-radius:10px;padding:14px;margin-bottom:16px;font-size:13.5px;line-height:1.9;color:var(--navy);">
         <div style="font-weight:700;margin-bottom:6px;">שלבים פשוטים:</div>
         <div>1️⃣ פתיחת הנכס של הלקוח במדלן</div>
@@ -6633,6 +6634,7 @@
     <div class="modal-body" style="text-align:center;padding:20px 16px;">
       <div style="font-size:40px;margin-bottom:12px;">⚠️</div>
       <div style="font-weight:700;font-size:15px;color:var(--navy);margin-bottom:10px;">לא נמצא קשר קודם עם ליד זה</div>
+      <div id="wa-consent-target" style="font-size:14px;font-weight:700;color:var(--navy-500);direction:ltr;margin-bottom:10px;"></div>
       <div style="font-size:13.5px;color:var(--gray-500);line-height:1.8;">
         לפני שליחת הודעת WhatsApp, יש לוודא שהלקוח יודע שתפנה אליו.<br><br>
         <strong style="color:var(--navy);">שלחו רק לאחר שיש הסכמה מפורשת או שיחה קודמת.</strong>
@@ -14877,6 +14879,9 @@ const LeadDetail = {
     if (inp) inp.value = '';
     const err = document.getElementById('madlan-phone-error');
     if (err) { err.textContent = ''; err.style.display = 'none'; }
+    const lead = State.leads.find(l => l.id === leadId);
+    const nameEl = document.getElementById('madlan-phone-lead-name');
+    if (nameEl) nameEl.textContent = lead ? `עבור הליד: ${lead.name}${lead.phone ? ' (מספר נוכחי: ' + lead.phone + ')' : ''}` : '';
     openModal('modal-madlan-phone');
     setTimeout(() => document.getElementById('madlan-phone-input')?.focus(), 200);
   },
@@ -14896,7 +14901,7 @@ const LeadDetail = {
       await DB.updateLead(this._madlanLeadId, { phone: clean });
       const lead = State.leads.find(l => l.id === this._madlanLeadId);
       if (lead) lead.phone = clean;
-      toast('📞 הטלפון נשמר בהצלחה', 'success');
+      toast(`📞 הטלפון ${clean} נשמר עבור ${lead?.name || 'הליד'}`, 'success');
       closeModal('modal-madlan-phone');
       if (State.screen === 'lead-detail') LeadDetail.render(this._madlanLeadId);
     } catch(e) {
@@ -14912,6 +14917,8 @@ const LeadDetail = {
     if (lead.last_contact) {
       this._doWA(lead.phone);
     } else {
+      const targetEl = document.getElementById('wa-consent-target');
+      if (targetEl) targetEl.textContent = `${lead.name}: ${lead.phone}`;
       openModal('modal-wa-consent');
     }
   },
