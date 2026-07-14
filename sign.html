@@ -395,7 +395,7 @@
 
         <div class="form-section">
           <label class="form-label" for="sig-phone">
-            טלפון <span class="opt">(לא חובה — לנוחות המפנה)</span>
+            טלפון <span class="opt">(לא חובה, לנוחות המפנה)</span>
           </label>
           <input type="tel" id="sig-phone" class="form-input" placeholder="050-0000000"
                  style="direction:ltr;text-align:right;" autocomplete="tel">
@@ -628,9 +628,9 @@ const Page = {
       if (error) throw error;
 
       // Populate success state
-      document.getElementById('suc-name').textContent       = data.lead_name  || '—';
-      document.getElementById('suc-phone').textContent      = data.lead_phone || '—';
-      document.getElementById('suc-commission').textContent = data.commission_label || '—';
+      document.getElementById('suc-name').textContent       = data.lead_name  || '~~';
+      document.getElementById('suc-phone').textContent      = data.lead_phone || '~~';
+      document.getElementById('suc-commission').textContent = data.commission_label || '~~';
 
       if (data.lead_area) {
         document.getElementById('suc-area').textContent = data.lead_area;
