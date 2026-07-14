@@ -1406,6 +1406,26 @@
       gap: 16px; padding: 20px;
     }
 
+    /* ── Property Comparison (picker modal, hidden print template) ── */
+    #property-compare-print { display: none; }
+    .pc-picker-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      border: 1.5px solid var(--border); border-radius: 10px; margin-bottom: 8px;
+      cursor: pointer; font-size: 13px;
+    }
+    .pc-picker-item input[type="checkbox"] { width: 18px; height: 18px; flex-shrink: 0; }
+    .pc-picker-item span:first-of-type { flex: 1; font-weight: 600; color: var(--gray-800); }
+
+    /* ── Roadmap voting ── */
+    .roadmap-vote-btn {
+      display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+      border-radius: 99px; border: 1.5px solid var(--border); background: var(--gray-50);
+      color: var(--gray-600); font-size: 12px; font-weight: 700; cursor: pointer;
+      font-family: inherit; transition: var(--transition);
+    }
+    .roadmap-vote-btn-active { background: var(--blue-50); border-color: var(--blue-500); color: var(--blue-700); }
+    .roadmap-vote-count { font-weight: 800; }
+
     /* ═══════════════════════════════════════
        TASKS SCREEN
     ═══════════════════════════════════════ */
@@ -2865,6 +2885,20 @@
     .renewal-amber  { background: #FEF3C7; color: #D97706; }
     .renewal-green  { background: #DCFCE7; color: #16A34A; }
 
+    /* ── Deal / project checklist ── */
+    .dc-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px; }
+    .dc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .dc-title { font-size: 13px; font-weight: 700; color: var(--navy-700); }
+    .dc-progress { font-size: 11.5px; font-weight: 600; color: var(--gray-500); }
+    .dc-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--border); }
+    .dc-item:first-of-type { border-top: none; }
+    .dc-check { width: 22px; height: 22px; flex-shrink: 0; border-radius: 6px; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: white; cursor: pointer; }
+    .dc-check.checked { background: var(--blue-500); border-color: var(--blue-500); }
+    .dc-label { flex: 1; font-size: 13px; color: var(--gray-700); }
+    .dc-item.dc-done .dc-label { color: var(--gray-400); text-decoration: line-through; }
+    .dc-date { border: 1px solid var(--border); border-radius: 6px; font-size: 11.5px; padding: 3px 6px; color: var(--gray-600); font-family: inherit; background: var(--surface); }
+    .dc-date-overdue { border-color: #DC2626; color: #DC2626; }
+
     /* ── Property shown reaction buttons ── */
     .ps-reaction-btn { flex: 1; padding: 8px 4px; border: 1.5px solid var(--border); border-radius: 8px; background: var(--surface); font-size: 12px; font-weight: 600; cursor: pointer; transition: .15s; color: var(--gray-700); font-family: inherit; }
     .ps-reaction-btn.ps-reaction-active { border-color: var(--blue-500); background: var(--blue-50); color: var(--blue-700); }
@@ -2881,6 +2915,26 @@
       .kpi-card { break-inside: avoid; }
       canvas { max-width: 100%; }
       body { background: white; }
+
+      /* Property comparison uses its own printable root, separate from
+         the screen-analytics-only rule above. */
+      @page { margin: 14mm; }
+      body.printing-compare .screen { display: none !important; }
+      body.printing-compare #property-compare-print { display: block !important; }
+      .pc-print-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #2563EB; padding-bottom: 10px; margin-bottom: 14px; }
+      .pc-print-agency { font-size: 18px; font-weight: 800; color: #0F1F3D; }
+      .pc-print-agent { font-size: 12px; color: #64748B; }
+      .pc-print-title { font-size: 15px; font-weight: 700; color: #0F1F3D; margin-bottom: 14px; }
+      .pc-print-grid { display: grid; gap: 12px; }
+      .pc-print-grid.pc-cols-2 { grid-template-columns: 1fr 1fr; }
+      .pc-print-grid.pc-cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+      .pc-col { border: 1px solid #E2E8F0; border-radius: 10px; padding: 12px; break-inside: avoid; }
+      .pc-col-photo img { width: 100%; height: 130px; object-fit: cover; border-radius: 6px; margin-bottom: 8px; }
+      .pc-col-title { font-size: 13px; font-weight: 700; color: #0F1F3D; margin-bottom: 2px; }
+      .pc-col-addr { font-size: 11px; color: #64748B; margin-bottom: 6px; }
+      .pc-col-price { font-size: 15px; font-weight: 800; color: #2563EB; margin-bottom: 8px; }
+      .pc-col-specs { display: flex; flex-wrap: wrap; gap: 8px; font-size: 11px; color: #334155; margin-bottom: 8px; }
+      .pc-col-desc { font-size: 11px; color: #334155; line-height: 1.5; white-space: pre-wrap; }
     }
 
     /* ── Mobile UI Polish ── */
@@ -4703,7 +4757,10 @@
     <div id="screen-properties" class="screen hidden">
       <div class="screen-header">
         <div class="screen-title" id="screen-properties-title">🏠 נכסים</div>
-        <button class="btn btn-primary btn-sm" id="properties-add-btn" onclick="PropImages.resetNew(); openModal('modal-add-property')">+ נכס</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-outline btn-sm hidden" id="properties-compare-btn" onclick="PropertyCompare.open()">📊 השוואת נכסים</button>
+          <button class="btn btn-primary btn-sm" id="properties-add-btn" onclick="PropImages.resetNew(); openModal('modal-add-property')">+ נכס</button>
+        </div>
       </div>
       <div class="properties-grid" id="properties-grid"></div>
     </div>
@@ -7344,6 +7401,27 @@
   <button class="pwa-btn" id="pwa-install-btn">התקן</button>
 </div>
 
+<!-- Property comparison picker + hidden print template — live outside the
+     app-shell screens so the print view isn't affected by which screen is
+     currently open (see body.printing-compare rule in @media print). -->
+<div id="modal-property-compare-pick" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-property-compare-pick')">
+  <div class="modal-sheet">
+    <div class="modal-header" style="padding:16px 16px 12px;">
+      <span style="font-weight:800;">📊 השוואת נכסים</span>
+      <button class="modal-close" onclick="closeModal('modal-property-compare-pick')">✕</button>
+    </div>
+    <div style="padding:0 16px 8px;font-size:12.5px;color:var(--gray-500);">
+      בחירת 2 עד 3 נכסים להשוואה. לאחר ההפקה ניתן לשמור כ-PDF ולשתף בוואטסאפ.
+    </div>
+    <div id="pc-picker-list" style="padding:8px 16px;max-height:340px;overflow-y:auto;"></div>
+    <div style="padding:8px 16px 20px;">
+      <div id="pc-picker-count" style="font-size:12px;color:var(--gray-500);margin-bottom:10px;">נבחרו 0 מתוך 3</div>
+      <button id="pc-picker-generate-btn" class="btn btn-primary" style="width:100%;" disabled onclick="PropertyCompare.generate()">הפקת השוואה</button>
+    </div>
+  </div>
+</div>
+<div id="property-compare-print"></div>
+
 <script>
 /* ═══════════════════════════════════════════
    HELPERS
@@ -8959,7 +9037,7 @@ const Onboarding = {
       // Wait for minimum display time, then transition to app
       await minDelay;
       if (setupEl) setupEl.classList.add('hidden');
-      toast('🎉 ברוכים הבאים ל-PLTO!', 'success');
+      toast('🎉 ברוכים הבאים ל-PLTO', 'success');
       setTimeout(() => toast('📁 יש לך רשימת לקוחות? ניתן לייבא בהגדרות', 'info', 5000), 3500);
       setTimeout(() => GuidedTour.start(), 1800);
       const action = this._pendingAction;
@@ -12301,6 +12379,20 @@ const Twilio = {
     return this.send(to, `🔄 *${lead.name}* עבר לשלב: *${toStage}*`);
   },
 
+  notifyTaskDue(titles) {
+    const to = Make.getWhatsApp();
+    if (!to || !titles.length) return;
+    const list = titles.slice(0, 3).map(t => '• ' + t).join('\n');
+    return this.send(to, `⏰ *${titles.length} משימות שהגיע זמנן היום*\n${list}${titles.length > 3 ? '\n...' : ''}`);
+  },
+
+  notifyColdLeads(names) {
+    const to = Make.getWhatsApp();
+    if (!to || !names.length) return;
+    const list = names.slice(0, 3).map(n => '• ' + n).join('\n');
+    return this.send(to, `❄️ *${names.length} לידים התקררו* (14+ ימים בלי קשר)\n${list}${names.length > 3 ? '\n...' : ''}`);
+  },
+
   async test() {
     const to = Make.getWhatsApp();
     if (!to) { toast('יש להגדיר מספר WhatsApp בהגדרות קודם', 'error'); return; }
@@ -13783,6 +13875,9 @@ const App = {
     // Mortgage calculator: relevant to agents and lawyers (client financing), not interior designers
     const mortgageCard = document.getElementById('tool-card-mortgage');
     if (mortgageCard) mortgageCard.classList.toggle('hidden', ind === 'interior');
+    // Property comparison: rooms/area/floor/price side-by-side only makes sense for properties
+    const compareBtn = document.getElementById('properties-compare-btn');
+    if (compareBtn) compareBtn.classList.toggle('hidden', ind !== 'realestate');
   },
   async logout() {
     const curInd = localStorage.getItem('liders_industry');
@@ -13930,6 +14025,7 @@ const Dashboard = {
     this.renderHotLeads();
     this.renderColdLeads();
     this.renderRenewalAlerts();
+    this._runDailyWaAutomation();
     this.renderActivity();
     this.renderAIBriefing();
     this.renderGrowthCard();
@@ -14207,6 +14303,34 @@ const Dashboard = {
           </div>`;
         }).join('')}
       </div>`;
+  },
+
+  // Wires up Twilio.notifyTaskDue/notifyColdLeads + Make's matching webhook
+  // triggers, both already written but never actually called before. Fires
+  // at most once per calendar day per browser (localStorage dedup) so a
+  // dashboard that re-renders many times a session doesn't resend the same
+  // WhatsApp reminder repeatedly.
+  _runDailyWaAutomation() {
+    if (State.isDemo) return;
+    const todayStr = today();
+    if (localStorage.getItem('liders_wa_auto_last_run') === todayStr) return;
+    localStorage.setItem('liders_wa_auto_last_run', todayStr);
+
+    const dueTasks = State.tasks.filter(t => !t.done && t.due === todayStr);
+    if (dueTasks.length) {
+      Twilio.notifyTaskDue(dueTasks.map(t => t.title));
+      dueTasks.slice(0, 5).forEach(t => Make.taskDueToday(t, State.leads.find(l => l.id === t.lead_id)));
+    }
+
+    const coldLeads = State.leads.filter(l => {
+      if (l.stage === 's5') return false;
+      if (!l.last_contact) return diffDays(l.created_at) < -14;
+      return diffDays(l.last_contact) < -14;
+    });
+    if (coldLeads.length) {
+      Twilio.notifyColdLeads(coldLeads.map(l => l.name));
+      coldLeads.slice(0, 5).forEach(l => Make.coldLead(l));
+    }
   },
 
   _briefingCache: null,
@@ -14579,6 +14703,91 @@ const Leads = {
 };
 
 /* ═══════════════════════════════════════════
+   DEAL / PROJECT CHECKLIST, document checklist for
+   lawyer cases + phase checklist for interior projects
+═══════════════════════════════════════════ */
+const CHECKLIST_TEMPLATES = {
+  realestate_lawyer: [
+    { key: 'title_deed',    label: 'נסח טאבו עדכני' },
+    { key: 'caveat',        label: 'רישום הערת אזהרה' },
+    { key: 'poa',           label: 'ייפוי כוח מהצדדים' },
+    { key: 'tax_approval',  label: 'אישור מיסוי מקרקעין' },
+    { key: 'muni_approval', label: 'אישור עירייה / היטל השבחה' },
+    { key: 'contract_sign', label: 'חתימה על החוזה הסופי' },
+  ],
+  interior: [
+    { key: 'renderings',  label: 'הדמיות ואישור קונספט' },
+    { key: 'materials',   label: 'בחירת חומרים וריהוט' },
+    { key: 'budget_lock', label: 'סגירת תקציב מול הלקוח' },
+    { key: 'execution',   label: 'ביצוע בשטח' },
+    { key: 'handover',    label: 'מסירת הפרויקט' },
+  ],
+};
+
+const DealChecklist = {
+  templateFor(ind) { return CHECKLIST_TEMPLATES[ind] || null; },
+
+  renderBlock(lead) {
+    const ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+    const template = this.templateFor(ind);
+    if (!template) return '';
+    const state = lead.checklist || {};
+    const doneCount = template.filter(it => state[it.key]?.done).length;
+    const title = ind === 'realestate_lawyer' ? '✅ צ׳ק ליסט מסמכים' : '✅ צ׳ק ליסט פרויקט';
+    return `
+      <div class="dc-block">
+        <div class="dc-header">
+          <span class="dc-title">${title}</span>
+          <span class="dc-progress" id="dc-progress-${lead.id}">${doneCount} מתוך ${template.length} הושלמו</span>
+        </div>
+        ${template.map(it => {
+          const s = state[it.key] || {};
+          const overdue = s.due_date && !s.done && diffDays(s.due_date) < 0;
+          return `
+          <div class="dc-item ${s.done ? 'dc-done' : ''}">
+            <div class="dc-check ${s.done ? 'checked' : ''}" onclick="DealChecklist.toggle('${lead.id}','${it.key}',this)">${s.done ? '✓' : ''}</div>
+            <div class="dc-label">${escapeHtml(it.label)}</div>
+            <input type="date" class="dc-date ${overdue ? 'dc-date-overdue' : ''}" value="${s.due_date || ''}" onchange="DealChecklist.setDate('${lead.id}','${it.key}',this.value)">
+          </div>`;
+        }).join('')}
+      </div>
+    `;
+  },
+
+  async toggle(leadId, key, checkEl) {
+    const lead = State.leads.find(l => l.id === leadId);
+    if (!lead) return;
+    const checklist = { ...(lead.checklist || {}) };
+    const cur = checklist[key] || {};
+    checklist[key] = { ...cur, done: !cur.done };
+    lead.checklist = checklist;
+    checkEl.classList.toggle('checked', checklist[key].done);
+    checkEl.textContent = checklist[key].done ? '✓' : '';
+    checkEl.closest('.dc-item')?.classList.toggle('dc-done', checklist[key].done);
+    const ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+    const template = this.templateFor(ind);
+    const progressEl = document.getElementById(`dc-progress-${leadId}`);
+    if (progressEl && template) {
+      const doneCount = template.filter(it => checklist[it.key]?.done).length;
+      progressEl.textContent = `${doneCount} מתוך ${template.length} הושלמו`;
+    }
+    if (!State.isDemo) await DB.updateLead(leadId, { checklist }).catch(() => {});
+  },
+
+  async setDate(leadId, key, value) {
+    const lead = State.leads.find(l => l.id === leadId);
+    if (!lead) return;
+    const checklist = { ...(lead.checklist || {}) };
+    const cur = checklist[key] || {};
+    checklist[key] = { ...cur, due_date: value || null };
+    lead.checklist = checklist;
+    if (!State.isDemo) await DB.updateLead(leadId, { checklist }).catch(() => {});
+    if (State.screen === 'lead-detail') LeadDetail.render(leadId);
+  },
+};
+window.DealChecklist = DealChecklist;
+
+/* ═══════════════════════════════════════════
    LEAD DETAIL
 ═══════════════════════════════════════════ */
 const LeadDetail = {
@@ -14666,6 +14875,7 @@ const LeadDetail = {
               <div style="font-size:12px;color:var(--blue-500);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr;">${escapeHtml(lead.inspiration_url)}</div>
             </div>
           </a>` : ''}
+          ${DealChecklist.templateFor(ind) ? `<div style="margin-top:14px;">${DealChecklist.renderBlock(lead)}</div>` : ''}
           <div style="margin:16px 0 90px;">
             <div style="font-size:13px;font-weight:700;color:var(--gray-600);margin-bottom:8px;">שינוי שלב:</div>
             <div class="stage-pills">
@@ -15139,6 +15349,112 @@ const PropertiesScreen = {
     `).join('') || `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">${icon}</div><div class="empty-title">אין ${getLabel('properties')} עדיין</div></div>`;
   }
 };
+
+/* ═══════════════════════════════════════════
+   PROPERTY COMPARE, branded PDF (print) comparison
+   of 2-3 properties, real estate only
+═══════════════════════════════════════════ */
+const PropertyCompare = {
+  _selected: [],
+  _leadId: null,
+  _MAX: 3,
+
+  open(leadId) {
+    this._leadId = leadId || null;
+    this._selected = [];
+    const list = document.getElementById('pc-picker-list');
+    if (!list) return;
+    list.innerHTML = State.properties.length ? State.properties.map(p => `
+      <label class="pc-picker-item">
+        <input type="checkbox" value="${escapeHtml(p.id)}" onchange="PropertyCompare._toggle('${p.id}', this.checked)">
+        <span>${escapeHtml(p.title)}</span>
+        <span style="color:var(--gray-400);font-size:12px;white-space:nowrap;">${p.price ? Number(p.price).toLocaleString('he-IL') + ' ₪' : ''}</span>
+      </label>
+    `).join('') : `<div class="empty-state"><div class="empty-title">אין נכסים להשוואה עדיין</div></div>`;
+    this._updateCount();
+    openModal('modal-property-compare-pick');
+  },
+
+  _toggle(id, checked) {
+    if (checked) {
+      if (this._selected.length >= this._MAX) {
+        const cb = document.querySelector(`#pc-picker-list input[value="${id}"]`);
+        if (cb) cb.checked = false;
+        toast(`ניתן לבחור עד ${this._MAX} נכסים`, 'warning');
+        return;
+      }
+      this._selected.push(id);
+    } else {
+      this._selected = this._selected.filter(x => x !== id);
+    }
+    this._updateCount();
+  },
+
+  _updateCount() {
+    const countEl = document.getElementById('pc-picker-count');
+    const btn = document.getElementById('pc-picker-generate-btn');
+    if (countEl) countEl.textContent = `נבחרו ${this._selected.length} מתוך ${this._MAX}`;
+    if (btn) btn.disabled = this._selected.length < 2;
+  },
+
+  generate() {
+    if (this._selected.length < 2) { toast('יש לבחור לפחות 2 נכסים', 'warning'); return; }
+    const props = this._selected.map(id => State.properties.find(p => p.id === id)).filter(Boolean);
+    const lead = this._leadId ? State.leads.find(l => l.id === this._leadId) : null;
+
+    const priceFmt = p => p.price ? Number(p.price).toLocaleString('he-IL') + ' ₪' : 'מחיר לא צוין';
+    const colHtml = props.map(p => `
+      <div class="pc-col">
+        ${p.image_url ? `<div class="pc-col-photo"><img src="${escapeHtml(p.image_url)}" alt=""></div>` : ''}
+        <div class="pc-col-title">${escapeHtml(p.title)}</div>
+        ${(p.address || p.city) ? `<div class="pc-col-addr">${escapeHtml(p.address || '')}${p.address && p.city ? ', ' : ''}${escapeHtml(p.city || '')}</div>` : ''}
+        <div class="pc-col-price">${priceFmt(p)}</div>
+        <div class="pc-col-specs">
+          ${p.rooms ? `<div>🛏 ${Number(p.rooms)} חדרים</div>` : ''}
+          ${p.area ? `<div>📐 ${Number(p.area)} מ"ר</div>` : ''}
+          ${p.floor > 0 ? `<div>🏢 קומה ${Number(p.floor)}</div>` : ''}
+        </div>
+        ${p.description ? `<div class="pc-col-desc">${escapeHtml(p.description)}</div>` : ''}
+      </div>
+    `).join('');
+
+    const agencyName = State.tenant?.name || 'סוכנות נדל"ן';
+    const agentLine  = [State.agent?.name, State.tenant?.phone].filter(Boolean).map(escapeHtml).join(' · ');
+
+    const html = `
+      <div class="pc-print-header">
+        <div>
+          <div class="pc-print-agency">${escapeHtml(agencyName)}</div>
+          ${agentLine ? `<div class="pc-print-agent">${agentLine}</div>` : ''}
+        </div>
+      </div>
+      <div class="pc-print-title">השוואת נכסים${lead ? ' עבור ' + escapeHtml(lead.name) : ''}</div>
+      <div class="pc-print-grid pc-cols-${props.length}">${colHtml}</div>
+    `;
+    const container = document.getElementById('property-compare-print');
+    if (container) container.innerHTML = html;
+
+    if (this._leadId && !State.isDemo) {
+      DB.addActivity({
+        lead_id: this._leadId, type: 'note',
+        content: `📊 הופקה השוואת נכסים: ${props.map(p => p.title).join(', ')}`,
+      }).catch(() => {});
+    }
+
+    closeModal('modal-property-compare-pick');
+    this._print(lead);
+  },
+
+  _print(lead) {
+    const orig = document.title;
+    document.title = 'השוואת נכסים' + (lead ? ' ל' + lead.name : '') + ' - PLTO';
+    document.body.classList.add('printing-compare');
+    window.print();
+    document.body.classList.remove('printing-compare');
+    document.title = orig;
+  },
+};
+window.PropertyCompare = PropertyCompare;
 
 /* ═══════════════════════════════════════════
    TASKS SCREEN
@@ -19159,7 +19475,7 @@ const TutorialVideo = {
         { title: '📋 פייפליין עסקאות',            desc: 'לשונית "פייפליין" מציגה את כל הקונים לפי שלבים — מפנייה נכנסה ועד חוזה נחתם. גרירה מעבירה שלב.' },
         { title: '🏠 יד2, מדלן ומחשבון משכנתא', desc: 'קיצורי דרך מהדשבורד לפתיחה מהירה של יד2 ומדלן, ומחשבון משכנתא מהיר לשיתוף עם הקונה.' },
         { title: '🤖 סוכן שיווק ונכסים',         desc: 'כותב בשבילך פוסטים לנכסים, הצעות מיוחדות ומסרי WhatsApp ללקוחות — תוך שניות.' },
-        { title: '🔗 לולאת הפניות',               desc: 'הפנה ליד לעו"ד נדל"ן או מעצב פנים בלחיצה, תקבל 250 XP ואפשרות לקבל הפניות חזרה.' },
+        { title: '🔗 לולאת הפניות',               desc: 'הפניית ליד לעו"ד נדל"ן או מעצב פנים בלחיצה מזכה ב-250 XP, ופותחת אפשרות לקבל הפניות חזרה.' },
         { title: '🏆 XP ופרסים אמיתיים',          desc: 'כל עסקה שנסגרת, כל ביקור, כל הפניה — מוסיפה XP שפודים בפרסים: ייעוץ שיווקי, דפי נחיתה ועוד.' },
       ],
       realestate_lawyer: [
@@ -19167,15 +19483,15 @@ const TutorialVideo = {
         { title: '📋 פייפליין תיקים',             desc: 'לשונית "פייפליין" מציגה כל התיקים לפי שלב — פנייה, ייעוץ ראשוני, בדיקת נאותות, ועד חתימת חוזה.' },
         { title: '⚖️ טאבו, נבו ומיסוי מקרקעין',  desc: 'קיצורי דרך מהדשבורד לטאבו, לנבו ולמיסוי מקרקעין — ישירות מבלי לחפש בדפדפן.' },
         { title: '🤖 תוכן שיווקי מקצועי',         desc: 'כותב טיפים משפטיים לרשתות, מסרי פנייה ללקוחות — בהתאם לכללי פרסומת של לשכת עורכי הדין.' },
-        { title: '🔗 לולאת הפניות',               desc: 'שלח לקוח מעוניין בנכס לסוכן נדל"ן, קבל 250 XP ובנה שיתוף פעולה שמניב הפניות חזרה.' },
+        { title: '🔗 לולאת הפניות',               desc: 'שליחת לקוח מעוניין בנכס לסוכן נדל"ן מזכה ב-250 XP, ובונה שיתוף פעולה שמניב הפניות חזרה.' },
         { title: '🏆 XP ופרסים אמיתיים',          desc: 'כל תיק שנסגר, כל ייעוץ, כל הפניה — מוסיפה XP שפודים בפרסים: ייעוץ שיווקי, דפי נחיתה ועוד.' },
       ],
       interior: [
         { title: '➕ הוספת לקוח חדש',            desc: 'הכפתור הכתום + פותח טופס עם שם הלקוח, סגנון עיצוב מועדף, תקציב ושלב הפרויקט.' },
         { title: '📋 פייפליין פרויקטים',          desc: 'לשונית "פייפליין" מציגה כל הפרויקטים לפי שלב — פנייה, ביקור ראשוני, הצעת מחיר, ועד השלמה.' },
-        { title: '📌 Pinterest, Houzz והשראה',    desc: 'קיצורי דרך מהדשבורד ל-Pinterest וּ-Houzz לחיפוש השראה עיצובית — ישירות בלי לחפש.' },
+        { title: '📌 Pinterest, Houzz והשראה',    desc: 'קיצורי דרך מהדשבורד ל-Pinterest ו-Houzz לחיפוש השראה עיצובית — ישירות בלי לחפש.' },
         { title: '🤖 סוכן שיווק עיצובי',          desc: 'כותב בשבילך פוסטים עיצוביים, מסרי פנייה ללקוחות וקמפיין WhatsApp לפרויקט — תוך שניות.' },
-        { title: '🔗 לולאת הפניות',               desc: 'שלח לקוח חדש שרכש דירה לסוכן נדל"ן, קבל 250 XP ובנה שיתוף פעולה שמניב הפניות חזרה.' },
+        { title: '🔗 לולאת הפניות',               desc: 'שליחת לקוח חדש שרכש דירה לסוכן נדל"ן מזכה ב-250 XP, ובונה שיתוף פעולה שמניב הפניות חזרה.' },
         { title: '🏆 XP ופרסים אמיתיים',          desc: 'כל פרויקט שנסגר, כל הפניה — מוסיפה XP שפודים בפרסים: ייעוץ שיווקי, דפי נחיתה ועוד.' },
       ],
       other: [
@@ -19457,10 +19773,10 @@ const GuidedTour = {
       other:             'עכשיו מכירים את המערכת. אפשר להוסיף את הליד הראשון ולצבור XP!',
     }[ind] || 'עכשיו מכירים את המערכת. אפשר להוסיף את הליד הראשון ולצבור XP!';
     return [
-      { target: null,                       emoji: '🎉', title: 'ברוכים הבאים ל-PLTO!', text: 'נעשה סיור קצר של 30 שניות כדי לדעת בדיוק מה לעשות ואיפה הכל נמצא.' },
-      { target: '#fab-btn',                  emoji: '➕', title: `הוסף ${addLabel}`,           text: addText },
+      { target: null,                       emoji: '🎉', title: 'ברוכים הבאים ל-PLTO', text: 'נעשה סיור קצר של 30 שניות כדי לדעת בדיוק מה לעשות ואיפה הכל נמצא.' },
+      { target: '#fab-btn',                  emoji: '➕', title: `הוספת ${addLabel}`,          text: addText },
       { target: '[data-screen="pipeline"]',  emoji: '📋', title: pipeLabel,                    text: pipeText },
-      { target: '#gamify-widget',            emoji: '🏆', title: 'צבור XP ורווח פרסים!',      text: 'כל פעולה מוסיפה XP. פדה פרסים אמיתיים: ייעוץ שיווקי, דפי נחיתה, קמפיינים ועוד.' },
+      { target: '#gamify-widget',            emoji: '🏆', title: 'צוברים XP ומרוויחים פרסים!', text: 'כל פעולה מוסיפה XP, שניתן לפדות בפרסים אמיתיים: ייעוץ שיווקי, דפי נחיתה, קמפיינים ועוד.' },
       { target: '[data-screen="marketing"]', emoji: '🤖', title: 'סוכן השיווק שלך',           text: mktgText },
       { target: null, isLast: true,          emoji: '🚀', title: 'כל הכבוד! מתחילים!',        text: finalText },
     ];
@@ -19553,9 +19869,7 @@ const Roadmap = {
   async fetch(force) {
     if (this._items && !force) return this._items;
     try {
-      const { data, error } = await sbClient
-        .from('roadmap_items').select('title,description,category')
-        .eq('is_published', true).order('order_idx');
+      const { data, error } = await sbClient.rpc('list_roadmap_items_with_votes');
       if (error) throw error;
       this._items = data || [];
     } catch(e) {
@@ -19579,8 +19893,31 @@ const Roadmap = {
           <span style="font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--blue-100);color:var(--blue-500);white-space:nowrap;flex-shrink:0;">🚧 ${escapeHtml(this._catLabel(it.category))}</span>
         </div>
         ${it.description ? `<div style="font-size:11.5px;color:var(--gray-500);margin-top:4px;line-height:1.5;">${escapeHtml(it.description)}</div>` : ''}
+        <div style="margin-top:8px;">
+          <button class="roadmap-vote-btn ${it.my_vote ? 'roadmap-vote-btn-active' : ''}" onclick="Roadmap.vote('${it.id}', this)">
+            ${it.my_vote ? '✅ הצבעתי' : '👍 הצבעה'} <span class="roadmap-vote-count">${it.vote_count || 0}</span>
+          </button>
+        </div>
       </div>
     `).join('');
+  },
+
+  async vote(itemId, btnEl) {
+    if (demoGuard()) return;
+    if (btnEl) btnEl.disabled = true;
+    try {
+      const { data, error } = await sbClient.rpc('toggle_roadmap_vote', { p_item_id: itemId });
+      if (error) throw error;
+      const item = (this._items || []).find(it => it.id === itemId);
+      if (item) { item.my_vote = data.voted; item.vote_count = data.total; }
+      this._items = (this._items || []).sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
+      this.renderInto('modal-roadmap-list');
+      this.renderInto('idea-roadmap-list');
+    } catch(e) {
+      toast('שגיאה בשמירת ההצבעה', 'error');
+    } finally {
+      if (btnEl) btnEl.disabled = false;
+    }
   },
 
   async open() {
