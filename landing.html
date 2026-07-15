@@ -2594,6 +2594,17 @@
       opacity: 0.88;
       filter: drop-shadow(0 3px 8px rgba(0,0,0,0.18));
     }
+    @media (max-width: 480px) {
+      .excel-title-row {
+        flex-direction: column;
+        gap: 10px;
+      }
+      .excel-title-row .section-title {
+        font-size: 21px;
+        max-width: none;
+        min-width: 0;
+      }
+    }
 
     /* ══════════════════════════════
        היררכיית כותרות — section-subtitle
