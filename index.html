@@ -16326,10 +16326,16 @@ const Settings = {
                   <div style="font-size:13px;font-weight:600;color:var(--gray-700);">🌐 שפת טקסטים ללקוחות</div>
                   <div style="font-size:11px;color:var(--gray-500);margin-top:2px;">השפה שבה הסוכן החכם יכתוב הודעות וואטסאפ, מיילים והצעות ללידים</div>
                 </div>
-                <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                  ${Object.entries(Settings.CLIENT_LANGS).map(([code, meta]) => `
-                    <button onclick="Settings.setClientLang('${code}')" style="padding:5px 10px;font-size:12px;font-weight:700;border-radius:6px;border:1px solid var(--border);cursor:pointer;background:${Settings.getClientLang()===code?'var(--navy-500)':'var(--gray-50)'};color:${Settings.getClientLang()===code?'white':'var(--gray-600)'};">${meta.label}</button>
-                  `).join('')}
+                <div style="position:relative;display:inline-block;">
+                  <button onclick="Settings.toggleLangMenu()" id="client-lang-toggle-btn" style="display:flex;align-items:center;gap:8px;min-width:140px;padding:7px 12px;font-size:13px;font-weight:700;border-radius:8px;border:1px solid var(--border);cursor:pointer;background:var(--navy-500);color:white;">
+                    <span style="flex:1;text-align:right;">${escapeHtml(Settings.CLIENT_LANGS[Settings.getClientLang()].label)}</span>
+                    <span style="font-size:11px;opacity:.85;">▾</span>
+                  </button>
+                  <div id="client-lang-menu" class="hidden" style="position:absolute;top:calc(100% + 6px);right:0;z-index:20;display:flex;flex-direction:column;gap:2px;background:var(--bg-card,#fff);border:1px solid var(--border);border-radius:10px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.14);min-width:140px;">
+                    ${Object.entries(Settings.CLIENT_LANGS).filter(([code]) => code !== Settings.getClientLang()).map(([code, meta]) => `
+                      <button onclick="Settings.setClientLang('${code}')" style="padding:8px 10px;font-size:12px;font-weight:600;border-radius:6px;border:none;cursor:pointer;background:transparent;color:var(--gray-600);text-align:right;">${escapeHtml(meta.label)}</button>
+                    `).join('')}
+                  </div>
                 </div>
               </div>
             </div>`;
@@ -16547,6 +16553,22 @@ const Settings = {
     localStorage.setItem('liders_client_lang', lang);
     Settings.render();
     toast(lang === 'he' ? '✅ טקסטים ללקוחות יופקו בעברית' : `✅ טקסטים ללקוחות יופקו ב${this.CLIENT_LANGS[lang].name}`, 'success');
+  },
+
+  _langMenuListenerBound: false,
+  toggleLangMenu() {
+    const menu = document.getElementById('client-lang-menu');
+    if (!menu) return;
+    menu.classList.toggle('hidden');
+    if (!this._langMenuListenerBound) {
+      this._langMenuListenerBound = true;
+      document.addEventListener('click', (e) => {
+        const m = document.getElementById('client-lang-menu');
+        const btn = document.getElementById('client-lang-toggle-btn');
+        if (!m || m.classList.contains('hidden')) return;
+        if (!m.contains(e.target) && !btn?.contains(e.target)) m.classList.add('hidden');
+      });
+    }
   },
 
   async setIndustry(ind) {
