@@ -8427,9 +8427,9 @@ const Billing = {
       price: 349,
       priceLabel: '₪349',
       desc: 'לצוות קטן',
-      features: ['3 סוכנים כלולים, עד 8 בתוספת תשלום', 'עד 1,000 לידים פעילים', 'לוח Kanban + פייפליין', 'תזכורות WhatsApp', 'אפליקציה מובייל', 'AI שיווקי מתקדם'],
+      features: ['3 סוכנים כלולים, עד 7 בתוספת תשלום', 'עד 1,000 לידים פעילים', 'לוח Kanban + פייפליין', 'תזכורות WhatsApp', 'אפליקציה מובייל', 'AI שיווקי מתקדם'],
       featured: true,
-      agentLimit: '3 סוכנים כלולים · עד 8 · ₪40/סוכן נוסף',
+      agentLimit: '3 סוכנים כלולים · עד 7 · ₪40/סוכן נוסף',
       annualMonthly: 249,
       annualTotal: 2990,
     },
@@ -20391,7 +20391,7 @@ const Team = {
       const msg = e.message || '';
       if (msg.includes('seat_limit_reached')) {
         if (State.tenant?.plan === 'pro') {
-          toast('הגעת למקסימום המושבים בחבילת צוות, יש לשדרג לחבילת סוכנות להוספת סוכנים נוספים', 'warning', 6000);
+          toast('הגעת למקסימום המושבים בחבילת צוות, בחבילת סוכנות מקבלים 10 מושבים כלולים במחיר דומה, שדרוג משתלם', 'warning', 7000);
         } else {
           closeModal('modal-team');
           Support.open();
