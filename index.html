@@ -12432,6 +12432,10 @@ const Twilio = {
     return this.send(to, `❄️ *${names.length} לידים התקררו* (14+ ימים בלי קשר)\n${list}${names.length > 3 ? '\n...' : ''}`);
   },
 
+  openSandboxJoin() {
+    window.open('https://wa.me/14155238886?text=' + encodeURIComponent('join turn-layers'), '_blank');
+  },
+
   async test() {
     const to = Make.getWhatsApp();
     if (!to) { toast('יש להגדיר מספר WhatsApp בהגדרות קודם', 'error'); return; }
@@ -16321,7 +16325,16 @@ const Settings = {
             <button class="btn btn-primary btn-sm" onclick="const v=document.getElementById('wa-number-input').value; if(v) Make.setWhatsApp(v);">שמירה</button>
             ${Make.getWhatsApp() ? `<button class="btn btn-ghost btn-sm" onclick="Twilio.test()">🔔 בדיקת Twilio</button>` : ''}
           </div>
-          ${Make.getWhatsApp() ? `<div style="font-size:11px;color:var(--gray-500);margin-top:6px;line-height:1.5;">💡 <strong>Sandbox:</strong> יש לשלוח <code>join turn-layers</code> ל-<strong>+1 415 523 8886</strong> מה-WhatsApp שלך לפני הבדיקה</div>` : ''}
+          ${Make.getWhatsApp() ? `
+          <div style="background:var(--orange-50,#FFF7ED);border:1px solid var(--orange-100,#FFEDD5);border-radius:10px;padding:10px 12px;margin-top:8px;">
+            <div style="font-size:12px;font-weight:700;color:var(--gray-800);margin-bottom:4px;">⚠️ לפני הבדיקה הראשונה (או אם עברו כמה ימים בלי שימוש), יש לאשר את החיבור מול Twilio</div>
+            <div style="font-size:11.5px;color:var(--gray-600);line-height:1.6;margin-bottom:8px;">
+              המערכת שולחת הודעות בדיקה דרך מספר Sandbox של Twilio, ולא ישירות מהמספר שלך. כדי לקבל הודעות ממנו, נדרש
+              אישור חד-פעמי מה-WhatsApp של המספר שהוגדר: שליחת ההודעה <code>join turn-layers</code> למספר של Twilio.
+              האישור הזה פג כעבור כמה ימים ללא שימוש, ואז צריך לבצע את השלב הזה שוב.
+            </div>
+            <button class="btn btn-sm" style="background:var(--green-600,#16A34A);color:white;width:100%;" onclick="Twilio.openSandboxJoin()">📲 שליחת הודעת האישור בוואטסאפ</button>
+          </div>` : ''}
         </div>
         <div class="settings-row" style="flex-direction:column; align-items:stretch;">
           <div style="display:flex; align-items:center; gap:12px;">
