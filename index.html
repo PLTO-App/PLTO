@@ -7453,7 +7453,7 @@ function roleBadgeHtml(r) {
 }
 // Role picker hidden for interior design (buying/selling/renting not relevant).
 function showsBuyerSellerRole() {
-  const ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+  const ind = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
   return ind !== 'interior';
 }
 // Shared label source for the role filter pills, so Pipeline/Leads/the prefs
@@ -7470,7 +7470,7 @@ const ROLE_FILTER_PILLS = [
 // from the filter pills and the add/edit-lead role picker; all 5 enabled by
 // default. Stored locally only — not synced across devices/agents.
 const RoleFilterPrefs = {
-  _KEY: 'liders_role_prefs_enabled',
+  _KEY: 'plto_role_prefs_enabled',
   get() {
     const raw = localStorage.getItem(this._KEY);
     if (!raw) return ALL_LEAD_ROLES.slice();
@@ -7759,9 +7759,9 @@ const DB = {
   updateCustomLabels(labels) {
     State.customLabels = labels;
     if (Object.keys(labels).length) {
-      localStorage.setItem('liders_custom_labels', JSON.stringify(labels));
+      localStorage.setItem('plto_custom_labels', JSON.stringify(labels));
     } else {
-      localStorage.removeItem('liders_custom_labels');
+      localStorage.removeItem('plto_custom_labels');
     }
   },
 
@@ -8602,7 +8602,7 @@ const Billing = {
     if (!this.PAYMENTS_LIVE) {
       // שלב ניסיון - שמירת עניין + התראה לאדמין
       const plan = this.PLANS.find(p => p.id === planId);
-      localStorage.setItem('liders_upgrade_interest', JSON.stringify({
+      localStorage.setItem('plto_upgrade_interest', JSON.stringify({
         plan: planId, ts: Date.now(), email: State.agent?.email || ''
       }));
       fetch(this._UPGRADE_WEBHOOK, {
@@ -8703,7 +8703,7 @@ const Onboarding = {
           { id: 'interior',          icon: '🎨', label: 'עיצוב פנים' },
           { id: 'other',             icon: '🎯', label: 'אחר' },
         ];
-        const current = localStorage.getItem('liders_industry') || '';
+        const current = localStorage.getItem('plto_industry') || '';
         const existingCopy = current ? (Onboarding._VERTICAL_COPY[current] || Onboarding._VERTICAL_COPY.other) : null;
         return `
           <div class="ind-grid">
@@ -8720,7 +8720,7 @@ const Onboarding = {
           </div>`;
       },
       validate() {
-        if (!localStorage.getItem('liders_industry')) {
+        if (!localStorage.getItem('plto_industry')) {
           toast('נא לבחור את תחום העסק שלך', 'error'); return false;
         }
         return true;
@@ -8729,11 +8729,11 @@ const Onboarding = {
     {
       title: 'קצת עליך 👋',
       get subtitle() {
-        const ind = localStorage.getItem('liders_industry') || 'other';
+        const ind = localStorage.getItem('plto_industry') || 'other';
         return (Onboarding._VERTICAL_COPY[ind] || Onboarding._VERTICAL_COPY.other).step1sub;
       },
       render() {
-        const industry = localStorage.getItem('liders_industry') || 'other';
+        const industry = localStorage.getItem('plto_industry') || 'other';
         const bizPlaceholder = industry === 'realestate'  ? 'PLTO נדל"ן, תל אביב'
           : industry === 'interior'          ? 'PLTO עיצוב פנים, תל אביב'
           : industry === 'realestate_lawyer' ? 'PLTO משפטי נדל"ן, תל אביב'
@@ -8777,7 +8777,7 @@ const Onboarding = {
       title: 'שלבי פייפליין',
       subtitle: 'ניתן לערוך את השמות בחופשיות, מותאמים לתחום שלך',
       render() {
-        const ind = localStorage.getItem('liders_industry') || 'other';
+        const ind = localStorage.getItem('plto_industry') || 'other';
         const defaults = INDUSTRY_LABELS[ind]?.stages || ['פנייה נכנסה','יצרנו קשר','הצעה נשלחה','במשא ומתן','עסקה נסגרה ✓'];
         const industryChanged = Onboarding._data.prevIndustry !== ind;
         const existing = (State.stages || []).map(s => s.name).filter(Boolean);
@@ -8807,7 +8807,7 @@ const Onboarding = {
       subtitle: 'הסוכן החכם שמנטר ומניע אותך',
       render() {
         const firstName = (Onboarding._data.agentName || 'יזם').split(' ')[0];
-        const ind = localStorage.getItem('liders_industry') || 'other';
+        const ind = localStorage.getItem('plto_industry') || 'other';
         const AGENT_TIPS = {
           realestate:        'רוב הקונים בוחרים סוכן תוך 72 שעות מהפנייה הראשונה. אני אזהיר אותך על כל ליד שלא קיבל מענה תוך יום.',
           interior:          'לקוח עיצוב מחליט אחרי ראיית Portfolio. אני אזכיר לך מתי לשלוח דוגמאות עבודה לכל ליד.',
@@ -8896,7 +8896,7 @@ const Onboarding = {
   },
 
   _selectIndustry(id) {
-    localStorage.setItem('liders_industry', id);
+    localStorage.setItem('plto_industry', id);
     document.querySelectorAll('.ind-card').forEach(el => {
       const onclick = el.getAttribute('onclick') || '';
       const cardId = (onclick.match(/'([^']+)'/) || [])[1];
@@ -8925,7 +8925,7 @@ const Onboarding = {
   show() {
     if (localStorage.getItem('onboarding_done') === '1') return;
     this._step = 0;
-    this._data = { prevIndustry: localStorage.getItem('liders_industry') };
+    this._data = { prevIndustry: localStorage.getItem('plto_industry') };
     document.getElementById('modal-onboarding').classList.remove('hidden');
     this._renderStep();
   },
@@ -8934,7 +8934,7 @@ const Onboarding = {
   // from login (DB.ensureAgent), so this only skips the personalization
   // steps; the user can fill in industry/pipeline/webhook later via settings.
   skip() {
-    FunnelTracker.track('onboarding_abandoned', { step: this._step + 1, industry: localStorage.getItem('liders_industry') || null });
+    FunnelTracker.track('onboarding_abandoned', { step: this._step + 1, industry: localStorage.getItem('plto_industry') || null });
     document.getElementById('modal-onboarding').classList.add('hidden');
     localStorage.setItem('onboarding_done', '1');
   },
@@ -8990,7 +8990,7 @@ const Onboarding = {
       const minDelay = new Promise(resolve => setTimeout(resolve, 4800));
 
       // Run all saves
-      const ind = localStorage.getItem('liders_industry') || 'other';
+      const ind = localStorage.getItem('plto_industry') || 'other';
       DB.updateIndustry(ind);
       const industryChanged = this._data.prevIndustry !== ind;
       if (this._data.stageNames?.length && (!State.stages?.length || this._data.stagesEdited || industryChanged)) {
@@ -9005,7 +9005,7 @@ const Onboarding = {
         } catch (e) { /* non-fatal */ }
       }
       if (this._data.agencyName) {
-        localStorage.setItem('liders_agency_name', this._data.agencyName);
+        localStorage.setItem('plto_agency_name', this._data.agencyName);
         try {
           await DB.updateTenantProfile(this._data.agencyName, this._data.agencyPhone, this._data.agencyCity);
           if (State.tenant) State.tenant.name = this._data.agencyName;
@@ -9014,12 +9014,12 @@ const Onboarding = {
         } catch (e) { /* non-fatal */ }
       }
       if (this._data.agencyPhone) {
-        localStorage.setItem('liders_agency_phone', this._data.agencyPhone);
+        localStorage.setItem('plto_agency_phone', this._data.agencyPhone);
         localStorage.setItem('whatsapp_number', this._data.agencyPhone);
         if (State.tenant) State.tenant.whatsapp_number = this._data.agencyPhone;
       }
-      if (this._data.agencyEmail) localStorage.setItem('liders_agency_email', this._data.agencyEmail);
-      if (this._data.agencyCity)  localStorage.setItem('liders_agency_city',  this._data.agencyCity);
+      if (this._data.agencyEmail) localStorage.setItem('plto_agency_email', this._data.agencyEmail);
+      if (this._data.agencyCity)  localStorage.setItem('plto_agency_city',  this._data.agencyCity);
 
       // Wait for minimum display time, then transition to app
       await minDelay;
@@ -9132,11 +9132,11 @@ const INDUSTRY_LABELS = {
 function getLabel(key) {
   const custom = State.customLabels || {};
   if (custom[key]) return custom[key];
-  const ind = localStorage.getItem('liders_industry') || 'other';
+  const ind = localStorage.getItem('plto_industry') || 'other';
   return (INDUSTRY_LABELS[ind] || INDUSTRY_LABELS.other)[key] || key;
 }
 
-function _getInd() { return localStorage.getItem('liders_industry') || State.tenant?.industry || 'other'; }
+function _getInd() { return localStorage.getItem('plto_industry') || State.tenant?.industry || 'other'; }
 
 const MICRO_COPY = {
   emptyPipeline: {
@@ -9173,7 +9173,7 @@ const INDUSTRY_SOURCES = {
 };
 
 function applyIndustryToLeadForm(prefix) {
-  const ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+  const ind = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
 
   // Inspiration URL field - only relevant for interior designers
   const fg = document.getElementById(`fg-${prefix}-inspiration`);
@@ -9258,7 +9258,7 @@ const PROPERTY_CONFIG = {
 PROPERTY_CONFIG.other = PROPERTY_CONFIG.realestate;
 
 function propConfig() {
-  const ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+  const ind = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
   return PROPERTY_CONFIG[ind] || PROPERTY_CONFIG.realestate;
 }
 
@@ -9473,7 +9473,7 @@ const AI = {
   },
 
   _industryRole() {
-    const ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+    const ind = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
     const map = {
       realestate:         'סוכן נדל"ן ומתווך מוסמך',
       interior:           'מעצב פנים עם ניסיון בפרויקטי נדל"ן ומגורים',
@@ -9520,7 +9520,7 @@ const AI = {
 
   async writeRescue(lead) {
     const days = lead.last_contact ? Math.abs(diffDays(lead.last_contact)) : 30;
-    const _ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+    const _ind = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
     const contextLine = _ind === 'realestate_lawyer'
       ? `תחום: עריכת דין נדל"ן | שם: ${lead.name}`
       : _ind === 'interior'
@@ -9644,7 +9644,7 @@ const Tools = {
     proposal: n => `היי ${n||'שם'},\nשלחתי לך קצת קודם את ההצעה, הכל מגיע בסדר?\nאם יש לך שאלות או רוצה לשנות משהו, אני כאן 🙌`,
     closing:  n => `היי ${n||'שם'}, תודה על הפגישה, ממש נהניתי!\nכמו שדיברנו, אני שולח לך עכשיו את הפרטים הסופיים.\nאשמח לדעת, מה עוד צריך ממני כדי להתקדם? 🤝`,
     cold_referral: n => {
-      const _i = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+      const _i = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
       const update = _i === 'realestate_lawyer'
         ? 'יש עדכון משפטי רלוונטי שעשוי לעניין, אשמח לשתף.'
         : _i === 'interior'
@@ -9854,7 +9854,7 @@ const AiLimits = {
     internal: { general: 999, marketing: 999, quicklog: 999, support: 999, motivation: 999 },
   },
   _ADMIN: ['info@plto.app','elgrablidudu@gmail.com'],
-  _k: 'liders_ai_v1',
+  _k: 'plto_ai_v1',
   _today: () => new Date().toISOString().split('T')[0],
   _isAdmin() { return this._ADMIN.includes((State.agent?.email||'').toLowerCase()); },
   _get() {
@@ -10630,8 +10630,8 @@ const FeatureGate = {
 const Marketing = {
   _outputId: null,
   _pendingAction: null,
-  _CONSENT_KEY: 'liders_mktg_consent_v1',
-  _TRIAL_KEY_PFX: 'liders_mktg_trial_',
+  _CONSENT_KEY: 'plto_mktg_consent_v1',
+  _TRIAL_KEY_PFX: 'plto_mktg_trial_',
 
   render() {
     const el = document.getElementById('screen-marketing');
@@ -10675,7 +10675,7 @@ const Marketing = {
     const propOptions = `<option value="">ללא ${getLabel('property')} ספציפי</option>` +
       properties.map(p => `<option value="${p.id}">${escapeHtml(p.title || p.city)}</option>`).join('');
     const usageLabel = AiLimits.limitLabel('marketing');
-    const ind        = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+    const ind        = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
     const isLawyer    = ind === 'realestate_lawyer';
 
     const trialBanner = !hasAccess ? `
@@ -10850,7 +10850,7 @@ const Marketing = {
     if (!this._checkConsent(() => this.genOffer())) return;
     if (!this._requireAccess()) return;
     if (!AiLimits.canUse('marketing')) { toast(`הגעת למגבלת כלי השיווק, ${AiLimits._lim().marketing} שימושים/יום בחבילה שלך. ${MICRO_COPY.aiLimitSuffix[_getInd()]||''}`, 'warning'); return; }
-    const ind    = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+    const ind    = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
     const leadId = document.getElementById('mktg-lead-sel')?.value;
     const propId  = document.getElementById('mktg-prop-sel')?.value;
     const type    = document.getElementById('mktg-offer-type')?.value;
@@ -10893,7 +10893,7 @@ ${ind === 'realestate_lawyer' ? 'משרד' : 'סוכנות'}: ${safeAgency}
     if (!this._checkConsent(() => this.genPost())) return;
     if (!this._requireAccess()) return;
     if (!AiLimits.canUse('marketing')) { toast(`הגעת למגבלת כלי השיווק, ${AiLimits._lim().marketing} שימושים/יום בחבילה שלך. ${MICRO_COPY.aiLimitSuffix[_getInd()]||''}`, 'warning'); return; }
-    const ind    = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+    const ind    = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
     const plat   = document.getElementById('mktg-platform')?.value;
     const outEl  = document.getElementById('mktg-post-out');
     if (outEl) { outEl.textContent = '✨ יוצר פוסט...'; outEl.classList.add('visible'); }
@@ -10934,7 +10934,7 @@ ${prop.description ? `תיאור: ${prop.description.slice(0,150)}` : ''}
     if (!this._checkConsent(() => this.genCampaign())) return;
     if (!this._requireAccess()) return;
     if (!AiLimits.canUse('marketing')) { toast(`הגעת למגבלת כלי השיווק, ${AiLimits._lim().marketing} שימושים/יום בחבילה שלך. ${MICRO_COPY.aiLimitSuffix[_getInd()]||''}`, 'warning'); return; }
-    const ind      = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+    const ind      = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
     const topic    = document.getElementById('mktg-campaign-topic')?.value;
     const sigInput = document.getElementById('mktg-campaign-sig')?.value.trim();
     const sig      = sigInput || State.tenant?.name || (ind === 'realestate_lawyer' ? 'המשרד שלי' : 'הסוכנות שלי');
@@ -11233,7 +11233,7 @@ const Gamify = {
 
   get() {
     if (!this._d) {
-      const raw = localStorage.getItem('liders_gamify_v2');
+      const raw = localStorage.getItem('plto_gamify_v2');
       this._d = raw ? JSON.parse(raw) : {
         xp: 0, achievements: [], streak: 0,
         lastLogin: null, aiUses: 0, tasksCompleted: 0,
@@ -11246,7 +11246,7 @@ const Gamify = {
     return this._d;
   },
 
-  save() { localStorage.setItem('liders_gamify_v2', JSON.stringify(this._d)); },
+  save() { localStorage.setItem('plto_gamify_v2', JSON.stringify(this._d)); },
 
   getLevel(xp) {
     let lv = this.LEVELS[0];
@@ -12598,7 +12598,7 @@ const DemoLock = {
 };
 
 const Referral = {
-  _KEY: 'liders_referral_v1',
+  _KEY: 'plto_referral_v1',
 
   _data() {
     try { return JSON.parse(localStorage.getItem(this._KEY) || '{}'); } catch { return {}; }
@@ -12683,9 +12683,9 @@ const Referral = {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get('ref');
     if (ref && ref.length >= 4) {
-      localStorage.setItem('liders_inbound_ref', ref.toUpperCase().trim());
+      localStorage.setItem('plto_inbound_ref', ref.toUpperCase().trim());
     }
-    const saved = localStorage.getItem('liders_inbound_ref');
+    const saved = localStorage.getItem('plto_inbound_ref');
     if (saved) {
       const banner = document.getElementById('ref-welcome-banner');
       if (banner) banner.style.display = 'block';
@@ -12695,10 +12695,10 @@ const Referral = {
   // Called after first login - awards 100 welcome XP if user arrived via referral link
   claimWelcomeBonus() {
     if (State.isDemo) return;
-    const inboundRef = localStorage.getItem('liders_inbound_ref');
+    const inboundRef = localStorage.getItem('plto_inbound_ref');
     if (!inboundRef) return;
-    if (localStorage.getItem('liders_ref_claimed')) return;
-    localStorage.setItem('liders_ref_claimed', '1');
+    if (localStorage.getItem('plto_ref_claimed')) return;
+    localStorage.setItem('plto_ref_claimed', '1');
     const gd = Gamify.get();
     gd.xp += 100;
     Gamify.save();
@@ -12714,10 +12714,10 @@ const Referral = {
   // even though referrer and referred are almost always on different devices.
   async claimReferralSignup() {
     if (State.isDemo || !DB.tenantId || !State.isNewTenant) return;
-    const inboundRef = localStorage.getItem('liders_inbound_ref');
+    const inboundRef = localStorage.getItem('plto_inbound_ref');
     if (!inboundRef) return;
-    if (localStorage.getItem('liders_ref_signup_claimed')) return;
-    localStorage.setItem('liders_ref_signup_claimed', '1');
+    if (localStorage.getItem('plto_ref_signup_claimed')) return;
+    localStorage.setItem('plto_ref_signup_claimed', '1');
     try { await sbClient.rpc('claim_referral_signup', { p_code: inboundRef }); } catch (_e) {}
   },
 
@@ -12856,7 +12856,7 @@ const LeadReferral = {
   _leadId: null,
   _token: null,
   _lastMsg: '',
-  _INBOUND_KEY: 'liders_inbound_lref',
+  _INBOUND_KEY: 'plto_inbound_lref',
   VERTICALS: {
     realestate:        'סוכן נדל"ן',
     realestate_lawyer: 'עו"ד נדל"ן',
@@ -13364,7 +13364,7 @@ const GmailInbox = {
 };
 
 const AnnualUpsell = {
-  _KEY: 'liders_annual_v1',
+  _KEY: 'plto_annual_v1',
 
   _data() {
     try { return JSON.parse(localStorage.getItem(this._KEY) || '{}'); } catch { return {}; }
@@ -13535,7 +13535,7 @@ const LoadingOverlay = {
    All toggle buttons carry [data-a11y-btn] so _sync() updates all at once.
 ═══════════════════════════════════════════ */
 const AccessibilityMode = {
-  _KEY: 'liders_a11y',
+  _KEY: 'plto_a11y',
   init() {
     if (localStorage.getItem(this._KEY) === '1') this.enable(false);
     this._initFabVisibility();
@@ -13633,7 +13633,7 @@ document.querySelectorAll('.modal-close:not([aria-label])').forEach(btn => {
    Fire-and-forget — לעולם לא חוסם את ה-UI.
 ═══════════════════════════════════════════ */
 const FunnelTracker = {
-  _SESSION_KEY: 'liders_cro_session',
+  _SESSION_KEY: 'plto_cro_session',
   get sessionId() {
     let sid = sessionStorage.getItem(this._SESSION_KEY);
     if (!sid) { sid = crypto.randomUUID(); sessionStorage.setItem(this._SESSION_KEY, sid); }
@@ -13850,7 +13850,7 @@ const App = {
     // Restore industry from Supabase so it survives logout
     const savedInd = State.tenant?.industry || '';
     if (savedInd && INDUSTRY_LABELS[savedInd]) {
-      localStorage.setItem('liders_industry', savedInd);
+      localStorage.setItem('plto_industry', savedInd);
     }
     // Skip onboarding only if industry was already chosen (saved in Supabase).
     // New users with no industry set will always see the wizard, regardless of account age.
@@ -13859,7 +13859,7 @@ const App = {
     }
     // Restore custom label overrides from localStorage
     try {
-      const raw = localStorage.getItem('liders_custom_labels');
+      const raw = localStorage.getItem('plto_custom_labels');
       State.customLabels = raw ? JSON.parse(raw) : {};
     } catch(_e) { State.customLabels = {}; }
     this._applyIndustryLabels();
@@ -13909,7 +13909,7 @@ const App = {
     // Start sparkle particle loop on motivation button
     _startMotivationSparkles();
     // Show guided tour for new users after onboarding is done
-    if (!State.isDemo && localStorage.getItem('onboarding_done') === '1' && !localStorage.getItem('liders_tour_v1')) {
+    if (!State.isDemo && localStorage.getItem('onboarding_done') === '1' && !localStorage.getItem('plto_tour_v1')) {
       setTimeout(() => GuidedTour.start(), 3500);
     }
     // Init PIN lock
@@ -13920,7 +13920,7 @@ const App = {
     // client data (phone numbers, budgets, personal details) if someone else
     // picks up an unlocked phone. Deferred until after onboarding is done so
     // it doesn't compete with the first-run wizard/guided tour.
-    if (!State.isDemo && !AppLock.isEnabled() && localStorage.getItem('onboarding_done') === '1' && !localStorage.getItem('liders_pinlock_intro_shown')) {
+    if (!State.isDemo && !AppLock.isEnabled() && localStorage.getItem('onboarding_done') === '1' && !localStorage.getItem('plto_pinlock_intro_shown')) {
       setTimeout(() => AppLock.showIntro(), 4500);
     }
     // Hard 8h session ceiling - independent of PIN-lock timer
@@ -13946,7 +13946,7 @@ const App = {
     const addBtns = document.querySelectorAll('.btn-add-lead-label');
     addBtns.forEach(b => { b.textContent = '+ ' + getLabel('addLead'); });
     // Show industry-specific shortcut row
-    const ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+    const ind = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
     const reShortcuts = document.getElementById('realestate-shortcuts');
     if (reShortcuts) reShortcuts.classList.toggle('hidden', ind !== 'realestate');
     const lawyerShortcuts = document.getElementById('lawyer-shortcuts');
@@ -13961,7 +13961,7 @@ const App = {
     if (compareBtn) compareBtn.classList.toggle('hidden', ind !== 'realestate');
   },
   async logout() {
-    const curInd = localStorage.getItem('liders_industry');
+    const curInd = localStorage.getItem('plto_industry');
     if (curInd && !State.isDemo) {
       const save = await new Promise(resolve => {
         const el = document.createElement('div');
@@ -13993,9 +13993,9 @@ const App = {
     // tenant's leads, tasks, properties, activities, stages, agent or tenant info.
     State.isDemo = false;
     document.getElementById('demo-banner')?.classList.add('hidden');
-    ['make_webhook_url','whatsapp_number','onboarding_done','liders_industry',
-     'liders_agency_name','liders_agency_phone','liders_agency_city',
-     'liders_custom_labels','liders_client_lang'].forEach(k => localStorage.removeItem(k));
+    ['make_webhook_url','whatsapp_number','onboarding_done','plto_industry',
+     'plto_agency_name','plto_agency_phone','plto_agency_city',
+     'plto_custom_labels','plto_client_lang'].forEach(k => localStorage.removeItem(k));
     State.customLabels = {};
     State.leads       = [...DEMO.leads];
     State.properties  = [...DEMO.properties];
@@ -14072,7 +14072,7 @@ const App = {
       case 'marketing':   Marketing.render();      break;
       case 'pro':         ProHub.render();         break;
       case 'xp-store':    Gamify.renderStore();    break;
-      case 'referral':    Referral.renderScreen(); localStorage.setItem('liders_ref_visited','1'); document.getElementById('nav-ref-badge')?.remove(); break;
+      case 'referral':    Referral.renderScreen(); localStorage.setItem('plto_ref_visited','1'); document.getElementById('nav-ref-badge')?.remove(); break;
       case 'email':           GmailInbox.renderScreen(); break;
       case 'recent-activity': RecentActivity.render();  break;
     }
@@ -14118,7 +14118,7 @@ const Dashboard = {
   renderGrowthCard() {
     const wrap = document.getElementById('dash-growth-card-wrap');
     if (!wrap || State.isDemo) return;
-    const KEY = 'liders_growth_card_v1';
+    const KEY = 'plto_growth_card_v1';
     if (localStorage.getItem(KEY) === 'dismissed') { wrap.innerHTML = ''; return; }
     const refData = Referral._data();
     const xpData  = Gamify.get();
@@ -14394,8 +14394,8 @@ const Dashboard = {
   _runDailyWaAutomation() {
     if (State.isDemo) return;
     const todayStr = today();
-    if (localStorage.getItem('liders_wa_auto_last_run') === todayStr) return;
-    localStorage.setItem('liders_wa_auto_last_run', todayStr);
+    if (localStorage.getItem('plto_wa_auto_last_run') === todayStr) return;
+    localStorage.setItem('plto_wa_auto_last_run', todayStr);
 
     const dueTasks = State.tasks.filter(t => !t.done && t.due === todayStr);
     if (dueTasks.length) {
@@ -14539,7 +14539,7 @@ const Dashboard = {
 /* ── Stale lead helper ───────────────────────────── */
 function isLeadStale(lead) {
   if (!lead) return false;
-  const ind = localStorage.getItem('liders_industry') || 'other';
+  const ind = localStorage.getItem('plto_industry') || 'other';
   const thresholds = {
     realestate:7, interior:10, realestate_lawyer:10, other:10
   };
@@ -14555,7 +14555,7 @@ function isLeadStale(lead) {
 /* ── Industry-specific empty-column tip ─────────── */
 function pipelineEmptyTip(stageIdx) {
   if (stageIdx !== 0) return '';
-  const ind = localStorage.getItem('liders_industry') || 'other';
+  const ind = localStorage.getItem('plto_industry') || 'other';
   const tips = {
     realestate:        '💡 רוב הקונים מגיעים מהפניות, כדאי לשלוח הודעה ל-3 לקוחות ישנים השבוע',
     interior:          '💡 כדאי לפרסם תמונה מפרויקט אחרון באינסטגרם, לידים מגיעים מ-portfolio',
@@ -14809,7 +14809,7 @@ const DealChecklist = {
   templateFor(ind) { return CHECKLIST_TEMPLATES[ind] || null; },
 
   renderBlock(lead) {
-    const ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+    const ind = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
     const template = this.templateFor(ind);
     if (!template) return '';
     const state = lead.checklist || {};
@@ -14845,7 +14845,7 @@ const DealChecklist = {
     checkEl.classList.toggle('checked', checklist[key].done);
     checkEl.textContent = checklist[key].done ? '✓' : '';
     checkEl.closest('.dc-item')?.classList.toggle('dc-done', checklist[key].done);
-    const ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+    const ind = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
     const template = this.templateFor(ind);
     const progressEl = document.getElementById(`dc-progress-${leadId}`);
     if (progressEl && template) {
@@ -14880,7 +14880,7 @@ const LeadDetail = {
     const activities = State.activities.filter(a => a.lead_id === leadId)
       .sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
     const matchProps = this.matchProperties(lead);
-    const ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+    const ind = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
 
     document.getElementById('lead-detail-content').innerHTML = `
       <div class="lead-detail-header">
@@ -15968,10 +15968,10 @@ const AppLock = {
   _pin: '',
   _setupStep: 0,
   _setupPin: '',
-  LAST_ACTIVE_KEY: 'liders_lock_last_active',
+  LAST_ACTIVE_KEY: 'plto_lock_last_active',
 
-  isEnabled() { return !!localStorage.getItem('liders_pin_hash'); },
-  getTimeoutMs() { return parseInt(localStorage.getItem('liders_lock_mins') || '5') * 60 * 1000; },
+  isEnabled() { return !!localStorage.getItem('plto_pin_hash'); },
+  getTimeoutMs() { return parseInt(localStorage.getItem('plto_lock_mins') || '5') * 60 * 1000; },
 
   toggleManageMenu() {
     const menu = document.getElementById('pinlock-manage-menu');
@@ -15984,14 +15984,14 @@ const AppLock = {
   },
 
   async setup(pin) {
-    localStorage.setItem('liders_pin_hash', await this._hash(pin));
+    localStorage.setItem('plto_pin_hash', await this._hash(pin));
     localStorage.setItem(this.LAST_ACTIVE_KEY, String(Date.now()));
     this._updateLockBtn();
     this.startTimer();
   },
 
   disable() {
-    localStorage.removeItem('liders_pin_hash');
+    localStorage.removeItem('plto_pin_hash');
     localStorage.removeItem(this.LAST_ACTIVE_KEY);
     this._clearTimer();
     this._updateLockBtn();
@@ -16004,7 +16004,7 @@ const AppLock = {
   },
 
   skipIntro() {
-    localStorage.setItem('liders_pinlock_intro_shown', '1');
+    localStorage.setItem('plto_pinlock_intro_shown', '1');
     document.getElementById('modal-pinlock-intro')?.classList.add('hidden');
   },
 
@@ -16018,7 +16018,7 @@ const AppLock = {
 
   async _tryUnlock() {
     const hash = await this._hash(this._pin);
-    if (hash === localStorage.getItem('liders_pin_hash')) {
+    if (hash === localStorage.getItem('plto_pin_hash')) {
       document.getElementById('screen-lock').classList.add('hidden');
       this._pin = '';
       this._renderDots();
@@ -16140,7 +16140,7 @@ const AppLock = {
   },
 
   setLockMins(mins) {
-    localStorage.setItem('liders_lock_mins', mins);
+    localStorage.setItem('plto_lock_mins', mins);
     this.startTimer();
   },
 };
@@ -16170,7 +16170,7 @@ const IdleSession = {
   async _expire() {
     this._clear();
     await DB.signOut();
-    localStorage.removeItem('liders_pin_hash');
+    localStorage.removeItem('plto_pin_hash');
     toast('החיבור פג עקב חוסר פעילות, יש להתחבר מחדש', 'warning');
     location.reload();
   },
@@ -16226,7 +16226,7 @@ const Settings = {
           </div>
           <select onchange="AppLock.setLockMins(this.value)"
             style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:14px;background:var(--bg-card);font-family:inherit;cursor:pointer;">
-            ${['1','5','15','30'].map(m => `<option value="${m}" ${(localStorage.getItem('liders_lock_mins')||'5')===m?'selected':''}>${m} דקות</option>`).join('')}
+            ${['1','5','15','30'].map(m => `<option value="${m}" ${(localStorage.getItem('plto_lock_mins')||'5')===m?'selected':''}>${m} דקות</option>`).join('')}
           </select>
         </div>
         <div class="settings-row" onclick="AppLock.toggleManageMenu()" style="cursor:pointer;">
@@ -16279,7 +16279,7 @@ const Settings = {
             interior:           { icon:'🎨', label:'עיצוב פנים' },
             other:              { icon:'🎯', label:'אחר' },
           };
-          const cur = localStorage.getItem('liders_industry') || 'other';
+          const cur = localStorage.getItem('plto_industry') || 'other';
           const curMeta = IND_META[cur] || IND_META.other;
           return `
             <div style="padding:12px 16px 0;">
@@ -16506,10 +16506,10 @@ const Settings = {
   async resetOnboarding() {
     if (demoGuard()) return;
     await DB.updateIndustry(null);
-    localStorage.removeItem('liders_industry');
+    localStorage.removeItem('plto_industry');
     localStorage.removeItem('onboarding_done');
     State.customLabels = {};
-    localStorage.removeItem('liders_custom_labels');
+    localStorage.removeItem('plto_custom_labels');
     toast('פתיחת אשף ההגדרות...', 'info');
     setTimeout(() => Onboarding.show(), 600);
   },
@@ -16522,13 +16522,13 @@ const Settings = {
   },
 
   getClientLang() {
-    const saved = localStorage.getItem('liders_client_lang') || 'he';
+    const saved = localStorage.getItem('plto_client_lang') || 'he';
     return this.CLIENT_LANGS[saved] ? saved : 'he';
   },
 
   setClientLang(lang) {
     if (!this.CLIENT_LANGS[lang]) return;
-    localStorage.setItem('liders_client_lang', lang);
+    localStorage.setItem('plto_client_lang', lang);
     Settings.render();
     toast(lang === 'he' ? '✅ טקסטים ללקוחות יופקו בעברית' : `✅ טקסטים ללקוחות יופקו ב${this.CLIENT_LANGS[lang].name}`, 'success');
   },
@@ -16546,7 +16546,7 @@ const Settings = {
 
   async setIndustry(ind) {
     if (!INDUSTRY_LABELS[ind]) return;
-    localStorage.setItem('liders_industry', ind);
+    localStorage.setItem('plto_industry', ind);
     await DB.updateIndustry(ind);
     // Switching industry resets custom labels so defaults feel fresh
     DB.updateCustomLabels({});
@@ -18365,7 +18365,7 @@ document.getElementById('new-task-due').value = addDays(1);
 // localStorage timestamp is robust across refresh/PWA-relaunch while still
 // auto-expiring stale sessions after a real gap of inactivity.
 const AuthSession = {
-  _KEY: 'liders_auth_active_ts',
+  _KEY: 'plto_auth_active_ts',
   _MAX_AGE_MS: 30 * 24 * 60 * 60 * 1000, // 30 days of inactivity
   isTrusted() {
     const ts = Number(localStorage.getItem(this._KEY) || 0);
@@ -18550,7 +18550,7 @@ LeadReferral.checkInbound();
 // עמוד ציבורי לאישור לקוח (?consent=) — ללא התחברות
 ClientConsent.check();
 // Hide referral "new" badge if user already visited
-if (localStorage.getItem('liders_ref_visited')) {
+if (localStorage.getItem('plto_ref_visited')) {
   document.addEventListener('DOMContentLoaded', () => document.getElementById('nav-ref-badge')?.remove(), { once: true });
   document.getElementById('nav-ref-badge')?.remove();
 }
@@ -19198,7 +19198,7 @@ const Support = {
   open() {
     if (State.isDemo) { DemoLock.showPrompt('הצטרפו לנסיון חינמי ותוכלו לקבל תמיכה אישית מסוכן התמיכה שלך 🤖'); return; }
     const today_ = new Date().toISOString().split('T')[0];
-    const key = 'liders_coffee_popup_date';
+    const key = 'plto_coffee_popup_date';
     const showCoffee = localStorage.getItem(key) !== today_ && !State.isDemo;
     if (showCoffee) { localStorage.setItem(key, today_); CoffeePopup.show(() => this._doOpen()); return; }
     this._doOpen();
@@ -19652,7 +19652,7 @@ const TutorialVideo = {
   _render() {
     const container = document.getElementById('tutorial-steps');
     if (!container) return;
-    const ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+    const ind = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
     const steps = this._getSteps(ind);
     container.innerHTML = steps.map((s, i) => `
       <div class="tutorial-step-card">
@@ -19765,7 +19765,7 @@ const MotivationAgent = {
   // Progressive cooldown: each use today adds more wait time
   // Use 1→ wait 1.5h | Use 2→ wait 2h | Use 3→ wait 2.5h | Use 4+→ wait 3h
   _COOLDOWNS_MIN: [90, 120, 150, 180],
-  _STORAGE_KEY: 'liders_motive_v2',
+  _STORAGE_KEY: 'plto_motive_v2',
   _countdownInterval: null,
   _quotes: [
     'כל ליד הוא הזדמנות. כל שיחה היא צעד קדימה. המשך כך! 💪',
@@ -19936,11 +19936,11 @@ const MotivationAgent = {
    GUIDED TOUR MODULE, first-time walkthrough
 ═══════════════════════════════════════════ */
 const GuidedTour = {
-  _KEY: 'liders_tour_v1',
+  _KEY: 'plto_tour_v1',
   _step: 0,
   _cachedSteps: null,
   _getSteps() {
-    const ind = localStorage.getItem('liders_industry') || State.tenant?.industry || 'other';
+    const ind = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
     const addLabel = { realestate: 'קונה חדש', realestate_lawyer: 'לקוח חדש', interior: 'לקוח חדש', other: 'ליד חדש' }[ind] || 'ליד חדש';
     const pipeLabel = { realestate: 'פייפליין עסקאות', realestate_lawyer: 'פייפליין תיקים', interior: 'פייפליין פרויקטים', other: 'פייפליין המכירות' }[ind] || 'פייפליין לידים';
     const addText = {
@@ -20153,7 +20153,7 @@ window.Roadmap = Roadmap;
    IDEA BOX, submit user ideas for 300 XP
 ═══════════════════════════════════════════ */
 const IdeaBox = {
-  _STORAGE_KEY: 'liders_ideas_v1',
+  _STORAGE_KEY: 'plto_ideas_v1',
   _submitted: null,
 
   open() {
@@ -20226,7 +20226,7 @@ window.IdeaBox = IdeaBox;
    → joins the agency tenant automatically.
 ═══════════════════════════════════════════ */
 const AgentInvite = {
-  _KEY: 'liders_ainvite',
+  _KEY: 'plto_ainvite',
   _previewData: null,
 
   checkInbound() {
@@ -20575,7 +20575,7 @@ window.WAConnect = WAConnect;
    2nd offence: immediate account lock + Make.com report + forced logout
 ═══════════════════════════════════════════ */
 const InjectionGuard = {
-  _KEY: 'liders_inj_v1',
+  _KEY: 'plto_inj_v1',
   _PATTERNS: [
     /ignore\s+(?:all\s+)?(?:previous|prior)\s+instructions?/i,
     /forget\s+(?:everything|all|previous|prior)/i,
