@@ -178,10 +178,10 @@ Function) בלי קשר למה שהלקוח מבקש, כדי לשלוט בעלו
 > קבצי מקור: `.claude/agents/*.md`. פורמט: frontmatter (`name`, `description`,
 > `tools`, `model`) + system prompt לסוכן.
 
-### 1. `liders-ui-reviewer` (קיים מקודם)
+### 1. `plto-ui-reviewer` (קיים מקודם)
 
 ```yaml
-name: liders-ui-reviewer
+name: plto-ui-reviewer
 description: בודק UI/UX ייעודי. להפעיל אחרי שינוי מסך או קומפוננטה, לבדיקת התאמה
   למערכת העיצוב, RTL ו-mobile-first. בודק רק את המסך שהשתנה, לא מטריצה מלאה.
 tools: Read, Grep, Glob, Bash
@@ -246,7 +246,7 @@ model: sonnet
 
 > קבצי מקור: `.claude/skills/*.md`. כל סקיל נטען עם `/שם-הסקיל`.
 
-### 1. `liders-crm` — `/liders-crm` — ארכיטקטורת SaaS ראשית
+### 1. `plto-crm` — `/plto-crm` — ארכיטקטורת SaaS ראשית
 
 מספק את מודל ה-entities (Tenant, AgentUser, Lead, PipelineStage, Property,
 Task), workflow לבניית feature חדש (ניתוח דרישה → schema+RLS → auth flow →
@@ -315,7 +315,7 @@ Automations ב-Make.com, עדכון Dashboard ב-Notion, סנכרון ל-Airtabl
 דוח סטטוס חי (`/crm-live-data status`). שימושי כשיש אינטגרציות MCP מרובות
 ורוצים "תמונת מצב" אחת שמאחדת את כולן.
 
-### 7. `liders-marketing` — `/liders-marketing` — מנהל שיווק דיגיטלי אוניברסלי
+### 7. `plto-marketing` — `/plto-marketing` — מנהל שיווק דיגיטלי אוניברסלי
 
 הופך את Claude למנהל שיווק מלא (אסטרטגיה, לוח תוכן, קופירייטינג, פרומפטים
 לתמונה/וידאו, ניהול רשתות, ניתוח ביצועים) לכל דומיין עסקי, לא רק נדל"ן. כולל:
@@ -327,9 +327,9 @@ proof / 20% behind the scenes / 15% מכירה), לוח תוכן שבועי, fra
 "מדהים"). **זה הסקיל הכי "פורטבילי" מכולם**, נבנה מלכתחילה להיות אוניברסלי
 ולא תלוי-דומיין.
 
-### 8. `qa-liders` — `/qa-liders` — בדיקת E2E מלאה של הממשק (הרצה סקריפטית)
+### 8. `qa-plto` — `/qa-plto` — בדיקת E2E מלאה של הממשק (הרצה סקריפטית)
 
-בדיקה ידנית/סקריפטית (`.claude/tests/qa-liders.mjs`, ~500 שורות) שמריצה
+בדיקה ידנית/סקריפטית (`.claude/tests/qa-plto.mjs`, ~500 שורות) שמריצה
 בדיקות על login/dashboard/pipeline/lead-detail/tasks/settings/tools/navigation,
 עם מצב דמו (בלי credentials) או כניסה אמיתית (env vars). פורמט דוח אחיד
 (✅/❌/⚠️ + מסך + פעולה + תוצאה). זה משלים את `live-browser-qa` (Agent) עם
@@ -428,3 +428,70 @@ npx skills add supabase/agent-skills
 [ ] סריקת hebrew-style-guardian (או מקבילה בשפת היעד) על כל טקסט UI
 [ ] בדיקת מכסות AI: לפי משתמש או לפי tenant, מתועד בבירור איפה
 ```
+
+---
+
+## חלק ט׳ — ניקוי מיתוג נוסף (21/7/2026): הסרת "Liders" משמות זיהוי בקוד
+
+> בעקבות בקשה מפורשת "שלא יהיה רשום שום דבר שקשור ללידרס" גם בקוד עצמו, לא רק
+> בטקסט המוצג ללקוח (הרפרנד הטקסטואלי כבר בוצע במלואו בסשנים 8–9/7/2026). זה
+> היה סבב שני, ממוקד בזהות פנימית של קוד/DB: מפתחות localStorage, שם קובץ סקיל,
+> ושם טבלה חי ב-DB.
+
+### ✅ בוצע
+1. **כל מפתחות ה-localStorage/sessionStorage** ב-`index.html` ו-`landing.html`
+   (35 מפתחות ייחודיים, כמו `liders_industry`, `liders_tour_v1`,
+   `liders_pin_hash` וכו') הוחלפו מפריפיקס `liders_` לפריפיקס `plto_`, בכל מקום
+   קריאה וכתיבה כאחד (`sed` על שתי המילים בשני הקבצים, לא ידני, כדי להבטיח
+   שקריאה וכתיבה לאותו מפתח תמיד יישארו תואמות). אומת: `node --check` על כל
+   בלוקי ה-`<script>` בשני הקבצים עבר נקי אחרי השינוי.
+   **השפעה על משתמשים קיימים**: זהו שינוי frontend בלבד (לא DB), אבל מאחר
+   שהמפתח עצמו משתנה, כל משתמש שכבר שמר מצב מקומי (סיור הודרך שנדחה, נעילת PIN,
+   העדפות תצוגה, טוקן הפניה ממתין) יראה את ברירת המחדל מחדש בפעם הבאה שהוא
+   נכנס, בדיוק כאילו זו כניסה ראשונה. תואם למצב שתועד ב-12/7/2026 שאין כרגע אף
+   משתמש חיצוני פעיל מלבד חשבונות הבדיקה של הבעלים, כך שההשפעה בפועל זניחה.
+2. **מיגרציה `099_rename_liders_invoices_table.sql`** (הוחלה על ה-DB החי) —
+   הטבלה היחידה שנשארה עם שם אובייקט חי `liders_invoices` שונתה ל-`plto_invoices`
+   (`ALTER TABLE ... RENAME`, פעולת מטא-דאטה בלבד, ללא אובדן נתונים, כל
+   RLS/אינדקסים/טריגרים נשמרים אוטומטית). שתי הפונקציות שמפנות לטבלה
+   (`admin_save_invoice`, `admin_get_invoices`) נבנו מחדש עם השם החדש (ה-guard
+   שלהן כבר היה `info@plto.app` מתיקון קודם, לא שונה). אומת מול ה-DB החי:
+   `information_schema.tables` מחזיר כעת רק `plto_invoices`.
+3. **שמות קבצי סקילים/סוכנים** שכללו `liders` בשם הפקודה עצמה שונו (עם
+   `git mv` לשימור היסטוריה), כולל כל התוכן הפנימי (frontmatter, פקודות
+   `/...` בגוף הקובץ):
+   - `.claude/skills/liders-crm.md` → `.claude/skills/plto-crm.md` (`/liders-crm` → `/plto-crm`)
+   - `.claude/skills/liders-marketing.md` → `.claude/skills/plto-marketing.md` (`/liders-marketing` → `/plto-marketing`)
+   - `.claude/skills/qa-liders.md` → `.claude/skills/qa-plto.md` (`/qa-liders` → `/qa-plto`)
+   - `.claude/agents/liders-ui-reviewer.md` → `.claude/agents/plto-ui-reviewer.md` (`name: liders-ui-reviewer` → `name: plto-ui-reviewer`)
+   - `.claude/tests/qa-liders.mjs` → `.claude/tests/qa-plto.mjs` (סקריפט הבדיקה
+     שהסקיל הנ"ל מפעיל)
+   כל ההפניות בקובץ הזה (`SYSTEM_GENESIS_EXPORT.md`) עודכנו בהתאם לשמות החדשים.
+4. **`supabase-security.md`** — מחרוזת salt לדוגמה בקוד הדגמה (`liders-salt-2025`)
+   הוחלפה ל-`plto-salt-2025` (קוד הדגמה בלבד בתוך הסקיל, לא קוד production).
+
+### ⚠️ לא שונה בכוונה — לא "שארית מיתוג", אלא זהות חיצונית אמיתית
+2 קטגוריות של "Liders" עדיין מופיעות בקוד, ובכוונה **לא** נגעתי בהן, כי הן לא
+טקסט מיתוג שנשכח אלא **ערך אמיתי של ישות חיצונית חיה**:
+
+1. **כתובת Gmail אמיתית ומחוברת בפועל**: `liders.crm@gmail.com` מופיעה ב-
+   `supabase/functions/gmail-proxy/index.ts` (רשימת `ADMIN_EMAILS` + שאילתת
+   `gmail_tokens` לפי `account`), ב-`supabase/functions/gmail-oauth-callback/
+   index.ts` (`login_hint`, שמירת ה-token, טקסט למסך "המייל ... מחובר"), וב-
+   `admin.html` (השוואת `billing_email` בפועל של רשומת tenant אמיתית בשם
+   "ארביטראז", כדי להסתיר כפתור "החזרה לניסיון" מחשבונות פנימיים). זהו חשבון
+   Gmail אמיתי שמחובר כרגע דרך OAuth (`gmail_tokens` בטבלה מכיל טוקן אמיתי
+   בשם הזה בדיוק), ו/או ערך אמיתי בעמודת `billing_email` של רשומה קיימת ב-DB.
+   שינוי המחרוזת בקוד **בלי** גם ליצור חשבון Gmail חדש ולעבור OAuth מחדש (ו/או
+   לעדכן את הנתון עצמו ב-DB) פשוט ישבור את הפיצ'ר (Gmail inbox לא יימצא token,
+   הכפתור באדמין יתנהג הפוך מהכוונה). זהה בדיוק להחלטה שתועדה ב-12/7/2026:
+   "המשתמש ציין שהוא יחליף בעצמו למייל המקצועי בוורקספייס שפתח בגוגל". כשזה
+   יקרה, יש לעדכן את שלושת המקומות + לבצע OAuth מחדש מול `gmail-oauth-callback`.
+2. **קובצי מיגרציה היסטוריים** (`supabase/migrations/020...098`) — עשרות
+   קבצים מכילים `liders.crm@gmail.com` בתוך גוף פונקציה כפי שהיא נכתבה **באותו
+   רגע בזמן**, לפני שמיגרציה `081` (מ-12/7/2026) שינתה את ה-guard בפועל ב-DB
+   החי ל-`info@plto.app`. קובצי מיגרציה הם רשומת היסטוריה שלא עורכים בדיעבד
+   (replay מסודר מתחיל מהערך הישן וה-081 היא מה שבאמת מתקן), כך שאלה לא
+   "שאריות" אלא תיעוד היסטורי נכון. אומת ישירות מול ה-DB החי (לא רק מהריפו)
+   ש-**אין יותר אף אובייקט סכימה חי** (טבלה/פונקציה) שמכיל "liders" מלבד
+   הכתובת האמיתית בסעיף 1 למעלה.
