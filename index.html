@@ -7728,13 +7728,19 @@ const DB = {
   // Returning users (existing agent_users row) are untouched - idempotent.
   async ensureAgent(email, name, agencyName) {
     const ainviteToken = AgentInvite.getToken();
-    const { data, error } = await sbClient.rpc('ensure_agent_and_tenant',
-      { p_agency_name: agencyName || null, p_name: name || email.split('@')[0], p_ainvite_token: ainviteToken || null });
+    const utm = SignupAttribution.get() || {};
+    const { data, error } = await sbClient.rpc('ensure_agent_and_tenant', {
+      p_agency_name: agencyName || null, p_name: name || email.split('@')[0], p_ainvite_token: ainviteToken || null,
+      p_signup_utm_source: utm.utm_source || null, p_signup_utm_medium: utm.utm_medium || null,
+      p_signup_utm_campaign: utm.utm_campaign || null, p_signup_utm_content: utm.utm_content || null,
+      p_signup_utm_term: utm.utm_term || null,
+    });
     if (error) throw error;
     if (data) {
       this.agentId  = data.agent_id;
       this.tenantId = data.tenant_id;
       if (data.joined_via_token) AgentInvite.clear();
+      if (data.is_new) SignupAttribution.clear();
     }
     return {
       isNew:            !!data?.is_new,
@@ -20408,6 +20414,38 @@ window.AgentInvite = AgentInvite;
 // Check for inbound agency recruitment link (?ainvite=) - קישור גיוס. חייב
 // לרוץ אחרי הגדרת האובייקט הזה (לא בקבוצת בדיקות ה-init המוקדמת למעלה)
 AgentInvite.checkInbound();
+
+/* ═══════════════════════════════════════════
+   SignupAttribution — captures utm_source/medium/campaign/content/term
+   forwarded from landing.html's CTA links, holds them for the lifetime of
+   the signup flow, and hands them to DB.ensureAgent() so a brand-new tenant
+   gets stamped with which ad campaign brought it in. Read-only after that:
+   DB.ensureAgent() clears it once a new tenant is actually created.
+   ═══════════════════════════════════════════ */
+const SignupAttribution = {
+  _KEY: 'plto_signup_utm',
+  _FIELDS: ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'],
+
+  checkInbound() {
+    const params = new URLSearchParams(location.search);
+    const utm = {};
+    this._FIELDS.forEach(k => { const v = params.get(k); if (v) utm[k] = v; });
+    if (!Object.keys(utm).length) return;
+    sessionStorage.setItem(this._KEY, JSON.stringify(utm));
+    // Clean the params from the URL to avoid re-triggering on reload
+    this._FIELDS.forEach(k => params.delete(k));
+    const newSearch = params.toString();
+    history.replaceState(null, '', location.pathname + (newSearch ? '?' + newSearch : ''));
+  },
+
+  get() {
+    try { return JSON.parse(sessionStorage.getItem(this._KEY) || 'null'); }
+    catch(_e) { return null; }
+  },
+  clear() { sessionStorage.removeItem(this._KEY); },
+};
+window.SignupAttribution = SignupAttribution;
+SignupAttribution.checkInbound();
 
 const Team = {
   _data: null,

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://scyfywvzoogfrlalgftv.supabase.co https://www.google-analytics.com https://www.googletagmanager.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://scyfywvzoogfrlalgftv.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://www.facebook.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
   <title>PLTO: הפלטפורמה שהופכת לידים לעסקאות</title>
   <meta name="description" content="מערכת CRM לעולם הנדל״ן: סוכני נדל״ן, עו״ד נדל״ן ומעצבי פנים. 5 סוכני AI שמנהלים את הפייפליין בשבילך. 30 יום חינם, ללא כרטיס אשראי.">
   <meta property="og:type" content="website">
@@ -3746,15 +3746,53 @@
   gtag('config', 'G-HK3080C4GJ');
 </script>
 
+<!-- Meta Pixel — attribution for Meta/Facebook ad campaigns.
+     'YOUR_PIXEL_ID' is a placeholder: no Business Manager pixel exists yet.
+     Replace with the real ID once the ad account is created (see CLAUDE.md
+     pending-action list). Until then this loads and calls fbq() harmlessly
+     against a non-existent ID — no events are actually attributed anywhere. -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', 'YOUR_PIXEL_ID');
+fbq('track', 'PageView');
+</script>
+
 <script>
 /* CTA Funnel Tracking — landing.html
    Maps each CTA link to a section label and fires:
    - gtag('event', 'landing_cta_click', { event_category, cta_text, section })
    - Supabase track_funnel_event RPC (fire-and-forget, no blocking)
+
+   UTM attribution: utm_source/medium/campaign/content/term are read once
+   from the landing page's own URL, merged into every landing_cta_click
+   event's p_event_data, and appended as a query string to every CTA link
+   that points to plto.app, so the SPA (index.html) can pick them up on the
+   next page load and stamp them on the tenant row at signup. See
+   index.html's SignupAttribution module + DB.ensureAgent.
 */
 (function() {
   var SUPABASE_URL = 'https://scyfywvzoogfrlalgftv.supabase.co';
   var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjeWZ5d3Z6b29nZnJsYWxnZnR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyMTM3NTIsImV4cCI6MjA2Njc4OTc1Mn0.5aGMSrqSgYdIbZ5qAI1WX2ZBfp6-5TEaqQxOuMfKXkk';
+
+  var UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+  var utm = {};
+  (function captureUtm() {
+    var params = new URLSearchParams(window.location.search);
+    UTM_KEYS.forEach(function(k) {
+      var v = params.get(k);
+      if (v) utm[k] = v;
+    });
+  })();
+  var utmQuery = Object.keys(utm)
+    .map(function(k) { return k + '=' + encodeURIComponent(utm[k]); })
+    .join('&');
 
   function getSessionId() {
     var KEY = 'plto_cro_session';
@@ -3766,6 +3804,7 @@
   function trackCta(section, ctaText) {
     var sid = getSessionId();
     var data = { section: section, cta_text: ctaText };
+    UTM_KEYS.forEach(function(k) { if (utm[k]) data[k] = utm[k]; });
     if (typeof gtag === 'function') {
       gtag('event', 'landing_cta_click', { event_category: 'landing_cta', section: section, cta_text: ctaText });
     }
@@ -3794,6 +3833,10 @@
 
   document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('a[href="https://plto.app"]').forEach(function(el) {
+      if (utmQuery) {
+        var sep = el.href.indexOf('?') === -1 ? '?' : '&';
+        el.href = el.href + sep + utmQuery;
+      }
       el.addEventListener('click', function() {
         var section = 'unknown';
         for (var i = 0; i < ctaMap.length; i++) {
