@@ -4593,28 +4593,6 @@
         </div>
       </div>
 
-      <!-- MOTIVATION AGENT - AI motivational boost, up to 5/day -->
-      <div class="motivation-card" id="motivation-card">
-        <button class="motivation-card-dismiss" onclick="document.getElementById('motivation-card').style.display='none'" title="הסתר">×</button>
-        <div class="motivation-card-header">
-          <div class="motivation-card-icon">🚀</div>
-          <div>
-            <div class="motivation-card-title">סוכן מוטיבציה</div>
-            <div class="motivation-card-sub">הסוכן החכם שדוחף אותך קדימה</div>
-          </div>
-        </div>
-        <div class="motivation-text-area" id="motivation-text">מסר מוטיבציה אישי לפי הנתונים שלך, בלחיצת כפתור...</div>
-        <div class="motivation-card-footer">
-          <button class="motivation-btn" id="motivation-btn" onclick="MotivationAgent.generate()">✨ מוטיבציה חדשה</button>
-          <div id="motivation-footer-info">
-            <span class="motivation-usage-badge" id="motivation-usage"></span>
-            <div class="motivation-cooldown hidden" id="motivation-cooldown">
-              ⏳ זמין שוב בעוד: <span class="motivation-cooldown-timer" id="motivation-countdown">~~</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- URGENT TASKS - actionable items -->
       <div class="section-header">
         <div class="section-title">⚡ משימות דחופות</div>
@@ -4713,6 +4691,30 @@
           </div>
           <!-- GROWTH CARD (referral + annual teaser, injected by Dashboard.renderGrowthCard) -->
           <div id="dash-growth-card-wrap" style="margin-top:12px;"></div>
+        </div>
+      </div>
+
+      <!-- MOTIVATION AGENT - AI motivational boost, up to 5/day. Placed after the
+           gamification widget on purpose (same reasoning as gamify-widget itself):
+           a bonus/reward layer, not the first thing seen on dashboard load. -->
+      <div class="motivation-card" id="motivation-card" style="margin-top:16px;">
+        <button class="motivation-card-dismiss" onclick="document.getElementById('motivation-card').style.display='none'" title="הסתר">×</button>
+        <div class="motivation-card-header">
+          <div class="motivation-card-icon">🚀</div>
+          <div>
+            <div class="motivation-card-title">סוכן מוטיבציה</div>
+            <div class="motivation-card-sub">הסוכן החכם שדוחף אותך קדימה</div>
+          </div>
+        </div>
+        <div class="motivation-text-area" id="motivation-text">מסר מוטיבציה אישי לפי הנתונים שלך, בלחיצת כפתור...</div>
+        <div class="motivation-card-footer">
+          <button class="motivation-btn" id="motivation-btn" onclick="MotivationAgent.generate()">✨ מוטיבציה חדשה</button>
+          <div id="motivation-footer-info">
+            <span class="motivation-usage-badge" id="motivation-usage"></span>
+            <div class="motivation-cooldown hidden" id="motivation-cooldown">
+              ⏳ זמין שוב בעוד: <span class="motivation-cooldown-timer" id="motivation-countdown">~~</span>
+            </div>
+          </div>
         </div>
       </div>
 
