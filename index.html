@@ -5114,10 +5114,10 @@
         </div>
         <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:rgba(255,255,255,0.72);">
           <div>🏠 <strong style="color:#fff;">סוכן נדל"ן</strong>, מפנה לעו"ד לחתימה, ולמעצב אחרי הסגירה</div>
-          <div>⚖️ <strong style="color:#fff;">עו"ד נדל"ן</strong>, מפנה לסוכן מי שרוצה לקנות/למכור</div>
+          <div>⚖️ <strong style="color:#fff;">עו"ד</strong>, מפנה לסוכן מי שרוצה לקנות/למכור</div>
           <div>🎨 <strong style="color:#fff;">עיצוב פנים</strong>, מפנה לסוכן מי שרוצה לקנות דירה</div>
         </div>
-        <div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,0.55);">כל הפניה מגובה בעמלה וחתימה דיגיטלית, הכל בתוך המערכת.</div>
+        <div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,0.55);">הפניה עם עמלה מגובה בחתימה דיגיטלית, הכל בתוך המערכת. עמלה אינה זמינה בהפניה לעו"ד, בהתאם לכללי האתיקה המקצועית.</div>
       </div>
 
       <div class="partners-tab-bar">
@@ -5158,7 +5158,7 @@
       <div id="ptab-content-board" class="hidden" style="padding:16px;">
         <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:12.5px;color:var(--gray-600);line-height:1.6;">
           <strong style="color:var(--navy-600);display:block;margin-bottom:3px;">📋 שוק ההפניות הפנימי</strong>
-          יש לקוח שצריך מישהו מחוץ לאזור שלך? פרסמו הזדמנות עם עמלה, והסוכן, העו"ד או המעצב המתאים יגיב, וכל ההסכמות מגובות בחתימה דיגיטלית.
+          יש לקוח שצריך מישהו מחוץ לאזור שלך? פרסמו הזדמנות, עם או בלי עמלה, והסוכן, העו"ד או המעצב המתאים יגיב, וכל ההסכמות מגובות בחתימה דיגיטלית. עמלה אינה זמינה כשהיעד הוא עו"ד, בהתאם לכללי האתיקה המקצועית.
         </div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:12.5px;color:var(--gray-500);">
           <span>📍 האזור שלך (להתראות על הזדמנויות מתאימות):</span>
@@ -5688,11 +5688,16 @@
             <label class="form-label">למי מפנים?</label>
             <select id="lref-vertical" class="form-input" onchange="LeadReferral.onVerticalChange()">
               <option value="">בחירת תחום...</option>
-              <option value="realestate_lawyer">⚖️ עו"ד נדל"ן</option>
+              <option value="realestate_lawyer">⚖️ עו"ד</option>
               <option value="interior">🎨 עיצוב פנים</option>
               <option value="realestate">🏠 סוכן נדל"ן</option>
               <option value="other">🔨 בעל מקצוע אחר (שיפוצניק, קבלן, וכו')</option>
             </select>
+          </div>
+          <div class="form-group hidden" id="lref-lawyer-note">
+            <div style="font-size:11.5px;color:var(--gray-500);background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:8px 10px;">
+              ⚖️ הפניה שמעורב בה עו"ד, כמפנה או כמקבל, אינה כוללת עמלה, בהתאם לכללי האתיקה המקצועית של לשכת עורכי הדין.
+            </div>
           </div>
           <div class="form-group hidden" id="lref-profession-wrap">
             <label class="form-label">מה תחום המקצוע?</label>
@@ -5714,19 +5719,21 @@
             <label class="form-label">משפט הקשר (לא חובה)</label>
             <input type="text" id="lref-context" class="form-input" maxlength="300" placeholder="סגרנו על דירה ברעננה, צריכים ליווי משפטי">
           </div>
-          <div class="form-group">
-            <label class="form-label">עמלת הפניה (לא חובה)</label>
-            <select id="lref-commission-type" class="form-input" onchange="LeadReferral.toggleCommissionValue()">
-              <option value="none">ללא עמלה</option>
-              <option value="percent">אחוז מהעסקה</option>
-              <option value="fixed">סכום קבוע (₪)</option>
-            </select>
-          </div>
-          <div class="form-group hidden" id="lref-commission-value-wrap">
-            <label class="form-label" id="lref-commission-value-label">אחוז</label>
-            <input type="number" id="lref-commission-value" class="form-input" min="0" step="0.1" placeholder="לדוגמה: 10">
-            <div id="lref-commission-hint" style="font-size:11.5px;color:var(--gray-500);margin-top:4px;">
-              🔒 כשיש עמלה, נדרשת חתימה דיגיטלית של הקולגה על הסכם עמלה קצר לפני שהליד נחשף אליו.
+          <div id="lref-commission-wrap">
+            <div class="form-group">
+              <label class="form-label">עמלת הפניה (לא חובה)</label>
+              <select id="lref-commission-type" class="form-input" onchange="LeadReferral.toggleCommissionValue()">
+                <option value="none">ללא עמלה</option>
+                <option value="percent">אחוז מהעסקה</option>
+                <option value="fixed">סכום קבוע (₪)</option>
+              </select>
+            </div>
+            <div class="form-group hidden" id="lref-commission-value-wrap">
+              <label class="form-label" id="lref-commission-value-label">אחוז</label>
+              <input type="number" id="lref-commission-value" class="form-input" min="0" step="0.1" placeholder="לדוגמה: 10">
+              <div id="lref-commission-hint" style="font-size:11.5px;color:var(--gray-500);margin-top:4px;">
+                🔒 כשיש עמלה, נדרשת חתימה דיגיטלית של הקולגה על הסכם עמלה קצר לפני שהליד נחשף אליו.
+              </div>
             </div>
           </div>
           <div class="form-group">
@@ -5851,11 +5858,16 @@
         </div>
         <div class="form-group">
           <label class="form-label">תחום מבוקש</label>
-          <select id="opp-vertical" class="form-input">
+          <select id="opp-vertical" class="form-input" onchange="OppBoard.onVerticalChange()">
             <option value="realestate">🏠 סוכן נדל"ן</option>
-            <option value="realestate_lawyer">⚖️ עו"ד נדל"ן</option>
+            <option value="realestate_lawyer">⚖️ עו"ד</option>
             <option value="interior">🎨 עיצוב פנים</option>
           </select>
+        </div>
+        <div class="form-group hidden" id="opp-lawyer-note">
+          <div style="font-size:11.5px;color:var(--gray-500);background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:8px 10px;">
+            ⚖️ הזדמנות שמעורב בה עו"ד, כמפרסם או כיעד, אינה כוללת עמלה, בהתאם לכללי האתיקה המקצועית של לשכת עורכי הדין.
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">אזור</label>
@@ -5874,17 +5886,19 @@
           <label class="form-label">עיר (לא חובה)</label>
           <input type="text" id="opp-city" class="form-input" placeholder="לדוגמה: חיפה">
         </div>
-        <div class="form-group">
-          <label class="form-label">עמלה מוצעת (לא חובה)</label>
-          <select id="opp-commission-type" class="form-input" onchange="OppBoard.toggleCommissionValue()">
-            <option value="none">ללא עמלה</option>
-            <option value="percent">אחוז מהעסקה</option>
-            <option value="fixed">סכום קבוע (₪)</option>
-          </select>
-        </div>
-        <div class="form-group hidden" id="opp-commission-value-wrap">
-          <label class="form-label" id="opp-commission-value-label">אחוז</label>
-          <input type="number" id="opp-commission-value" class="form-input" min="0" step="0.1">
+        <div id="opp-commission-wrap">
+          <div class="form-group">
+            <label class="form-label">עמלה מוצעת (לא חובה)</label>
+            <select id="opp-commission-type" class="form-input" onchange="OppBoard.toggleCommissionValue()">
+              <option value="none">ללא עמלה</option>
+              <option value="percent">אחוז מהעסקה</option>
+              <option value="fixed">סכום קבוע (₪)</option>
+            </select>
+          </div>
+          <div class="form-group hidden" id="opp-commission-value-wrap">
+            <label class="form-label" id="opp-commission-value-label">אחוז</label>
+            <input type="number" id="opp-commission-value" class="form-input" min="0" step="0.1">
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -8716,7 +8730,7 @@ const Onboarding = {
       render() {
         const INDUSTRIES = [
           { id: 'realestate',        icon: '🏠', label: 'סוכן נדל"ן' },
-          { id: 'realestate_lawyer', icon: '⚖️', label: 'עו"ד נדל"ן' },
+          { id: 'realestate_lawyer', icon: '⚖️', label: 'עו"ד' },
           { id: 'interior',          icon: '🎨', label: 'עיצוב פנים' },
           { id: 'other',             icon: '🎯', label: 'אחר' },
         ];
@@ -8753,7 +8767,7 @@ const Onboarding = {
         const industry = localStorage.getItem('plto_industry') || 'other';
         const bizPlaceholder = industry === 'realestate'  ? 'PLTO נדל"ן, תל אביב'
           : industry === 'interior'          ? 'PLTO עיצוב פנים, תל אביב'
-          : industry === 'realestate_lawyer' ? 'PLTO משפטי נדל"ן, תל אביב'
+          : industry === 'realestate_lawyer' ? 'משרד עו"ד PLTO, תל אביב'
           : 'PLTO, שם העסק שלי';
         const hint = (Onboarding._VERTICAL_COPY[industry] || Onboarding._VERTICAL_COPY.other).step1hint;
         return `
@@ -8828,7 +8842,7 @@ const Onboarding = {
         const AGENT_TIPS = {
           realestate:        'רוב הקונים בוחרים סוכן תוך 72 שעות מהפנייה הראשונה. אני אזהיר אותך על כל ליד שלא קיבל מענה תוך יום.',
           interior:          'לקוח עיצוב מחליט אחרי ראיית Portfolio. אני אזכיר לך מתי לשלוח דוגמאות עבודה לכל ליד.',
-          realestate_lawyer: 'עסקאות נדל"ן נסגרות בממוצע 60~90 יום. אני אעקוב אחרי כל תיק ואזהיר על עיכובים.',
+          realestate_lawyer: 'כל תיק דורש מעקב צמוד אחרי מועדים ומסמכים. אני אעקוב אחרי כל תיק ואזהיר על עיכובים.',
           other:             'לידים שלא מקבלים מענה תוך 24 שעות, 80% הולכים למתחרה. אני אשמור אותך על כדור.',
         };
         const tip = AGENT_TIPS[ind] || AGENT_TIPS.other;
@@ -8896,9 +8910,9 @@ const Onboarding = {
       step1hint: 'כל ליד הוא קונה פוטנציאלי, נמצא לו את הנכס המושלם.',
     },
     realestate_lawyer: {
-      greeting:  'מעולה! נגדיר עבורך מסלול לעו"ד נדל"ן ⚖️',
+      greeting:  'מעולה! נגדיר עבורך מסלול לעו"ד ⚖️',
       step1sub:  'כמה פרטים ותוכל להתמקד בתיקים, לא בניהול',
-      step1hint: 'כל תיק הוא לקוח שמצפה לחוזה חתום מושלם.',
+      step1hint: 'כל תיק הוא לקוח שסומך עליך לטפל בעניין שלו מקצועית עד הסוף.',
     },
     interior: {
       greeting:  'מעולה! נגדיר עבורך מסלול לעיצוב פנים 🎨',
@@ -9135,8 +9149,8 @@ const INDUSTRY_LABELS = {
     lead:'לקוח', leads:'לקוחות', property:'תיק', properties:'תיקים', deal:'עסקה', client:'לקוח', meeting:'פגישת ייעוץ', agent:'עו"ד',
     addLead:'לקוח חדש', allLeads:'כל הלקוחות', pipeline:'פייפליין תיקים', propertiesIcon:'⚖️',
     matchTab:'תיקים פעילים', docLabel:'מסמכים',
-    stages:['פנייה נכנסה','ייעוץ ראשוני','בדיקת נאותות','חוזה בניסוח','עסקה נסגרה ✓'],
-    notesPlaceholder:'הערות, סוג עסקה (רכישה/מכירה/השכרה), שמות הצדדים, ערך הנכס, מצב רישומי, הערות אזהרה, מועד חזוי לחתימה...',
+    stages:['פנייה נכנסה','ייעוץ ראשוני','טיפול בתיק','הכנת מסמכים','תיק נסגר ✓'],
+    notesPlaceholder:'הערות, סוג התיק, שמות הצדדים, מסמכים רלוונטיים, מועד חזוי לסיום הטיפול...',
   },
   other: {
     lead:'ליד', leads:'לידים', property:'נכס', properties:'נכסים', deal:'עסקה', client:'לקוח', meeting:'פגישה', agent:'סוכן',
@@ -9259,9 +9273,9 @@ const PROPERTY_CONFIG = {
     tourPlaceholder: 'https://... (קישור לצפייה בהדמיה)',
   },
   realestate_lawyer: {
-    titlePlaceholder: 'לדוגמה: ליווי רכישת דירה, רחוב הרצל 10',
+    titlePlaceholder: 'לדוגמה: ייצוג בתביעת נזיקין',
     typeLabel: 'סוג תיק',
-    typeOptions: [{v:'purchase',l:'ליווי רכישה'},{v:'sale',l:'ליווי מכירה'},{v:'mortgage',l:'ליווי משכנתא'},{v:'due_diligence',l:'בדיקת נאותות'},{v:'contract',l:'ניסוח חוזה'},{v:'other',l:'אחר'}],
+    typeOptions: [{v:'family',l:'דיני משפחה / גירושין'},{v:'tort',l:'נזיקין / תאונות דרכים'},{v:'realestate',l:'מקרקעין ונדל"ן'},{v:'contract',l:'חוזים'},{v:'general',l:'ייעוץ משפטי כללי'},{v:'other',l:'אחר'}],
     statusLabel: 'סטטוס',
     statusOptions: [{v:'open',l:'פתוח'},{v:'in_progress',l:'בטיפול'},{v:'completed',l:'הושלם'},{v:'on_hold',l:'מוקפא'}],
     statusClass: { open:'badge-status-new', in_progress:'badge-status-offer', completed:'badge-status-available', on_hold:'badge-status-sold' },
@@ -9494,7 +9508,7 @@ const AI = {
     const map = {
       realestate:         'סוכן נדל"ן ומתווך מוסמך',
       interior:           'מעצב פנים עם ניסיון בפרויקטי נדל"ן ומגורים',
-      realestate_lawyer:  'עורך דין המתמחה בדיני מקרקעין, עסקאות נדל"ן וניסוח חוזים',
+      realestate_lawyer:  'עורך דין ישראלי',
     };
     return map[ind] || 'מומחה מכירות ופיתוח עסקי';
   },
@@ -9539,17 +9553,17 @@ const AI = {
     const days = lead.last_contact ? Math.abs(diffDays(lead.last_contact)) : 30;
     const _ind = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
     const contextLine = _ind === 'realestate_lawyer'
-      ? `תחום: עריכת דין נדל"ן | שם: ${lead.name}`
+      ? `תחום: עריכת דין | שם: ${lead.name}`
       : _ind === 'interior'
       ? `תחום: עיצוב פנים | שם: ${lead.name} | תקציב: ${lead.budget_max ? formatMoney(lead.budget_max) : 'לא ידוע'}`
       : `שם: ${lead.name} | אזור: ${lead.desired_area || 'לא ידוע'} | תקציב: ${lead.budget_max ? formatMoney(lead.budget_max) : 'לא ידוע'}`;
     const updateLine = _ind === 'realestate_lawyer'
-      ? 'הצג עדכון משפטי רלוונטי (שינוי תקנות, עדכון רשם המקרקעין, פסיקה חדשה) כסיבה לפנות'
+      ? 'הצג עדכון משפטי כללי רלוונטי (שינוי חקיקה, פסיקה חדשה) כסיבה לפנות'
       : _ind === 'interior'
       ? 'הצג טרנד עיצובי חדש או פריט עיצוב מעניין כסיבה לפנות'
       : 'הצג עדכון שוק קטן כסיבה לפנות';
     const referralLine = _ind === 'realestate_lawyer'
-      ? 'בסוף ההודעה, הוסף שורה קצרה ועדינה שמזמינה להמליץ לחברים/משפחה אם יש היכרות עם מישהו שזקוק לייעוץ משפטי בנדל"ן.'
+      ? 'בסוף ההודעה, הוסף שורה קצרה ועדינה שמזמינה להמליץ לחברים/משפחה אם יש היכרות עם מישהו שזקוק לייעוץ משפטי.'
       : _ind === 'interior'
       ? 'בסוף ההודעה, הוסף שורה קצרה ועדינה שמזמינה להמליץ לחברים/משפחה אם יש היכרות עם מישהו שמתכנן פרויקט עיצוב.'
       : 'בסוף ההודעה, הוסף שורה קצרה ועדינה שמזמינה להמליץ לחברים/משפחה אם יש היכרות עם מישהו שמחפש נכס.';
@@ -9668,7 +9682,7 @@ const Tools = {
         ? 'יש כמה טרנדים חדשים בעיצוב שרציתי לשתף איתכם.'
         : 'יש עדכונים מעניינים באזור שביקשת, אשמח לעדכן.';
       const referral = _i === 'realestate_lawyer'
-        ? 'אם יש היכרות עם מישהו שזקוק לייעוץ משפטי בנדל"ן, אשמח שתיצרו קשר 🙏'
+        ? 'אם יש היכרות עם מישהו שזקוק לייעוץ משפטי, אשמח שתיצרו קשר 🙏'
         : _i === 'interior'
         ? 'אם יש היכרות עם מישהו שמתכנן פרויקט עיצוב, אשמח שתיצרו קשר 🙏'
         : 'אם יש היכרות עם מישהו שמחפש לקנות או למכור, אשמח שתיצרו קשר 🙏';
@@ -9916,7 +9930,7 @@ const Partners = {
           <div style="font-size:48px;margin-bottom:12px;">🤝</div>
           <div style="font-size:16px;font-weight:700;color:var(--navy-500);margin-bottom:8px;">שיתופי פעולה</div>
           <div style="font-size:13px;color:var(--gray-500);margin-bottom:20px;line-height:1.6;">
-            שיתוף לידים עם שותפים שעובדים עם PLTO, סוכני נדל"ן, עו"ד נדל"ן ומעצבי פנים.<br>
+            שיתוף לידים עם שותפים שעובדים עם PLTO, סוכני נדל"ן, עורכי דין ומעצבי פנים.<br>
             רק הליד הספציפי יהיה גלוי. כל השאר, מאובטח לחלוטין.
           </div>
           <div style="font-size:13px;color:var(--gray-400);">(זמין בחשבון אמיתי)</div>
@@ -10518,8 +10532,19 @@ const OppBoard = {
     document.getElementById('opp-vertical').value = 'realestate';
     document.getElementById('opp-region').value = 'center';
     document.getElementById('opp-commission-type').value = 'none';
-    this.toggleCommissionValue();
+    this.onVerticalChange();
     openModal('modal-publish-opportunity');
+  },
+
+  // Same rule as LeadReferral.onVerticalChange(): a lawyer is never party to a
+  // referral commission, whether publishing the opportunity or being its target.
+  onVerticalChange() {
+    const isLawyer = document.getElementById('opp-vertical').value === 'realestate_lawyer'
+      || State.tenant?.industry === 'realestate_lawyer';
+    document.getElementById('opp-lawyer-note').classList.toggle('hidden', !isLawyer);
+    document.getElementById('opp-commission-wrap').classList.toggle('hidden', isLawyer);
+    if (isLawyer) document.getElementById('opp-commission-type').value = 'none';
+    this.toggleCommissionValue();
   },
 
   toggleCommissionValue() {
@@ -10539,6 +10564,7 @@ const OppBoard = {
     const commType = document.getElementById('opp-commission-type').value;
     const commValRaw = document.getElementById('opp-commission-value').value;
     if (title.length < 5) { toast('הכותרת קצרה מדי (לפחות 5 תווים)', 'error'); return; }
+    if (commType !== 'none' && (vertical === 'realestate_lawyer' || State.tenant?.industry === 'realestate_lawyer')) { toast('לא ניתן להגדיר עמלה בהזדמנות שמעורב בה עו"ד, בהתאם לכללי האתיקה המקצועית', 'error'); return; }
     let commValue = null;
     if (commType !== 'none') {
       commValue = parseFloat(commValRaw);
@@ -10711,6 +10737,7 @@ const Marketing = {
         <h2>📣 שירותי שיווק</h2>
         <p>יצירת תוכן שיווקי מקצועי ישירות מהמערכת, בשניות</p>
         <p style="font-size:0.78rem;color:var(--gray-400);margin-top:2px;">✏️ סוכן השיווק יכול לפעמים לא לדייק, כל תוכן שנוצר ניתן לעריכה חופשית לפני שליחה</p>
+        ${isLawyer ? `<p style="font-size:0.78rem;color:var(--gray-400);margin-top:4px;">⚖️ האחריות המקצועית המלאה על השימוש בכל תוכן שנוצר, לרבות בדיקתו ועריכתו לפני פרסום, היא שלך בלבד.</p>` : ''}
       </div>
       ${trialBanner}
       ${usageLabel ? `<div style="font-size:0.8rem;color:var(--gray-500);text-align:center;margin-bottom:10px;"><span class="mktg-usage-counter">${usageLabel}</span></div>` : ''}
@@ -10741,7 +10768,7 @@ const Marketing = {
                 <option value="status_update">עדכון סטטוס אישי בתיק</option>
                 <option value="consult_reminder">תזכורת לפגישת ייעוץ</option>
                 <option value="doc_review">בדיקת מסמכים לפני חתימה</option>
-                <option value="full_service">הצעת ליווי מלא בעסקה</option>
+                <option value="full_service">הצעת ליווי משפטי מלא בתיק</option>
                 ` : `
                 <option value="exclusive">ביקור בלעדי לפני השוק</option>
                 <option value="special_price">תנאים מיוחדים שלא לכולם</option>
@@ -10773,11 +10800,11 @@ const Marketing = {
             <div>
               <label class="tool-label">נושא הפוסט</label>
               <select class="form-input" id="mktg-post-topic">
-                <option value="due_diligence">בדיקת נאותות לפני רכישה</option>
-                <option value="contract_mistakes">טעויות נפוצות בחוזה מכר</option>
-                <option value="caveat">מה זו הערת אזהרה ולמה היא חשובה</option>
-                <option value="tax">היבטי מיסוי בעסקת נדל"ן</option>
-                <option value="before_signing">למה חשוב עו"ד לפני חתימה על זיכרון דברים</option>
+                <option value="general_tip">טיפ משפטי כללי ושימושי</option>
+                <option value="contract_mistakes">טעויות נפוצות בחתימה על חוזה</option>
+                <option value="rights_awareness">זכות משפטית שכדאי להכיר</option>
+                <option value="when_lawyer">מתי חשוב להיוועץ בעורך דין</option>
+                <option value="process_explainer">איך נראה תהליך משפטי טיפוסי</option>
               </select>
             </div>` : `
             <div>
@@ -10817,7 +10844,7 @@ const Marketing = {
                 ${isLawyer ? `
                 <option value="legal_tip">טיפ משפטי חודשי</option>
                 <option value="contract_reminder">תזכורת, בדקו את החוזה לפני חתימה</option>
-                <option value="tax_update">עדכון מיסוי מקרקעין</option>
+                <option value="legal_update">עדכון משפטי כללי</option>
                 <option value="holiday">ברכת חג ועדכון שוטף</option>
                 <option value="service_reminder">תזכורת לשירותי המשרד</option>
                 ` : `
@@ -10920,11 +10947,11 @@ ${ind === 'realestate_lawyer' ? 'משרד' : 'סוכנות'}: ${safeAgency}
       if (ind === 'realestate_lawyer') {
         const topic = document.getElementById('mktg-post-topic')?.value;
         const topicMap = {
-          due_diligence:     'בדיקת נאותות שכל קונה חייב לעשות לפני רכישת נכס',
-          contract_mistakes: 'טעויות נפוצות שאנשים עושים בחוזה מכר דירה',
-          caveat:            'מה זו הערת אזהרה בטאבו ולמה היא קריטית להגנה על הקונה',
-          tax:               'היבטי מיסוי מקרקעין שחשוב להכיר לפני עסקה, מבלי לתת ייעוץ מס פרטני ומבלי לציין אחוזים/סכומים/תאריכים ספציפיים שאינם ודאיים',
-          before_signing:    'למה חשוב להיוועץ בעו"ד מקרקעין לפני חתימה על זיכרון דברים',
+          general_tip:        'טיפ משפטי כללי ושימושי, ברמת ידע בסיסית לציבור הרחב, ללא ייעוץ פרטני',
+          contract_mistakes:  'טעויות נפוצות שאנשים עושים כשהם חותמים על חוזה בלי לקרוא או להבין אותו לעומק',
+          rights_awareness:   'זכות משפטית חשובה שאנשים רבים לא מודעים לה ביומיום',
+          when_lawyer:        'מתי בדיוק חשוב לפנות לעורך דין ולא להסתמך רק על עצה מחבר או מהאינטרנט',
+          process_explainer:  'איך נראה תהליך משפטי טיפוסי מתחילתו ועד סופו, כדי להוריד חשש וחוסר ודאות',
         };
         prompt = `אתה ${AI._industryRole()} ישראלי, כותב תוכן מקצועי-חינוכי לרשת חברתית (${platMap[plat]||plat}).
 כתוב פוסט קצר ומקצועי בנושא: ${topicMap[topic]||topic}.
@@ -10960,9 +10987,9 @@ ${prop.description ? `תיאור: ${prop.description.slice(0,150)}` : ''}
     try {
       const isLawyer = ind === 'realestate_lawyer';
       const topicMap = isLawyer ? {
-        legal_tip:         'טיפ משפטי כללי ומועיל בתחום המקרקעין, ללא ייעוץ פרטני',
-        contract_reminder: 'תזכורת לחשיבות בדיקת חוזה ע"י עו"ד לפני חתימה',
-        tax_update:        'עדכון כללי בנושא מיסוי מקרקעין',
+        legal_tip:         'טיפ משפטי כללי ומועיל, ללא ייעוץ פרטני',
+        contract_reminder: 'תזכורת לחשיבות בדיקת מסמכים וחוזים ע"י עו"ד לפני חתימה',
+        legal_update:      'עדכון משפטי כללי, שינויי חקיקה או פסיקה רלוונטיים',
         holiday:           'ברכת חג + עדכון שוטף',
         service_reminder:  'תזכורת לשירותי המשרד ללקוחות קיימים וחדשים',
       } : {
@@ -10974,7 +11001,7 @@ ${prop.description ? `תיאור: ${prop.description.slice(0,150)}` : ''}
       };
       const complianceNote = isLawyer
         ? '\nחשוב: תוכן כללי ומקצועי בלבד, ללא הבטחות לתוצאה משפטית וללא התייחסות ללקוח ספציפי, בהתאם לכללי הפרסומת של לשכת עורכי הדין.' : '';
-      const statsGuard = (topic === 'market_update' || topic === 'tax_update')
+      const statsGuard = (topic === 'market_update' || topic === 'legal_update')
         ? '\nחשוב: אין לציין אחוזים, מחירים, ריביות או תאריכים ספציפיים שאינם ודאיים, התוכן צריך להישאר איכותני וכללי.' : '';
       const text = await AI.call([{ role: 'user', content:
         `אתה ${AI._industryRole()} ישראלי. כתוב הודעת WhatsApp broadcast לרשימת לקוחות בנושא: ${topicMap[topic]||topic}.${complianceNote}${statsGuard}
@@ -12876,7 +12903,7 @@ const LeadReferral = {
   _INBOUND_KEY: 'plto_inbound_lref',
   VERTICALS: {
     realestate:        'סוכן נדל"ן',
-    realestate_lawyer: 'עו"ד נדל"ן',
+    realestate_lawyer: 'עו"ד',
     interior:          'עיצוב פנים',
     other:             'בעל מקצוע'
   },
@@ -12904,14 +12931,28 @@ const LeadReferral = {
     document.getElementById('lref-consent-formal').checked = false;
     document.getElementById('lref-profession-wrap').classList.add('hidden');
     this._consentMode = null;
-    this.toggleCommissionValue();
+    this.onVerticalChange();
     openModal('modal-lead-referral');
   },
 
+  // A lawyer is never party to a referral commission — not as the recipient
+  // (rule 11ב: a lawyer may not take a client referred by a for-profit body
+  // advertising referral services), and, per the same conservative DB guard
+  // in _create_lead_referral_core, not as the sender either. So commission
+  // is hidden both when the target is a lawyer AND when the referring
+  // tenant itself is one, regardless of which vertical it's sending to.
   onVerticalChange() {
     const v = document.getElementById('lref-vertical').value;
     this._isExternal = (v === 'other');
+    const isLawyer = v === 'realestate_lawyer' || State.tenant?.industry === 'realestate_lawyer';
     document.getElementById('lref-profession-wrap').classList.toggle('hidden', !this._isExternal);
+    document.getElementById('lref-lawyer-note').classList.toggle('hidden', !isLawyer);
+    const commWrap = document.getElementById('lref-commission-wrap');
+    commWrap.classList.toggle('hidden', isLawyer);
+    if (isLawyer) {
+      document.getElementById('lref-commission-type').value = 'none';
+      this.toggleCommissionValue();
+    }
     // For external, commission is strongly recommended — update hint text
     const hint = document.getElementById('lref-commission-hint');
     if (hint) {
@@ -12947,6 +12988,7 @@ const LeadReferral = {
     if (!name)     { toast('יש להזין את שם הקולגה', 'error'); return; }
     if (isExternal && !profession) { toast('יש לציין את תחום המקצוע', 'error'); return; }
     if (isExternal && commType === 'none') { toast('לשליחה לבעל מקצוע חיצוני יש להגדיר עמלת הפניה', 'error'); return; }
+    if (commType !== 'none' && (vertical === 'realestate_lawyer' || State.tenant?.industry === 'realestate_lawyer')) { toast('לא ניתן להגדיר עמלה בהפניה שמעורב בה עו"ד, בהתאם לכללי האתיקה המקצועית', 'error'); return; }
     if (!this._consentMode) { toast('יש לבחור כיצד קיבלת/תקבל את הסכמת הלקוח', 'error'); return; }
 
     let commValue = null;
@@ -14712,7 +14754,7 @@ function pipelineEmptyTip(stageIdx) {
   const tips = {
     realestate:        '💡 רוב הקונים מגיעים מהפניות, כדאי לשלוח הודעה ל-3 לקוחות ישנים השבוע',
     interior:          '💡 כדאי לפרסם תמונה מפרויקט אחרון באינסטגרם, לידים מגיעים מ-portfolio',
-    realestate_lawyer: '💡 רוב התיקים מגיעים מסוכנים ומתווכים, יצרת קשר עם 2 סוכנים השבוע?',
+    realestate_lawyer: '💡 חלק גדול מהתיקים מגיעים מהפניות, כדאי לשלוח הודעה ל-2 לקוחות ישנים השבוע',
     other:             '💡 הוספת הליד הראשון שלך כדי להתחיל',
   };
   const tip = tips[ind] || tips.other;
@@ -14942,12 +14984,12 @@ const Leads = {
 ═══════════════════════════════════════════ */
 const CHECKLIST_TEMPLATES = {
   realestate_lawyer: [
-    { key: 'title_deed',    label: 'נסח טאבו עדכני' },
-    { key: 'caveat',        label: 'רישום הערת אזהרה' },
-    { key: 'poa',           label: 'ייפוי כוח מהצדדים' },
-    { key: 'tax_approval',  label: 'אישור מיסוי מקרקעין' },
-    { key: 'muni_approval', label: 'אישור עירייה / היטל השבחה' },
-    { key: 'contract_sign', label: 'חתימה על החוזה הסופי' },
+    { key: 'client_id',      label: 'זיהוי וייפוי כוח מהלקוח' },
+    { key: 'docs_gathered',  label: 'איסוף מסמכים ואסמכתאות' },
+    { key: 'initial_review', label: 'בדיקה וניתוח משפטי ראשוני' },
+    { key: 'draft_ready',    label: 'הכנת טיוטת מסמך / כתב טענות' },
+    { key: 'client_approval',label: 'אישור הלקוח לתוכן הסופי' },
+    { key: 'final_signed',   label: 'חתימה / הגשה סופית' },
   ],
   interior: [
     { key: 'renderings',  label: 'הדמיות ואישור קונספט' },
@@ -16428,7 +16470,7 @@ const Settings = {
         ${(() => {
           const IND_META = {
             realestate:         { icon:'🏠', label:'סוכן נדל"ן' },
-            realestate_lawyer:  { icon:'⚖️', label:'עו"ד נדל"ן' },
+            realestate_lawyer:  { icon:'⚖️', label:'עו"ד' },
             interior:           { icon:'🎨', label:'עיצוב פנים' },
             other:              { icon:'🎯', label:'אחר' },
           };
@@ -16692,7 +16734,7 @@ const Settings = {
   },
 
   async confirmChangeIndustry(ind) {
-    const IND_NAMES = { realestate: 'סוכן נדל"ן', realestate_lawyer: 'עו"ד נדל"ן', interior: 'עיצוב פנים', other: 'אחר' };
+    const IND_NAMES = { realestate: 'סוכן נדל"ן', realestate_lawyer: 'עו"ד', interior: 'עיצוב פנים', other: 'אחר' };
     if (!confirm(`לשנות את תחום העסק ל${IND_NAMES[ind] || ind}? התוויות המותאמות אישית יתאפסו לברירת המחדל של התחום החדש.`)) return;
     await this.setIndustry(ind);
   },
@@ -19823,15 +19865,15 @@ const TutorialVideo = {
         { title: '📋 פייפליין עסקאות',            desc: 'לשונית "פייפליין" מציגה את כל הקונים לפי שלבים, מפנייה נכנסה ועד חוזה נחתם. גרירה מעבירה שלב.' },
         { title: '🏠 יד2, מדלן ומחשבון משכנתא', desc: 'קיצורי דרך מהדשבורד לפתיחה מהירה של יד2 ומדלן, ומחשבון משכנתא מהיר לשיתוף עם הקונה.' },
         { title: '🤖 סוכן שיווק ונכסים',         desc: 'כותב בשבילך פוסטים לנכסים, הצעות מיוחדות ומסרי WhatsApp ללקוחות, תוך שניות.' },
-        { title: '🔗 לולאת הפניות',               desc: 'הפניית ליד לעו"ד נדל"ן או מעצב פנים בלחיצה מזכה ב-250 XP, ופותחת אפשרות לקבל הפניות חזרה.' },
+        { title: '🔗 לולאת הפניות',               desc: 'הפניית ליד לעו"ד או מעצב פנים בלחיצה מזכה ב-250 XP, ופותחת אפשרות לקבל הפניות חזרה.' },
         { title: '🏆 XP ופרסים אמיתיים',          desc: 'כל עסקה שנסגרת, כל ביקור, כל הפניה, מוסיפה XP שפודים בתוכן AI שימושי: דף נחיתה, תוכנית שיווק ותוכנית אסטרטגית לעסק.' },
       ],
       realestate_lawyer: [
-        { title: '➕ הוספת לקוח חדש',            desc: 'הכפתור הכתום + פותח טופס עם שם הלקוח, סוג העסקה (רכישה/מכירה) ושלב הטיפול.' },
-        { title: '📋 פייפליין תיקים',             desc: 'לשונית "פייפליין" מציגה כל התיקים לפי שלב, פנייה, ייעוץ ראשוני, בדיקת נאותות, ועד חתימת חוזה.' },
+        { title: '➕ הוספת לקוח חדש',            desc: 'הכפתור הכתום + פותח טופס עם שם הלקוח, סוג התיק ושלב הטיפול.' },
+        { title: '📋 פייפליין תיקים',             desc: 'לשונית "פייפליין" מציגה כל התיקים לפי שלב, פנייה, ייעוץ ראשוני, טיפול בתיק, ועד סגירה.' },
         { title: '⚖️ טאבו, נבו ומיסוי מקרקעין',  desc: 'קיצורי דרך מהדשבורד לטאבו, לנבו ולמיסוי מקרקעין, ישירות מבלי לחפש בדפדפן.' },
         { title: '🤖 תוכן שיווקי מקצועי',         desc: 'כותב טיפים משפטיים לרשתות, מסרי פנייה ללקוחות, בהתאם לכללי פרסומת של לשכת עורכי הדין.' },
-        { title: '🔗 לולאת הפניות',               desc: 'שליחת לקוח מעוניין בנכס לסוכן נדל"ן מזכה ב-250 XP, ובונה שיתוף פעולה שמניב הפניות חזרה.' },
+        { title: '🔗 שיתופי פעולה',               desc: 'הפניית לקוח לסוכן נדל"ן או לקולגה אחר מזכה ב-250 XP. הפניה לעו"ד היא תמיד ללא עמלה, בהתאם לכללי האתיקה המקצועית.' },
         { title: '🏆 XP ופרסים אמיתיים',          desc: 'כל תיק שנסגר, כל ייעוץ, כל הפניה, מוסיפה XP שפודים בתוכן AI שימושי: דף נחיתה, תוכנית שיווק ותוכנית אסטרטגית לעסק.' },
       ],
       interior: [
@@ -20098,13 +20140,13 @@ const GuidedTour = {
     const pipeLabel = { realestate: 'פייפליין עסקאות', realestate_lawyer: 'פייפליין תיקים', interior: 'פייפליין פרויקטים', other: 'פייפליין המכירות' }[ind] || 'פייפליין לידים';
     const addText = {
       realestate:        'הכפתור הכתום בפינה הימנית התחתונה, פותח טופס עם שם, טלפון, תקציב ותחום הקונה.',
-      realestate_lawyer: 'הכפתור הכתום בפינה הימנית התחתונה, פותח טופס לפנייה חדשה עם שם, סוג עסקה ושלב הטיפול.',
+      realestate_lawyer: 'הכפתור הכתום בפינה הימנית התחתונה, פותח טופס לפנייה חדשה עם שם, סוג התיק ושלב הטיפול.',
       interior:          'הכפתור הכתום בפינה הימנית התחתונה, פותח טופס עם שם הלקוח, סגנון עיצוב ותקציב.',
       other:             'הכפתור הכתום בפינה הימנית התחתונה הוא המקום להוספת לידים. זה הלב של המערכת!',
     }[ind] || 'הכפתור הכתום בפינה הימנית התחתונה הוא המקום להוספת לידים. זה הלב של המערכת!';
     const pipeText = {
       realestate:        'כאן אפשר לראות את כל הקונים מסודרים לפי שלב, מפנייה נכנסה, דרך ביקור נקבע, ועד חוזה נחתם.',
-      realestate_lawyer: 'כאן אפשר לראות את כל התיקים לפי שלב, פנייה, ייעוץ ראשוני, בדיקת נאותות, ניסוח חוזה.',
+      realestate_lawyer: 'כאן אפשר לראות את כל התיקים לפי שלב, פנייה, ייעוץ ראשוני, טיפול בתיק, ועד סגירה.',
       interior:          'כאן אפשר לראות את כל הפרויקטים לפי שלב, פנייה, ביקור ראשוני, הצעת מחיר, ועד פרויקט הושלם.',
       other:             'כאן אפשר לראות את כל הלידים מסודרים לפי שלב, מליד חדש ועד עסקה סגורה.',
     }[ind] || 'כאן אפשר לראות את כל הלידים מסודרים לפי שלב, מליד חדש ועד עסקה סגורה.';
