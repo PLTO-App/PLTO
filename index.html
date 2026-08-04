@@ -10818,7 +10818,7 @@ const Marketing = {
             </div>` : ind === 'interior' ? `
             <div>
               <label class="tool-label">נושא הפוסט</label>
-              <select class="form-input" id="mktg-post-topic" onchange="Marketing._toggleInteriorPostTopic()">
+              <select class="form-input" id="mktg-post-topic" onchange="Marketing._togglePostTopicProp()">
                 <option value="project_update">עדכון מהפורטפוליו</option>
                 <option value="proportion_scale">טיפ עיצובי, קנה מידה ופרופורציה</option>
                 <option value="layered_lighting">טיפ עיצובי, תאורה בשכבות</option>
@@ -10830,6 +10830,21 @@ const Marketing = {
             </div>
             <div id="mktg-post-prop-wrap">
               <label class="tool-label">בחירת ${getLabel('property')} (רלוונטי לעדכון פורטפוליו)</label>
+              <select class="form-input" id="mktg-post-prop">${properties.length ? properties.map(p=>`<option value="${p.id}">${escapeHtml(p.title||p.city)}</option>`).join('') : `<option>אין ${getLabel('properties')} עדיין</option>`}</select>
+            </div>` : ind === 'realestate' ? `
+            <div>
+              <label class="tool-label">נושא הפוסט</label>
+              <select class="form-input" id="mktg-post-topic" onchange="Marketing._togglePostTopicProp()">
+                <option value="project_update">${getLabel('property')} חדש בשוק</option>
+                <option value="value_not_cost">אמון בציבור, שווי השירות של מתווך</option>
+                <option value="better_price">אמון בציבור, איך מתווך משיג מחיר טוב יותר</option>
+                <option value="network_risk">אמון בציבור, הסיכון במכירה עצמאית לחברים</option>
+                <option value="presentation_matters">אמון בציבור, למה הצגת נכס מקצועית משנה</option>
+                <option value="trust_process">אמון בציבור, מה עומד מאחורי מתווך אמין</option>
+              </select>
+            </div>
+            <div id="mktg-post-prop-wrap">
+              <label class="tool-label">בחירת ${getLabel('property')} (רלוונטי ל${getLabel('property')} חדש בשוק)</label>
               <select class="form-input" id="mktg-post-prop">${properties.length ? properties.map(p=>`<option value="${p.id}">${escapeHtml(p.title||p.city)}</option>`).join('') : `<option>אין ${getLabel('properties')} עדיין</option>`}</select>
             </div>` : `
             <div>
@@ -10958,7 +10973,7 @@ ${ind === 'realestate_lawyer' ? 'משרד' : 'סוכנות'}: ${safeAgency}
     }
   },
 
-  _toggleInteriorPostTopic() {
+  _togglePostTopicProp() {
     const topic = document.getElementById('mktg-post-topic')?.value;
     const wrap  = document.getElementById('mktg-post-prop-wrap');
     if (wrap) wrap.classList.toggle('hidden', topic !== 'project_update');
@@ -11000,6 +11015,18 @@ ${ind === 'realestate_lawyer' ? 'משרד' : 'סוכנות'}: ${safeAgency}
         prompt = `אתה ${AI._industryRole()} ישראלי, כותב תוכן מקצועי-חינוכי לרשת חברתית (${platMap[plat]||plat}).
 כתוב פוסט קצר, מעשי ומקורי בנושא הבא: ${topicMap[topic]||topic}.
 חשוב: זהו טיפ עיצובי כללי, לא צמוד ללקוח או פרויקט ספציפי. כתוב בסגנון אישי וזורם, לא כרשימת "טעות ופתרון" יבשה, ואל תצטט או תעתיק מקור חיצוני כלשהו, הניסוח חייב להיות מקורי לגמרי. סיים בקריאה עדינה ליצירת קשר. החזר רק את הפוסט.`;
+      } else if (ind === 'realestate' && document.getElementById('mktg-post-topic')?.value && document.getElementById('mktg-post-topic').value !== 'project_update') {
+        const topic = document.getElementById('mktg-post-topic').value;
+        const topicMap = {
+          value_not_cost:       'ההבנה שהתיווך הוא לא הוצאה על בעל הנכס, אלא הגורם שמביא בפועל את הקונה ואת העסקה עצמה',
+          better_price:         'איך היכרות עמוקה עם השוק, עם עסקאות דומות באזור ועם התקציב האמיתי של קונים פוטנציאליים, מאפשרת להשיג בפועל מחיר טוב יותר בעסקה',
+          network_risk:         'הסיכון שבמכירה לחבר או מכר קרוב בלי גורם מקצועי ניטרלי באמצע, ולמה זה דווקא עלול לפגוע במחיר ובתנאי העסקה',
+          presentation_matters: 'למה הצגה מקצועית ומושכלת של נכס, מבוססת ידע אמיתי על האזור ועל עסקאות שבוצעו בו, משפיעה משמעותית על החלטת קונה פוטנציאלי',
+          trust_process:        'מה בעצם עומד מאחורי עבודה עם מתווך אמין ומקצועי, מבדיקת מסמכי הנכס ועד ייצוג נאמן של האינטרסים של בעל הנכס מול הקונה',
+        };
+        prompt = `אתה ${AI._industryRole()} ישראלי, כותב תוכן שיווקי-חינוכי לרשת חברתית (${platMap[plat]||plat}), שמטרתו לחזק אמון בציבור בערך של עבודה עם מתווך מקצועי.
+כתוב פוסט קצר, משכנע ומקורי בנושא הבא: ${topicMap[topic]||topic}.
+חשוב: זהו תוכן כללי, לא צמוד ללקוח או נכס ספציפי. כתוב בטון בטוח ואמין, לא תוקפני כלפי מתחרים ולא מזלזל בקורא, ואל תצטט או תעתיק מקור חיצוני כלשהו, הניסוח חייב להיות מקורי לגמרי. סיים בקריאה עדינה ליצירת קשר. החזר רק את הפוסט.`;
       } else {
         const propId = document.getElementById('mktg-post-prop')?.value;
         const prop    = State.properties.find(p => p.id === propId) || {};
