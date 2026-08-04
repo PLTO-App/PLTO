@@ -2436,18 +2436,21 @@
     .gamify-daily-text { font-size: 12px; color: rgba(255,255,255,.8); flex: 1; line-height: 1.5; font-weight: 600; }
     .gamify-daily-done { font-size: 1.1rem; color: var(--gold-300); }
 
-    /* Compact sizing for the growth/referral card when nested inside the
-       gamification widget, so it reads as a small section, not a full banner. */
-    #gamify-main .dash-growth-card { padding: 12px 14px; margin: 0; }
-    #gamify-main .dash-growth-title { font-size: 12.5px; }
-    #gamify-main .dash-growth-sub { font-size: 10.5px; }
-    #gamify-main .dash-growth-btns { margin-top: 10px; gap: 6px; }
-    #gamify-main .dash-growth-btn-main { padding: 7px 12px; font-size: 11.5px; }
-    #gamify-main .dash-growth-btn-sec { padding: 7px 11px; font-size: 11.5px; }
-    #gamify-main .dash-growth-stat { padding: 6px 10px; }
-    #gamify-main .dash-growth-stat-val { font-size: 16px; }
-    #gamify-main .dash-growth-stat-lbl { font-size: 9px; }
-    #gamify-main .dash-growth-dismiss { width: 20px; height: 20px; font-size: 12px; top: 8px; left: 10px; }
+    /* Compact sizing for the growth/referral card, so it reads as a small
+       section, not a full banner. Was scoped to #gamify-main while the card
+       was nested inside the gamification widget; now targets its own wrapper
+       so the sizing is unchanged even though the card lives outside
+       #gamify-widget (needed for verticals where gamification is hidden). */
+    #dash-growth-card-wrap .dash-growth-card { padding: 12px 14px; margin: 0; }
+    #dash-growth-card-wrap .dash-growth-title { font-size: 12.5px; }
+    #dash-growth-card-wrap .dash-growth-sub { font-size: 10.5px; }
+    #dash-growth-card-wrap .dash-growth-btns { margin-top: 10px; gap: 6px; }
+    #dash-growth-card-wrap .dash-growth-btn-main { padding: 7px 12px; font-size: 11.5px; }
+    #dash-growth-card-wrap .dash-growth-btn-sec { padding: 7px 11px; font-size: 11.5px; }
+    #dash-growth-card-wrap .dash-growth-stat { padding: 6px 10px; }
+    #dash-growth-card-wrap .dash-growth-stat-val { font-size: 16px; }
+    #dash-growth-card-wrap .dash-growth-stat-lbl { font-size: 9px; }
+    #dash-growth-card-wrap .dash-growth-dismiss { width: 20px; height: 20px; font-size: 12px; top: 8px; left: 10px; }
 
     /* Achievement toast */
     .achievement-toast {
@@ -3718,6 +3721,7 @@
   .pro-chip-pro  { background:linear-gradient(135deg,#7C3AED,#2563EB); color:#fff; }
   .pro-chip-free { background:var(--green-500); color:#fff; }
   .pro-chip-ai   { background:linear-gradient(135deg,#EA580C,#F59E0B); color:#fff; }
+  .pro-chip-planned { background:rgba(37,99,235,.10); color:var(--blue-600); border:1px dashed rgba(37,99,235,.4); }
   .pro-chip-pro::after, .pro-chip-ai::after {
     content:''; position:absolute; inset:0; transform:translateX(-100%);
     background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
@@ -4593,28 +4597,6 @@
         </div>
       </div>
 
-      <!-- MOTIVATION AGENT - AI motivational boost, up to 5/day -->
-      <div class="motivation-card" id="motivation-card">
-        <button class="motivation-card-dismiss" onclick="document.getElementById('motivation-card').style.display='none'" title="הסתר">×</button>
-        <div class="motivation-card-header">
-          <div class="motivation-card-icon">🚀</div>
-          <div>
-            <div class="motivation-card-title">סוכן מוטיבציה</div>
-            <div class="motivation-card-sub">הסוכן החכם שדוחף אותך קדימה</div>
-          </div>
-        </div>
-        <div class="motivation-text-area" id="motivation-text">מסר מוטיבציה אישי לפי הנתונים שלך, בלחיצת כפתור...</div>
-        <div class="motivation-card-footer">
-          <button class="motivation-btn" id="motivation-btn" onclick="MotivationAgent.generate()">✨ מוטיבציה חדשה</button>
-          <div id="motivation-footer-info">
-            <span class="motivation-usage-badge" id="motivation-usage"></span>
-            <div class="motivation-cooldown hidden" id="motivation-cooldown">
-              ⏳ זמין שוב בעוד: <span class="motivation-cooldown-timer" id="motivation-countdown">~~</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- URGENT TASKS - actionable items -->
       <div class="section-header">
         <div class="section-title">⚡ משימות דחופות</div>
@@ -4711,8 +4693,35 @@
             <div class="gamify-daily-text" id="gamify-daily-text">טעינת אתגר יומי...</div>
             <div class="gamify-daily-done" id="gamify-daily-check"></div>
           </div>
-          <!-- GROWTH CARD (referral + annual teaser, injected by Dashboard.renderGrowthCard) -->
-          <div id="dash-growth-card-wrap" style="margin-top:12px;"></div>
+        </div>
+      </div>
+
+      <!-- GROWTH CARD (referral + annual teaser, injected by Dashboard.renderGrowthCard).
+           Lives outside #gamify-widget on purpose, so it keeps showing for
+           verticals where gamification is hidden (see Gamify.isEnabled()). -->
+      <div id="dash-growth-card-wrap" style="margin-top:16px;"></div>
+
+      <!-- MOTIVATION AGENT - AI motivational boost, up to 5/day. Placed after the
+           gamification widget on purpose (same reasoning as gamify-widget itself):
+           a bonus/reward layer, not the first thing seen on dashboard load. -->
+      <div class="motivation-card" id="motivation-card" style="margin-top:16px;">
+        <button class="motivation-card-dismiss" onclick="document.getElementById('motivation-card').style.display='none'" title="הסתר">×</button>
+        <div class="motivation-card-header">
+          <div class="motivation-card-icon">🚀</div>
+          <div>
+            <div class="motivation-card-title">סוכן מוטיבציה</div>
+            <div class="motivation-card-sub">הסוכן החכם שדוחף אותך קדימה</div>
+          </div>
+        </div>
+        <div class="motivation-text-area" id="motivation-text">מסר מוטיבציה אישי לפי הנתונים שלך, בלחיצת כפתור...</div>
+        <div class="motivation-card-footer">
+          <button class="motivation-btn" id="motivation-btn" onclick="MotivationAgent.generate()">✨ מוטיבציה חדשה</button>
+          <div id="motivation-footer-info">
+            <span class="motivation-usage-badge" id="motivation-usage"></span>
+            <div class="motivation-cooldown hidden" id="motivation-cooldown">
+              ⏳ זמין שוב בעוד: <span class="motivation-cooldown-timer" id="motivation-countdown">~~</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -5220,9 +5229,8 @@
         <div class="pro-hub-hero-title">פיצ'רים PRO</div>
         <div class="pro-hub-hero-sub">כלים מתקדמים שיעזרו לך לסגור יותר עסקאות<br>ולנהל את העסק שלך בצורה חכמה יותר</div>
         <div class="pro-hub-pills">
-          <div class="pro-hub-pill">🟢 4 פיצ'רים חינם</div>
-          <div class="pro-hub-pill">🔥 4 פיצ'רים AI</div>
-          <div class="pro-hub-pill">⚡ 8 פיצ'רים PRO</div>
+          <div class="pro-hub-pill">🟢 6 פיצ'רים חינם</div>
+          <div class="pro-hub-pill">🚧 10 בתכנון</div>
         </div>
       </div>
 
@@ -5240,10 +5248,10 @@
         <div class="pro-card" onclick="ProHub.open('lead-score')">
           <div class="pro-card-icon pci-blue">🎯</div>
           <div class="pro-card-info">
-            <div class="pro-card-title">ניקוד לידים AI</div>
+            <div class="pro-card-title">ניקוד לידים</div>
             <div class="pro-card-sub">דירוג אוטומטי 0~100 לפי סיכויי סגירה</div>
           </div>
-          <div class="pro-chip pro-chip-ai">AI</div>
+          <div class="pro-chip pro-chip-free">חינם</div>
         </div>
         <div class="pro-card" onclick="ProHub.open('forecast')">
           <div class="pro-card-icon pci-green">📈</div>
@@ -5251,7 +5259,7 @@
             <div class="pro-card-title">חיזוי מכירות</div>
             <div class="pro-card-sub">צפי הכנסות לפי הפייפליין הנוכחי</div>
           </div>
-          <div class="pro-chip pro-chip-ai">AI</div>
+          <div class="pro-chip pro-chip-free">חינם</div>
         </div>
         <div class="pro-card" onclick="ProHub.open('smart-remind')">
           <div class="pro-card-icon pci-purple">⏰</div>
@@ -5259,7 +5267,7 @@
             <div class="pro-card-title">תזכורות חכמות</div>
             <div class="pro-card-sub">AI מציע מתי לעשות פולואפ לכל ליד</div>
           </div>
-          <div class="pro-chip pro-chip-pro">PRO</div>
+          <div class="pro-chip pro-chip-planned">בתכנון</div>
         </div>
         <div class="pro-card" onclick="ProHub.open('auto-rules')">
           <div class="pro-card-icon pci-orange">⚡</div>
@@ -5267,7 +5275,7 @@
             <div class="pro-card-title">אוטומציה חכמה</div>
             <div class="pro-card-sub">העברת לידים שלב אוטומטית לפי כללים</div>
           </div>
-          <div class="pro-chip pro-chip-pro">PRO</div>
+          <div class="pro-chip pro-chip-planned">בתכנון</div>
         </div>
       </div>
 
@@ -5280,7 +5288,7 @@
             <div class="pro-card-title">שידור WhatsApp</div>
             <div class="pro-card-sub">שליחת הודעה לכל הלידים בשלב אחד</div>
           </div>
-          <div class="pro-chip pro-chip-ai">AI</div>
+          <div class="pro-chip pro-chip-free">חינם</div>
         </div>
         <div class="pro-card" onclick="ProHub.open('email-campaign')">
           <div class="pro-card-icon pci-blue">📧</div>
@@ -5288,7 +5296,7 @@
             <div class="pro-card-title">קמפיין אימייל</div>
             <div class="pro-card-sub">שליחת אימייל מקצועי לרשימת לידים</div>
           </div>
-          <div class="pro-chip pro-chip-pro">PRO</div>
+          <div class="pro-chip pro-chip-planned">בתכנון</div>
         </div>
         <div class="pro-card" onclick="ProHub.open('pdf-proposal')">
           <div class="pro-card-icon pci-gold">📄</div>
@@ -5296,7 +5304,7 @@
             <div class="pro-card-title">הצעת מחיר PDF</div>
             <div class="pro-card-sub">ייצוא הצעת מחיר מעוצבת ב-PDF</div>
           </div>
-          <div class="pro-chip pro-chip-pro">PRO</div>
+          <div class="pro-chip pro-chip-planned">בתכנון</div>
         </div>
         <div class="pro-card" onclick="ProHub.open('saved-templates')">
           <div class="pro-card-icon pci-teal">💾</div>
@@ -5325,7 +5333,7 @@
             <div class="pro-card-title">ייבוא לידים מ-Facebook</div>
             <div class="pro-card-sub">חיבור אוטומטי ל-Facebook Lead Ads</div>
           </div>
-          <div class="pro-chip pro-chip-pro">PRO</div>
+          <div class="pro-chip pro-chip-planned">בתכנון</div>
         </div>
         <div class="pro-card" onclick="ProHub.open('digital-card')">
           <div class="pro-card-icon pci-purple">🤳</div>
@@ -5333,7 +5341,7 @@
             <div class="pro-card-title">כרטיס ביקור דיגיטלי</div>
             <div class="pro-card-sub">דף פרופיל שניתן לשתף עם לקוחות</div>
           </div>
-          <div class="pro-chip pro-chip-pro">PRO</div>
+          <div class="pro-chip pro-chip-planned">בתכנון</div>
         </div>
         <div class="pro-card" onclick="ProHub.open('esign')">
           <div class="pro-card-icon pci-teal">✍️</div>
@@ -5341,7 +5349,7 @@
             <div class="pro-card-title">חתימה דיגיטלית</div>
             <div class="pro-card-sub">שליחת חוזים לחתימה אלקטרונית</div>
           </div>
-          <div class="pro-chip pro-chip-pro">PRO</div>
+          <div class="pro-chip pro-chip-planned">בתכנון</div>
         </div>
       </div>
 
@@ -5362,7 +5370,7 @@
             <div class="pro-card-title">פורטל לקוח</div>
             <div class="pro-card-sub">הלקוח רואה את הסטטוס של העסקה שלו</div>
           </div>
-          <div class="pro-chip pro-chip-pro">PRO</div>
+          <div class="pro-chip pro-chip-planned">בתכנון</div>
         </div>
         <div class="pro-card" onclick="ProHub.open('reviews')">
           <div class="pro-card-icon pci-gold">⭐</div>
@@ -5370,7 +5378,7 @@
             <div class="pro-card-title">ביקורות לקוחות</div>
             <div class="pro-card-sub">איסוף ביקורות אוטומטית אחרי עסקה</div>
           </div>
-          <div class="pro-chip pro-chip-pro">PRO</div>
+          <div class="pro-chip pro-chip-planned">בתכנון</div>
         </div>
         <div class="pro-card" onclick="ProHub.open('weekly-report')">
           <div class="pro-card-icon pci-pink">📋</div>
@@ -5378,7 +5386,7 @@
             <div class="pro-card-title">דוח שבועי אוטומטי</div>
             <div class="pro-card-sub">PDF עם ניתוח ביצועים שנשלח אוטומטית</div>
           </div>
-          <div class="pro-chip pro-chip-pro">PRO</div>
+          <div class="pro-chip pro-chip-planned">בתכנון</div>
         </div>
       </div>
     </div>
@@ -6376,7 +6384,7 @@
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-header">
-      <div class="modal-title">🎯 ניקוד לידים AI</div>
+      <div class="modal-title">🎯 ניקוד לידים</div>
       <button class="modal-close" onclick="closeModal('modal-pro-lead-score')">×</button>
     </div>
     <div style="font-size:12px;color:var(--gray-500);margin-bottom:12px;background:var(--blue-100);border-radius:8px;padding:8px 10px;line-height:1.5;">
@@ -6463,14 +6471,15 @@
       <div style="font-size:46px;margin-bottom:8px;" id="pro-locked-icon">⚡</div>
       <div style="font-size:18px;font-weight:900;margin-bottom:4px;" id="pro-locked-title">פיצ'ר PRO</div>
       <div style="font-size:13px;opacity:0.85;" id="pro-locked-sub">תיאור הפיצ'ר</div>
+      <div style="display:inline-block;margin-top:8px;background:rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;font-size:11.5px;font-weight:700;">🚧 בתכנון, עדיין לא זמין</div>
     </div>
     <div style="padding:16px 16px 8px;">
       <div id="pro-locked-mockup"></div>
       <div style="background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(37,99,235,0.08));border-radius:12px;padding:12px 14px;margin-bottom:14px;border:1px solid rgba(124,58,237,0.15);">
-        <div style="font-size:12px;font-weight:700;color:#7C3AED;margin-bottom:6px;">✨ מה כלול בגרסה PRO</div>
+        <div style="font-size:12px;font-weight:700;color:#7C3AED;margin-bottom:6px;">✨ מה מתוכנן</div>
         <div id="pro-locked-perks"></div>
       </div>
-      <button onclick="DemoLock.signup()" style="width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#7C3AED,#2563EB);color:white;font-size:15px;font-weight:800;border:none;cursor:pointer;margin-bottom:10px;">🚀 פתיחת חשבון ניסיון, חינם</button>
+      <button id="pro-locked-cta-btn" onclick="ProHub._lockedCta()" style="width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#7C3AED,#2563EB);color:white;font-size:15px;font-weight:800;border:none;cursor:pointer;margin-bottom:10px;"></button>
       <button onclick="closeModal('modal-pro-locked')" style="width:100%;padding:10px;border-radius:12px;background:var(--gray-100);color:var(--gray-500);font-size:13px;font-weight:600;border:none;cursor:pointer;">חזור לרשימת הפיצ'רים</button>
     </div>
   </div>
@@ -11275,6 +11284,14 @@ const Gamify = {
   _d: null,
   _pendingMilestone: null,
 
+  // Gamification (XP/levels/streaks/prizes) is hidden for the lawyer vertical
+  // by request, points/badges read as unprofessional for that persona.
+  // XP bookkeeping below still runs silently either way, so re-enabling this
+  // later (after consultation, per the decision) needs no data migration.
+  isEnabled() {
+    return State.tenant?.industry !== 'realestate_lawyer';
+  },
+
   get() {
     if (!this._d) {
       const raw = localStorage.getItem('plto_gamify_v2');
@@ -11357,6 +11374,7 @@ const Gamify = {
 
   event(type, extra) {
     if (State.isDemo) return;
+    const enabled = this.isEnabled();
     const d = this.get();
     const pts = type === 'import_leads'
       ? ((extra?.count || 0) >= 10 ? this.XP.import_leads_large : this.XP.import_leads_small)
@@ -11365,10 +11383,12 @@ const Gamify = {
     this._resetDaily(d);
     const leadId = extra?.id || null;
     if (!this._canEarn(d, type, leadId)) {
-      if (type === 'advance_stage' || type === 'close_deal') {
-        toast('XP כבר נצבר עבור ליד זה', 'info');
-      } else {
-        toast('הגעת למגבלת ה-XP היומית לפעולה זו', 'info');
+      if (enabled) {
+        if (type === 'advance_stage' || type === 'close_deal') {
+          toast('XP כבר נצבר עבור ליד זה', 'info');
+        } else {
+          toast('הגעת למגבלת ה-XP היומית לפעולה זו', 'info');
+        }
       }
       return;
     }
@@ -11381,6 +11401,7 @@ const Gamify = {
     if (type === 'complete_task') { d.tasksCompleted++;   d.acTasks++;  }
     if (type === 'use_ai')        { d.aiUses++;           d.acAi++;     }
     this.save();
+    if (!enabled) return;
     const newLevel = this.getLevel(d.xp);
     if (newLevel.min > prevLevel.min) this.showLevelUp(newLevel);
     this.checkAchievements();
@@ -11392,6 +11413,7 @@ const Gamify = {
 
   checkDailyLogin() {
     if (State.isDemo) return;
+    const enabled = this.isEnabled();
     const d = this.get();
     const today_ = new Date().toISOString().split('T')[0];
     if (d.lastLogin === today_) return;
@@ -11402,17 +11424,18 @@ const Gamify = {
     d.xp += this.XP.daily_login;
     const newLevel = this.getLevel(d.xp);
     this.save();
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) setTimeout(() => toast(MICRO_COPY.morningGreeting[_getInd()] || MICRO_COPY.morningGreeting.other, 'info', 4500), 800);
+    if (d.streak === 10) setTimeout(() => AnnualUpsell.tryShow('streak_10'), 3000);
+    if (d.streak === 18) setTimeout(() => AnnualUpsell.tryShow('streak_18'), 3000);
+    if (d.streak === 30) setTimeout(() => AnnualUpsell.tryShow('streak_30'), 3000);
+    if (!enabled) return;
     if (newLevel.min > prevLevel.min) setTimeout(() => this.showLevelUp(newLevel), 1500);
     this.checkAchievements();
     this.checkMilestones();
     this.renderSidebar();
     this.renderWidget();
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) setTimeout(() => toast(MICRO_COPY.morningGreeting[_getInd()] || MICRO_COPY.morningGreeting.other, 'info', 4500), 800);
     if (d.streak > 1) toast(`🔥 ${d.streak} ימים רצופים! +${this.XP.daily_login} XP`, 'success');
-    if (d.streak === 10) setTimeout(() => AnnualUpsell.tryShow('streak_10'), 3000);
-    if (d.streak === 18) setTimeout(() => AnnualUpsell.tryShow('streak_18'), 3000);
-    if (d.streak === 30) setTimeout(() => AnnualUpsell.tryShow('streak_30'), 3000);
   },
 
   checkAchievements() {
@@ -11554,6 +11577,9 @@ const Gamify = {
   },
 
   renderSidebar() {
+    const badgeEl = document.getElementById('sidebar-level-badge');
+    if (!this.isEnabled()) { if (badgeEl) badgeEl.style.display = 'none'; return; }
+    if (badgeEl) badgeEl.style.display = '';
     const d = this.get();
     const lv = this.getLevel(d.xp);
     const prog = this.getProgress(d.xp);
@@ -11566,6 +11592,9 @@ const Gamify = {
   },
 
   renderWidget() {
+    const widgetEl = document.getElementById('gamify-widget');
+    if (!this.isEnabled()) { if (widgetEl) widgetEl.style.display = 'none'; return; }
+    if (widgetEl) widgetEl.style.display = '';
     const leadCount = (State.leads || []).length;
     const gateEl   = document.getElementById('gamify-activation-gate');
     const mainEl   = document.getElementById('gamify-main');
@@ -11838,6 +11867,15 @@ const Gamify = {
   },
 
   renderStore() {
+    if (!this.isEnabled()) {
+      const screenEl = document.getElementById('screen-xp-store');
+      if (screenEl) screenEl.innerHTML = `<div style="text-align:center;padding:60px 24px;color:var(--gray-500);">
+        <div style="font-size:38px;margin-bottom:10px;">🔒</div>
+        <div style="font-weight:700;color:var(--navy);margin-bottom:6px;">הפיצ'ר הזה לא זמין בתחום שלך כרגע</div>
+        <div style="font-size:13px;">אפשר לחזור לדשבורד ולהמשיך משם.</div>
+      </div>`;
+      return;
+    }
     const d = this.get();
     const claimed  = new Set(d.milestoneClaimed  || []);
     const deferred = new Set(d.milestoneDeferred || []);
@@ -14341,13 +14379,20 @@ const Dashboard = {
           </div>
         </div>`;
     } else {
+      const gamifyOn = Gamify.isEnabled();
+      const sub = gamifyOn
+        ? 'חבר שמצטרף = +250 XP לך<br>הוא מקבל +100 XP + 20% הנחה'
+        : 'חבר שמצטרף מקבל 20% הנחה<br>ואת/ה מצטרפים לתוכנית ההפניות';
+      const secBtn = gamifyOn
+        ? `<button class="dash-growth-btn-sec"  onclick="App.go('xp-store')">🏆 חנות XP</button>`
+        : '';
       wrap.innerHTML = `
         <div class="dash-growth-card">
           <button class="dash-growth-dismiss" onclick="localStorage.setItem('${KEY}','dismissed');document.getElementById('dash-growth-card-wrap').innerHTML='';">✕</button>
           <div class="dash-growth-row">
             <div class="dash-growth-left">
               <div class="dash-growth-title">🎁 הזמנת חבר, שניכם מרוויחים</div>
-              <div class="dash-growth-sub">חבר שמצטרף = +250 XP לך<br>הוא מקבל +100 XP + 20% הנחה</div>
+              <div class="dash-growth-sub">${sub}</div>
             </div>
             <div class="dash-growth-stat">
               <div class="dash-growth-stat-val">${refCount > 0 ? refCount : '+'}</div>
@@ -14355,8 +14400,8 @@ const Dashboard = {
             </div>
           </div>
           <div class="dash-growth-btns">
-            <button class="dash-growth-btn-main" onclick="App.go('referral')">שליחת קוד לחבר 📲</button>
-            <button class="dash-growth-btn-sec"  onclick="App.go('xp-store')">🏆 חנות XP</button>
+            <button class="dash-growth-btn-main" ${secBtn ? '' : 'style="flex:1"'} onclick="App.go('referral')">שליחת קוד לחבר 📲</button>
+            ${secBtn}
           </div>
         </div>`;
     }
@@ -19147,7 +19192,7 @@ const ProHub = {
   _previews: {
     'smart-remind': {
       icon: '⏰', title: 'תזכורות חכמות', sub: 'AI מציע מתי לפנות לכל ליד',
-      perks: ['🧠 ניתוח AI של דפוסי תגובה לכל ליד', '🔔 התראות Push בזמן הנכון', '📊 אחוז מענה גבוה ב-40%'],
+      perks: ['🧠 ניתוח AI של דפוסי תגובה לכל ליד', '🔔 התראות Push בזמן הנכון', '📊 סדר עדיפויות יומי ברור למי לפנות'],
       mockup: `<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;">📋 לידים שמחכים לפנייה</div>
         <div class="pro-preview-mockup">
           <div class="pro-preview-row"><div class="pro-preview-dot" style="background:#EA580C;"></div><span>דוד כהן, <strong>5 ימים</strong> ללא קשר, ⚠️ דחוף</span></div>
@@ -19176,8 +19221,7 @@ const ProHub = {
           <div class="pro-preview-row"><span>נמענים:</span><span style="font-weight:700;">12 לידים בשלב "הצעה נשלחה"</span></div>
           <div class="pro-preview-row"><span>נושא:</span><span style="font-weight:700;">עדכון על הנכס שמצא לך...</span></div>
           <div class="pro-preview-row"><span>תבנית:</span><span style="font-weight:700;">פולואפ אחרי הצעה</span></div>
-        </div>
-        <div style="background:var(--green-100);border-radius:10px;padding:10px 12px;font-size:12.5px;color:var(--green-600);">✅ קמפיין אחרון: 68% שיעור פתיחה</div>`
+        </div>`
     },
     'pdf-proposal': {
       icon: '📄', title: 'הצעת מחיר PDF', sub: 'ייצוא הצעת מחיר מעוצבת בלחיצה אחת',
@@ -19220,8 +19264,8 @@ const ProHub = {
       <div style="text-align:center;font-size:12px;color:var(--gray-500);">שיתוף ב-WA, הלקוח מקבל דף פרופיל אישי</div>`
     },
     'esign': {
-      icon: '✍️', title: 'חתימה דיגיטלית', sub: 'שליחת חוזים לחתימה אלקטרונית חוקית',
-      perks: ['📜 חתימה חוקית לפי חוק', '📲 הלקוח חותם מהטלפון', '🗂️ ארכיון מסמכים חתומים'],
+      icon: '✍️', title: 'חתימה דיגיטלית', sub: 'שליחת מסמכים לחתימה אלקטרונית מרחוק, בתכנון',
+      perks: ['📄 שליחת מסמך ללקוח לחתימה מרחוק', '📲 הלקוח חותם מהטלפון', '🗂️ ארכיון מסמכים חתומים'],
       mockup: `<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;">📋 מסמכים לחתימה</div>
         <div class="pro-preview-mockup">
           <div class="pro-preview-row"><span style="font-size:15px;">⏳</span><span>הסכם בלעדיות, <strong>דוד כהן</strong>, ממתין לחתימה</span></div>
@@ -19284,7 +19328,19 @@ const ProHub = {
     document.getElementById('pro-locked-mockup').innerHTML = p.mockup || '';
     document.getElementById('pro-locked-perks').innerHTML = (p.perks || [])
       .map(pt => `<div style="font-size:12px;color:var(--gray-700);padding:3px 0;">${pt}</div>`).join('');
+    const ctaBtn = document.getElementById('pro-locked-cta-btn');
+    if (ctaBtn) ctaBtn.textContent = State.isDemo ? '🚀 פתיחת חשבון ניסיון, חינם' : '🚧 מעבר לרשימת הפיתוח';
     openModal('modal-pro-locked');
+  },
+
+  // Demo visitors don't have an account yet, so routing them to signup is
+  // correct. A real logged-in agent clicking a not-yet-built card must never
+  // be signed out of their own account, route to the honest, already-real
+  // "what we're building" roadmap (with live vote counts) instead.
+  _lockedCta() {
+    closeModal('modal-pro-locked');
+    if (State.isDemo) { DemoLock.signup(); return; }
+    Roadmap.open();
   },
 };
 window.ProHub = ProHub;
@@ -20158,11 +20214,11 @@ const GuidedTour = {
     }[ind] || 'כותב בשבילך הצעות מחיר, פוסטים לרשתות, ומסרים ללקוחות, תוך שניות.';
     const finalText = {
       realestate:        'עכשיו מכירים את המערכת. אפשר להוסיף את הקונה הראשון ולצבור XP!',
-      realestate_lawyer: 'עכשיו מכירים את המערכת. אפשר להוסיף את הלקוח הראשון ולצבור XP!',
+      realestate_lawyer: 'עכשיו מכירים את המערכת. אפשר להוסיף את הלקוח הראשון.',
       interior:          'עכשיו מכירים את המערכת. אפשר להוסיף את הלקוח הראשון ולצבור XP!',
       other:             'עכשיו מכירים את המערכת. אפשר להוסיף את הליד הראשון ולצבור XP!',
     }[ind] || 'עכשיו מכירים את המערכת. אפשר להוסיף את הליד הראשון ולצבור XP!';
-    return [
+    const steps = [
       { target: null,                       emoji: '🎉', title: 'ברוכים הבאים ל-PLTO', text: 'נעשה סיור קצר של 30 שניות כדי לדעת בדיוק מה לעשות ואיפה הכל נמצא.' },
       { target: '#fab-btn',                  emoji: '➕', title: `הוספת ${addLabel}`,          text: addText },
       { target: '[data-screen="pipeline"]',  emoji: '📋', title: pipeLabel,                    text: pipeText },
@@ -20170,6 +20226,9 @@ const GuidedTour = {
       { target: '[data-screen="marketing"]', emoji: '🤖', title: 'סוכן השיווק שלך',           text: mktgText },
       { target: null, isLast: true,          emoji: '🚀', title: 'כל הכבוד! מתחילים!',        text: finalText },
     ];
+    // Gamification (XP widget) is hidden for the lawyer vertical, so its tour
+    // step would point at a hidden element - skip the step entirely.
+    return ind === 'realestate_lawyer' ? steps.filter(s => s.target !== '#gamify-widget') : steps;
   },
 
   shouldShow() {
