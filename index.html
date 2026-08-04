@@ -10815,6 +10815,22 @@ const Marketing = {
                 <option value="when_lawyer">מתי חשוב להיוועץ בעורך דין</option>
                 <option value="process_explainer">איך נראה תהליך משפטי טיפוסי</option>
               </select>
+            </div>` : ind === 'interior' ? `
+            <div>
+              <label class="tool-label">נושא הפוסט</label>
+              <select class="form-input" id="mktg-post-topic" onchange="Marketing._toggleInteriorPostTopic()">
+                <option value="project_update">עדכון מהפורטפוליו</option>
+                <option value="proportion_scale">טיפ עיצובי, קנה מידה ופרופורציה</option>
+                <option value="layered_lighting">טיפ עיצובי, תאורה בשכבות</option>
+                <option value="color_rule">טיפ עיצובי, כלל צבעים מאוזן</option>
+                <option value="focal_point">טיפ עיצובי, נקודת מיקוד בחלל</option>
+                <option value="negative_space">טיפ עיצובי, מרחב נושם</option>
+                <option value="personal_touch">טיפ עיצובי, נגיעה אישית בעיצוב</option>
+              </select>
+            </div>
+            <div id="mktg-post-prop-wrap">
+              <label class="tool-label">בחירת ${getLabel('property')} (רלוונטי לעדכון פורטפוליו)</label>
+              <select class="form-input" id="mktg-post-prop">${properties.length ? properties.map(p=>`<option value="${p.id}">${escapeHtml(p.title||p.city)}</option>`).join('') : `<option>אין ${getLabel('properties')} עדיין</option>`}</select>
             </div>` : `
             <div>
               <label class="tool-label">בחירת ${getLabel('property')}</label>
@@ -10942,6 +10958,12 @@ ${ind === 'realestate_lawyer' ? 'משרד' : 'סוכנות'}: ${safeAgency}
     }
   },
 
+  _toggleInteriorPostTopic() {
+    const topic = document.getElementById('mktg-post-topic')?.value;
+    const wrap  = document.getElementById('mktg-post-prop-wrap');
+    if (wrap) wrap.classList.toggle('hidden', topic !== 'project_update');
+  },
+
   async genPost() {
     if (!this._checkConsent(() => this.genPost())) return;
     if (!this._requireAccess()) return;
@@ -10965,6 +10987,19 @@ ${ind === 'realestate_lawyer' ? 'משרד' : 'סוכנות'}: ${safeAgency}
         prompt = `אתה ${AI._industryRole()} ישראלי, כותב תוכן מקצועי-חינוכי לרשת חברתית (${platMap[plat]||plat}).
 כתוב פוסט קצר ומקצועי בנושא: ${topicMap[topic]||topic}.
 חשוב: זהו תוכן כללי ומקצועי בלבד, ללא כל התייחסות ללקוח או תיק ספציפי, ללא הבטחות לתוצאה, וללא השוואה לעורכי דין אחרים, בהתאם לכללי הפרסומת של לשכת עורכי הדין. סיים בקריאה עדינה ליצירת קשר לייעוץ. החזר רק את הפוסט.`;
+      } else if (ind === 'interior' && document.getElementById('mktg-post-topic')?.value && document.getElementById('mktg-post-topic').value !== 'project_update') {
+        const topic = document.getElementById('mktg-post-topic').value;
+        const topicMap = {
+          proportion_scale: 'התאמת רהיטים בקנה מידה ובפרופורציה נכונים לגודל החלל, כדי להימנע מתחושת צפיפות או ריקנות',
+          layered_lighting: 'תכנון תאורה בשכבות, כללית, משימתית ומודגשת, ליצירת אווירה שלמה בחלל',
+          color_rule:       'בניית פלטת צבעים מאוזנת לחלל, יחס בין צבע דומיננטי, צבע משני וצבע מדגיש',
+          focal_point:      'יצירת נקודת מיקוד ברורה אחת בכל חלל, שמושכת את העין ומעגנת את העיצוב',
+          negative_space:   'החשיבות של מרחב ריק ונשימה בעיצוב, ולמה פחות רהיטים ואביזרים יוצר תחושת יוקרה',
+          personal_touch:   'איך משלבים נגיעה אישית ואופי בעיצוב מבלי לפגוע באסתטיקה הכוללת',
+        };
+        prompt = `אתה ${AI._industryRole()} ישראלי, כותב תוכן מקצועי-חינוכי לרשת חברתית (${platMap[plat]||plat}).
+כתוב פוסט קצר, מעשי ומקורי בנושא הבא: ${topicMap[topic]||topic}.
+חשוב: זהו טיפ עיצובי כללי, לא צמוד ללקוח או פרויקט ספציפי. כתוב בסגנון אישי וזורם, לא כרשימת "טעות ופתרון" יבשה, ואל תצטט או תעתיק מקור חיצוני כלשהו, הניסוח חייב להיות מקורי לגמרי. סיים בקריאה עדינה ליצירת קשר. החזר רק את הפוסט.`;
       } else {
         const propId = document.getElementById('mktg-post-prop')?.value;
         const prop    = State.properties.find(p => p.id === propId) || {};
