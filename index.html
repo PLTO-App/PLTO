@@ -5166,34 +5166,67 @@
 
       <!-- Opportunity board -->
       <div id="ptab-content-board" class="hidden" style="padding:16px;">
-        <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:12.5px;color:var(--gray-600);line-height:1.6;">
-          <strong style="color:var(--navy-600);display:block;margin-bottom:3px;">📋 שוק ההפניות הפנימי</strong>
-          יש לקוח שצריך מישהו מחוץ לאזור שלך? פרסמו הזדמנות, עם או בלי עמלה, והסוכן, העו"ד או המעצב המתאים יגיב, וכל ההסכמות מגובות בחתימה דיגיטלית. עמלה אינה זמינה כשהיעד הוא עו"ד, בהתאם לכללי האתיקה המקצועית.
+        <div class="board-mode-bar" style="display:flex;gap:8px;margin-bottom:14px;">
+          <button class="partners-tab active" id="bmode-opp" onclick="Partners.switchBoardMode('opp')" style="flex:1;">🤝 שיתופי פעולה</button>
+          <button class="partners-tab" id="bmode-market" onclick="Partners.switchBoardMode('market')" style="flex:1;">🏘 נכסים וקונים</button>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:12.5px;color:var(--gray-500);">
-          <span>📍 האזור שלך (להתראות על הזדמנויות מתאימות):</span>
-          <select id="opp-my-region" class="form-input" style="width:auto;font-size:12.5px;padding:6px 8px;" onchange="OppBoard.saveRegion(this.value)">
-            <option value="">לא הוגדר</option>
-            <option value="north">צפון</option>
-            <option value="haifa">חיפה והקריות</option>
-            <option value="sharon">השרון</option>
-            <option value="center">מרכז</option>
-            <option value="telaviv">תל אביב והגוש</option>
-            <option value="jerusalem">ירושלים והסביבה</option>
-            <option value="shfela">שפלה</option>
-            <option value="south">דרום</option>
-          </select>
+
+        <div id="board-mode-opp">
+          <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:12.5px;color:var(--gray-600);line-height:1.6;">
+            <strong style="color:var(--navy-600);display:block;margin-bottom:3px;">📋 שוק ההפניות הפנימי</strong>
+            יש לקוח שצריך מישהו מחוץ לאזור שלך? פרסמו הזדמנות, עם או בלי עמלה, והסוכן, העו"ד או המעצב המתאים יגיב, וכל ההסכמות מגובות בחתימה דיגיטלית. עמלה אינה זמינה כשהיעד הוא עו"ד, בהתאם לכללי האתיקה המקצועית.
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:12.5px;color:var(--gray-500);">
+            <span>📍 האזור שלך (להתראות על הזדמנויות מתאימות):</span>
+            <select id="opp-my-region" class="form-input" style="width:auto;font-size:12.5px;padding:6px 8px;" onchange="OppBoard.saveRegion(this.value)">
+              <option value="">לא הוגדר</option>
+              <option value="north">צפון</option>
+              <option value="haifa">חיפה והקריות</option>
+              <option value="sharon">השרון</option>
+              <option value="center">מרכז</option>
+              <option value="telaviv">תל אביב והגוש</option>
+              <option value="jerusalem">ירושלים והסביבה</option>
+              <option value="shfela">שפלה</option>
+              <option value="south">דרום</option>
+            </select>
+          </div>
+          <div class="board-tab-bar" style="display:flex;gap:8px;margin-bottom:14px;">
+            <button class="partners-tab active" id="btab-open" onclick="OppBoard.switchSubTab('open')" style="flex:1;">הלוח</button>
+            <button class="partners-tab" id="btab-mine" onclick="OppBoard.switchSubTab('mine')" style="flex:1;">הפרסומים שלי</button>
+          </div>
+          <div id="btab-content-open">
+            <button class="btn btn-primary" style="width:100%;margin-bottom:14px;" onclick="OppBoard.openPublishModal()">➕ פרסם הזדמנות</button>
+            <div id="board-open-list"></div>
+          </div>
+          <div id="btab-content-mine" class="hidden">
+            <div id="board-mine-list"></div>
+          </div>
         </div>
-        <div class="board-tab-bar" style="display:flex;gap:8px;margin-bottom:14px;">
-          <button class="partners-tab active" id="btab-open" onclick="OppBoard.switchSubTab('open')" style="flex:1;">הלוח</button>
-          <button class="partners-tab" id="btab-mine" onclick="OppBoard.switchSubTab('mine')" style="flex:1;">הפרסומים שלי</button>
-        </div>
-        <div id="btab-content-open">
-          <button class="btn btn-primary" style="width:100%;margin-bottom:14px;" onclick="OppBoard.openPublishModal()">➕ פרסם הזדמנות</button>
-          <div id="board-open-list"></div>
-        </div>
-        <div id="btab-content-mine" class="hidden">
-          <div id="board-mine-list"></div>
+
+        <div id="board-mode-market" class="hidden">
+          <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:12.5px;color:var(--gray-600);line-height:1.6;">
+            <strong style="color:var(--navy-600);display:block;margin-bottom:3px;">🏘 לוח נכסים וקונים</strong>
+            פרסום נכס בבלעדיות לחשיפה לסוכנים אחרים, או פרסום שיש קונה/שוכר שמחפש נכס (רק תקציב ואזור, בלי פרטי הליד). הקשר בין הסוכנים ישיר בוואטסאפ, כל אחד סוגר בנפרד עם הצד שלו, בלי עמלה משותפת דרך המערכת.
+          </div>
+          <div class="board-tab-bar" style="display:flex;gap:8px;margin-bottom:14px;">
+            <button class="partners-tab active" id="mtab-open" onclick="MarketBoard.switchSubTab('open')" style="flex:1;">הלוח</button>
+            <button class="partners-tab" id="mtab-mine" onclick="MarketBoard.switchSubTab('mine')" style="flex:1;">הפרסומים שלי</button>
+          </div>
+          <div id="mtab-content-open">
+            <div style="display:flex;gap:8px;margin-bottom:14px;">
+              <button class="btn btn-primary" style="flex:1;font-size:12.5px;padding:9px;" onclick="MarketBoard.openPublishModal('listing')">➕ פרסום נכס</button>
+              <button class="btn btn-primary" style="flex:1;font-size:12.5px;padding:9px;" onclick="MarketBoard.openPublishModal('buyer_need')">➕ דרישת קונה</button>
+            </div>
+            <div class="board-tab-bar" style="display:flex;gap:6px;margin-bottom:14px;">
+              <button class="partners-tab active" id="mfilter-all" onclick="MarketBoard.setFilter('')" style="flex:1;font-size:11.5px;">הכל</button>
+              <button class="partners-tab" id="mfilter-listing" onclick="MarketBoard.setFilter('listing')" style="flex:1;font-size:11.5px;">נכסים למכירה</button>
+              <button class="partners-tab" id="mfilter-buyer" onclick="MarketBoard.setFilter('buyer_need')" style="flex:1;font-size:11.5px;">קונים מחפשים</button>
+            </div>
+            <div id="market-open-list"></div>
+          </div>
+          <div id="mtab-content-mine" class="hidden">
+            <div id="market-mine-list"></div>
+          </div>
         </div>
       </div>
 
@@ -5912,6 +5945,83 @@
       </div>
       <div class="modal-footer">
         <button id="opp-btn-publish" class="btn btn-primary" style="flex:1;" onclick="OppBoard.publish()">📤 פרסם</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       MODAL: PUBLISH MARKET BOARD POST (listing / buyer_need)
+  ═══════════════════════════════════════ -->
+  <div id="modal-publish-market-post" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-publish-market-post')">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title" id="mpost-title">🏘 פרסום נכס</div>
+        <button class="modal-close" onclick="closeModal('modal-publish-market-post')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:12px;padding:12px;margin-bottom:14px;">
+          <p style="font-size:12.5px;color:#166534;margin:0;line-height:1.6;" id="mpost-intro">
+            הפרטים שלך (שם וטלפון) יוצגו מיד לסוכנים אחרים שרואים את הפרסום, כדי שיוכלו ליצור קשר ישיר.
+          </p>
+        </div>
+        <div class="form-group hidden" id="mpost-source-prop-wrap">
+          <label class="form-label">בחירה מנכס קיים (לא חובה)</label>
+          <select id="mpost-source-prop" class="form-input" onchange="MarketBoard.fillFromProperty(this.value)">
+            <option value="">מילוי ידני</option>
+          </select>
+        </div>
+        <div class="form-group hidden" id="mpost-source-lead-wrap">
+          <label class="form-label">בחירה מליד קיים (לא חובה)</label>
+          <select id="mpost-source-lead" class="form-input" onchange="MarketBoard.fillFromLead(this.value)">
+            <option value="">מילוי ידני</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">אזור</label>
+          <select id="mpost-region" class="form-input">
+            <option value="north">צפון</option>
+            <option value="haifa">חיפה והקריות</option>
+            <option value="sharon">השרון</option>
+            <option value="center">מרכז</option>
+            <option value="telaviv">תל אביב והגוש</option>
+            <option value="jerusalem">ירושלים והסביבה</option>
+            <option value="shfela">שפלה</option>
+            <option value="south">דרום</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">עיר / אזור מבוקש</label>
+          <input type="text" id="mpost-city" class="form-input" placeholder="לדוגמה: חיפה">
+        </div>
+        <div class="form-group">
+          <label class="form-label" id="mpost-ptype-label">סוג נכס</label>
+          <select id="mpost-property-type" class="form-input">
+            <option value="apartment">דירה</option>
+            <option value="house">בית פרטי</option>
+            <option value="penthouse">פנטהאוז</option>
+            <option value="commercial">מסחרי</option>
+            <option value="land">מגרש</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" id="mpost-price-label">טווח מחיר (₪)</label>
+          <div style="display:flex;gap:8px;">
+            <input type="number" id="mpost-price-min" class="form-input" placeholder="מינימום" min="0">
+            <input type="number" id="mpost-price-max" class="form-input" placeholder="מקסימום" min="0">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" id="mpost-rooms-label">חדרים</label>
+          <input type="number" id="mpost-rooms" class="form-input" step="0.5" min="0" placeholder="לדוגמה: 4">
+        </div>
+        <div class="form-group">
+          <label class="form-label">תיאור (לא חובה)</label>
+          <textarea id="mpost-description" class="form-input" maxlength="500" rows="3" placeholder="פרטים נוספים..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="mpost-btn-publish" class="btn btn-primary" style="flex:1;" onclick="MarketBoard.publish()">📤 פרסום</button>
       </div>
     </div>
   </div>
@@ -9999,6 +10109,17 @@ const Partners = {
 
   switchTab(tab) { this._renderTab(tab); },
 
+  // Toggle between the two modes living inside the "board" outer tab:
+  // the existing OppBoard (referral market, commission-bearing) and the
+  // new MarketBoard (property/buyer matching, no commission ever crosses tenants).
+  switchBoardMode(mode) {
+    document.getElementById('bmode-opp').classList.toggle('active', mode === 'opp');
+    document.getElementById('bmode-market').classList.toggle('active', mode === 'market');
+    document.getElementById('board-mode-opp').classList.toggle('hidden', mode !== 'opp');
+    document.getElementById('board-mode-market').classList.toggle('hidden', mode !== 'market');
+    if (mode === 'market') MarketBoard.render();
+  },
+
   _renderMine() {
     const el = document.getElementById('partners-mine-list');
     const mine = this._shares.filter(s => s.my_role === 'owner');
@@ -10373,6 +10494,13 @@ const OppBoard = {
     if (regionSel) regionSel.value = State.tenant?.region || '';
     this._renderSubTab(this._subTab);
     FeatureGate.applyOverlay('ptab-content-board');
+    // Market board (property/buyer matching) is realestate-only. If the
+    // tenant isn't realestate, hide the mode pill and force back to 'opp'
+    // mode in case a previous session left it on 'market'.
+    const isRealestate = State.tenant?.industry === 'realestate';
+    const marketPill = document.getElementById('bmode-market');
+    if (marketPill) marketPill.classList.toggle('hidden', !isRealestate);
+    if (!isRealestate) Partners.switchBoardMode('opp');
   },
 
   async saveRegion(region) {
@@ -10623,6 +10751,225 @@ const OppBoard = {
       toast(msgOut, 'error');
     }
     btn.disabled = false; btn.textContent = '📤 פרסם';
+  }
+};
+
+/* ═══════════════════════════════════════════
+   MARKET BOARD — לוח נכסים וקונים (realestate בלבד)
+   שונה מ-OppBoard: אין עמלה משותפת ואין שלב "מועמדות", זהות+טלפון המפרסם
+   גלויים מיד. כל אחד סוגר בנפרד עם הצד שלו.
+═══════════════════════════════════════════ */
+const MarketBoard = {
+  _subTab: 'open',
+  _filter: '',
+  _type: 'listing',
+  _openList: [],
+  _mineList: [],
+  PROPERTY_TYPES: { apartment:'דירה', house:'בית פרטי', penthouse:'פנטהאוז', commercial:'מסחרי', land:'מגרש' },
+
+  render() {
+    this._renderSubTab(this._subTab);
+  },
+
+  switchSubTab(tab) {
+    document.getElementById('mtab-open').classList.toggle('active', tab === 'open');
+    document.getElementById('mtab-mine').classList.toggle('active', tab === 'mine');
+    document.getElementById('mtab-content-open').classList.toggle('hidden', tab !== 'open');
+    document.getElementById('mtab-content-mine').classList.toggle('hidden', tab !== 'mine');
+    this._subTab = tab;
+    if (tab === 'open') this._renderOpen(); else this._renderMine();
+  },
+  _renderSubTab(tab) { this.switchSubTab(tab); },
+
+  setFilter(type) {
+    this._filter = type;
+    document.getElementById('mfilter-all').classList.toggle('active', type === '');
+    document.getElementById('mfilter-listing').classList.toggle('active', type === 'listing');
+    document.getElementById('mfilter-buyer').classList.toggle('active', type === 'buyer_need');
+    this._renderOpen();
+  },
+
+  async _renderOpen() {
+    const el = document.getElementById('market-open-list');
+    if (State.isDemo) { el.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--gray-400);font-size:13px;">זמין בחשבון אמיתי</div>`; return; }
+    el.innerHTML = `<div style="text-align:center;padding:20px 0;color:var(--gray-400);font-size:13px;">טוען...</div>`;
+    try {
+      const { data, error } = await sbClient.rpc('list_market_board', { p_post_type: this._filter || null, p_region: null });
+      if (error) throw error;
+      this._openList = data || [];
+    } catch (_e) {
+      el.innerHTML = `<div style="text-align:center;padding:20px 0;color:var(--gray-400);font-size:13px;">שגיאה בטעינה</div>`;
+      return;
+    }
+    if (!this._openList.length) {
+      el.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--gray-400);"><div style="font-size:36px;margin-bottom:8px;">🏘</div><div style="font-size:13px;">אין כרגע פרסומים בלוח</div></div>`;
+      return;
+    }
+    el.innerHTML = this._openList.map(p => this._cardHtml(p)).join('');
+  },
+
+  async _renderMine() {
+    const el = document.getElementById('market-mine-list');
+    if (State.isDemo) { el.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--gray-400);font-size:13px;">זמין בחשבון אמיתי</div>`; return; }
+    el.innerHTML = `<div style="text-align:center;padding:20px 0;color:var(--gray-400);font-size:13px;">טוען...</div>`;
+    try {
+      const { data, error } = await sbClient.rpc('list_my_market_posts');
+      if (error) throw error;
+      this._mineList = data || [];
+    } catch (_e) {
+      el.innerHTML = `<div style="text-align:center;padding:20px 0;color:var(--gray-400);font-size:13px;">שגיאה בטעינה</div>`;
+      return;
+    }
+    if (!this._mineList.length) {
+      el.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--gray-400);"><div style="font-size:36px;margin-bottom:8px;">📭</div><div style="font-size:13px;">עדיין לא פרסמת נכס או דרישת קונה</div></div>`;
+      return;
+    }
+    const statusMap = { open: ['פתוח', '#166534', '#DCFCE7'], closed: ['נסגר', '#64748B', '#F1F5F9'], expired: ['פג תוקף', '#64748B', '#F1F5F9'] };
+    el.innerHTML = this._mineList.map(p => {
+      const st = statusMap[p.status] || ['~~', '#64748B', '#F1F5F9'];
+      return `
+        <div style="background:var(--surface);border:1px solid var(--gray-100);border-radius:12px;padding:12px 14px;margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+            <div style="font-size:13.5px;font-weight:700;color:var(--navy-500);">${p.post_type === 'listing' ? '🏠 נכס' : '🔎 דרישת קונה'} · ${OppBoard.REGIONS[p.region] || p.region}${p.city ? ', ' + escapeHtml(p.city) : ''}</div>
+            <span class="share-status-badge" style="background:${st[2]};color:${st[1]};flex-shrink:0;">${st[0]}</span>
+          </div>
+          ${this._priceLine(p)}
+          ${p.description ? `<div style="font-size:12px;color:var(--gray-500);margin-top:4px;">${escapeHtml(p.description)}</div>` : ''}
+          ${p.status === 'open' ? `<button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:12px;padding:7px;color:#991B1B;" onclick="MarketBoard.close('${p.id}')">סגירה</button>` : ''}
+        </div>`;
+    }).join('');
+  },
+
+  _priceLine(p) {
+    if (p.price_min == null && p.price_max == null && p.rooms == null) return '';
+    const price = (p.price_min != null || p.price_max != null)
+      ? '💰 ' + (p.price_min != null && p.price_max != null && p.price_min !== p.price_max
+          ? '₪' + Number(p.price_min).toLocaleString() + ' עד ₪' + Number(p.price_max).toLocaleString()
+          : '₪' + Number(p.price_max != null ? p.price_max : p.price_min).toLocaleString())
+      : '';
+    const rooms = p.rooms != null ? (price ? ' · ' : '') + Number(p.rooms) + ' חד\'' : '';
+    return `<div style="font-size:12.5px;color:var(--gray-600);margin-top:4px;">${price}${rooms}</div>`;
+  },
+
+  _cardHtml(p) {
+    const typeLabel = p.post_type === 'listing' ? '🏠 נכס בבלעדיות' : '🔎 דרישת קונה';
+    const ptype = p.property_type ? (this.PROPERTY_TYPES[p.property_type] || p.property_type) + ' · ' : '';
+    return `
+      <div style="background:var(--surface);border:1px solid var(--gray-100);border-radius:12px;padding:12px 14px;margin-bottom:10px;">
+        <div style="font-size:13.5px;font-weight:700;color:var(--navy-500);">${typeLabel}</div>
+        <div style="font-size:11.5px;color:var(--gray-500);margin-top:4px;">${ptype}📍 ${OppBoard.REGIONS[p.region] || p.region}${p.city ? ', ' + escapeHtml(p.city) : ''}</div>
+        ${this._priceLine(p)}
+        ${p.description ? `<div style="font-size:12.5px;color:var(--gray-600);margin-top:6px;">${escapeHtml(p.description)}</div>` : ''}
+        <div style="font-size:11.5px;color:var(--gray-500);margin-top:8px;">${escapeHtml(p.poster_name || 'משתמש PLTO')}</div>
+        <button class="btn btn-primary" style="width:100%;margin-top:6px;font-size:12.5px;padding:8px;" onclick="MarketBoard.contact('${p.id}')">💬 יצירת קשר</button>
+      </div>`;
+  },
+
+  contact(id) {
+    const p = this._openList.find(x => x.id === id);
+    if (!p) return;
+    const digits = (p.poster_phone || '').replace(/\D/g, '');
+    if (!digits) { toast('לא נמצא מספר טלפון עבור פרסום זה', 'error'); return; }
+    const what = p.post_type === 'listing' ? 'לנכס שפרסמת' : 'לדרישת הקונה שפרסמת';
+    const msg = `היי, ראיתי את הפרסום שלך בלוח נכסים וקונים ב-PLTO ${what}${p.city ? ' ב' + p.city : ''}, רציתי לדבר על אפשרות לשיתוף פעולה.`;
+    window.open(`https://wa.me/972${digits.replace(/^0/, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+  },
+
+  openPublishModal(type) {
+    if (State.isDemo) { toast('לוח נכסים וקונים זמין בחשבון אמיתי', 'info'); return; }
+    this._type = type;
+    ['mpost-city','mpost-price-min','mpost-price-max','mpost-rooms','mpost-description'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
+    document.getElementById('mpost-region').value = State.tenant?.region || 'center';
+    document.getElementById('mpost-property-type').value = 'apartment';
+
+    const isListing = type === 'listing';
+    document.getElementById('mpost-title').textContent = isListing ? '🏠 פרסום נכס בבלעדיות' : '🔎 פרסום דרישת קונה';
+    document.getElementById('mpost-intro').textContent = isListing
+      ? 'הפרטים שלך (שם וטלפון) יוצגו מיד לסוכנים אחרים, כדי שיוכלו להביא קונה מתאים.'
+      : 'רק תקציב ואזור יוצגו, פרטי הליד עצמו לעולם לא נחשפים. הפרטים שלך (שם וטלפון) גלויים מיד לסוכנים אחרים.';
+    document.getElementById('mpost-price-label').textContent = isListing ? 'טווח מחיר הנכס (₪)' : 'טווח תקציב הקונה (₪)';
+    document.getElementById('mpost-rooms-label').textContent = isListing ? 'חדרים' : 'מספר חדרים רצוי (לא חובה)';
+    document.getElementById('mpost-ptype-label').textContent = isListing ? 'סוג נכס' : 'סוג נכס מבוקש';
+
+    document.getElementById('mpost-source-prop-wrap').classList.toggle('hidden', !isListing);
+    document.getElementById('mpost-source-lead-wrap').classList.toggle('hidden', isListing);
+
+    if (isListing) {
+      const props = (State.properties || []).filter(p => ['available','coming_soon'].includes(p.status));
+      document.getElementById('mpost-source-prop').innerHTML = '<option value="">מילוי ידני</option>' +
+        props.map(p => `<option value="${p.id}">${escapeHtml(p.title || p.address || 'נכס')}</option>`).join('');
+    } else {
+      const leads = (State.leads || []).filter(l => ['buyer','renter'].includes(l.lead_role));
+      document.getElementById('mpost-source-lead').innerHTML = '<option value="">מילוי ידני</option>' +
+        leads.map(l => `<option value="${l.id}">${escapeHtml(l.name)}${l.desired_area ? ', ' + escapeHtml(l.desired_area) : ''}</option>`).join('');
+    }
+
+    openModal('modal-publish-market-post');
+  },
+
+  fillFromProperty(propId) {
+    const p = (State.properties || []).find(x => x.id === propId);
+    if (!p) return;
+    if (p.city) document.getElementById('mpost-city').value = p.city;
+    if (p.type) document.getElementById('mpost-property-type').value = p.type;
+    if (p.price != null) { document.getElementById('mpost-price-min').value = p.price; document.getElementById('mpost-price-max').value = p.price; }
+    if (p.rooms != null) document.getElementById('mpost-rooms').value = p.rooms;
+  },
+
+  fillFromLead(leadId) {
+    const l = (State.leads || []).find(x => x.id === leadId);
+    if (!l) return;
+    if (l.desired_area) document.getElementById('mpost-city').value = l.desired_area;
+    if (l.budget_min != null) document.getElementById('mpost-price-min').value = l.budget_min;
+    if (l.budget_max != null) document.getElementById('mpost-price-max').value = l.budget_max;
+  },
+
+  async publish() {
+    const region = document.getElementById('mpost-region').value;
+    const city = document.getElementById('mpost-city').value.trim();
+    const propertyType = document.getElementById('mpost-property-type').value;
+    const priceMinRaw = document.getElementById('mpost-price-min').value;
+    const priceMaxRaw = document.getElementById('mpost-price-max').value;
+    const roomsRaw = document.getElementById('mpost-rooms').value;
+    const description = document.getElementById('mpost-description').value.trim();
+    const priceMin = priceMinRaw ? parseFloat(priceMinRaw) : null;
+    const priceMax = priceMaxRaw ? parseFloat(priceMaxRaw) : null;
+    if (priceMin != null && priceMax != null && priceMin > priceMax) {
+      toast('טווח המחיר לא תקין (המינימום גדול מהמקסימום)', 'error'); return;
+    }
+    const sourceLeadId = this._type === 'buyer_need' ? (document.getElementById('mpost-source-lead').value || null) : null;
+    const sourcePropId = this._type === 'listing' ? (document.getElementById('mpost-source-prop').value || null) : null;
+
+    const btn = document.getElementById('mpost-btn-publish');
+    btn.disabled = true; btn.textContent = 'מפרסם...';
+    try {
+      const { error } = await sbClient.rpc('publish_market_post', {
+        p_post_type: this._type, p_region: region, p_city: city || null,
+        p_property_type: propertyType, p_price_min: priceMin, p_price_max: priceMax,
+        p_rooms: roomsRaw ? parseFloat(roomsRaw) : null, p_description: description || null,
+        p_source_lead_id: sourceLeadId, p_source_property_id: sourcePropId
+      });
+      if (error) throw error;
+      closeModal('modal-publish-market-post');
+      toast('📤 הפרסום עלה ללוח!', 'success');
+      MarketBoard.switchSubTab('mine');
+    } catch (e) {
+      const m = e.message || '';
+      const msgOut = m.includes('market_post_rate_limit') ? 'הגעת למקסימום 5 פרסומים ביום, נסה שוב מחר'
+        : m.includes('vertical_not_supported') ? 'לוח נכסים וקונים זמין רק לתחום סוכן נדל"ן'
+        : 'שגיאה: ' + m;
+      toast(msgOut, 'error');
+    }
+    btn.disabled = false; btn.textContent = '📤 פרסום';
+  },
+
+  async close(id) {
+    if (!confirm('לסגור את הפרסום הזה?')) return;
+    try {
+      const { error } = await sbClient.rpc('close_market_post', { p_id: id });
+      if (error) throw error;
+      this._renderMine();
+    } catch (e) { toast('שגיאה: ' + (e.message || e), 'error'); }
   }
 };
 
