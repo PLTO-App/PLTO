@@ -4785,7 +4785,7 @@
         <div class="screen-title" id="screen-properties-title">🏠 נכסים</div>
         <div style="display:flex;gap:8px;">
           <button class="btn btn-outline btn-sm hidden" id="properties-compare-btn" onclick="PropertyCompare.open()">📊 השוואת נכסים</button>
-          <button class="btn btn-outline btn-sm hidden" id="properties-portfolio-btn" onclick="AgentPortfolio.open()">🔗 כרטיס ביקור</button>
+          <button class="btn btn-outline btn-sm hidden" id="properties-portfolio-btn" onclick="AgentPortfolio.open()">🪟 ויטרינה דיגיטלית</button>
           <button class="btn btn-primary btn-sm" id="properties-add-btn" onclick="PropImages.resetNew(); openModal('modal-add-property')">+ נכס</button>
         </div>
       </div>
@@ -7442,7 +7442,7 @@
 <div id="modal-agent-portfolio" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-agent-portfolio')">
   <div class="modal-sheet">
     <div class="modal-header" style="padding:16px 16px 12px;">
-      <span style="font-weight:800;">🔗 כרטיס ביקור דיגיטלי</span>
+      <span style="font-weight:800;">🪟 ויטרינה דיגיטלית</span>
       <button class="modal-close" onclick="closeModal('modal-agent-portfolio')">✕</button>
     </div>
     <div style="padding:0 16px 20px;">
@@ -7451,7 +7451,7 @@
       </div>
       <div id="portfolio-link-loading" style="text-align:center;padding:20px;color:var(--gray-400);font-size:13px;">יצירת הקישור...</div>
       <div id="portfolio-link-result" class="hidden">
-        <div style="font-size:11px;color:var(--gray-500);margin-bottom:6px;">קישור הכרטיס:</div>
+        <div style="font-size:11px;color:var(--gray-500);margin-bottom:6px;">קישור הוויטרינה:</div>
         <div id="portfolio-link-url" style="font-size:11px;color:var(--blue-600);word-break:break-all;margin-bottom:10px;direction:ltr;text-align:left;background:var(--gray-50);border-radius:6px;padding:8px 10px;border:1px solid var(--border);"></div>
         <div style="display:flex;gap:8px;">
           <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="AgentPortfolio.copyLink()">📋 העתקה</button>
@@ -18562,7 +18562,7 @@ function shareProperty(propId) {
 }
 
 /* ═══════════════════════════════════════════
-   AGENT PORTFOLIO — public, stable "כרטיס ביקור" link showing all
+   AGENT PORTFOLIO — public, stable "ויטרינה דיגיטלית" link showing all
    current listings (realestate) / finished work (interior), always
    live from `properties`, never AI-generated. See migration 114.
 ═══════════════════════════════════════════ */
@@ -18591,7 +18591,7 @@ const AgentPortfolio = {
       document.getElementById('portfolio-link-loading').classList.add('hidden');
       document.getElementById('portfolio-link-error').textContent =
         (e.message || '').includes('vertical_not_supported')
-          ? 'הכרטיס הדיגיטלי אינו זמין בתחום הנוכחי'
+          ? 'הוויטרינה הדיגיטלית אינה זמינה בתחום הנוכחי'
           : 'שגיאה ביצירת הקישור, נא לנסות שוב';
       document.getElementById('portfolio-link-error').classList.remove('hidden');
     }
@@ -18608,7 +18608,7 @@ const AgentPortfolio = {
     if (!this._link) return;
     const noun = getLabel('properties');
     const name = State.tenant?.name || '';
-    const msg = `👋 ${name ? name + ', ' : ''}הנה כרטיס הביקור הדיגיטלי שלי, כל ה${noun} הזמינים במקום אחד:\n${this._link}`;
+    const msg = `👋 ${name ? name + ', ' : ''}הנה הוויטרינה הדיגיטלית שלי, כל ה${noun} הזמינים במקום אחד:\n${this._link}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   },
 };
