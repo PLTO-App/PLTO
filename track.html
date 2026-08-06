@@ -132,6 +132,52 @@
 
     .page-footer { margin-top: 10px; font-size: 11.5px; color: var(--gray-400); text-align: center; line-height: 1.6; }
     .page-footer a { color: var(--blue); text-decoration: none; }
+
+    /* ── per-vertical "work in progress" ambient animation ── */
+    .work-anim {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
+      padding: 14px 18px; margin-bottom: 14px; font-size: 13px; color: var(--gray-500);
+    }
+    .work-anim-icon { font-size: 26px; display: inline-block; }
+    .work-anim-realestate .work-anim-icon { animation: wa-float 2.6s ease-in-out infinite; }
+    @keyframes wa-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    .work-anim-dots { display: inline-flex; gap: 3px; }
+    .work-anim-dots span { width: 5px; height: 5px; border-radius: 50%; background: var(--blue); opacity: .25; animation: wa-dot 1.4s ease-in-out infinite; }
+    .work-anim-dots span:nth-child(2) { animation-delay: .2s; }
+    .work-anim-dots span:nth-child(3) { animation-delay: .4s; }
+    @keyframes wa-dot { 0%,80%,100% { opacity: .25; } 40% { opacity: 1; } }
+    .work-anim-interior .work-anim-icon { display: inline-block; animation: wa-paint 2.2s ease-in-out infinite; }
+    @keyframes wa-paint { 0%,100% { transform: translateX(-8px) rotate(-8deg); } 50% { transform: translateX(8px) rotate(8deg); } }
+    .work-anim-lawyer .work-anim-icon { display: inline-block; animation: wa-stamp 2.4s ease-in-out infinite; transform-origin: bottom center; }
+    @keyframes wa-stamp { 0%,70%,100% { transform: translateY(0) rotate(0deg); } 80% { transform: translateY(3px) rotate(-4deg); } 90% { transform: translateY(0) rotate(0deg); } }
+    @media (prefers-reduced-motion: reduce) {
+      .work-anim-icon, .work-anim-dots span { animation: none !important; }
+    }
+
+    /* ── new-update highlight ── */
+    .upd-item.upd-new { animation: upd-bounce-in .5s ease; background: #FEF9E7; border-radius: 8px; padding: 10px 8px; margin: 0 -8px; }
+    @keyframes upd-bounce-in { 0% { transform: scale(.92); opacity: 0; } 60% { transform: scale(1.02); opacity: 1; } 100% { transform: scale(1); } }
+    .upd-new-tag { display: inline-block; font-size: 10px; font-weight: 800; color: #B45309; background: #FEF3C7; border-radius: 99px; padding: 1px 7px; margin-inline-start: 6px; vertical-align: middle; }
+    @media (prefers-reduced-motion: reduce) { .upd-item.upd-new { animation: none; } }
+
+    /* ── chat-style feed: client messages vs professional updates ── */
+    .upd-item.upd-client { flex-direction: row-reverse; text-align: right; }
+    .upd-item.upd-client .upd-title { background: #EFF6FF; color: var(--navy); border-radius: 12px; padding: 8px 12px; display: inline-block; font-weight: 600; }
+    .upd-item.upd-client .upd-icon { opacity: .7; }
+    .upd-sender-label { font-size: 10.5px; color: var(--gray-400); margin-bottom: 2px; }
+
+    /* ── compose box ── */
+    .compose-box { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--gray-100); }
+    .compose-pin-gate { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+    .compose-pin-gate input { width: 90px; text-align: center; letter-spacing: 4px; font-size: 15px; padding: 8px; border: 1px solid var(--gray-200); border-radius: 8px; font-family: inherit; }
+    .compose-pin-gate span { font-size: 12px; color: var(--gray-500); }
+    .compose-row { display: flex; gap: 8px; }
+    .compose-row textarea { flex: 1; resize: none; border: 1px solid var(--gray-200); border-radius: 10px; padding: 9px 12px; font-family: inherit; font-size: 13px; min-height: 40px; }
+    .compose-send-btn { background: var(--blue); color: var(--white); border: none; border-radius: 10px; padding: 0 16px; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .compose-send-btn:disabled { opacity: .5; cursor: default; }
+    .compose-msg { font-size: 11.5px; color: var(--gray-400); margin-top: 6px; }
+    .compose-msg.error { color: #DC2626; }
   </style>
 </head>
 <body>
@@ -150,6 +196,7 @@
   <!-- ── Ready ── -->
   <div id="state-ready">
     <div id="won-banner-slot"></div>
+    <div id="work-anim-slot"></div>
 
     <div class="card">
       <div class="card-title" id="stage-card-title">שלב נוכחי</div>
@@ -165,6 +212,18 @@
     <div class="card" id="updates-card" style="display:none;">
       <div class="card-title">מה קורה בפועל</div>
       <div id="updates-list"></div>
+
+      <div class="compose-box" id="compose-box" style="display:none;">
+        <div class="compose-pin-gate" id="compose-pin-gate">
+          <input type="text" id="compose-pin-input" inputmode="numeric" maxlength="4" placeholder="קוד">
+          <span>יש להזין את קוד הזיהוי שקיבלת כדי לכתוב הודעה</span>
+        </div>
+        <div class="compose-row">
+          <textarea id="compose-text" maxlength="500" placeholder="כתיבת הודעה..." rows="1"></textarea>
+          <button class="compose-send-btn" id="compose-send-btn" onclick="Tracker.sendMessage()">שליחה</button>
+        </div>
+        <div class="compose-msg" id="compose-msg"></div>
+      </div>
     </div>
 
     <div class="disclaimer" id="lawyer-disclaimer" style="display:none;">
@@ -204,11 +263,33 @@ const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // standalone (same pattern as page.html/sign.html/portfolio.html) and never
 // loads index.html's own copy.
 const VERTICAL_COPY = {
-  realestate: { stageNoun: 'שלב העסקה', checklistTitle: 'התקדמות' },
-  realestate_lawyer: { stageNoun: 'שלב הטיפול בתיק', checklistTitle: 'צ׳ק ליסט מסמכים' },
-  interior: { stageNoun: 'שלב הפרויקט', checklistTitle: 'צ׳ק ליסט פרויקט' },
-  other: { stageNoun: 'שלב', checklistTitle: 'התקדמות' },
+  realestate: { stageNoun: 'שלב העסקה', checklistTitle: 'התקדמות', animClass: 'work-anim-realestate', animIcon: '🏠', animText: 'מחפשים את ההתאמה הבאה', animDots: true },
+  realestate_lawyer: { stageNoun: 'שלב הטיפול בתיק', checklistTitle: 'צ׳ק ליסט מסמכים', animClass: 'work-anim-lawyer', animIcon: '📄', animText: 'התיק בטיפול', animDots: false },
+  interior: { stageNoun: 'שלב הפרויקט', checklistTitle: 'צ׳ק ליסט פרויקט', animClass: 'work-anim-interior', animIcon: '🖌️', animText: 'העיצוב מתקדם', animDots: false },
+  other: { stageNoun: 'שלב', checklistTitle: 'התקדמות', animClass: '', animIcon: '⏳', animText: 'בטיפול', animDots: false },
 };
+
+function renderWorkAnim(cfg) {
+  const slot = document.getElementById('work-anim-slot');
+  slot.innerHTML = '';
+  const box = document.createElement('div');
+  box.className = 'work-anim ' + (cfg.animClass || '');
+  const icon = document.createElement('span');
+  icon.className = 'work-anim-icon';
+  icon.textContent = cfg.animIcon;
+  icon.setAttribute('aria-hidden', 'true');
+  box.appendChild(icon);
+  const text = document.createElement('span');
+  text.textContent = cfg.animText;
+  box.appendChild(text);
+  if (cfg.animDots) {
+    const dots = document.createElement('span');
+    dots.className = 'work-anim-dots';
+    dots.innerHTML = '<span></span><span></span><span></span>';
+    box.appendChild(dots);
+  }
+  slot.appendChild(box);
+}
 
 function fmtRelTime(iso) {
   const d = new Date(iso);
@@ -257,22 +338,36 @@ function checklistRow(item, done) {
   return row;
 }
 
-function updateRow(u) {
+function updateRow(u, isNew) {
+  const isClient = u.sender === 'client';
   const row = document.createElement('div');
-  row.className = 'upd-item';
+  row.className = 'upd-item' + (isClient ? ' upd-client' : '') + (isNew ? ' upd-new' : '');
 
   const icon = document.createElement('div');
   icon.className = 'upd-icon';
-  icon.textContent = u.icon || '📌';
+  icon.textContent = isClient ? '💬' : (u.icon || '📌');
   row.appendChild(icon);
 
   const body = document.createElement('div');
   body.style.flex = '1';
   body.style.minWidth = '0';
 
+  if (isClient) {
+    const senderLabel = document.createElement('div');
+    senderLabel.className = 'upd-sender-label';
+    senderLabel.textContent = 'הודעה ממך';
+    body.appendChild(senderLabel);
+  }
+
   const title = document.createElement('div');
   title.className = 'upd-title';
   title.textContent = u.title || '';
+  if (isNew) {
+    const tag = document.createElement('span');
+    tag.className = 'upd-new-tag';
+    tag.textContent = 'חדש';
+    title.appendChild(tag);
+  }
   body.appendChild(title);
 
   if (u.detail) {
@@ -292,6 +387,8 @@ function updateRow(u) {
 }
 
 const Tracker = {
+  _slug: null,
+
   show(id) {
     ['state-loading', 'state-ready', 'state-unavailable'].forEach(s => {
       document.getElementById(s).classList.toggle('active', s === id);
@@ -307,6 +404,7 @@ const Tracker = {
       this.show('state-unavailable');
       return;
     }
+    this._slug = slug;
 
     try {
       const { data, error } = await sbClient.rpc('get_public_lead_tracker', { p_slug: slug });
@@ -326,11 +424,13 @@ const Tracker = {
 
     document.getElementById('hdr-name').textContent = data.lead_name || '';
     document.getElementById('hdr-sub').textContent = 'מעקב חי, ' + (data.tenant_name || 'PLTO');
+    renderWorkAnim(cfg);
 
     const stages = Array.isArray(data.stages) ? data.stages : [];
     const currentIdx = stages.findIndex(s => s.id === data.current_stage_id);
     const currentStage = currentIdx >= 0 ? stages[currentIdx] : null;
     const wonSlot = document.getElementById('won-banner-slot');
+    wonSlot.innerHTML = '';
     if (currentStage && currentStage.is_won) {
       const banner = document.createElement('div');
       banner.className = 'won-banner';
@@ -361,17 +461,82 @@ const Tracker = {
     }
 
     const updates = Array.isArray(data.updates) ? data.updates : [];
+    const seenKey = 'plto_track_seen_' + this._slug;
+    const lastSeen = localStorage.getItem(seenKey);
     if (updates.length) {
       const list = document.getElementById('updates-list');
       list.innerHTML = '';
-      updates.forEach(u => list.appendChild(updateRow(u)));
+      updates.forEach(u => {
+        const isNew = lastSeen && u.created_at > lastSeen;
+        list.appendChild(updateRow(u, isNew));
+      });
+      // Update "last seen" to the newest item's timestamp, after a short delay
+      // so the entrance animation on new items is actually visible first.
+      setTimeout(() => localStorage.setItem(seenKey, updates[0].created_at), 1500);
+    }
+    if (updates.length || data.messaging_enabled) {
       document.getElementById('updates-card').style.display = '';
     }
+
+    this.setupCompose(data.messaging_enabled);
 
     if (data.industry === 'realestate_lawyer') {
       document.getElementById('lawyer-disclaimer').style.display = '';
     }
-  }
+  },
+
+  setupCompose(enabled) {
+    const box = document.getElementById('compose-box');
+    if (!enabled) { box.style.display = 'none'; return; }
+    box.style.display = '';
+    const pinKey = 'plto_track_pin_' + this._slug;
+    const cachedPin = sessionStorage.getItem(pinKey);
+    document.getElementById('compose-pin-gate').style.display = cachedPin ? 'none' : '';
+  },
+
+  async sendMessage() {
+    const textEl = document.getElementById('compose-text');
+    const msgEl = document.getElementById('compose-msg');
+    const btnEl = document.getElementById('compose-send-btn');
+    const text = textEl.value.trim();
+    if (!text) return;
+
+    const pinKey = 'plto_track_pin_' + this._slug;
+    let pin = sessionStorage.getItem(pinKey);
+    if (!pin) {
+      pin = document.getElementById('compose-pin-input').value.trim();
+      if (!/^\d{4}$/.test(pin)) {
+        msgEl.textContent = 'נא להזין קוד זיהוי בן 4 ספרות';
+        msgEl.className = 'compose-msg error';
+        return;
+      }
+    }
+
+    btnEl.disabled = true;
+    msgEl.textContent = '';
+    msgEl.className = 'compose-msg';
+    try {
+      const { data, error } = await sbClient.rpc('add_lead_tracker_client_message', {
+        p_slug: this._slug, p_message: text, p_pin: pin,
+      });
+      if (error || !data?.ok) {
+        msgEl.textContent = 'לא ניתן לשלוח כרגע, יש לבדוק את קוד הזיהוי ולנסות שוב';
+        msgEl.className = 'compose-msg error';
+        return;
+      }
+      sessionStorage.setItem(pinKey, pin);
+      document.getElementById('compose-pin-gate').style.display = 'none';
+      textEl.value = '';
+      msgEl.textContent = 'ההודעה נשלחה';
+      const { data: fresh } = await sbClient.rpc('get_public_lead_tracker', { p_slug: this._slug });
+      if (fresh?.available) this.render(fresh);
+    } catch (e) {
+      msgEl.textContent = 'שגיאת תקשורת, נא לנסות שוב';
+      msgEl.className = 'compose-msg error';
+    } finally {
+      btnEl.disabled = false;
+    }
+  },
 };
 
 window.Tracker = Tracker;
