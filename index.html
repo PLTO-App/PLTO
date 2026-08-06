@@ -7463,6 +7463,44 @@
   </div>
 </div>
 
+<div id="modal-lead-tracker" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-lead-tracker')">
+  <div class="modal-sheet">
+    <div class="modal-header" style="padding:16px 16px 12px;">
+      <span style="font-weight:800;">🔗 מעקב חי ללקוח</span>
+      <button class="modal-close" onclick="closeModal('modal-lead-tracker')">✕</button>
+    </div>
+    <div style="padding:0 16px 20px;">
+      <div style="font-size:12.5px;color:var(--gray-500);margin-bottom:14px;line-height:1.6;">
+        קישור אישי שהלקוח פותח ורואה בו, בזמן אמת, את השלב הנוכחי ואת העדכונים שנבחרו לשיתוף.
+        לא נשלח כלום אוטומטית, השיתוף הוא ביד שלך בלבד.
+      </div>
+      <div id="lt-link-loading" style="text-align:center;padding:20px;color:var(--gray-400);font-size:13px;">יצירת הקישור...</div>
+      <div id="lt-link-result" class="hidden">
+        <div style="font-size:11px;color:var(--gray-500);margin-bottom:6px;">קישור המעקב:</div>
+        <div id="lt-link-url" style="font-size:11px;color:var(--blue-600);word-break:break-all;margin-bottom:10px;direction:ltr;text-align:left;background:var(--gray-50);border-radius:6px;padding:8px 10px;border:1px solid var(--border);"></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="LeadTracker.copyLink()">📋 העתקה</button>
+          <button class="btn btn-ghost btn-sm" style="flex:1;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;" onclick="LeadTracker.shareLinkWA()">💬 שליחה ב-WhatsApp</button>
+        </div>
+        <div style="text-align:center;margin-top:10px;">
+          <button id="lt-toggle-status-btn" class="btn-link-sm" style="font-size:11.5px;color:var(--gray-400);background:none;border:none;text-decoration:underline;cursor:pointer;" onclick="LeadTracker.toggleStatus()"></button>
+        </div>
+      </div>
+      <div id="lt-link-error" class="hidden" style="font-size:12.5px;color:var(--red-600,#DC2626);text-align:center;padding:12px 0;"></div>
+
+      <div id="lt-updates-section" class="hidden" style="margin-top:18px;padding-top:16px;border-top:1px solid var(--gray-100);">
+        <div style="font-size:12.5px;font-weight:700;color:var(--gray-700);margin-bottom:8px;">הוספת עדכון ללקוח</div>
+        <div id="lt-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;"></div>
+        <input type="text" id="lt-title-input" class="form-input" maxlength="120" placeholder="כותרת קצרה, למשל: פורסם תוכן שיווקי לנכס" style="margin-bottom:8px;">
+        <textarea id="lt-detail-input" class="form-input" maxlength="240" rows="2" placeholder="פירוט קצר, לא חובה" style="margin-bottom:8px;resize:vertical;"></textarea>
+        <button class="btn btn-primary btn-sm" style="width:100%;" onclick="LeadTracker.addUpdate()">הוספת עדכון</button>
+
+        <div id="lt-updates-list" style="margin-top:14px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ═══════════════════════════════════════════
    HELPERS
@@ -15238,6 +15276,7 @@ const LeadDetail = {
           <button class="lead-action-btn" aria-label="עריכת פרטי ${escapeHtml(lead.name)}" onclick="openEditLead('${lead.id}')">✏️ עריכה</button>
           ${!State.isDemo ? `<button class="lead-action-btn" aria-label="שיתוף ${escapeHtml(lead.name)} עם שותף" style="background:linear-gradient(135deg,#0F1F3D,#2563EB);color:white;" onclick="Partners.openShareModal('${lead.id}')">🤝 שיתוף עם שותף</button>` : ''}
           ${!State.isDemo ? `<button class="lead-action-btn" aria-label="הפניית ${escapeHtml(lead.name)} לקולגה" style="background:linear-gradient(135deg,#15803D,#16A34A);color:white;" onclick="LeadReferral.openModal('${lead.id}')">🔗 הפניה לקולגה</button>` : ''}
+          ${!State.isDemo ? `<button class="lead-action-btn" aria-label="מעקב חי ל${escapeHtml(lead.name)}" style="background:linear-gradient(135deg,#7C3AED,#4C1D95);color:white;" onclick="LeadTracker.open('${lead.id}')">🔗 מעקב חי ללקוח</button>` : ''}
         </div>
         ${State.isAccessibleMode ? `
         <div class="a11y-quick-replies">
@@ -18613,6 +18652,184 @@ const AgentPortfolio = {
   },
 };
 window.AgentPortfolio = AgentPortfolio;
+
+/* ═══════════════════════════════════════════
+   LEAD TRACKER — "מעקב חי ללקוח", flagship cross-vertical feature.
+   Public read-only link per lead: pipeline stage, checklist progress
+   (realestate_lawyer/interior only), and a curated feed of manually
+   composed updates. See migration 115.
+═══════════════════════════════════════════ */
+const LeadTracker = {
+  _leadId: null,
+  _link: null,
+  _status: 'published',
+
+  _CHIPS: {
+    realestate: [
+      { icon: '📢', title: 'פורסם תוכן שיווקי לנכס' },
+      { icon: '👀', title: 'בוצעה הצגה לקונה פוטנציאלי' },
+      { icon: '📝', title: 'התקבלה הצעת רכישה' },
+    ],
+    realestate_lawyer: [
+      { icon: '📄', title: 'המסמכים בבדיקה' },
+      { icon: '🏦', title: 'ממתינים לאישור בנק' },
+      { icon: '⚖️', title: 'ממתינים לתשובת הצד השני' },
+    ],
+    interior: [
+      { icon: '🎨', title: 'לוח השראה גובש' },
+      { icon: '📐', title: 'נשלחה הצעת עיצוב' },
+      { icon: '🛋', title: 'רהיטים הוזמנו' },
+    ],
+  },
+
+  async open(leadId) {
+    this._leadId = leadId;
+    this._link = null;
+    document.getElementById('lt-link-loading').classList.remove('hidden');
+    document.getElementById('lt-link-result').classList.add('hidden');
+    document.getElementById('lt-link-error').classList.add('hidden');
+    document.getElementById('lt-updates-section').classList.add('hidden');
+    document.getElementById('lt-title-input').value = '';
+    document.getElementById('lt-detail-input').value = '';
+    openModal('modal-lead-tracker');
+
+    const ind = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
+    const chipsEl = document.getElementById('lt-chips');
+    chipsEl.innerHTML = '';
+    (this._CHIPS[ind] || []).forEach(c => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.style.cssText = 'font-size:11.5px;padding:6px 10px;border-radius:99px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;color:var(--gray-700);';
+      btn.textContent = c.icon + ' ' + c.title;
+      btn.onclick = () => { document.getElementById('lt-title-input').value = c.title; };
+      chipsEl.appendChild(btn);
+    });
+
+    try {
+      const { data, error } = await sbClient.rpc('get_or_create_lead_tracker_link', { p_lead_id: leadId });
+      if (error) throw error;
+      this._link = `${location.origin}/track.html?p=${data.slug}`;
+      this._status = data.status || 'published';
+      document.getElementById('lt-link-url').textContent = this._link;
+      document.getElementById('lt-link-loading').classList.add('hidden');
+      document.getElementById('lt-link-result').classList.remove('hidden');
+      document.getElementById('lt-updates-section').classList.remove('hidden');
+      this._renderToggleBtn();
+      await this.loadUpdates();
+    } catch (e) {
+      document.getElementById('lt-link-loading').classList.add('hidden');
+      document.getElementById('lt-link-error').textContent = 'שגיאה ביצירת הקישור, נא לנסות שוב';
+      document.getElementById('lt-link-error').classList.remove('hidden');
+    }
+  },
+
+  _renderToggleBtn() {
+    const btn = document.getElementById('lt-toggle-status-btn');
+    if (!btn) return;
+    btn.textContent = this._status === 'archived' ? '▶️ הפעלת הקישור מחדש' : '⏸ השהיית הקישור';
+  },
+
+  async toggleStatus() {
+    if (!this._leadId) return;
+    const next = this._status === 'archived' ? 'published' : 'archived';
+    try {
+      const { error } = await sbClient.rpc('set_lead_tracker_status', { p_lead_id: this._leadId, p_status: next });
+      if (error) throw error;
+      this._status = next;
+      this._renderToggleBtn();
+      toast(next === 'archived' ? '⏸ הקישור הושהה' : '▶️ הקישור פעיל שוב', 'success');
+    } catch (e) {
+      toast('שגיאה בעדכון הקישור', 'error');
+    }
+  },
+
+  copyLink() {
+    if (!this._link) return;
+    navigator.clipboard?.writeText(this._link)
+      .then(() => toast('📋 הקישור הועתק', 'success'))
+      .catch(() => toast('לא ניתן להעתיק, בחר ידנית', 'warning'));
+  },
+
+  shareLinkWA() {
+    if (!this._link) return;
+    const lead = State.leads.find(l => l.id === this._leadId);
+    const name = lead?.name || '';
+    const msg = `👋 ${name ? name + ', ' : ''}הנה קישור למעקב חי אחרי הסטטוס:\n${this._link}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+  },
+
+  async addUpdate() {
+    const title = document.getElementById('lt-title-input').value.trim();
+    const detail = document.getElementById('lt-detail-input').value.trim();
+    if (!title) { toast('נא להזין כותרת קצרה לעדכון', 'warning'); return; }
+    const ind = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
+    const chip = (this._CHIPS[ind] || []).find(c => c.title === title);
+    try {
+      const { error } = await sbClient.rpc('add_lead_tracker_update', {
+        p_lead_id: this._leadId, p_title: title, p_detail: detail || null, p_icon: chip?.icon || '📌',
+      });
+      if (error) throw error;
+      document.getElementById('lt-title-input').value = '';
+      document.getElementById('lt-detail-input').value = '';
+      toast('✅ העדכון נוסף למעקב', 'success');
+      await this.loadUpdates();
+    } catch (e) {
+      toast((e.message || '').includes('rate_limit') ? 'הגעת למכסת העדכונים היומית' : 'שגיאה בהוספת העדכון', 'error');
+    }
+  },
+
+  async loadUpdates() {
+    const list = document.getElementById('lt-updates-list');
+    if (!this._leadId) return;
+    try {
+      const { data, error } = await sbClient.rpc('list_lead_tracker_updates', { p_lead_id: this._leadId });
+      if (error) throw error;
+      const updates = data || [];
+      list.innerHTML = updates.length ? '' : '<div style="font-size:12px;color:var(--gray-400);text-align:center;padding:8px 0;">אין עדיין עדכונים, הראשון שתוסיף יופיע כאן וגם ללקוח</div>';
+      updates.forEach(u => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--gray-100);';
+        const icon = document.createElement('div');
+        icon.textContent = u.icon || '📌';
+        icon.style.cssText = 'font-size:15px;';
+        row.appendChild(icon);
+        const body = document.createElement('div');
+        body.style.cssText = 'flex:1;min-width:0;';
+        const t = document.createElement('div');
+        t.style.cssText = 'font-size:12.5px;font-weight:700;color:var(--gray-900);';
+        t.textContent = u.title;
+        body.appendChild(t);
+        if (u.detail) {
+          const d = document.createElement('div');
+          d.style.cssText = 'font-size:11.5px;color:var(--gray-500);margin-top:2px;';
+          d.textContent = u.detail;
+          body.appendChild(d);
+        }
+        row.appendChild(body);
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.textContent = '🗑';
+        del.style.cssText = 'background:none;border:none;cursor:pointer;font-size:13px;opacity:0.5;flex-shrink:0;';
+        del.onclick = () => this.deleteUpdate(u.id);
+        row.appendChild(del);
+        list.appendChild(row);
+      });
+    } catch (e) {
+      list.innerHTML = '';
+    }
+  },
+
+  async deleteUpdate(id) {
+    try {
+      const { error } = await sbClient.rpc('delete_lead_tracker_update', { p_id: id });
+      if (error) throw error;
+      await this.loadUpdates();
+    } catch (e) {
+      toast('שגיאה במחיקת העדכון', 'error');
+    }
+  },
+};
+window.LeadTracker = LeadTracker;
 
 function openEditLead(leadId) {
   const lead = State.leads.find(l => l.id === leadId);
