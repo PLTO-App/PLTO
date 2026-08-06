@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>כרטיס ביקור, PLTO</title>
+  <meta name="description" content="כרטיס ביקור דיגיטלי, PLTO">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://scyfywvzoogfrlalgftv.supabase.co; connect-src 'self' https://scyfywvzoogfrlalgftv.supabase.co; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Supabase (same version as index.html/page.html/sign.html) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.js"
+          integrity="sha384-nD3dwv4+ZqdYnmZKe/249ImlV04om7xTCcsoSeQYI+RO+XlKPoqAWaJR1M5SJH9p"
+          crossorigin="anonymous"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:      #0F1F3D;
+      --navy-600:  #1a3460;
+      --blue:      #2563EB;
+      --blue-700:  #1d4ed8;
+      --purple:    #7C3AED;
+      --gray-50:   #f8fafc;
+      --gray-100:  #f1f5f9;
+      --gray-200:  #e2e8f0;
+      --gray-400:  #94a3b8;
+      --gray-500:  #64748b;
+      --gray-700:  #334155;
+      --gray-900:  #0f172a;
+      --white:     #ffffff;
+      --radius:    12px;
+      --shadow:    0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    html, body {
+      min-height: 100vh;
+      font-family: 'Heebo', sans-serif;
+      background: #f0f4ff;
+      color: var(--gray-900);
+      direction: rtl;
+    }
+
+    .page-wrap {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 48px;
+    }
+
+    .header-card {
+      background: var(--navy);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      text-align: center;
+      width: 100%;
+      max-width: 640px;
+      margin-bottom: 16px;
+    }
+    .page-logo { font-size: 20px; font-weight: 900; color: var(--white); letter-spacing: -0.5px; }
+    .header-name { font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.92); margin-top: 6px; }
+    .header-sub { font-size: 12.5px; color: rgba(255,255,255,0.55); margin-top: 3px; }
+
+    #state-loading, #state-ready, #state-unavailable, #state-empty { display: none; width: 100%; max-width: 640px; }
+    #state-loading.active, #state-ready.active, #state-unavailable.active, #state-empty.active { display: block; }
+
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--gray-200);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 60px auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    @media (min-width: 560px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .prop-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .prop-photo {
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: var(--gray-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+      overflow: hidden;
+    }
+    .prop-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .prop-body { padding: 14px 16px 16px; }
+    .prop-price { font-size: 17px; font-weight: 800; color: var(--navy); }
+    .prop-title { font-size: 14px; font-weight: 700; color: var(--gray-900); margin-top: 4px; overflow-wrap: break-word; word-break: break-word; }
+    .prop-loc { font-size: 12px; color: var(--gray-500); margin-top: 2px; overflow-wrap: break-word; word-break: break-word; }
+    .prop-specs { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+    .prop-spec { font-size: 11.5px; color: var(--gray-700); background: var(--gray-50); border-radius: 8px; padding: 3px 8px; }
+    .prop-desc { font-size: 12.5px; color: var(--gray-500); margin-top: 8px; line-height: 1.5; overflow-wrap: break-word; word-break: break-word; }
+    .prop-tour {
+      display: inline-flex; align-items: center; gap: 4px; margin-top: 8px;
+      font-size: 11px; font-weight: 700; color: var(--purple);
+      background: #F5F3FF; padding: 4px 10px; border-radius: 99px;
+      text-decoration: none;
+    }
+
+    .unavail-icon, .empty-icon { font-size: 44px; text-align: center; margin-bottom: 10px; }
+    .unavail-title, .empty-title {
+      font-size: 18px; font-weight: 800; color: var(--gray-700);
+      text-align: center; margin-bottom: 6px;
+    }
+    .unavail-msg, .empty-msg {
+      font-size: 13px; color: var(--gray-500); text-align: center; line-height: 1.6;
+    }
+    .state-box {
+      background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
+      padding: 32px 24px;
+    }
+
+    .page-footer {
+      margin-top: 24px;
+      font-size: 11.5px;
+      color: var(--gray-400);
+      text-align: center;
+      line-height: 1.6;
+    }
+    .page-footer a { color: var(--blue); text-decoration: none; }
+  </style>
+</head>
+<body>
+<div class="page-wrap">
+  <div class="header-card">
+    <div class="page-logo">PLTO</div>
+    <div class="header-name" id="hdr-name"></div>
+    <div class="header-sub" id="hdr-sub">כרטיס ביקור דיגיטלי</div>
+  </div>
+
+  <!-- ── Loading ── -->
+  <div id="state-loading" class="active">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- ── Ready: live property/project list, rendered via textContent only ── -->
+  <div id="state-ready">
+    <div class="grid" id="prop-grid"></div>
+  </div>
+
+  <!-- ── Empty: page is valid but nothing to show right now ── -->
+  <div id="state-empty">
+    <div class="state-box">
+      <div class="empty-icon" id="empty-icon">🏠</div>
+      <div class="empty-title" id="empty-title">אין כרגע פריטים להצגה</div>
+      <div class="empty-msg" id="empty-msg">אפשר לחזור לבדוק שוב בהמשך.</div>
+    </div>
+  </div>
+
+  <!-- ── Unavailable: identical for "not found" and "tenant inactive" — never distinguish ── -->
+  <div id="state-unavailable">
+    <div class="state-box">
+      <div class="unavail-icon">🔗</div>
+      <div class="unavail-title">העמוד אינו זמין</div>
+      <div class="unavail-msg">
+        ייתכן שהקישור שגוי או שהעמוד כבר אינו פעיל.<br>
+        כדאי לבקש קישור מעודכן ממי ששלח אותו.
+      </div>
+      <div style="text-align:center;margin-top:20px;">
+        <a href="https://plto.app/" style="color:var(--blue);font-size:13px;">לאתר PLTO</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    נוצר ע"י <a href="https://plto.app/">PLTO</a><br>
+    פלטפורמה לניהול לידים ועסקאות לאנשי מקצוע
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const SUPABASE_URL = 'https://scyfywvzoogfrlalgftv.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjeWZ5d3Z6b29nZnJsYWxnZnR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MDA3MzAsImV4cCI6MjA5NjA3NjczMH0._D8ho0Yj8fEk7nd6-vmkjKkKyjfvHDmSq9Y8h5XzQCM';
+const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Minimal, self-contained per-vertical labels — this file is fully static/
+// standalone (same pattern as page.html/sign.html) and never loads
+// index.html's PROPERTY_CONFIG, so the two are kept in sync by hand.
+// Only realestate/interior ever reach this page (enforced server-side too).
+const VERTICAL_COPY = {
+  realestate: {
+    icon: '🏠', noun: 'נכסים', emptyTitle: 'אין כרגע נכסים זמינים',
+    emptyMsg: 'אפשר לחזור לבדוק שוב בהמשך, או ליצור קשר ישירות.',
+    typeLabels: { apartment:'דירה', house:'בית פרטי', penthouse:'פנטהאוז', villa:'וילה', commercial:'מסחרי', office:'משרד', land:'מגרש', other:'אחר' },
+    tourChip: '🎥 סיור 360°',
+  },
+  interior: {
+    icon: '🎨', noun: 'פרויקטים', emptyTitle: 'אין כרגע פרויקטים להצגה',
+    emptyMsg: 'הפורטפוליו מתעדכן ככל שפרויקטים חדשים מושלמים.',
+    typeLabels: { living_room:'סלון', kitchen:'מטבח', bedroom:'חדר שינה', full_apartment:'דירה שלמה', office:'משרד', commercial:'מסחרי', other:'אחר' },
+    tourChip: '🎨 הדמיה',
+  },
+};
+
+function escapeAttr(s) { return String(s == null ? '' : s); }
+function fmtMoney(n) {
+  const v = Number(n);
+  if (!v) return '';
+  return '₪' + v.toLocaleString('he-IL');
+}
+
+function propCard(p, cfg) {
+  const card = document.createElement('div');
+  card.className = 'prop-card';
+
+  const photo = document.createElement('div');
+  photo.className = 'prop-photo';
+  if (p.image_url) {
+    const img = document.createElement('img');
+    img.src = p.image_url; // Supabase storage public URL, not user-controlled markup
+    img.alt = '';
+    img.loading = 'lazy';
+    photo.appendChild(img);
+  } else {
+    photo.textContent = cfg.icon;
+  }
+  card.appendChild(photo);
+
+  const body = document.createElement('div');
+  body.className = 'prop-body';
+
+  if (p.price) {
+    const price = document.createElement('div');
+    price.className = 'prop-price';
+    price.textContent = fmtMoney(p.price);
+    body.appendChild(price);
+  }
+
+  const title = document.createElement('div');
+  title.className = 'prop-title';
+  title.textContent = p.title || '';
+  body.appendChild(title);
+
+  const loc = [p.address, p.city].filter(Boolean).join(', ');
+  if (loc) {
+    const locEl = document.createElement('div');
+    locEl.className = 'prop-loc';
+    locEl.textContent = loc;
+    body.appendChild(locEl);
+  }
+
+  const specs = [];
+  const typeLabel = cfg.typeLabels[p.type] || p.type;
+  if (typeLabel) specs.push('📋 ' + typeLabel);
+  if (p.rooms) specs.push('🛏 ' + p.rooms + ' חד׳');
+  if (p.area_sqm) specs.push('📐 ' + p.area_sqm + ' מ"ר');
+  if (p.floor) specs.push('🏢 קומה ' + p.floor);
+  if (specs.length) {
+    const specsEl = document.createElement('div');
+    specsEl.className = 'prop-specs';
+    specs.forEach(s => {
+      const chip = document.createElement('span');
+      chip.className = 'prop-spec';
+      chip.textContent = s;
+      specsEl.appendChild(chip);
+    });
+    body.appendChild(specsEl);
+  }
+
+  if (p.description) {
+    const desc = document.createElement('div');
+    desc.className = 'prop-desc';
+    desc.textContent = p.description.slice(0, 200) + (p.description.length > 200 ? '...' : '');
+    body.appendChild(desc);
+  }
+
+  if (p.virtual_tour_url && /^https:\/\//.test(p.virtual_tour_url)) {
+    const tour = document.createElement('a');
+    tour.className = 'prop-tour';
+    tour.href = p.virtual_tour_url;
+    tour.target = '_blank';
+    tour.rel = 'noopener';
+    tour.textContent = cfg.tourChip;
+    body.appendChild(tour);
+  }
+
+  card.appendChild(body);
+  return card;
+}
+
+const Portfolio = {
+  show(id) {
+    ['state-loading', 'state-ready', 'state-empty', 'state-unavailable'].forEach(s => {
+      document.getElementById(s).classList.toggle('active', s === id);
+    });
+  },
+
+  async init() {
+    this.show('state-loading');
+    const params = new URLSearchParams(location.search);
+    const slug = params.get('p') || '';
+
+    if (!slug || !/^[a-f0-9]{16}$/.test(slug)) {
+      this.show('state-unavailable');
+      return;
+    }
+
+    try {
+      const { data, error } = await sbClient.rpc('get_public_portfolio', { p_slug: slug });
+      if (error || !data?.available) {
+        this.show('state-unavailable');
+        return;
+      }
+
+      const cfg = VERTICAL_COPY[data.industry] || VERTICAL_COPY.realestate;
+      document.getElementById('hdr-name').textContent = data.tenant_name || '';
+      document.getElementById('hdr-sub').textContent = cfg.noun === 'נכסים' ? 'הנכסים הזמינים' : 'הפורטפוליו';
+
+      const props = Array.isArray(data.properties) ? data.properties : [];
+      if (!props.length) {
+        document.getElementById('empty-icon').textContent = cfg.icon;
+        document.getElementById('empty-title').textContent = cfg.emptyTitle;
+        document.getElementById('empty-msg').textContent = cfg.emptyMsg;
+        this.show('state-empty');
+        return;
+      }
+
+      const grid = document.getElementById('prop-grid');
+      grid.innerHTML = '';
+      props.forEach(p => grid.appendChild(propCard(p, cfg)));
+      this.show('state-ready');
+    } catch (e) {
+      this.show('state-unavailable');
+    }
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => Portfolio.init());
+</script>
+</body>
+</html>
