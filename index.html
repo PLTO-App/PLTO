@@ -4296,7 +4296,7 @@
   <!-- Vertical pills -->
   <div class="login-pills">
     <span class="login-pill">🏠 סוכני נדל"ן</span>
-    <span class="login-pill">🎨 מעצבי פנים</span>
+    <span class="login-pill">🎨 עיצוב ואדריכלות</span>
     <span class="login-pill">⚖️ עורכי דין</span>
   </div>
 
@@ -5122,7 +5122,7 @@
           <div>⚖️ <strong style="color:#fff;">עו"ד</strong>, מפנה לסוכן מי שרוצה לקנות/למכור</div>
           <div>🎨 <strong style="color:#fff;">עיצוב פנים</strong>, מפנה לסוכן מי שרוצה לקנות דירה</div>
         </div>
-        <div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,0.55);">הפניה עוברת ישירות לפייפליין של הקולגה, עם מעקב מלא בתוך המערכת. עמלה על הפניה אינה זמינה כרגע בכל התחומים, בהמתנה לבדיקה משפטית.</div>
+        <div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,0.55);">הפניה עוברת ישירות לפייפליין של הקולגה, עם מעקב מלא בתוך המערכת.</div>
       </div>
 
       <div class="partners-tab-bar">
@@ -5163,7 +5163,7 @@
       <div id="ptab-content-board" class="hidden" style="padding:16px;">
         <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:12.5px;color:var(--gray-600);line-height:1.6;">
           <strong style="color:var(--navy-600);display:block;margin-bottom:3px;">📋 שוק ההפניות הפנימי</strong>
-          יש לקוח שצריך מישהו מחוץ לאזור שלך? פרסמו הזדמנות, והסוכן, העו"ד או המעצב המתאים יגיב ישירות. עמלה על הזדמנויות אינה זמינה כרגע בכל התחומים, בהמתנה לבדיקה משפטית.
+          יש לקוח שצריך מישהו מחוץ לאזור שלך? פרסמו הזדמנות, והסוכן, העו"ד או המעצב המתאים יגיב ישירות.
         </div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:12.5px;color:var(--gray-500);">
           <span>📍 האזור שלך (להתראות על הזדמנויות מתאימות):</span>
@@ -5693,14 +5693,9 @@
             <select id="lref-vertical" class="form-input" onchange="LeadReferral.onVerticalChange()">
               <option value="">בחירת תחום...</option>
               <option value="realestate_lawyer">⚖️ עו"ד</option>
-              <option value="interior">🎨 עיצוב פנים</option>
+              <option value="interior">🎨 עיצוב פנים ואדריכלות</option>
               <option value="realestate">🏠 סוכן נדל"ן</option>
             </select>
-          </div>
-          <div class="form-group" id="lref-lawyer-note">
-            <div style="font-size:11.5px;color:var(--gray-500);background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:8px 10px;">
-              💡 עמלת הפניה אינה זמינה כרגע בכל התחומים, בהמתנה לבדיקה משפטית. ההפניה עצמה פעילה ועובדת כרגיל.
-            </div>
           </div>
           <div class="form-group hidden" id="lref-profession-wrap">
             <label class="form-label">מה תחום המקצוע?</label>
@@ -5864,13 +5859,8 @@
           <select id="opp-vertical" class="form-input" onchange="OppBoard.onVerticalChange()">
             <option value="realestate">🏠 סוכן נדל"ן</option>
             <option value="realestate_lawyer">⚖️ עו"ד</option>
-            <option value="interior">🎨 עיצוב פנים</option>
+            <option value="interior">🎨 עיצוב פנים ואדריכלות</option>
           </select>
-        </div>
-        <div class="form-group" id="opp-lawyer-note">
-          <div style="font-size:11.5px;color:var(--gray-500);background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:8px 10px;">
-            💡 עמלה על הזדמנויות אינה זמינה כרגע בכל התחומים, בהמתנה לבדיקה משפטית.
-          </div>
         </div>
         <div class="form-group">
           <label class="form-label">אזור</label>
@@ -8834,7 +8824,7 @@ const Onboarding = {
         const INDUSTRIES = [
           { id: 'realestate',        icon: '🏠', label: 'סוכן נדל"ן' },
           { id: 'realestate_lawyer', icon: '⚖️', label: 'עו"ד' },
-          { id: 'interior',          icon: '🎨', label: 'עיצוב פנים' },
+          { id: 'interior',          icon: '🎨', label: 'עיצוב פנים ואדריכלות' },
           { id: 'other',             icon: '🎯', label: 'אחר' },
         ];
         const current = localStorage.getItem('plto_industry') || '';
@@ -10033,7 +10023,7 @@ const Partners = {
           <div style="font-size:48px;margin-bottom:12px;">🤝</div>
           <div style="font-size:16px;font-weight:700;color:var(--navy-500);margin-bottom:8px;">שיתופי פעולה</div>
           <div style="font-size:13px;color:var(--gray-500);margin-bottom:20px;line-height:1.6;">
-            שיתוף לידים עם שותפים שעובדים עם PLTO, סוכני נדל"ן, עורכי דין ומעצבי פנים.<br>
+            שיתוף לידים עם שותפים שעובדים עם PLTO, סוכני נדל"ן, עורכי דין ומעצבי פנים ואדריכלים.<br>
             רק הליד הספציפי יהיה גלוי. כל השאר, מאובטח לחלוטין.
           </div>
           <div style="font-size:13px;color:var(--gray-400);">(זמין בחשבון אמיתי)</div>
@@ -10662,7 +10652,7 @@ const OppBoard = {
     const commType = document.getElementById('opp-commission-type').value;
     const commValRaw = document.getElementById('opp-commission-value').value;
     if (title.length < 5) { toast('הכותרת קצרה מדי (לפחות 5 תווים)', 'error'); return; }
-    if (commType !== 'none') { toast('עמלה על הזדמנויות אינה זמינה כרגע, בהמתנה לבדיקה משפטית', 'error'); return; }
+    if (commType !== 'none') { toast('עמלה על הזדמנויות אינה זמינה כרגע', 'error'); return; }
     let commValue = null;
     if (commType !== 'none') {
       commValue = parseFloat(commValRaw);
@@ -13093,7 +13083,7 @@ const LeadReferral = {
   VERTICALS: {
     realestate:        'סוכן נדל"ן',
     realestate_lawyer: 'עו"ד',
-    interior:          'עיצוב פנים',
+    interior:          'עיצוב פנים ואדריכלות',
     other:             'בעל מקצוע'
   },
   _isExternal: false,
@@ -13157,7 +13147,7 @@ const LeadReferral = {
     if (!vertical) { toast('יש לבחור את תחום הקולגה', 'error'); return; }
     if (!name)     { toast('יש להזין את שם הקולגה', 'error'); return; }
     if (isExternal && !profession) { toast('יש לציין את תחום המקצוע', 'error'); return; }
-    if (commType !== 'none') { toast('עמלת הפניה אינה זמינה כרגע, בהמתנה לבדיקה משפטית', 'error'); return; }
+    if (commType !== 'none') { toast('עמלת הפניה אינה זמינה כרגע', 'error'); return; }
     if (!this._consentMode) { toast('יש לבחור כיצד קיבלת/תקבל את הסכמת הלקוח', 'error'); return; }
 
     let commValue = null;
@@ -16674,7 +16664,7 @@ const Settings = {
           const IND_META = {
             realestate:         { icon:'🏠', label:'סוכן נדל"ן' },
             realestate_lawyer:  { icon:'⚖️', label:'עו"ד' },
-            interior:           { icon:'🎨', label:'עיצוב פנים' },
+            interior:           { icon:'🎨', label:'עיצוב פנים ואדריכלות' },
             other:              { icon:'🎯', label:'אחר' },
           };
           const cur = localStorage.getItem('plto_industry') || 'other';
@@ -16937,7 +16927,7 @@ const Settings = {
   },
 
   async confirmChangeIndustry(ind) {
-    const IND_NAMES = { realestate: 'סוכן נדל"ן', realestate_lawyer: 'עו"ד', interior: 'עיצוב פנים', other: 'אחר' };
+    const IND_NAMES = { realestate: 'סוכן נדל"ן', realestate_lawyer: 'עו"ד', interior: 'עיצוב פנים ואדריכלות', other: 'אחר' };
     if (!confirm(`לשנות את תחום העסק ל${IND_NAMES[ind] || ind}? התוויות המותאמות אישית יתאפסו לברירת המחדל של התחום החדש.`)) return;
     await this.setIndustry(ind);
   },
