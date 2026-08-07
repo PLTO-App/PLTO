@@ -60,6 +60,9 @@
       --blue-50:  #EFF6FF;
       --blue:     #2563EB;
 
+      /* כפתור כחול כהה, אותו כיוון גרדיאנט כמו רקע ה-hero */
+      --btn-navy-grad: linear-gradient(145deg, var(--navy-600) 0%, var(--navy-400) 100%);
+
       --white: #FFFFFF;
 
       --shadow-sm: 0 1px 3px rgba(15,43,74,0.08);
@@ -124,7 +127,7 @@
     }
     .nav-logo span { color: var(--white); }
     .nav-cta {
-      background: var(--blue-600);
+      background: var(--btn-navy-grad);
       color: var(--white);
       border: none;
       padding: 10px 20px;
@@ -173,7 +176,7 @@
       flex-shrink: 0;
     }
     .nav-menu-btn:hover { border-color: rgba(255,255,255,0.55); color: #fff; }
-    .nav-menu-btn[aria-expanded="true"] { background: var(--blue-600); border-color: var(--blue-600); color: #fff; }
+    .nav-menu-btn[aria-expanded="true"] { background: var(--btn-navy-grad); border-color: var(--navy-500); color: #fff; }
     .nav-menu-panel {
       position: absolute;
       top: 100%;
@@ -345,7 +348,7 @@
       margin-bottom: 16px;
     }
     .btn-primary {
-      background: var(--blue-600);
+      background: var(--btn-navy-grad);
       color: var(--white);
       border: none;
       padding: 16px 36px;
@@ -357,9 +360,9 @@
       transition: all 0.2s;
       text-decoration: none;
       display: inline-block;
-      box-shadow: 0 8px 32px rgba(29,78,216,0.40);
+      box-shadow: 0 8px 32px rgba(21,47,82,0.40);
     }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(29,78,216,0.50); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(21,47,82,0.50); }
     .btn-ghost {
       background: transparent;
       color: rgba(255,255,255,0.80);
@@ -592,15 +595,7 @@
       max-width: 900px;
       margin: 0 auto;
     }
-    .section-label {
-      font-size: 15px;
-      font-weight: 800;
-      color: var(--blue);
-      letter-spacing: 0.06em;
-      margin-bottom: 14px;
-      text-align: center;
-      display: block;
-    }
+    .section-label,
     .section-title {
       font-size: clamp(30px, 4.5vw, 46px);
       font-weight: 900;
@@ -608,6 +603,7 @@
       text-align: center;
       line-height: 1.25;
       margin-bottom: 12px;
+      display: block;
     }
     .section-sub {
       font-size: 18px;
@@ -710,8 +706,8 @@
       padding: 0;
       box-shadow: var(--shadow-sm);
     }
-    .reel-pip:hover:not(.active) { border-color: var(--blue); background: var(--blue-50); }
-    .reel-pip.active { background: var(--blue); border-color: var(--blue); transform: scale(1.1); box-shadow: 0 4px 14px rgba(37,99,235,0.35); }
+    .reel-pip:hover:not(.active) { border-color: var(--navy-400); background: var(--navy-50); }
+    .reel-pip.active { background: var(--btn-navy-grad); border-color: var(--navy-500); transform: scale(1.1); box-shadow: 0 4px 14px rgba(21,47,82,0.40); }
 
     /* ── Mock UI: Dashboard ── */
     .mock-ai-card {
@@ -928,9 +924,9 @@
       background: radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%);
       top: -100px; right: -100px;
     }
-    .agents-section .section-title { color: var(--white); }
+    .agents-section .section-title,
+    .agents-section .section-label { color: var(--white); }
     .agents-section .section-sub { color: rgba(255,255,255,0.60); }
-    .agents-section .section-label { color: var(--gold-400); font-size: 15px; font-weight: 800; }
 
     .agents-grid {
       display: flex;
@@ -1093,7 +1089,7 @@
       text-decoration: none;
       display: inline-block;
     }
-    .plan-btn.primary { background: var(--blue-600); color: var(--white); }
+    .plan-btn.primary { background: var(--btn-navy-grad); color: var(--white); }
     .plan-btn.primary:hover { background: #8B1A2B; transform: translateY(-1px); }
     .plan-btn.outline { background: transparent; border: 2px solid var(--border); color: var(--text); animation: phoneVibrate 6s ease-in-out infinite; }
     .plan-btn.outline:hover { background: #8B1A2B; border-color: #8B1A2B; color: var(--white); animation: none; }
@@ -1614,10 +1610,12 @@
 
     /* ═══ FEATURES CAROUSEL ═══
        display:grid + כל הקבוצות מוערמות באותו תא, כדי שגובה הקונטיינר
-       תמיד יהיה לפי הקבוצה הגבוהה מכולן ולא ישתנה במעבר בין טאבים
-       (זו הייתה סיבת קפיצת הגלילה: display:none/block בין קבוצות עם
-       כמות כרטיסים שונה שינה את הגובה בכל החלפה אוטומטית) */
-    .feat-carousel { position: relative; display: grid; }
+       נשארות מוערמות זו על זו (grid-area משותף) כדי שהאנימציה בין קבוצות
+       תיראה חלקה, אבל גובה הקונטיינר עצמו מותאם דינמית לכל טאב ב-JS
+       (syncHeight) במקום להישאר קפוא לפי הקבוצה הגבוהה מכולן, כדי שלא
+       יישאר חלל ריק גדול בטאבים קצרים יותר. align-items:start מונע
+       stretch שהיה משטח את כל הקבוצות לאותו גובה ומטעה את המדידה. */
+    .feat-carousel { position: relative; display: grid; align-items: start; overflow: hidden; transition: height 0.35s ease; }
     .feat-carousel .feature-group {
       grid-area: 1 / 1 / 2 / 2;
       display: block;
@@ -1649,23 +1647,24 @@
     }
     .ft-tab {
       width: 44px; height: 44px; border-radius: 50%;
-      background: transparent;
-      border: 1.5px solid rgba(255,255,255,0.22);
+      background: var(--white);
+      border: 1.5px solid var(--border);
       font-size: 18px;
-      color: rgba(255,255,255,0.62);
+      color: var(--text-muted);
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       padding: 0;
+      box-shadow: var(--shadow-sm);
       transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
     }
     .ft-tab.active {
-      background: var(--blue,#2563EB);
-      border-color: var(--blue,#2563EB);
+      background: var(--btn-navy-grad);
+      border-color: var(--navy-500);
       color: #fff;
       transform: scale(1.08);
-      box-shadow: 0 0 16px rgba(37,99,235,0.32);
+      box-shadow: 0 0 16px rgba(21,47,82,0.35);
     }
-    .ft-tab:hover:not(.active) { border-color: rgba(255,255,255,0.42); color: rgba(255,255,255,0.88); }
+    .ft-tab:hover:not(.active) { border-color: var(--navy-400); color: var(--navy); }
 
     /* ══════════════════════════════
        תמחור: תג השקה וטיזר שנתי
@@ -2252,8 +2251,8 @@
       height: 1px;
       background: linear-gradient(90deg, transparent, rgba(212,168,67,0.55), transparent);
     }
-    .industry-section .section-label { color: var(--gold-400); font-size: 15px; font-weight: 800; }
-    .industry-section .section-title { color: var(--white); }
+    .industry-section .section-title,
+    .industry-section .section-label { color: var(--white); }
     .industry-section .section-sub   { color: rgba(255,255,255,0.60); }
     .industry-cards {
       display: grid;
@@ -2442,7 +2441,7 @@
       .tri-bubble { animation: none !important; display: none; }
     }
 
-    /* בועות עמלה צפות בתוך המשולש */
+    /* בועות שיתוף פעולה צפות בתוך המשולש */
     .tri-bubbles {
       position: absolute;
       inset: 0;
@@ -2453,14 +2452,14 @@
     .tri-bubble {
       position: absolute;
       background: var(--white);
-      border: 1.5px solid var(--gold-400);
+      border: 1.5px solid var(--blue-200);
       border-radius: 20px;
       padding: 5px 12px;
       font-size: 12px;
       font-weight: 800;
       color: var(--navy);
       white-space: nowrap;
-      box-shadow: 0 3px 14px rgba(196,154,42,0.32);
+      box-shadow: 0 3px 14px rgba(37,99,235,0.22);
       opacity: 0;
     }
     .tb-1 { right: 28%; top: 48%; animation: tribubble 9s ease-out 3.5s infinite; }
@@ -3056,22 +3055,22 @@
           <animateMotion dur="2.8s" repeatCount="indefinite" begin="2.2s" rotate="none"><mpath href="#triE1"/></animateMotion>
           <animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="2.2s" fill="freeze"/>
           <circle r="20" fill="rgba(255,255,255,0.92)"/>
-          <circle r="16" fill="#F59E0B"/>
-          <text font-size="15" text-anchor="middle" dy="0.38em" fill="#fff" font-weight="900" font-family="Arial,sans-serif">₪</text>
+          <circle r="16" fill="#2563EB"/>
+          <text font-size="16" text-anchor="middle" dy="0.36em">🙋</text>
         </g>
         <g opacity="0">
           <animateMotion dur="3.5s" repeatCount="indefinite" begin="3.8s" rotate="none"><mpath href="#triE2"/></animateMotion>
           <animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="3.8s" fill="freeze"/>
           <circle r="20" fill="rgba(255,255,255,0.92)"/>
-          <circle r="16" fill="#D97706"/>
-          <text font-size="15" text-anchor="middle" dy="0.38em" fill="#fff" font-weight="900" font-family="Arial,sans-serif">₪</text>
+          <circle r="16" fill="#1D4ED8"/>
+          <text font-size="16" text-anchor="middle" dy="0.36em">🙋</text>
         </g>
         <g opacity="0">
           <animateMotion dur="3.2s" repeatCount="indefinite" begin="5.4s" rotate="none"><mpath href="#triE3"/></animateMotion>
           <animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="5.4s" fill="freeze"/>
           <circle r="20" fill="rgba(255,255,255,0.92)"/>
-          <circle r="16" fill="#C49A2A"/>
-          <text font-size="15" text-anchor="middle" dy="0.38em" fill="#fff" font-weight="900" font-family="Arial,sans-serif">₪</text>
+          <circle r="16" fill="#60A5FA"/>
+          <text font-size="16" text-anchor="middle" dy="0.36em">🙋</text>
         </g>
       </svg>
       <div class="tri-node tri-n1">
@@ -3090,12 +3089,12 @@
         <div class="tn-hint">הופך את הבית לחלום</div>
       </div>
 
-      <!-- בועות עמלה צפות בתוך המשולש -->
+      <!-- בועות שיתוף פעולה צפות בתוך המשולש -->
       <div class="tri-bubbles" aria-hidden="true">
-        <div class="tri-bubble tb-1">💰 קיבלת 10% עמלה על הפניה</div>
-        <div class="tri-bubble tb-2">🎉 הרווחת ₪2,500 על הסגירה</div>
+        <div class="tri-bubble tb-1">🤝 הפניה בין קולגות, בלי מאמץ</div>
+        <div class="tri-bubble tb-2">🔗 מחוזה חתום לפרויקט עיצוב</div>
         <div class="tri-bubble tb-3">✓ ליד הועבר בהצלחה</div>
-        <div class="tri-bubble tb-4">💸 5% עמלה על הפניה</div>
+        <div class="tri-bubble tb-4">👥 שלושה מקצוענים, לקוח אחד</div>
       </div>
     </div>
 
@@ -3318,12 +3317,22 @@
       </div>
 
       <div class="feature-group fade-up" data-tab-panel="2">
-        <h3 class="fg-title">🏠 כלים לעולם הנדל"ן ואינטגרציות</h3>
+        <h3 class="fg-title">🧰 כלים ואינטגרציות לכל תחום</h3>
         <div class="feature-grid">
+          <div class="feature-card">
+            <span class="fc-icon">🔗</span>
+            <div class="fc-title">מעקב חי ללקוח</div>
+            <div class="fc-desc">קישור אישי שהלקוח עוקב בו בזמן אמת: נכסים לסוכן, שלבי תיק לעו"ד, השראה למעצב/ת פנים</div>
+          </div>
+          <div class="feature-card">
+            <span class="fc-icon">🪟</span>
+            <div class="fc-title">ויטרינה דיגיטלית</div>
+            <div class="fc-desc">עמוד ציבורי לסוכן נדל"ן ולעיצוב פנים, מציג נכסים או פרויקטים ומתעדכן אוטומטית</div>
+          </div>
           <div class="feature-card">
             <span class="fc-icon">🏦</span>
             <div class="fc-title">מחשבון משכנתא</div>
-            <div class="fc-desc">כלי ייחודי שלא קיים אצל אף מתחרה, ישירות בתוך כרטיס הליד</div>
+            <div class="fc-desc">כלי ייחודי לסוכן נדל"ן ולעו"ד, ישירות בתוך כרטיס הליד</div>
           </div>
           <div class="feature-card">
             <span class="fc-icon">📲</span>
@@ -3331,14 +3340,14 @@
             <div class="fc-desc">התראות והודעות זורמות אוטומטית דרך Make, בלי להתעסק ידנית</div>
           </div>
           <div class="feature-card">
-            <span class="fc-icon">🔗</span>
+            <span class="fc-icon">🔒</span>
             <div class="fc-title">שיתוף ליד מאובטח עם PIN</div>
             <div class="fc-desc">משתפים ליד ספציפי עם קולגה, מוגן בקוד אישי בלבד וללא גישה לשאר המערכת</div>
           </div>
           <div class="feature-card">
             <span class="fc-icon">🤝</span>
             <div class="fc-title">לולאת הפניות בין קולגות</div>
-            <div class="fc-desc">סגרת עסקה? מפנים את הלקוח לעו"ד או למעצב בוואטסאפ, והליד נכנס ישר לפייפליין שלהם</div>
+            <div class="fc-desc">סגרת עסקה? מפנים את הלקוח לעו"ד או למעצב/ת בוואטסאפ, והליד נכנס ישר לפייפליין שלהם</div>
           </div>
         </div>
       </div>
@@ -3715,9 +3724,17 @@
   (function () {
     const groups = Array.from(document.querySelectorAll('[data-tab-panel]'));
     const tabs   = Array.from(document.querySelectorAll('.ft-tab'));
+    const carousel = document.querySelector('.feat-carousel');
     if (!groups.length || !tabs.length) return;
 
     let current = 0;
+
+    // גובה הקונטיינר מותאם לתוכן הטאב הפעיל בלבד, כדי שלא יישאר חלל
+    // ריק גדול כשעוברים לטאב עם פחות כרטיסים מהטאב הגבוה ביותר
+    function syncHeight(grp) {
+      if (!carousel || !grp) return;
+      carousel.style.height = grp.scrollHeight + 'px';
+    }
 
     function showTab(idx, dir) {
       groups.forEach(g => g.classList.remove('ft-active', 'ft-prev'));
@@ -3726,6 +3743,7 @@
       if (grp) grp.classList.add(dir === 'prev' ? 'ft-prev' : 'ft-active');
       if (tabs[idx]) { tabs[idx].classList.add('active'); tabs[idx].setAttribute('aria-selected', 'true'); }
       current = idx;
+      syncHeight(grp);
     }
 
     tabs.forEach((tab, i) => {
@@ -3733,6 +3751,12 @@
     });
 
     showTab(0, 'next');
+
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => syncHeight(groups[current]), 150);
+    });
   })();
 </script>
 
