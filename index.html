@@ -7719,6 +7719,21 @@ function maskPhone(phone) {
 function friendlySaveError(e) {
   const msg = e?.message || '';
   if (e?.code === '42501' || /row-level security/i.test(msg)) {
+    // A lifetime/admin-bypass account can never legitimately hit an RLS
+    // block over billing (tenant_access_active() always allows them) - so
+    // a 42501 here means the local session itself died silently (expired
+    // token, revoked session) while the UI kept showing stale cached state,
+    // not that the trial ran out. Surface the real cause and force a clean
+    // re-login instead of leaving the user stuck behind a wrong message.
+    const email = (State.agent?.email || '').toLowerCase();
+    const neverExpires = ['lifetime', 'internal'].includes(State.tenant?.plan)
+      || ['info@plto.app', 'elgrablidudu@gmail.com'].includes(email);
+    if (neverExpires) {
+      sbClient.auth.getSession().then(({ data }) => {
+        if (!data?.session) sbClient.auth.signOut();
+      });
+      return 'ההתחברות פגה, יש לרענן את הדף ולהתחבר מחדש.';
+    }
     return 'השמירה נחסמה, ייתכן שתוקף המנוי/הניסיון פג. יש לרענן את הדף או לפנות לתמיכה.';
   }
   return 'שגיאה בשמירה: ' + msg;
