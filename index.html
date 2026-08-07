@@ -9116,6 +9116,10 @@ const Onboarding = {
       // Run all saves
       const ind = localStorage.getItem('plto_industry') || 'other';
       DB.updateIndustry(ind);
+      if (State.tenant) State.tenant.industry = ind;
+      App._applyIndustryLabels();
+      Gamify.renderSidebar();
+      Gamify.renderWidget();
       const industryChanged = this._data.prevIndustry !== ind;
       if (this._data.stageNames?.length && (!State.stages?.length || this._data.stagesEdited || industryChanged)) {
         DB.updateStageNames(this._data.stageNames).catch(() => {});
@@ -16939,6 +16943,8 @@ const Settings = {
     // Switching industry resets custom labels so defaults feel fresh
     DB.updateCustomLabels({});
     App._applyIndustryLabels();
+    Gamify.renderSidebar();
+    Gamify.renderWidget();
     Settings.render();
     toast('✅ תחום עודכן ל-' + (getLabel('pipeline') || ind), 'success');
   },
