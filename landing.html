@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://scyfywvzoogfrlalgftv.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://www.facebook.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
   <title>PLTO: הפלטפורמה שהופכת לידים לעסקאות</title>
-  <meta name="description" content="מערכת CRM לעולם הנדל״ן: סוכני נדל״ן, עו״ד נדל״ן ומעצבי פנים. 5 סוכני AI שמנהלים את הפייפליין בשבילך. 30 יום חינם, ללא כרטיס אשראי.">
+  <meta name="description" content="מערכת CRM לעולם הנדל״ן: סוכני נדל״ן, עו״ד נדל״ן ומעצבי פנים. 5 סוכני AI שמנהלים את הפייפליין בשבילך. 30 ימים חינם, ללא כרטיס אשראי.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://plto.app/landing.html">
   <meta property="og:title" content="PLTO: הפלטפורמה שהופכת לידים לעסקאות">
-  <meta property="og:description" content="מערכת CRM לעולם הנדל״ן: סוכני נדל״ן, עו״ד נדל״ן ומעצבי פנים. 5 סוכני AI שמנהלים את הפייפליין בשבילך. 30 יום חינם, ללא כרטיס אשראי.">
+  <meta property="og:description" content="מערכת CRM לעולם הנדל״ן: סוכני נדל״ן, עו״ד נדל״ן ומעצבי פנים. 5 סוכני AI שמנהלים את הפייפליין בשבילך. 30 ימים חינם, ללא כרטיס אשראי.">
   <meta property="og:image" content="https://plto.app/icons/og-image.jpg">
   <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1200">
@@ -17,7 +17,7 @@
   <meta property="og:locale" content="he_IL">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="PLTO: הפלטפורמה שהופכת לידים לעסקאות">
-  <meta name="twitter:description" content="מערכת CRM לעולם הנדל״ן: סוכני נדל״ן, עו״ד נדל״ן ומעצבי פנים. 5 סוכני AI שמנהלים את הפייפליין בשבילך. 30 יום חינם, ללא כרטיס אשראי.">
+  <meta name="twitter:description" content="מערכת CRM לעולם הנדל״ן: סוכני נדל״ן, עו״ד נדל״ן ומעצבי פנים. 5 סוכני AI שמנהלים את הפייפליין בשבילך. 30 ימים חינם, ללא כרטיס אשראי.">
   <meta name="twitter:image" content="https://plto.app/icons/og-image.jpg">
   <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -432,6 +432,7 @@
       .vp-value { padding: 10px 6px; gap: 4px; border-radius: 10px; }
       .vp-value-headline { font-size: 10px; }
       .vp-value-sub { font-size: 8.5px; line-height: 1.3; }
+      .vp-tap-hint { font-size: 13px; top: -6px; left: -4px; }
     }
     .vp-value.vp-clickable {
       border: none;
@@ -439,11 +440,51 @@
       width: 100%;
       cursor: pointer;
       transition: background 0.2s, border-color 0.2s, transform 0.2s;
+      position: relative;
     }
     .vp-value.vp-clickable:hover, .vp-value.vp-clickable:focus-visible {
       background: rgba(255,255,255,0.10);
       border-color: rgba(255,255,255,0.22);
       transform: translateY(-2px);
+    }
+    .vp-value.vp-clickable::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      border: 1.5px solid rgba(96,165,250,0.55);
+      opacity: 0;
+      pointer-events: none;
+      animation: vpRingPulse 3s ease-out infinite;
+    }
+    .vp-wrap:nth-child(2) .vp-value.vp-clickable::after { animation-delay: .5s; }
+    .vp-wrap:nth-child(3) .vp-value.vp-clickable::after { animation-delay: 1s; }
+    @keyframes vpRingPulse {
+      0%   { opacity: 0; transform: scale(1); }
+      12%  { opacity: .7; }
+      40%  { opacity: 0; transform: scale(1.045); }
+      100% { opacity: 0; transform: scale(1.045); }
+    }
+    .vp-tap-hint {
+      position: absolute;
+      top: -8px;
+      left: -6px;
+      font-size: 16px;
+      line-height: 1;
+      pointer-events: none;
+      filter: drop-shadow(0 1px 3px rgba(0,0,0,.5));
+      animation: vpTapBounce 2.2s ease-in-out infinite;
+    }
+    .vp-wrap:nth-child(2) .vp-tap-hint { animation-delay: .35s; }
+    .vp-wrap:nth-child(3) .vp-tap-hint { animation-delay: .7s; }
+    @keyframes vpTapBounce {
+      0%, 100% { transform: translateY(0) scale(1); opacity: .6; }
+      45%      { transform: translateY(4px) scale(.82); opacity: 1; }
+      60%      { transform: translateY(0) scale(1); opacity: .85; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .vp-value.vp-clickable::after { animation: none; opacity: 0; }
+      .vp-tap-hint { animation: none; }
     }
 
     /* ══════════════════════════════
@@ -2569,36 +2610,19 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 20px;
-      flex-wrap: wrap;
       margin-bottom: 12px;
     }
     .excel-title-row .section-title {
       margin-bottom: 0;
-      flex: 1;
-      min-width: 220px;
       max-width: 600px;
+      text-align: center;
       font-size: clamp(24px, 3.6vw, 36px);
     }
-    .mini-excel-wrap {
-      flex-shrink: 0;
-      opacity: 0.88;
-      filter: drop-shadow(0 3px 8px rgba(0,0,0,0.18));
-    }
     @media (max-width: 480px) {
-      .excel-title-row {
-        justify-content: flex-end;
-        gap: 10px;
-      }
-      .mini-excel-wrap svg {
-        width: 24px;
-        height: 24px;
-      }
       .excel-title-row .section-title {
-        font-size: 19px;
+        font-size: 21px;
         max-width: none;
-        min-width: 0;
-        text-align: right;
+        text-align: center;
       }
     }
 
@@ -2816,7 +2840,7 @@
       <a href="https://plto.app" id="hero-cta-btn" class="btn-primary pulse-cta cta-drop-target">כניסה ישירה למערכת</a>
     </span>
   </div>
-  <p class="hero-micro hero-trust">30 יום ניסיון &bull; ללא כרטיס אשראי &bull; ללא התחייבות</p>
+  <p class="hero-micro hero-trust">30 ימים ניסיון &bull; ללא כרטיס אשראי &bull; ללא התחייבות</p>
 
   <!-- 3 תצוגות מותאמות לתחום -->
   <div class="vertical-previews">
@@ -2825,6 +2849,7 @@
     <div class="vp-wrap fade-up">
       <div class="vp-label">🏠 סוכן נדל&quot;ן</div>
       <button type="button" class="vp-value vp-clickable" onclick="openVpModal('realestate')">
+        <span class="vp-tap-hint" aria-hidden="true">👆</span>
         <div class="vp-value-headline">אף ליד לא מתקרר</div>
         <div class="vp-value-sub">זיהוי אוטומטי של לידים שדורשים חזרה, בזמן</div>
       </button>
@@ -2834,6 +2859,7 @@
     <div class="vp-wrap fade-up">
       <div class="vp-label">🛋 עיצוב פנים</div>
       <button type="button" class="vp-value vp-clickable" onclick="openVpModal('interior')">
+        <span class="vp-tap-hint" aria-hidden="true">👆</span>
         <div class="vp-value-headline">השראה שהופכת לפרויקט</div>
         <div class="vp-value-sub">לוח השראה מ-Pinterest, מחובר ישר לכרטיס הלקוח</div>
       </button>
@@ -2843,6 +2869,7 @@
     <div class="vp-wrap fade-up">
       <div class="vp-label">⚖️ עו&quot;ד</div>
       <button type="button" class="vp-value vp-clickable" onclick="openVpModal('lawyer')">
+        <span class="vp-tap-hint" aria-hidden="true">👆</span>
         <div class="vp-value-headline">כל תיק במעקב מלא</div>
         <div class="vp-value-sub">מפנייה ראשונית ועד סגירת התיק, בלי לאבד פרט</div>
       </button>
@@ -2856,7 +2883,7 @@
 <div class="stats-bar">
   <div class="stats-inner">
     <div class="stat-item">
-      <div class="stat-num">30<span> יום</span></div>
+      <div class="stat-num">30<span> ימים</span></div>
       <div class="stat-label">ניסיון חינם מלא</div>
     </div>
     <div class="stat-item">
@@ -2875,14 +2902,6 @@
   <div class="section-inner">
     <div class="excel-title-row fade-up">
       <h2 class="section-title" style="margin-bottom:0;">במקום להתעסק עם כמה מערכות<br>הכל מגיע במערכת אחת</h2>
-      <span class="mini-excel-wrap" aria-hidden="true">
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="2" y="2" width="16" height="16" rx="5" fill="#2563EB"/>
-          <rect x="22" y="2" width="16" height="16" rx="5" fill="#1C3E6B"/>
-          <rect x="2" y="22" width="16" height="16" rx="5" fill="#C49A2A"/>
-          <rect x="22" y="22" width="16" height="16" rx="5" fill="#16A34A"/>
-        </svg>
-      </span>
     </div>
     <p class="section-sub fade-up">אקסל, קבוצת וואטסאפ ופתקים בראש, הכל מתגבש לפייפליין אחד שמכניס לידים ומוציא עסקאות סגורות.</p>
     <div class="pain-grid">
@@ -3103,7 +3122,7 @@
       <div class="ap-card">
         <div class="ap-emoji">📋</div>
         <p class="ap-pain">"לא זכרתי לחדש את עמלת הסוכנות בזמן."</p>
-        <p class="ap-solution">תזכורת אוטומטית 30 יום לפני חידוש עמלה, מוצגת בדשבורד עם ספירת ימים. אף חוזה לא ייפול בין הכיסאות.</p>
+        <p class="ap-solution">תזכורת אוטומטית 30 ימים לפני חידוש עמלה, מוצגת בדשבורד עם ספירת ימים. אף חוזה לא ייפול בין הכיסאות.</p>
       </div>
       <div class="ap-card">
         <div class="ap-emoji">📁</div>
@@ -3267,7 +3286,7 @@
           <div class="feature-card">
             <span class="fc-icon">📋</span>
             <div class="fc-title">תזכורת חידוש עמלה</div>
-            <div class="fc-desc">ספירה לאחור לתאריך חידוש עמלה, מוצגת בדשבורד 30 יום מראש</div>
+            <div class="fc-desc">ספירה לאחור לתאריך חידוש עמלה, מוצגת בדשבורד 30 ימים מראש</div>
           </div>
         </div>
       </div>
@@ -3400,7 +3419,7 @@
         <div class="plan-price">₪179<small>/חודש</small></div>
         <div class="plan-annual-teaser">📅 שנתי · ₪124/חודש · חיסכון ₪658</div>
         <div class="plan-limit">1 סוכן · עד 200 לידים</div>
-        <div><span class="plan-trial-badge">🎁 כולל 30 יום ניסיון חינם מלא</span></div>
+        <div><span class="plan-trial-badge">🎁 כולל 30 ימים ניסיון חינם מלא</span></div>
         <ul class="plan-features">
           <li>לוח Kanban מלא</li>
           <li>תזכורות WhatsApp</li>
@@ -3410,7 +3429,7 @@
         </ul>
         <div class="plan-addon"><span class="star-live">✨</span> <span>+ <strong>₪100/חודש</strong> לשירותי שיווק מלאים</span></div>
         <a href="https://plto.app" class="plan-btn outline">מתחילים בחינם</a>
-        <p class="plan-cta-reassure">ניסיון 30 יום בחינם · ללא כרטיס אשראי · ביטול בכל עת</p>
+        <p class="plan-cta-reassure">ניסיון 30 ימים בחינם · ללא כרטיס אשראי · ביטול בכל עת</p>
       </div>
 
       <div class="plan-card featured fade-up">
@@ -3461,7 +3480,7 @@
       <a href="https://plto.app" class="cps-btn">דברו איתנו 💬</a>
     </div>
 
-    <p class="pricing-note">🎁 <strong>תקופת הניסיון החינם (30 יום) תקפה לחבילת הבסיס בלבד.</strong> בסיום הניסיון אפשר להצטרף לכל חבילה שתרצו ולצרף סוכנים נוספים. ביטול בכל עת, ללא קנסות וללא שאלות.</p>
+    <p class="pricing-note">🎁 <strong>תקופת הניסיון החינם (30 ימים) תקפה לחבילת הבסיס בלבד.</strong> בסיום הניסיון אפשר להצטרף לכל חבילה שתרצו ולצרף סוכנים נוספים. ביטול בכל עת, ללא קנסות וללא שאלות.</p>
   </div>
 </section>
 
@@ -3538,7 +3557,7 @@
     <div class="faq-list fade-up">
       <details class="faq-item">
         <summary>יש התחייבות לתקופה מסוימת?</summary>
-        <div class="faq-answer">לא. אפשר לבטל בכל עת, ללא קנסות וללא שאלות. מתחילים עם 30 יום ניסיון חינם מלא בחבילת הבסיס, ובסיומו אפשר להצטרף לכל חבילה שמתאימה לכם ולצרף סוכנים נוספים.</div>
+        <div class="faq-answer">לא. אפשר לבטל בכל עת, ללא קנסות וללא שאלות. מתחילים עם 30 ימים ניסיון חינם מלא בחבילת הבסיס, ובסיומו אפשר להצטרף לכל חבילה שמתאימה לכם ולצרף סוכנים נוספים.</div>
       </details>
       <details class="faq-item">
         <summary>מה קורה לנתונים שלי אחרי שהניסיון החינמי נגמר?</summary>
@@ -3589,7 +3608,7 @@
 <!-- סגירה -->
 <section class="closing">
   <h2>העסקה הבאה שלך<br>כבר <span class="gold">מחכה</span></h2>
-  <p>30 יום מלאים על חשבוננו, ללא כרטיס אשראי, ללא שאלות, ללא סיבוכים. אחרי שהפייפליין מסודר בפעם הראשונה, קשה לחזור לאקסל.</p>
+  <p>30 ימים מלאים על חשבוננו, ללא כרטיס אשראי, ללא שאלות, ללא סיבוכים. אחרי שהפייפליין מסודר בפעם הראשונה, קשה לחזור לאקסל.</p>
   <div class="closing-actions">
     <div class="wrecking-wrap">
       <div class="pendulum" aria-hidden="true">
