@@ -1227,12 +1227,8 @@
       50%      { opacity: .7; transform: translateY(-14px); }
       80%,100% { opacity: 0; transform: translateY(-22px); }
     }
-    .stars-tagline {
-      font-size: 12px; font-weight: 700; color: rgba(255,255,255,.52);
-      margin: 0 0 4px; line-height: 1.4;
-    }
     .stars-verticals {
-      font-size: 11px; color: rgba(255,255,255,.38); font-weight: 600;
+      font-size: 13px; color: rgba(255,255,255,.44); font-weight: 600;
       margin: 0; line-height: 1.4;
     }
 
@@ -4300,7 +4296,7 @@
   <!-- Vertical pills -->
   <div class="login-pills">
     <span class="login-pill">🏠 סוכני נדל"ן</span>
-    <span class="login-pill">🎨 מעצבי פנים</span>
+    <span class="login-pill">🎨 עיצוב ואדריכלות</span>
     <span class="login-pill">⚖️ עורכי דין</span>
   </div>
 
@@ -4320,7 +4316,6 @@
       <span class="star-dot" style="--sd:2.7s;--dd:4s;">✦</span>
       <span class="star-dot" style="--sd:2.4s;--dd:4.4s;">✦</span>
     </div>
-    <p class="stars-tagline">באנו לעשות לך סדר בבלאגן</p>
     <p class="stars-verticals">המערכת שתסגור לך כל פינה בעסק</p>
   </div>
 </div>
@@ -5127,7 +5122,7 @@
           <div>⚖️ <strong style="color:#fff;">עו"ד</strong>, מפנה לסוכן מי שרוצה לקנות/למכור</div>
           <div>🎨 <strong style="color:#fff;">עיצוב פנים</strong>, מפנה לסוכן מי שרוצה לקנות דירה</div>
         </div>
-        <div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,0.55);">הפניה עם עמלה מגובה בחתימה דיגיטלית, הכל בתוך המערכת. עמלה אינה זמינה בהפניה לעו"ד, בהתאם לכללי האתיקה המקצועית.</div>
+        <div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,0.55);">הפניה עוברת ישירות לפייפליין של הקולגה, עם מעקב מלא בתוך המערכת.</div>
       </div>
 
       <div class="partners-tab-bar">
@@ -5168,7 +5163,7 @@
       <div id="ptab-content-board" class="hidden" style="padding:16px;">
         <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:12.5px;color:var(--gray-600);line-height:1.6;">
           <strong style="color:var(--navy-600);display:block;margin-bottom:3px;">📋 שוק ההפניות הפנימי</strong>
-          יש לקוח שצריך מישהו מחוץ לאזור שלך? פרסמו הזדמנות, עם או בלי עמלה, והסוכן, העו"ד או המעצב המתאים יגיב, וכל ההסכמות מגובות בחתימה דיגיטלית. עמלה אינה זמינה כשהיעד הוא עו"ד, בהתאם לכללי האתיקה המקצועית.
+          יש לקוח שצריך מישהו מחוץ לאזור שלך? פרסמו הזדמנות, והסוכן, העו"ד או המעצב המתאים יגיב ישירות.
         </div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:12.5px;color:var(--gray-500);">
           <span>📍 האזור שלך (להתראות על הזדמנויות מתאימות):</span>
@@ -5698,15 +5693,9 @@
             <select id="lref-vertical" class="form-input" onchange="LeadReferral.onVerticalChange()">
               <option value="">בחירת תחום...</option>
               <option value="realestate_lawyer">⚖️ עו"ד</option>
-              <option value="interior">🎨 עיצוב פנים</option>
+              <option value="interior">🎨 עיצוב פנים ואדריכלות</option>
               <option value="realestate">🏠 סוכן נדל"ן</option>
-              <option value="other">🔨 בעל מקצוע אחר (שיפוצניק, קבלן, וכו')</option>
             </select>
-          </div>
-          <div class="form-group hidden" id="lref-lawyer-note">
-            <div style="font-size:11.5px;color:var(--gray-500);background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:8px 10px;">
-              ⚖️ הפניה שמעורב בה עו"ד, כמפנה או כמקבל, אינה כוללת עמלה, בהתאם לכללי האתיקה המקצועית של לשכת עורכי הדין.
-            </div>
           </div>
           <div class="form-group hidden" id="lref-profession-wrap">
             <label class="form-label">מה תחום המקצוע?</label>
@@ -5728,7 +5717,7 @@
             <label class="form-label">משפט הקשר (לא חובה)</label>
             <input type="text" id="lref-context" class="form-input" maxlength="300" placeholder="סגרנו על דירה ברעננה, צריכים ליווי משפטי">
           </div>
-          <div id="lref-commission-wrap">
+          <div id="lref-commission-wrap" class="hidden">
             <div class="form-group">
               <label class="form-label">עמלת הפניה (לא חובה)</label>
               <select id="lref-commission-type" class="form-input" onchange="LeadReferral.toggleCommissionValue()">
@@ -5870,13 +5859,8 @@
           <select id="opp-vertical" class="form-input" onchange="OppBoard.onVerticalChange()">
             <option value="realestate">🏠 סוכן נדל"ן</option>
             <option value="realestate_lawyer">⚖️ עו"ד</option>
-            <option value="interior">🎨 עיצוב פנים</option>
+            <option value="interior">🎨 עיצוב פנים ואדריכלות</option>
           </select>
-        </div>
-        <div class="form-group hidden" id="opp-lawyer-note">
-          <div style="font-size:11.5px;color:var(--gray-500);background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:8px 10px;">
-            ⚖️ הזדמנות שמעורב בה עו"ד, כמפרסם או כיעד, אינה כוללת עמלה, בהתאם לכללי האתיקה המקצועית של לשכת עורכי הדין.
-          </div>
         </div>
         <div class="form-group">
           <label class="form-label">אזור</label>
@@ -5895,7 +5879,7 @@
           <label class="form-label">עיר (לא חובה)</label>
           <input type="text" id="opp-city" class="form-input" placeholder="לדוגמה: חיפה">
         </div>
-        <div id="opp-commission-wrap">
+        <div id="opp-commission-wrap" class="hidden">
           <div class="form-group">
             <label class="form-label">עמלה מוצעת (לא חובה)</label>
             <select id="opp-commission-type" class="form-input" onchange="OppBoard.toggleCommissionValue()">
@@ -8840,7 +8824,7 @@ const Onboarding = {
         const INDUSTRIES = [
           { id: 'realestate',        icon: '🏠', label: 'סוכן נדל"ן' },
           { id: 'realestate_lawyer', icon: '⚖️', label: 'עו"ד' },
-          { id: 'interior',          icon: '🎨', label: 'עיצוב פנים' },
+          { id: 'interior',          icon: '🎨', label: 'עיצוב פנים ואדריכלות' },
           { id: 'other',             icon: '🎯', label: 'אחר' },
         ];
         const current = localStorage.getItem('plto_industry') || '';
@@ -10039,7 +10023,7 @@ const Partners = {
           <div style="font-size:48px;margin-bottom:12px;">🤝</div>
           <div style="font-size:16px;font-weight:700;color:var(--navy-500);margin-bottom:8px;">שיתופי פעולה</div>
           <div style="font-size:13px;color:var(--gray-500);margin-bottom:20px;line-height:1.6;">
-            שיתוף לידים עם שותפים שעובדים עם PLTO, סוכני נדל"ן, עורכי דין ומעצבי פנים.<br>
+            שיתוף לידים עם שותפים שעובדים עם PLTO, סוכני נדל"ן, עורכי דין ומעצבי פנים ואדריכלים.<br>
             רק הליד הספציפי יהיה גלוי. כל השאר, מאובטח לחלוטין.
           </div>
           <div style="font-size:13px;color:var(--gray-400);">(זמין בחשבון אמיתי)</div>
@@ -10645,14 +10629,9 @@ const OppBoard = {
     openModal('modal-publish-opportunity');
   },
 
-  // Same rule as LeadReferral.onVerticalChange(): a lawyer is never party to a
-  // referral commission, whether publishing the opportunity or being its target.
+  // עמלה חסומה כרגע בכל התחומים (ראה header note ב-publish_opportunity),
+  // בהמתנה לבדיקה משפטית. opp-commission-wrap נשאר hidden קבוע ב-HTML.
   onVerticalChange() {
-    const isLawyer = document.getElementById('opp-vertical').value === 'realestate_lawyer'
-      || State.tenant?.industry === 'realestate_lawyer';
-    document.getElementById('opp-lawyer-note').classList.toggle('hidden', !isLawyer);
-    document.getElementById('opp-commission-wrap').classList.toggle('hidden', isLawyer);
-    if (isLawyer) document.getElementById('opp-commission-type').value = 'none';
     this.toggleCommissionValue();
   },
 
@@ -10673,7 +10652,7 @@ const OppBoard = {
     const commType = document.getElementById('opp-commission-type').value;
     const commValRaw = document.getElementById('opp-commission-value').value;
     if (title.length < 5) { toast('הכותרת קצרה מדי (לפחות 5 תווים)', 'error'); return; }
-    if (commType !== 'none' && (vertical === 'realestate_lawyer' || State.tenant?.industry === 'realestate_lawyer')) { toast('לא ניתן להגדיר עמלה בהזדמנות שמעורב בה עו"ד, בהתאם לכללי האתיקה המקצועית', 'error'); return; }
+    if (commType !== 'none') { toast('עמלה על הזדמנויות אינה זמינה כרגע', 'error'); return; }
     let commValue = null;
     if (commType !== 'none') {
       commValue = parseFloat(commValRaw);
@@ -13104,7 +13083,7 @@ const LeadReferral = {
   VERTICALS: {
     realestate:        'סוכן נדל"ן',
     realestate_lawyer: 'עו"ד',
-    interior:          'עיצוב פנים',
+    interior:          'עיצוב פנים ואדריכלות',
     other:             'בעל מקצוע'
   },
   _isExternal: false,
@@ -13135,31 +13114,12 @@ const LeadReferral = {
     openModal('modal-lead-referral');
   },
 
-  // A lawyer is never party to a referral commission — not as the recipient
-  // (rule 11ב: a lawyer may not take a client referred by a for-profit body
-  // advertising referral services), and, per the same conservative DB guard
-  // in _create_lead_referral_core, not as the sender either. So commission
-  // is hidden both when the target is a lawyer AND when the referring
-  // tenant itself is one, regardless of which vertical it's sending to.
+  // עמלת הפניה חסומה כרגע בכל התחומים (ראה header note ב-_create_lead_referral_core),
+  // בהמתנה לבדיקה משפטית. lref-commission-wrap נשאר hidden קבוע ב-HTML.
   onVerticalChange() {
     const v = document.getElementById('lref-vertical').value;
     this._isExternal = (v === 'other');
-    const isLawyer = v === 'realestate_lawyer' || State.tenant?.industry === 'realestate_lawyer';
     document.getElementById('lref-profession-wrap').classList.toggle('hidden', !this._isExternal);
-    document.getElementById('lref-lawyer-note').classList.toggle('hidden', !isLawyer);
-    const commWrap = document.getElementById('lref-commission-wrap');
-    commWrap.classList.toggle('hidden', isLawyer);
-    if (isLawyer) {
-      document.getElementById('lref-commission-type').value = 'none';
-      this.toggleCommissionValue();
-    }
-    // For external, commission is strongly recommended — update hint text
-    const hint = document.getElementById('lref-commission-hint');
-    if (hint) {
-      hint.textContent = this._isExternal
-        ? '🔒 הנמען יקבל קישור לדף חתימה ייעודי. פרטי הלקוח ייחשפו רק לאחר חתימתו על ההסכם.'
-        : '🔒 כשיש עמלה, נדרשת חתימה דיגיטלית של הקולגה על הסכם עמלה קצר לפני שהליד נחשף אליו.';
-    }
   },
 
   toggleCommissionValue() {
@@ -13187,8 +13147,7 @@ const LeadReferral = {
     if (!vertical) { toast('יש לבחור את תחום הקולגה', 'error'); return; }
     if (!name)     { toast('יש להזין את שם הקולגה', 'error'); return; }
     if (isExternal && !profession) { toast('יש לציין את תחום המקצוע', 'error'); return; }
-    if (isExternal && commType === 'none') { toast('לשליחה לבעל מקצוע חיצוני יש להגדיר עמלת הפניה', 'error'); return; }
-    if (commType !== 'none' && (vertical === 'realestate_lawyer' || State.tenant?.industry === 'realestate_lawyer')) { toast('לא ניתן להגדיר עמלה בהפניה שמעורב בה עו"ד, בהתאם לכללי האתיקה המקצועית', 'error'); return; }
+    if (commType !== 'none') { toast('עמלת הפניה אינה זמינה כרגע', 'error'); return; }
     if (!this._consentMode) { toast('יש לבחור כיצד קיבלת/תקבל את הסכמת הלקוח', 'error'); return; }
 
     let commValue = null;
@@ -16705,7 +16664,7 @@ const Settings = {
           const IND_META = {
             realestate:         { icon:'🏠', label:'סוכן נדל"ן' },
             realestate_lawyer:  { icon:'⚖️', label:'עו"ד' },
-            interior:           { icon:'🎨', label:'עיצוב פנים' },
+            interior:           { icon:'🎨', label:'עיצוב פנים ואדריכלות' },
             other:              { icon:'🎯', label:'אחר' },
           };
           const cur = localStorage.getItem('plto_industry') || 'other';
@@ -16968,7 +16927,7 @@ const Settings = {
   },
 
   async confirmChangeIndustry(ind) {
-    const IND_NAMES = { realestate: 'סוכן נדל"ן', realestate_lawyer: 'עו"ד', interior: 'עיצוב פנים', other: 'אחר' };
+    const IND_NAMES = { realestate: 'סוכן נדל"ן', realestate_lawyer: 'עו"ד', interior: 'עיצוב פנים ואדריכלות', other: 'אחר' };
     if (!confirm(`לשנות את תחום העסק ל${IND_NAMES[ind] || ind}? התוויות המותאמות אישית יתאפסו לברירת המחדל של התחום החדש.`)) return;
     await this.setIndustry(ind);
   },
@@ -20400,7 +20359,7 @@ const TutorialVideo = {
         { title: '📋 פייפליין תיקים',             desc: 'לשונית "פייפליין" מציגה כל התיקים לפי שלב, פנייה, ייעוץ ראשוני, טיפול בתיק, ועד סגירה.' },
         { title: '⚖️ טאבו, נבו ומיסוי מקרקעין',  desc: 'קיצורי דרך מהדשבורד לטאבו, לנבו ולמיסוי מקרקעין, ישירות מבלי לחפש בדפדפן.' },
         { title: '🤖 תוכן שיווקי מקצועי',         desc: 'כותב טיפים משפטיים לרשתות, מסרי פנייה ללקוחות, בהתאם לכללי פרסומת של לשכת עורכי הדין.' },
-        { title: '🔗 שיתופי פעולה',               desc: 'הפניית לקוח לסוכן נדל"ן או לקולגה אחר מזכה ב-250 XP. הפניה לעו"ד היא תמיד ללא עמלה, בהתאם לכללי האתיקה המקצועית.' },
+        { title: '🔗 שיתופי פעולה',               desc: 'הפניית לקוח לסוכן נדל"ן או לקולגה אחר מזכה ב-250 XP.' },
         { title: '🏆 XP ופרסים אמיתיים',          desc: 'כל תיק שנסגר, כל ייעוץ, כל הפניה, מוסיפה XP שפודים בתוכן AI שימושי: דף נחיתה, תוכנית שיווק ותוכנית אסטרטגית לעסק.' },
       ],
       interior: [
