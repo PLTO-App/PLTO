@@ -139,7 +139,7 @@
       transition: all 0.2s;
       text-decoration: none;
     }
-    .nav-cta:hover { background: var(--blue-light); transform: translateY(-1px); }
+    .nav-cta:hover { background: var(--navy-700); transform: translateY(-1px); }
     .nav-a11y-btn {
       background: transparent;
       color: rgba(255,255,255,0.80);
@@ -596,7 +596,15 @@
       max-width: 900px;
       margin: 0 auto;
     }
-    .section-label,
+    .section-label {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: 0.06em;
+      margin-bottom: 14px;
+      text-align: center;
+      display: block;
+    }
     .section-title {
       font-size: clamp(30px, 4.5vw, 46px);
       font-weight: 900;
@@ -925,8 +933,8 @@
       background: radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%);
       top: -100px; right: -100px;
     }
-    .agents-section .section-title,
-    .agents-section .section-label { color: var(--white); }
+    .agents-section .section-title { color: var(--white); }
+    .agents-section .section-label { color: var(--gold-400); }
     .agents-section .section-sub { color: rgba(255,255,255,0.60); }
 
     .agents-grid {
@@ -1093,7 +1101,7 @@
       display: inline-block;
     }
     .plan-btn.primary { background: var(--btn-navy-grad); color: var(--white); }
-    .plan-btn.primary:hover { background: #8B1A2B; transform: translateY(-1px); }
+    .plan-btn.primary:hover { background: var(--navy-700); transform: translateY(-1px); }
     .plan-btn.outline { background: transparent; border: 2px solid var(--border); color: var(--text); animation: phoneVibrate 6s ease-in-out infinite; }
     .plan-btn.outline:hover { background: #8B1A2B; border-color: #8B1A2B; color: var(--white); animation: none; }
 
@@ -2256,8 +2264,8 @@
       height: 1px;
       background: linear-gradient(90deg, transparent, rgba(212,168,67,0.55), transparent);
     }
-    .industry-section .section-title,
-    .industry-section .section-label { color: var(--white); }
+    .industry-section .section-title { color: var(--white); }
+    .industry-section .section-label { color: var(--gold-400); }
     .industry-section .section-sub   { color: rgba(255,255,255,0.60); }
     .industry-cards {
       display: grid;

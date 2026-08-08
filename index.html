@@ -13191,7 +13191,7 @@ const LeadReferral = {
         document.getElementById('lref-step2-sub').textContent = 'יש לשלוח את הקישור ללקוח בוואטסאפ. ברגע שיאשר, ניתן יהיה לשלוח את קישור ההפניה לקולגה ממסך "ההפניות שלי".';
       } else if (isExternal) {
         this._waTargetPhone = phone;
-        const commLabel = commType === 'percent' ? `${commValue}% מהתמורה` : `₪${commValue}`;
+        const commLabel = commType === 'percent' ? `${commValue}% מהתמורה` : (commValue ? `₪${commValue}` : 'ללא עמלה');
         this._lastMsg = `היי ${name} 👋\nיש לי לקוח שמחפש ${profession}, אשמח להפנות אותם אליך.\nכדי לקבל את פרטי הלקוח, נדרשת חתימה קצרה על הסכם עמלת הפניה (${commLabel} בסגירת עסקה).\nלחתימה ולקבלת הפרטים:\n${link}`;
         document.getElementById('lref-step2-emoji').textContent = '📋';
         document.getElementById('lref-step2-title').textContent = 'הסכם מוכן לחתימה!';
