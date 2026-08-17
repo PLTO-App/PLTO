@@ -648,6 +648,8 @@ When possible, compare:
 - grants
 - RLS state
 
+`pg_get_functiondef` only shows a function's *current* definition, not which migration introduced it. To find the exact original statements of a drifted migration (for a byte-accurate retroactive file), query `supabase_migrations.schema_migrations` (columns `version`, `name`, `statements`) — that table is the Supabase CLI's own record of what actually ran, per migration, and is more reliable than reconstructing intent from the current live state alone.
+
 ---
 
 ## Money & Business-Critical Numbers
@@ -1255,7 +1257,7 @@ Do not automatically run a full 90-scenario or whole-repository audit for a smal
 
 ## Browser QA
 
-The project may use Playwright/Chromium for browser verification.
+The project may use Playwright/Chromium for browser verification. A ready-made E2E script exists at `.claude/tests/qa-plto.mjs` (runs against a local server with a Supabase mock) — check its current state before writing a new one from scratch.
 
 Useful checks include:
 - console errors
@@ -1405,6 +1407,10 @@ verify the current repository before acting.
 A completed historical task should not remain in CLAUDE.md merely because it happened.
 
 Preserve only the lesson or rule that future work needs.
+
+### Root-level reference documents
+
+The repository root has a few standalone markdown files (`FEATURE_PLANS.md`, `LEGAL_COMPLIANCE_LAWYER_REFERRALS.md`, `NEXT_SESSION_VERTICAL_ADAPTATIONS.md`, `WHATSAPP_ARCHITECTURE.md`). They are planning/reference notes, not this file — apply the same rule to them: verify against current code before treating anything in them as live. `WHATSAPP_ARCHITECTURE.md` explicitly marks itself as a future design spec, not a description of what is built (the actual WhatsApp integration is the single direct Twilio `twilio-whatsapp` Edge Function). `LEGAL_COMPLIANCE_LAWYER_REFERRALS.md` documents the ethics review behind the lawyer-vertical referral-commission restriction and is a useful reference when touching that area, but is explicitly not a legal opinion.
 
 Examples:
 - Keep: "Do not use current_role as caller authorization inside SECURITY DEFINER."
