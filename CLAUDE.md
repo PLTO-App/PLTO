@@ -423,6 +423,14 @@ Do not assume this project uses React, Next.js, Node/Express, or a conventional 
 
 The existing architecture is HTML/JS + Supabase RPCs and Edge Functions.
 
+### Hosting
+
+The static site is deployed to **GitHub Pages** (`.github/workflows/deploy.yml`, `CNAME`). GitHub Pages ignores the repository's `_headers` file — it is a Netlify/Cloudflare-style config with no effect here. The real client-side security boundary is:
+- a `<meta http-equiv="Content-Security-Policy">` tag in each HTML page's `<head>`
+- inline frame-busting JS (`self === top` check) since `X-Frame-Options`/`frame-ancestors` cannot be set via `<meta>`
+
+When adding a new page or external resource, update the page's own meta CSP — never assume `_headers` is enforced.
+
 ### Backend / database
 - Supabase
 - PostgreSQL
@@ -692,12 +700,13 @@ Do not change pricing in one UI surface only.
 
 ### Seats
 
-Current documented Pro/team maximum:
-- 7 seats
-- 3 included
-- additional seats follow the current seat pricing configuration in the database
+`_seat_config()` (Postgres function) is the single source of truth for included/max seats and per-seat price, per plan. Do not hardcode seat limits in multiple places.
 
-Do not hardcode seat limits in multiple places when `_seat_config()` or the current configuration is the source of truth.
+Current documented values (verify against `_seat_config()` before relying on them):
+- Solo/basic: 1 included, 1 max (no add-on seats)
+- Pro/צוות: 3 included, 7 max
+- Premium/סוכנות (and lifetime): 10 included, 25 max
+- additional seats follow the current per-seat price in `_seat_config()`
 
 ---
 
@@ -710,11 +719,11 @@ Current documented daily quotas:
 | Plan | general | marketing | quicklog | support | motivation |
 |---|---:|---:|---:|---:|---:|
 | trial | 2/day | 3/day | 3/day | 2/day | 2/day |
-| basic / Solo | 5/day | 8/day | 15/day | 8/day | 3/day |
-| pro / צוות | 10/day | 15/day | 30/day | 15/day | 3/day |
-| premium / סוכנות | 20/day | 25/day | 50/day | 25/day | 3/day |
+| basic / Solo | 5/day | 8/day | 15/day | 5/day | 3/day |
+| pro / צוות | 10/day | 15/day | 30/day | 8/day | 3/day |
+| premium / סוכנות | 20/day | 25/day | 50/day | 10/day | 3/day |
 
-Do not assume these values are still correct without checking the current source before changing quota logic.
+Source of truth: `check_and_increment_ai_usage()` (Postgres function) and the mirrored client-side `AiLimits.PLANS` in `index.html`. Do not assume these values are still correct without checking that source before changing quota logic.
 
 ### Lead image import
 
@@ -900,7 +909,7 @@ Preserve:
 
 The current product state intentionally does not present referral commission as a live feature.
 
-The database currently blocks commission for the relevant referral flows.
+Verified live (`_create_lead_referral_core()`, Postgres function): commission is currently blocked for **every** vertical, not only law — any `commission_type <> 'none'` raises `commission_not_allowed`, pending licensing review. This is stricter than an earlier state where only the lawyer vertical was blocked; the commission-with-signature UI code (`sign.html`, referral agreement screens) still exists but cannot complete a commission-based referral against the live database.
 
 Do not reintroduce commission logic or user-facing promises without a fresh legal/product decision.
 
@@ -1284,6 +1293,8 @@ Prefer direct Grep/Read/SQL investigation when it is sufficient.
 
 Do not run multiple agents simply because they are available.
 
+Project-specific Claude Code agents live under `.claude/agents/` and skills under `.claude/skills/`. Check the current file names/contents there before assuming a specific agent or skill exists — they are renamed and pruned over time.
+
 ### Token efficiency
 
 Default:
@@ -1420,7 +1431,7 @@ Function owner role is not proof of caller identity.
 DB values and email bodies are untrusted even when they originated from another authenticated user.
 
 ### 5. CSP
-Adding a third-party integration requires updating the exact page CSP.
+Adding a third-party integration requires updating the exact page CSP. The site runs on GitHub Pages, which ignores `_headers` — the real enforcement is the per-page meta CSP tag plus frame-busting JS (see Architecture → Hosting).
 
 ### 6. SRI
 Never guess hashes.
