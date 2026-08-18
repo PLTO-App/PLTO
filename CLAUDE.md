@@ -1,5 +1,9 @@
 # CLAUDE.md — PLTO CRM
 
+@PLTO-Team-Operating-System.md
+
+This repository is PLTO Core / CRM under the PLTO Team Operating System. Follow the workflow, approval gates and role definitions in that document alongside the rules below.
+
 ## Language & Communication
 
 CRITICAL: Respond ONLY in Hebrew (עברית).
