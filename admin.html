@@ -1598,7 +1598,7 @@ function renderSaasTable(tenants) {
         <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${t.created_at ? new Date(t.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(t.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '~~'}</td>
         <td>
           <div class="action-btns">
-            <button class="btn-icon" title="פתיחת CRM" onclick="window.open('https://plto.app/','_blank')" style="font-size:.75rem;">⧉</button>
+            <button class="btn-icon" title="פתיחת CRM" onclick="window.open('https://realestate.plto.app/','_blank')" style="font-size:.75rem;">⧉</button>
             <button class="btn-icon" title="ניהול לקוח" onclick="openTenantMgmt('${t.id}')" style="font-size:.75rem;color:var(--blue);">⚙</button>
             ${t.plan !== 'premium' ? `<button class="btn-icon" title="הענקת גישה חינמית לצמיתות" onclick="grantFreePlan('${t.id}')" style="font-size:.75rem;color:var(--gold)">⭐</button>` : ''}
             ${t.plan === 'premium' && !['liders.crm@gmail.com','elgrablidudu@gmail.com'].includes(t.billing_email) ? `<button class="btn-icon" title="החזרה לניסיון" onclick="resetToTrial('${t.id}')" style="font-size:.75rem;color:var(--text-muted)">החזרה</button>` : ''}
@@ -1660,7 +1660,7 @@ async function loadClientPages() {
       <td style="font-size:.78rem;color:var(--text-dim);">${p.created_at ? new Date(p.created_at).toLocaleDateString('he-IL') : '~~'}</td>
       <td>
         ${p.status === 'published' ? `<button class="btn-icon" title="הסרת העמוד" onclick="archiveClientPage('${p.id}')" style="font-size:.75rem;color:var(--red);">🗑</button>` : ''}
-        <button class="btn-icon" title="פתיחת העמוד" onclick="window.open('https://plto.app/page.html?p=${esc(p.slug)}','_blank')" style="font-size:.75rem;">⧉</button>
+        <button class="btn-icon" title="פתיחת העמוד" onclick="window.open('https://realestate.plto.app/page.html?p=${esc(p.slug)}','_blank')" style="font-size:.75rem;">⧉</button>
       </td>
     </tr>`).join('');
 }
