@@ -6943,7 +6943,7 @@
       </div>
       <div class="form-group">
         <label class="form-label">אימייל</label>
-        <input type="email" id="edit-lead-email" class="form-input" placeholder="israel@example.com" style="direction:ltr;">
+        <input type="email" id="edit-lead-email" class="form-input" placeholder="כתובת אימייל" style="direction:ltr;">
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -10979,7 +10979,7 @@ const Marketing = {
               </select>
             </div>
             <div>
-              <label class="tool-label">שם ${isLawyer ? 'המשרד' : 'הסוכנות'} / חתימה</label>
+              <label class="tool-label">שם ${isLawyer ? 'המשרד' : 'העסק'} / חתימה</label>
               <input class="form-input" id="mktg-campaign-sig" type="text" placeholder="${State.tenant?.name || (isLawyer ? 'המשרד שלי' : 'העסק שלי')}" />
             </div>
             <button class="tool-btn tool-btn-primary" onclick="Marketing.genCampaign()">✨ יצירת הודעה</button>
