@@ -5041,11 +5041,11 @@
               </div>
               <div>
                 <label class="tool-label">השירות / המוצר</label>
-                <input class="form-input" id="prop-service" type="text" placeholder="למשל: תיווך מכירת דירה" />
+                <input class="form-input" id="prop-service" type="text" placeholder="למשל: ליווי מקצועי מלא" />
               </div>
               <div>
                 <label class="tool-label">מחיר / עמלה</label>
-                <input class="form-input" id="prop-price" type="text" placeholder="2% + מע&quot;מ / 15,000 ₪" />
+                <input class="form-input" id="prop-price" type="text" placeholder="סכום או אחוז" />
               </div>
               <div>
                 <label class="tool-label">לוח זמנים</label>
@@ -8512,7 +8512,7 @@ const Billing = {
       name: 'סוכנות',
       price: 549,
       priceLabel: '₪549',
-      desc: 'לסוכנות נדל"ן',
+      desc: 'לסוכנות או משרד גדול',
       features: ['10 סוכנים כלולים, עד 25 בתוספת תשלום', 'לידים ללא הגבלה', 'לוח Kanban + פייפליין', 'תזכורות WhatsApp', 'אפליקציה מובייל', 'AI שיווקי מתקדם'],
       featured: false,
       agentLimit: '10 סוכנים כלולים · עד 25 · ₪40/סוכן נוסף',
@@ -10972,7 +10972,7 @@ const Marketing = {
                 ` : `
                 <option value="new_listing">${getLabel('property')} חדש${ind==='interior'?' בפורטפוליו':' בשוק'}</option>
                 <option value="price_drop">ירידת מחיר, הזדמנות</option>
-                <option value="market_update">עדכון שוק${ind==='interior'?' העיצוב':' הנדל"ן'}</option>
+                <option value="market_update">עדכון שוק${ind==='interior'?' העיצוב':ind==='realestate'?' הנדל"ן':''}</option>
                 <option value="holiday">ברכת חג ועדכון שוטף</option>
                 <option value="exclusive">מבצע בלעדי ללקוחות קיימים</option>
                 `}
@@ -11148,7 +11148,7 @@ ${prop.description ? `תיאור: ${prop.description.slice(0,150)}` : ''}
       } : {
         new_listing:   `${getLabel('property')} חדש${ind==='interior'?' שנוסף לפורטפוליו':' שנכנס לפורטפוליו'}`,
         price_drop:    'ירידת מחיר, הזדמנות לפעול',
-        market_update: `עדכון שוק${ind==='interior'?' העיצוב':' הנדל"ן'} החודשי`,
+        market_update: `עדכון שוק${ind==='interior'?' העיצוב':ind==='realestate'?' הנדל"ן':''} החודשי`,
         holiday:       'ברכת חג + עדכון שוטף',
         exclusive:     'מבצע בלעדי ללקוחות קיימים',
       };
@@ -12090,8 +12090,8 @@ const RewardGen = {
       title: 'דף נחיתה מקצועי',
       icon: '🌐',
       inputs: [
-        { id: 'biz', label: 'שם העסק / סוכנות', placeholder: 'לדוגמה: נדל"ן כהן' },
-        { id: 'offer', label: 'מה מציעים ללקוח?', placeholder: 'לדוגמה: ליווי בקניית דירה ראשונה' },
+        { id: 'biz', label: 'שם העסק / סוכנות', placeholder: 'לדוגמה: כהן ושות׳' },
+        { id: 'offer', label: 'מה מציעים ללקוח?', placeholder: 'לדוגמה: ליווי מקצועי מקצה לקצה' },
         { id: 'audience', label: 'קהל היעד', placeholder: 'לדוגמה: זוגות צעירים באזור המרכז' },
       ],
       maxTokens: 900,
@@ -12104,8 +12104,8 @@ const RewardGen = {
       title: 'תהליך מכירה מותאם',
       icon: '💼',
       inputs: [
-        { id: 'biz', label: 'תחום העסק', placeholder: 'לדוגמה: תיווך נדל"ן' },
-        { id: 'deal', label: 'גודל עסקה ממוצע', placeholder: 'לדוגמה: ₪40,000 עמלה' },
+        { id: 'biz', label: 'תחום העסק', placeholder: 'לדוגמה: תחום העיסוק שלך' },
+        { id: 'deal', label: 'גודל עסקה ממוצע', placeholder: 'לדוגמה: ₪40,000' },
         { id: 'bottleneck', label: 'איפה הכי קשה לך לסגור עסקאות?', placeholder: 'לדוגמה: לקוחות נעלמים אחרי הצעת מחיר' },
       ],
       maxTokens: 900,
@@ -12119,8 +12119,8 @@ const RewardGen = {
       icon: '🎤',
       inputs: [
         { id: 'biz', label: 'שם החברה / סוכנות', placeholder: '' },
-        { id: 'value', label: 'מה הערך הייחודי שלך?', placeholder: 'לדוגמה: ליווי אישי 24/7 לאורך כל העסקה' },
-        { id: 'client', label: 'מול איזה סוג לקוח מציגים?', placeholder: 'לדוגמה: משקיעי נדל"ן' },
+        { id: 'value', label: 'מה הערך הייחודי שלך?', placeholder: 'לדוגמה: ליווי אישי לאורך כל הדרך' },
+        { id: 'client', label: 'מול איזה סוג לקוח מציגים?', placeholder: 'לדוגמה: לקוחות עסקיים' },
       ],
       maxTokens: 1000,
       prompt: (v) => `אתה מומחה למצגות מכירה. בנה תסריט מצגת מכירה בת 10-12 שקופיות עבור "${v.biz}", מול קהל יעד: ${v.client}.
@@ -12131,8 +12131,8 @@ const RewardGen = {
       title: 'חבילת תוכן שיווקי',
       icon: '📣',
       inputs: [
-        { id: 'niche', label: 'תחום / נישה', placeholder: 'לדוגמה: נדל"ן יוקרה בתל אביב' },
-        { id: 'topics', label: 'נושאים מרכזיים (אופציונלי)', placeholder: 'לדוגמה: השקעות, דירה ראשונה' },
+        { id: 'niche', label: 'תחום / נישה', placeholder: 'לדוגמה: שוק הפרימיום בתל אביב' },
+        { id: 'topics', label: 'נושאים מרכזיים (אופציונלי)', placeholder: 'לדוגמה: טיפים, מאחורי הקלעים' },
       ],
       maxTokens: 1200,
       prompt: (v) => `אתה אסטרטג תוכן שיווקי. בנה חבילת תוכן עבור עסק בתחום "${v.niche}".
@@ -12144,8 +12144,8 @@ ${v.topics ? `נושאים מועדפים: ${v.topics}` : ''}
       icon: '🏢',
       inputs: [
         { id: 'biz', label: 'שם העסק', placeholder: '' },
-        { id: 'services', label: 'שירותים עיקריים', placeholder: 'לדוגמה: מכירה, השכרה, ייעוץ השקעות' },
-        { id: 'about', label: 'משפט-שניים על העסק', placeholder: 'לדוגמה: 10 שנות ניסיון בנדל"ן באזור המרכז' },
+        { id: 'services', label: 'שירותים עיקריים', placeholder: 'לדוגמה: ייעוץ, ליווי, שירות מלא' },
+        { id: 'about', label: 'משפט-שניים על העסק', placeholder: 'לדוגמה: 10 שנות ניסיון באזור המרכז' },
       ],
       maxTokens: 1300,
       prompt: (v) => `אתה קופירייטר אתרים. כתוב תוכן מלא לאתר תדמית עבור "${v.biz}".
@@ -12157,8 +12157,8 @@ ${v.topics ? `נושאים מועדפים: ${v.topics}` : ''}
       title: 'תוכנית SEO',
       icon: '🔍',
       inputs: [
-        { id: 'biz', label: 'שם העסק ועיר / אזור', placeholder: 'לדוגמה: תיווך כהן, רמת גן' },
-        { id: 'focus', label: 'שירותים שחשוב לקדם', placeholder: 'לדוגמה: דירות יד 2 למכירה' },
+        { id: 'biz', label: 'שם העסק ועיר / אזור', placeholder: 'לדוגמה: כהן ושות׳, רמת גן' },
+        { id: 'focus', label: 'שירותים שחשוב לקדם', placeholder: 'לדוגמה: השירות המרכזי שלך' },
       ],
       maxTokens: 1100,
       prompt: (v) => `אתה מומחה SEO. בנה תוכנית קידום אורגני עבור "${v.biz}".
@@ -12183,7 +12183,7 @@ ${v.topics ? `נושאים מועדפים: ${v.topics}` : ''}
       inputs: [
         { id: 'goal', label: 'מטרת הקמפיין', placeholder: 'לדוגמה: לידים חדשים' },
         { id: 'budget', label: 'תקציב חודשי משוער', placeholder: 'לדוגמה: ₪3,000' },
-        { id: 'audience', label: 'קהל יעד', placeholder: 'לדוגמה: בעלי דירות שמתלבטים למכור' },
+        { id: 'audience', label: 'קהל יעד', placeholder: 'לדוגמה: לקוחות שמתלבטים' },
       ],
       maxTokens: 1200,
       prompt: (v) => `אתה מומחה פרסום ממומן בגוגל ופייסבוק. בנה תוכנית קמפיין מלאה לחודש, מטרה: "${v.goal}", תקציב חודשי: ${v.budget}, קהל יעד: ${v.audience}.
@@ -13413,7 +13413,7 @@ const PageBuilder = {
     try {
       const tenantName  = State.tenant?.name || 'משתמש PLTO';
       const verticalSel = document.getElementById('lref-vertical').value;
-      const verticalLbl = LeadReferral.VERTICALS[verticalSel] || 'נדל"ן';
+      const verticalLbl = LeadReferral.VERTICALS[verticalSel] || 'בעל מקצוע';
       // Deliberately only the referrer's own business/vertical — never the
       // referred lead's name/phone/context (lead_snapshot) — this page is
       // public and indexable.
@@ -13722,14 +13722,14 @@ const AnnualUpsell = {
       },
       first_deal: {
         icon:  '🎉',
-        title: 'עסקה אחת כיסתה חצי שנה של CRM. מה אם תסגור 10?',
-        body:  `<p style="color:var(--gray-600);line-height:1.6;margin:0 0 14px;">עמלה ממוצעת על עסקת נדל"ן = ₪15,000+. החבילה השנתית שלנו עולה ₪1,490 לשנה וכוללת גם <strong>שיווק AI מלא</strong>, כלי שיוצרים לך תוכן, מסנן לידים, וכותבים הצעות. יותר לידים פנימה, יותר עסקאות סגורות.</p>
+        title: 'כמה שווה לך עסקה אחת נוספת?',
+        body:  `<p style="color:var(--gray-600);line-height:1.6;margin:0 0 14px;">סגרת עכשיו את העסקה הראשונה שלך במערכת. החבילה השנתית שלנו עולה ₪1,490 לשנה וכוללת גם <strong>שיווק AI מלא</strong>, כלי שיוצרים לך תוכן, מסנן לידים, וכותבים הצעות. יותר לידים פנימה, יותר עסקאות סגורות.</p>
           <div class="aum-roi-card">
-            <div class="aum-roi-item"><div class="aum-roi-val aum-roi-green">₪15,000+</div><div>עמלה ממוצעת</div></div>
+            <div class="aum-roi-item"><div class="aum-roi-val aum-roi-green">עסקה אחת</div><div>שנסגרה</div></div>
             <div class="aum-roi-sep">vs</div>
             <div class="aum-roi-item"><div class="aum-roi-val">₪1,490</div><div>חבילה שנתית</div></div>
             <div class="aum-roi-sep">=</div>
-            <div class="aum-roi-item"><div class="aum-roi-val aum-roi-green">10×</div><div>מעסקה אחת</div></div>
+            <div class="aum-roi-item"><div class="aum-roi-val aum-roi-green">12 חודש</div><div>במערכת</div></div>
           </div>
           <p style="color:var(--gray-500);font-size:12px;margin:10px 0 0;text-align:center;">מחיר מוזל לנרשמים מראש, לפני שנגדיל את המחיר 🔒</p>`,
         cta:   'בדיוק מה שאני צריך, עדכנו אותי 📬',
@@ -15888,7 +15888,7 @@ const PropertyCompare = {
       </div>
     `).join('');
 
-    const agencyName = State.tenant?.name || 'סוכנות נדל"ן';
+    const agencyName = State.tenant?.name || 'העסק שלי';
     const agentLine  = [State.agent?.name, State.tenant?.phone].filter(Boolean).map(escapeHtml).join(' · ');
 
     const html = `
@@ -19652,7 +19652,7 @@ const ProHub = {
       mockup: `<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;">📤 שליחת קמפיין</div>
         <div class="pro-preview-mockup">
           <div class="pro-preview-row"><span>נמענים:</span><span style="font-weight:700;">12 לידים בשלב "הצעה נשלחה"</span></div>
-          <div class="pro-preview-row"><span>נושא:</span><span style="font-weight:700;">עדכון על הנכס שמצא לך...</span></div>
+          <div class="pro-preview-row"><span>נושא:</span><span style="font-weight:700;">עדכון בעקבות הפגישה שלנו...</span></div>
           <div class="pro-preview-row"><span>תבנית:</span><span style="font-weight:700;">פולואפ אחרי הצעה</span></div>
         </div>`
     },
@@ -19663,8 +19663,8 @@ const ProHub = {
         <div style="background:var(--navy-700);padding:12px 14px;color:white;font-size:13px;font-weight:700;">📄 הצעת מחיר, PLTO</div>
         <div style="padding:14px;font-size:13px;color:var(--gray-600);line-height:1.8;text-align:right;">
           <div><strong>לכבוד:</strong> ישראל ישראלי</div>
-          <div><strong>שירות:</strong> תיווך מכירת דירה</div>
-          <div><strong>עמלה:</strong> 2% + מע"מ</div>
+          <div><strong>שירות:</strong> ליווי מקצועי מלא</div>
+          <div><strong>סכום:</strong> לפי הצעה</div>
           <div><strong>תוקף:</strong> 30 יום</div>
         </div>
         </div>
@@ -19675,8 +19675,8 @@ const ProHub = {
       perks: ['⚡ לידים נכנסים תוך שניות', '🔄 חיבור לכל טופס Lead Ad', '🏷️ תיוג אוטומטי לפי קמפיין'],
       mockup: `<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;">🔄 לידים שנכנסו אוטומטית</div>
         <div class="pro-preview-mockup">
-          <div class="pro-preview-row"><span style="font-size:15px;">📘</span><span><strong>רחל אברהם</strong>, קמפיין "דירות למכירה ת"א"</span></div>
-          <div class="pro-preview-row"><span style="font-size:15px;">📘</span><span><strong>מיכאל כץ</strong>, קמפיין "נכסים מסחריים"</span></div>
+          <div class="pro-preview-row"><span style="font-size:15px;">📘</span><span><strong>רחל אברהם</strong>, קמפיין "לקוחות חדשים ת"א"</span></div>
+          <div class="pro-preview-row"><span style="font-size:15px;">📘</span><span><strong>מיכאל כץ</strong>, קמפיין "לקוחות חוזרים"</span></div>
           <div class="pro-preview-row"><span style="font-size:15px;">⚡</span><span>עוד 3 לידים בתור, נכנסים אוטומטית</span></div>
         </div>`
     },
@@ -19687,7 +19687,7 @@ const ProHub = {
         <div style="background:linear-gradient(135deg,var(--navy-700),#2563EB);padding:18px;text-align:center;color:white;">
           <div style="font-size:36px;margin-bottom:6px;">👤</div>
           <div style="font-size:16px;font-weight:800;">ישראל ישראלי</div>
-          <div style="font-size:12px;opacity:0.85;">סוכן נדל"ן בכיר</div>
+          <div style="font-size:12px;opacity:0.85;">בעל מקצוע</div>
         </div>
         <div style="padding:12px;display:flex;flex-direction:column;gap:6px;">
           <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;"><span>📱</span><span>050-0000000</span></div>
@@ -19733,7 +19733,7 @@ const ProHub = {
           </div>
           <div style="padding:8px 0;">
             <div style="font-size:13px;font-weight:600;">רחל מזרחי ⭐⭐⭐⭐⭐</div>
-            <div style="font-size:12px;color:var(--gray-500);">"מקצועי ואמין, מצא לנו את הדירה המושלמת"</div>
+            <div style="font-size:12px;color:var(--gray-500);">"מקצועי ואמין, ליווה אותנו לאורך כל הדרך"</div>
           </div>
         </div>
         <div style="text-align:center;font-size:12px;color:var(--gray-500);">בקשה נשלחת אוטומטית עם סגירת עסקה</div>`
