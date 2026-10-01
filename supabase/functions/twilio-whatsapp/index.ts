@@ -2,6 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 // Only allow production domain + local dev
 const ALLOWED_ORIGINS = [
+  'https://realestate.plto.app',
   'https://plto.app',
   'https://www.plto.app',
   'http://localhost:8080',
