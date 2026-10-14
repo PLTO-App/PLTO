@@ -2348,6 +2348,7 @@
     .holy-triangle-section {
       background: var(--white);
       padding: 32px 24px 36px;
+      overflow-x: clip; /* צמתי האנימציה מתחילים מחוץ למסך ומרחיבים את הדף ב-5px */
     }
 
     /* ═══ TRI-STAGE: ANIMATED TRIANGLE ═══ */
@@ -3444,7 +3445,7 @@
           <li>5 סוכני AI צמודים</li>
         </ul>
         <div class="plan-addon"><span class="star-live">✨</span> <span>+ <strong>₪100/חודש</strong> לשירותי שיווק מלאים</span></div>
-        <a href="https://realestate.plto.app" class="plan-btn outline">מתחילים בחינם</a>
+        <a href="https://realestate.plto.app" class="plan-btn outline" data-cta-section="pricing_solo">מתחילים בחינם</a>
         <p class="plan-cta-reassure">ניסיון 30 ימים בחינם · ללא כרטיס אשראי · ביטול בכל עת</p>
       </div>
 
@@ -3483,7 +3484,7 @@
           <li>תמיכה בעדיפות גבוהה</li>
         </ul>
         <div class="plan-addon"><span class="star-live">✨</span> <span>+ <strong>₪100/חודש</strong> לשירותי שיווק מלאים</span></div>
-        <a href="https://realestate.plto.app" class="plan-btn outline">בוחרים בסוכנות</a>
+        <a href="https://realestate.plto.app" class="plan-btn outline" data-cta-section="pricing_agency">בוחרים בסוכנות</a>
         <p class="plan-cta-reassure">תמיכה בעדיפות · ביטול ללא קנסות</p>
       </div>
     </div>
@@ -3829,7 +3830,7 @@ fbq('track', 'PageView');
 */
 (function() {
   var SUPABASE_URL = 'https://scyfywvzoogfrlalgftv.supabase.co';
-  var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjeWZ5d3Z6b29nZnJsYWxnZnR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyMTM3NTIsImV4cCI6MjA2Njc4OTc1Mn0.5aGMSrqSgYdIbZ5qAI1WX2ZBfp6-5TEaqQxOuMfKXkk';
+  var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjeWZ5d3Z6b29nZnJsYWxnZnR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MDA3MzAsImV4cCI6MjA5NjA3NjczMH0._D8ho0Yj8fEk7nd6-vmkjKkKyjfvHDmSq9Y8h5XzQCM';
 
   var UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
   var utm = {};
@@ -3869,7 +3870,7 @@ fbq('track', 'PageView');
   // Map: CSS selector → section name
   var ctaMap = [
     { sel: '.nav-cta',                                    section: 'nav' },
-    { sel: '.pulse-cta.cta-drop-target.has-rocket',       section: 'hero' },
+    { sel: '#hero-cta-btn',                               section: 'hero' },
     { sel: '.section-cta-wrap .btn-primary:not(.has-rocket)', section: 'referral_loop' },
     { sel: '.section-cta-wrap:last-child .btn-primary',   section: 'features' },
     { sel: '.plan-btn.outline:first-of-type',             section: 'pricing_solo' },
@@ -3888,8 +3889,8 @@ fbq('track', 'PageView');
         el.href = el.href + sep + utmQuery;
       }
       el.addEventListener('click', function() {
-        var section = 'unknown';
-        for (var i = 0; i < ctaMap.length; i++) {
+        var section = el.getAttribute('data-cta-section') || 'unknown';
+        for (var i = 0; section === 'unknown' && i < ctaMap.length; i++) {
           try { if (el.matches(ctaMap[i].sel)) { section = ctaMap[i].section; break; } } catch(e) {}
         }
         // Fallback: find nearest section ancestor with an id
@@ -3915,7 +3916,7 @@ fbq('track', 'PageView');
 */
 (function() {
   var SUPABASE_URL = 'https://scyfywvzoogfrlalgftv.supabase.co';
-  var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjeWZ5d3Z6b29nZnJsYWxnZnR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyMTM3NTIsImV4cCI6MjA2Njc4OTc1Mn0.5aGMSrqSgYdIbZ5qAI1WX2ZBfp6-5TEaqQxOuMfKXkk';
+  var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjeWZ5d3Z6b29nZnJsYWxnZnR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MDA3MzAsImV4cCI6MjA5NjA3NjczMH0._D8ho0Yj8fEk7nd6-vmkjKkKyjfvHDmSq9Y8h5XzQCM';
   var STORAGE_PREFIX = 'plto_ab_';
 
   function getSessionId() {
@@ -3982,7 +3983,7 @@ fbq('track', 'PageView');
     <div class="vp-modal-icon" id="vpModalIcon" aria-hidden="true"></div>
     <h3 class="vp-modal-title" id="vpModalTitle"></h3>
     <ul class="vp-modal-list" id="vpModalList"></ul>
-    <a href="https://realestate.plto.app" class="btn-primary">התחלה בחינם</a>
+    <a href="https://realestate.plto.app" class="btn-primary" data-cta-section="value_prop_modal">התחלה בחינם</a>
   </div>
 </div>
 
