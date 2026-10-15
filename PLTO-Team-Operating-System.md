@@ -243,23 +243,6 @@ every post.
 
 ------------------------------------------------------------------------
 
-# Marketing & Content Direction
-
-The PLTO marketing system should gradually move from: "How do we market
-the first CRM?"
-
-toward: "What are we building, why are we building it, what problem does
-it solve, and what did we learn?"
-
-Core content areas: 1. What we are building 2. Problems we identify and
-solve 3. Systems we launch 4. Behind the Build 5. Public-benefit/Pro
-Bono systems 6. Practical lessons from building products
-
-The first system and its existing content remain part of PLTO's origin
-story.
-
-Do not erase history simply because the company is expanding.
-
 ------------------------------------------------------------------------
 
 # Team Decision Rules

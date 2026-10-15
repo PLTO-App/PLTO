@@ -70,19 +70,5 @@
   "env": {
     "TIMEZONE": "Asia/Jerusalem",
     "LOCALE": "he-IL"
-  },
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/home/user/-/.claude/update-skills-hook.sh",
-            "timeout": 5
-          }
-        ]
-      }
-    ]
   }
 }
