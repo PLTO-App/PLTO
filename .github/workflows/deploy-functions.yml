@@ -19,9 +19,9 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
-      # notify-owner relays owner notifications to Make so the webhook address
-      # is never shipped to browsers. It needs the MAKE_OWNER_WEBHOOK_URL
-      # secret to be set on the Supabase project before the first deploy.
+      # notify-owner sends the owner notifications by email through the
+      # _notify_owner_email() database helper (Resend key in Vault). It needs no
+      # extra secret; it uses the platform SUPABASE_* variables.
       - name: Deploy notify-owner
         run: supabase functions deploy notify-owner --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --no-verify-jwt
         env:

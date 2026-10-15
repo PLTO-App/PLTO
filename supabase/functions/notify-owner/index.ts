@@ -1,10 +1,13 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { buildPayload, makeLimiter, MAX_BODY_BYTES } from './validate.ts';
+import { renderEmail } from './render.ts';
 
-// Server-side relay for the owner notifications that used to be sent straight
-// from the browser to a public Make.com webhook. The webhook address lives only
-// in the MAKE_OWNER_WEBHOOK_URL secret of this function.
+// Server-side sender for the owner notifications that used to be posted from the
+// browser to a public Make.com webhook. The function checks the signed-in user,
+// validates the event, renders a plain email and hands it to the database helper
+// _notify_owner_email(), which sends it through Resend with the key kept in
+// Vault. No new secret and no third-party webhook are involved.
 
 const ALLOWED_ORIGINS = [
   'https://realestate.plto.app',
@@ -39,8 +42,8 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseAnon = Deno.env.get('SUPABASE_ANON_KEY');
-    const hookUrl = Deno.env.get('MAKE_OWNER_WEBHOOK_URL');
-    if (!supabaseUrl || !supabaseAnon || !hookUrl) return json({ error: 'server_misconfigured' }, 500);
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !supabaseAnon || !serviceKey) return json({ error: 'server_misconfigured' }, 500);
 
     const sb = createClient(supabaseUrl, supabaseAnon, { global: { headers: { Authorization: authHeader } } });
     const { data: { user }, error: authErr } = await sb.auth.getUser();
@@ -56,22 +59,15 @@ serve(async (req) => {
 
     if (!allow(user.id)) return json({ error: 'rate_limited' }, 429);
 
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 5000);
-    try {
-      const res = await fetch(hookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(result.payload),
-        signal: ctrl.signal,
-      });
-      if (!res.ok) return json({ error: 'upstream_failed' }, 502);
-    } finally {
-      clearTimeout(timer);
-    }
+    // The helper is executable by service_role only, so it is called with a
+    // separate admin client; the user client above is used just to identify the caller.
+    const admin = createClient(supabaseUrl, serviceKey);
+    const { subject, html } = renderEmail(result.payload);
+    const { error: sendErr } = await admin.rpc('_notify_owner_email', { p_subject: subject, p_html: html });
+    if (sendErr) return json({ error: 'send_failed' }, 502);
     return json({ ok: true });
   } catch (_e) {
-    // Never echo upstream details: they can contain the webhook address.
+    // Never echo upstream details back to the browser.
     return json({ error: 'internal_error' }, 500);
   }
 });
