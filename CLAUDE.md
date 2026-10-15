@@ -219,7 +219,7 @@ An old identifier may remain when it is a real:
 - historical migration record
 
 Example:
-`liders.crm@gmail.com` may remain where it is the actual connected OAuth/account identity.
+an old account address may remain where it is the actual connected OAuth/account identity.
 
 Do not change such values merely for cosmetic consistency.
 
