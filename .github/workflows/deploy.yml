@@ -27,10 +27,46 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      # Only site files are published. Docs, CLAUDE.md, .claude/, supabase/
+      # (migrations and function sources) and workflow files stay out of the
+      # Pages artifact. A new page needs no change here (*.html is copied);
+      # any other new public asset must be added to the copy list below.
+      - name: Assemble site (allowlist)
+        run: |
+          set -euo pipefail
+          mkdir _site
+          cp -- *.html CNAME manifest.json sw.js robots.txt sitemap.xml _site/
+          cp -r icons _site/icons
+
+          # Fail the deploy if a page references a local file that was not copied.
+          missing=0
+          check() {
+            local from="$1" ref="$2"
+            ref="${ref#./}"; ref="${ref#/}"
+            [ -z "$ref" ] && return 0
+            if [ ! -e "_site/$ref" ]; then
+              echo "::error::$from references a file that is not published: $ref"
+              missing=1
+            fi
+          }
+          for page in _site/*.html; do
+            while IFS= read -r ref; do
+              check "$page" "$ref"
+            done < <(grep -ohE '(src|href)="[^"#?]+"' "$page" \
+                      | sed -E 's/^(src|href)="//; s/"$//' \
+                      | grep -vE '^(https?:|mailto:|tel:|//|data:|javascript:)' \
+                      | grep -vE '[$]|[{]' || true)
+          done
+          while IFS= read -r ref; do
+            check manifest.json "$ref"
+          done < <(grep -oE '"src": *"[^"]+"' manifest.json | sed -E 's/^"src": *"//; s/"$//')
+          if [ "$missing" -ne 0 ]; then exit 1; fi
+          echo "Published files:"; find _site -type f | sort
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: '_site'
 
       - name: Deploy to GitHub Pages
         id: deployment
