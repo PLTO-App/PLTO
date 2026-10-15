@@ -1865,12 +1865,10 @@ function openSupportReply(ticketId) {
 function notifyAgentOfReply(ticketId, responseText) {
   const t = allSupportTickets.find(x => x.id === ticketId);
   if (!t || !t.agent_email) return;
-  fetch('https://hook.eu1.make.com/f0nzngm6gdokri5naqu7enbay538ay8i', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ event: 'support.admin_replied', ticket_id: ticketId,
-      tenant_name: t.tenant_name, agent_name: t.agent_name, agent_email: t.agent_email,
-      response: responseText })
-  }).catch(() => {});
+  sb.functions.invoke('notify-owner', { body: { event: 'support.admin_replied', data: {
+    ticket_id: ticketId, tenant_name: t.tenant_name, agent_name: t.agent_name, agent_email: t.agent_email,
+    response: responseText,
+  } } }).catch(() => {});
 }
 
 async function submitSupportReply() {

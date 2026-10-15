@@ -18,3 +18,11 @@ jobs:
         run: supabase functions deploy ai-proxy --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --no-verify-jwt
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      # notify-owner relays owner notifications to Make so the webhook address
+      # is never shipped to browsers. It needs the MAKE_OWNER_WEBHOOK_URL
+      # secret to be set on the Supabase project before the first deploy.
+      - name: Deploy notify-owner
+        run: supabase functions deploy notify-owner --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --no-verify-jwt
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
