@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://scyfywvzoogfrlalgftv.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://www.facebook.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://scyfywvzoogfrlalgftv.supabase.co https://www.google-analytics.com https://www.googletagmanager.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
   <title>PLTO: הפלטפורמה שהופכת לידים לעסקאות</title>
   <meta name="description" content="מערכת ניהול חכמה לעסקים מקצועיים: נדל״ן, עיצוב ואדריכלות ועריכת דין. 5 סוכני AI שמנהלים את הפייפליין בשבילך. 30 ימים חינם, ללא כרטיס אשראי.">
   <meta property="og:type" content="website">
@@ -3797,22 +3797,25 @@
   gtag('config', 'G-HK3080C4GJ');
 </script>
 
-<!-- Meta Pixel — attribution for Meta/Facebook ad campaigns.
-     'YOUR_PIXEL_ID' is a placeholder: no Business Manager pixel exists yet.
-     Replace with the real ID once the ad account is created (see CLAUDE.md
-     pending-action list). Until then this loads and calls fbq() harmlessly
-     against a non-existent ID — no events are actually attributed anywhere. -->
+<!-- Meta Pixel. Off until a real pixel exists: there is no Business Manager pixel
+     yet, and a placeholder ID would only send visitor requests to Meta for nothing.
+     To turn it on: set META_PIXEL_ID below to the numeric ID, and add
+     https://connect.facebook.net to script-src and https://www.facebook.com to
+     connect-src in this page's CSP meta tag. Check the privacy policy first. -->
 <script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', 'YOUR_PIXEL_ID');
-fbq('track', 'PageView');
+(function(META_PIXEL_ID){
+  if (!/^\d{10,20}$/.test(META_PIXEL_ID)) return;
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', META_PIXEL_ID);
+  fbq('track', 'PageView');
+})('');
 </script>
 
 <script>
