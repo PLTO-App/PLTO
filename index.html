@@ -8535,7 +8535,6 @@ const Billing = {
     return State.tenant?.plan === 'trial' && !this.isExpired();
   },
   // Make.com webhook - שולח התראה לאדמין כשמישהו מביע עניין בשדרוג
-  _UPGRADE_WEBHOOK: 'https://hook.eu1.make.com/f0nzngm6gdokri5naqu7enbay538ay8i',
 
   daysLeft() {
     const t = State.tenant?.trial_ends_at;
@@ -8732,19 +8731,13 @@ const Billing = {
       localStorage.setItem('plto_upgrade_interest', JSON.stringify({
         plan: planId, ts: Date.now(), email: State.agent?.email || ''
       }));
-      fetch(this._UPGRADE_WEBHOOK, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          type: 'upgrade_request',
-          plan: planId,
-          plan_name: plan?.name || planId,
-          plan_price: plan?.priceLabel || '',
-          tenant_name: State.tenant?.name || '',
-          email: State.agent?.email || '',
-          tenant_id: State.tenant?.id || '',
-        }),
-      }).catch(() => {});
+      sbClient.functions.invoke('notify-owner', { body: { event: 'upgrade_request', data: {
+        plan: planId,
+        plan_name: plan?.name || planId,
+        plan_price: plan?.priceLabel || '',
+        tenant_name: State.tenant?.name || '',
+        tenant_id: State.tenant?.id || '',
+      } } }).catch(() => {});
       toast('📬 קיבלנו! ניצור איתך קשר תוך 24 שעות לסגירת המנוי 🙂', 'success');
       document.getElementById('annual-upsell-modal')?.classList.remove('show');
       document.getElementById('screen-paywall')?.classList.add('hidden');
@@ -11257,11 +11250,9 @@ ${prop.description ? `תיאור: ${prop.description.slice(0,150)}` : ''}
       <div class="mktg-fs-desc">נציג שלנו יחזור בהקדם עם כמה שאלות שיעזרו לנו לבנות בדיוק מה שצריך.<br><br>תודה שבחרתם ב-PLTO 🙏</div>
       <p class="mktg-fs-micro">כמובן שהכל נתון לבחירתך החופשית</p>`;
     try {
-      await fetch('https://hook.eu1.make.com/f0nzngm6gdokri5naqu7enbay538ay8i', {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ type: 'full_service_request', name, phone, need,
-          tenant: State.tenant?.name, email: State.agent?.email })
-      });
+      await sbClient.functions.invoke('notify-owner', { body: { event: 'full_service_request', data: {
+        name, phone, need, tenant: State.tenant?.name,
+      } } });
     } catch(_) {}
   },
 };
@@ -20050,11 +20041,9 @@ const Support = {
 
       // 3. Escalation webhook - fires only when a human actually needs to step in
       if (needsHuman) {
-        fetch('https://hook.eu1.make.com/f0nzngm6gdokri5naqu7enbay538ay8i', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ event: 'support.needs_human', ticket_id: ticket.id,
-            tenant_name: tenantName, agent_name: agentName, agent_email: agentEmail, message: msg })
-        }).catch(() => {});
+        sbClient.functions.invoke('notify-owner', { body: { event: 'support.needs_human', data: {
+          ticket_id: ticket.id, tenant_name: tenantName, agent_name: agentName, message: msg,
+        } } }).catch(() => {});
       }
 
       // 4. Refresh thread + history in the modal
@@ -20876,11 +20865,9 @@ const IdeaBox = {
       localStorage.setItem(this._STORAGE_KEY, JSON.stringify(ideas));
 
       // Send to Make.com webhook (non-blocking)
-      fetch('https://hook.eu1.make.com/f0nzngm6gdokri5naqu7enbay538ay8i', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'idea_suggestion', text, category,
-          agent_name: agentName, agent_email: agentEmail, tenant_name: tenantName })
-      }).catch(() => {});
+      sbClient.functions.invoke('notify-owner', { body: { event: 'idea_suggestion', data: {
+        text, category, agent_name: agentName, tenant_name: tenantName,
+      } } }).catch(() => {});
 
       // Award 300 XP
       const d = Gamify.get();
