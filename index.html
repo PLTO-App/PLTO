@@ -16382,7 +16382,13 @@ const AppLock = {
     toast('🔓 נעילת PIN בוטלה', 'success');
   },
 
-  showIntro() {
+  showIntro(_tries = 0) {
+    // The guided tour overlay (z-index 99980) sits above modals, so opening this
+    // one underneath it would leave it hidden until the tour ends. Wait for the tour.
+    if (document.getElementById('tour-overlay') && _tries < 60) {
+      setTimeout(() => this.showIntro(_tries + 1), 2000);
+      return;
+    }
     document.getElementById('modal-pinlock-intro')?.classList.remove('hidden');
   },
 
