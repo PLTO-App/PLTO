@@ -1378,6 +1378,17 @@ Move detailed implementation history to dedicated documentation when appropriate
 
 ---
 
+## Recovery Tracking Document
+
+`plans/recovery-log-2026-10-15.md` is the central tracking document for the ongoing PLTO recovery (Make to Resend migration, test cleanup, Supabase keys and secrets, old Edge Functions, outstanding manual tasks).
+
+- Read its "Current Status & Next Steps" section before starting any work in this repository, and ask the owner about the pending manual tasks listed there.
+- Verify every manual action the owner reports with a read-only check before marking it done.
+- Update the document at the end of every session: date, statuses, open tasks, change log. Never present an unrun check as passed.
+- Do not mark the recovery as "Recovery Complete" until every completion condition in the document is met.
+
+---
+
 ## Current State vs Historical State
 
 This distinction is critical.
