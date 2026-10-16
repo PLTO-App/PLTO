@@ -8542,6 +8542,11 @@ const Billing = {
     if (!t) return 0;
     return Math.max(0, Math.ceil((new Date(t) - new Date()) / 864e5));
   },
+  // Extended free access: trial_ends_at was set more than a year ahead by an admin, so the
+  // countdown is meaningless and the trial banners are hidden. The plan stays 'trial'.
+  isExtendedTrial() {
+    return State.tenant?.plan === 'trial' && this.daysLeft() > 365;
+  },
   // תקופת שימור נתונים - 30 יום נוספים בחינם אחרי תום הניסיון, בלי גישה לשימוש במערכת
   RETENTION_DAYS: 30,
   retentionEndsAt() {
@@ -8605,6 +8610,7 @@ const Billing = {
     const days = this.daysLeft();
     const banner = document.getElementById('trial-banner');
     if (!banner) return;
+    if (this.isExtendedTrial()) { banner.innerHTML = ''; banner.classList.add('hidden'); return; }
     const pct = Math.max(4, Math.round(days / 30 * 100));
     const label = days === 0 ? '⚠️ הניסיון פג'
                 : days === 1 ? '⚠️ יום אחרון'
@@ -16654,7 +16660,7 @@ const Settings = {
               <span style="background:${Billing.planLabel().bg};color:${Billing.planLabel().color};padding:2px 8px;border-radius:99px;font-weight:700;font-size:11px;">
                 ${Billing.planLabel().text}
               </span>
-              ${State.tenant?.plan === 'trial' ? ` · ${Billing.daysLeft()} ימים נותרו בניסיון` : ''}
+              ${State.tenant?.plan === 'trial' && !Billing.isExtendedTrial() ? ` · ${Billing.daysLeft()} ימים נותרו בניסיון` : ''}
             </div>
           </div>
         </div>
@@ -16782,7 +16788,7 @@ const Settings = {
         </div>
         ` : `
         <div class="billing-cta-box">
-          <div style="font-weight:800;font-size:15px;margin-bottom:2px;">⏳ ${Billing.daysLeft()} ימים נותרו בניסיון החינמי</div>
+          ${Billing.isExtendedTrial() ? '' : `<div style="font-weight:800;font-size:15px;margin-bottom:2px;">⏳ ${Billing.daysLeft()} ימים נותרו בניסיון החינמי</div>`}
           <div style="font-size:12px;color:var(--gray-500);margin-bottom:10px;">בחירת תוכנית, ביטול בכל עת, ללא עמלות</div>
           <div style="font-size:11px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:7px 10px;margin-bottom:10px;color:var(--gray-700);">
             🚀 <strong>מחירי השקה</strong>, המחירים צפויים לעלות בהמשך
