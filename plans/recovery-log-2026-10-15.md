@@ -59,28 +59,66 @@
 ### ניקוי חשבון הבדיקה (ממתין לאישור ידני)
 כלי ה-SQL של הסשן דורש אישור ידני לכל DELETE, ולכן המחיקה לא בוצעה. מה שנבדק לפני כן:
 - מחיקת העסק מוחקת אוטומטית (CASCADE) את הלידים, המשימות, הפעילויות, השלבים, ההפניות, ההסכמות, דפי הלקוח, עדכוני המעקב והמשתמשים. מחיקת משתמש ה-auth מוחקת את הזהויות, ה-sessions וה-refresh tokens.
--  אינה מקושרת בהפניה זרה (10 שורות של הבדיקה), ולכן היא נמחקת במפורש.
+- `audit_log` אינה מקושרת בהפניה זרה (10 שורות של הבדיקה), ולכן היא נמחקת במפורש.
 - אין trigger או rule שחוסמים מחיקה בטבלאות האלה.
 - הסקריפט נבדק בתחביר עם מפרק Postgres, כולל גוף ה-plpgsql. הוא עוצר אם המזהים אינם של עסק ומשתמש הבדיקה, ואם נשארה שורה אחת אחריו הוא מבטל הכול.
 
 להרצה ב-SQL Editor של פרויקט PLTO (פקודה אחת, אטומית):
 
+```sql
+DO $cleanup$
+DECLARE
+  v_tid uuid := '20dd3198-d5a3-4460-b942-6170d86acd9a';
+  v_uid uuid := '72819a42-6805-4ba0-b7ae-8f269b7eabc9';
+  r record;
+  n int;
+BEGIN
+  -- Guards: stop unless these are exactly the QA test tenant and user.
+  IF NOT EXISTS (SELECT 1 FROM tenants WHERE id = v_tid AND billing_email = 'qa-nonadmin-20261016@example.org' AND name LIKE 'QA-TEST%') THEN
+    RAISE EXCEPTION 'tenant does not match the QA test tenant, nothing deleted';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = v_uid AND email = 'qa-nonadmin-20261016@example.org') THEN
+    RAISE EXCEPTION 'user does not match the QA test user, nothing deleted';
+  END IF;
 
+  DELETE FROM audit_log WHERE tenant_id = v_tid;   -- no foreign key, so it is not cascaded
+  DELETE FROM tenants   WHERE id = v_tid;          -- cascades to leads, tasks, activities, stages, referrals, consents, pages, tracker, agent_users
+  DELETE FROM auth.users WHERE id = v_uid;         -- cascades to identities, sessions, refresh tokens
 
-אחרי ההרצה נשאר לאמת: 0 עסקים ו-0 משתמשים עם , ו-4 עסקים בסך הכל.
+  -- Post-conditions: any leftover rolls everything back.
+  FOR r IN
+    SELECT c.table_name FROM information_schema.columns c
+    JOIN information_schema.tables t ON t.table_schema = c.table_schema AND t.table_name = c.table_name AND t.table_type = 'BASE TABLE'
+    WHERE c.table_schema = 'public' AND c.column_name = 'tenant_id'
+  LOOP
+    EXECUTE format('SELECT count(*) FROM public.%I WHERE tenant_id = $1', r.table_name) INTO n USING v_tid;
+    IF n > 0 THEN RAISE EXCEPTION 'leftover rows in %: %', r.table_name, n; END IF;
+  END LOOP;
+  IF EXISTS (SELECT 1 FROM tenants WHERE id = v_tid)
+     OR EXISTS (SELECT 1 FROM auth.users WHERE id = v_uid)
+     OR EXISTS (SELECT 1 FROM auth.identities WHERE user_id = v_uid)
+     OR EXISTS (SELECT 1 FROM lead_referrals WHERE from_tenant_id = v_tid)
+     OR EXISTS (SELECT 1 FROM leads WHERE name IN ('QA ליד בדיקה', '<img src=x onerror=alert(1)>')) THEN
+    RAISE EXCEPTION 'leftovers remain, rolled back';
+  END IF;
+END
+$cleanup$;
+```
+
+אחרי ההרצה נשאר לאמת: 0 עסקים ו-0 משתמשים עם `qa-nonadmin`, ו-4 עסקים בסך הכל.
 
 ### מחיקת שלוש פונקציות Edge ישנות (דשבורד)
-, , . אין להן שימוש פעיל:
+`admin-ops`, `temp-selftest`, `cro-report-email`. אין להן שימוש פעיל:
 - אין אזכור שלהן בקוד האתר, ב-workflows או ב-Edge Functions בריפו (רק בהערות של מיגרציות 086 ו-088 ההיסטוריות).
-- ב-DB היחידה ששולחת בקשות החוצה היא  (ל-Resend). אין database webhooks, ויש רק שתי משימות cron.
--  ו- מחזירות 410 לכל בקשה.  דורשת סוד שנבדק מול הפונקציה , והיא לא קיימת ואין סוד כזה ב-Vault, ולכן כל קריאה נדחית.
+- ב-DB היחידה ששולחת בקשות החוצה היא `_notify_owner_email` (ל-Resend). אין database webhooks, ויש רק שתי משימות cron.
+- `admin-ops` ו-`temp-selftest` מחזירות 410 לכל בקשה. `cro-report-email` דורשת סוד שנבדק מול הפונקציה `verify_cron_report_secret`, והיא לא קיימת ואין סוד כזה ב-Vault, ולכן כל קריאה נדחית.
 - לא נבדק: קריאות חיצוניות היסטוריות. לוגי הפונקציות אינם נגישים מהסשן.
 
-צעדים: Supabase, פרויקט PLTO, Edge Functions. לכל אחת מהשלוש: לפתוח אותה, לבדוק בלשונית Invocations שאין קריאות בשבוע האחרון (בדיקה אופציונלית), ואז Details או Settings ולחיצה על Delete function. אחרי המחיקה נשארות ברשימה , , , ,  ו-. אם אחת מהשלוש לא הייתה ברשימה, כבר נמחקה.
+צעדים: Supabase, פרויקט PLTO, Edge Functions. לכל אחת מהשלוש: לפתוח אותה, לבדוק בלשונית Invocations שאין קריאות בשבוע האחרון (בדיקה אופציונלית), ואז Details או Settings ולחיצה על Delete function. אחרי המחיקה נשארות ברשימה `ai-proxy`, `gmail-oauth-callback`, `gmail-proxy`, `notify-owner`, `stripe-webhook` ו-`twilio-whatsapp`.
 
 ### נשאר פתוח
 - אישור שמייל "הצעת רעיון חדשה" מהטלפון הגיע. רק אחריו מנתקים את ה-hook ואת התרחיש ב-Make (בלי מחיקת התרחיש, כדי לאפשר חזרה).
-- מחיקת מפתחות Supabase  ו-: דורשת בדיקת "Last used" ורשימת סודות ב-Edge Functions בדשבורד.
+- מחיקת מפתחות Supabase `default` ו-`make_trial_expiry`: דורשת בדיקת "Last used" ורשימת סודות ב-Edge Functions בדשבורד.
 - מזהה Meta Pixel אמיתי, ואם יתווסף: עדכון CSP ובדיקת מדיניות הפרטיות.
 - הגנת סיסמאות דולפות: דורשת תוכנית Pro של Supabase.
-- מיגרציות 118 ו-119 של הריפו אינן רשומות ב- בשמותיהן (האובייקטים קיימים בחי).
+- מיגרציות 118 ו-119 של הריפו אינן רשומות ב-`schema_migrations` בשמותיהן (האובייקטים קיימים בחי).
