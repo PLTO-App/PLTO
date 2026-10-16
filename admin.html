@@ -119,8 +119,8 @@
     .pw-wrap { position: relative; }
     .pw-wrap .form-input { padding-left: 42px; }
     .pw-eye {
-      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; cursor: pointer; padding: 0;
+      position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; padding: 13px;
       color: var(--text-muted); font-size: 18px; line-height: 1;
       display: flex; align-items: center;
     }
@@ -585,7 +585,7 @@
     <button class="btn-auth" id="btn-login" onclick="doLogin()">כניסה לפאנל</button>
     <div id="auth-error"></div>
     <div style="text-align:center;margin-top:14px;">
-      <button onclick="doForgotPassword()" id="btn-forgot" style="background:none;border:none;color:var(--blue);font-size:13px;cursor:pointer;text-decoration:underline;font-family:inherit;">שכחתי סיסמה</button>
+      <button onclick="doForgotPassword()" id="btn-forgot" style="background:none;border:none;color:var(--blue);font-size:13px;cursor:pointer;text-decoration:underline;font-family:inherit;padding:13px 8px;">שכחתי סיסמה</button>
       <div id="forgot-msg" style="display:none;margin-top:8px;font-size:12px;color:var(--green);text-align:center;"></div>
     </div>
   </div>
