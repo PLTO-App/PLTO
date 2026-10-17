@@ -67,6 +67,7 @@ const SUPABASE_MOCK = `
 `;
 const CHART_MOCK = `window.Chart=function(){this.destroy=function(){};this.data={datasets:[]};this.update=function(){};};window.Chart.register=function(){};`;
 
+const FAB_EXPECTED = new Set(['dashboard', 'pipeline', 'leads', 'properties', 'tasks']);
 const SCREENS = ['dashboard', 'pipeline', 'leads', 'lead-detail', 'properties', 'tasks', 'calendar', 'analytics', 'partners', 'tools', 'settings'];
 
 const browser = await chromium.launch({ args: ['--no-sandbox', '--disable-dev-shm-usage'] });
@@ -92,7 +93,11 @@ await page.waitForFunction(() => typeof App !== 'undefined' && typeof App.loginD
 await page.evaluate(() => { App.loginDemo(); State.isDemo = false; });
 await page.waitForSelector('#app-shell:not(.hidden)', { timeout: 10000 });
 // ניווט בין מסכים בלי הנעילה של מצב הדמו. הנתונים מקומיים, וכתיבות הולכות למוק.
-await page.evaluate(() => { State.isDemo = false; });
+await page.evaluate(() => {
+  State.isDemo = false;
+  // כפתור התמיכה מוצג רק אחרי כניסה אמיתית, ולכן מדמים אותה כדי לבדוק חפיפה בין הכפתורים הצפים
+  document.getElementById('support-fab-btn')?.classList.remove('hidden');
+});
 await page.waitForTimeout(800);
 
 const results = [];
@@ -119,7 +124,20 @@ for (const screen of SCREENS) {
       .slice(0, 3).map(e => (e.id ? '#' + e.id : e.className && typeof e.className === 'string' ? '.' + e.className.split(' ')[0] : e.tagName)),
   }));
   const overflow = m.scrollW > m.innerW;
-  results.push({ screen, overflow, wide: m.wide, newErrors: errors.length - before });
+  // כפתורים צפים: כפתור ההוספה רק במסכים המיועדים, ושום זוג לא חופף
+  const floats = await page.evaluate(() => {
+    const rects = ['#fab-btn', '#support-fab-btn', '#a11y-fab']
+      .map(sel => { const e = document.querySelector(sel); if (!e || getComputedStyle(e).display === 'none') return null; const r = e.getBoundingClientRect(); return { sel, l: r.left, r: r.right, t: r.top, b: r.bottom }; })
+      .filter(Boolean);
+    const overlaps = [];
+    for (let i = 0; i < rects.length; i++) for (let j = i + 1; j < rects.length; j++) {
+      const a = rects[i], b = rects[j];
+      if (a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b) overlaps.push(a.sel + ' מול ' + b.sel);
+    }
+    return { fab: rects.some(r => r.sel === '#fab-btn'), overlaps };
+  });
+  const fabWrong = floats.fab !== FAB_EXPECTED.has(screen);
+  results.push({ screen, overflow, wide: m.wide, newErrors: errors.length - before, floatIssues: [...floats.overlaps, ...(fabWrong ? [floats.fab ? 'כפתור הוספה לא צריך להופיע' : 'כפתור הוספה חסר'] : [])] });
   if (shotsDir) await page.screenshot({ path: join(shotsDir, `${screen}.png`) });
 }
 
@@ -132,6 +150,7 @@ for (const r of results) {
   if (r.overflow) flags.push('גלישה אופקית בדף');
   if (r.wide.length) flags.push(`אלמנטים מחוץ למסך: ${r.wide.join(', ')}`);
   if (r.newErrors) flags.push(`${r.newErrors} שגיאות JS`);
+  if (r.floatIssues.length) flags.push(`כפתורים צפים: ${r.floatIssues.join(', ')}`);
   if (flags.length) bad++;
   console.log(`${flags.length ? '✗' : '✓'} ${r.screen}${flags.length ? ': ' + flags.join(' | ') : ''}`);
 }

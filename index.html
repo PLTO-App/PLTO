@@ -205,13 +205,13 @@
     body.theme-accessible .nav-item.a11y-btn {
       border-color: #FFFF00;
     }
-    /* FAB mobile — stacked above the "+ ליד" FAB (56px tall, bottom: bottom-nav-h+16px)
-       so the two never overlap on the dashboard, where both are visible together. */
+    /* FAB mobile: מוצב מעל כפתור התמיכה (48px, bottom: bottom-nav-h+16px) באותו צד,
+       כך ששני כפתורי השירות לא חופפים זה את זה ואת כפתור ההוספה שבצד השני. */
     #a11y-fab {
       display: none;
       position: fixed;
-      bottom: calc(var(--bottom-nav-h) + 82px);
-      left: 26px;
+      bottom: calc(var(--bottom-nav-h) + 76px);
+      right: 22px;
       z-index: 200;
       background: var(--navy-600);
       color: var(--gray-600);
@@ -953,7 +953,7 @@
       -webkit-user-select: text; user-select: text;
     }
     #main-content {
-      flex: 1; padding-bottom: var(--bottom-nav-h);
+      flex: 1; padding-bottom: calc(var(--bottom-nav-h) + 72px);
       overflow-y: auto;
     }
     @media (min-width: 768px) {
@@ -1835,6 +1835,13 @@
     .act-ticker-item:hover { color: #fff; }
     .act-ticker-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--blue-400,#60A5FA); flex-shrink: 0; }
     @media (prefers-reduced-motion: reduce) { .act-ticker-track { animation: none; } }
+    /* במובייל הסרגל מכסה תוכן ומציג תנועה מתמדת. המידע זמין במסך "פעילות אחרונה". */
+    @media (max-width: 767px) { .act-ticker-strip { display: none !important; } }
+    /* כותרות מסך עם כמה כפתורים לא גולשות אופקית במובייל */
+    @media (max-width: 767px) {
+      .screen-header { flex-wrap: wrap; }
+      .screen-header > div:last-child:not(:first-child) { flex-wrap: wrap; justify-content: flex-end; }
+    }
     /* Recent Activity page */
     .ra-filter-row { display: flex; gap: 8px; overflow-x: auto; padding: 0 0 6px; margin-bottom: 12px; }
     .ra-filter-chip { flex-shrink: 0; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1.5px solid var(--border); background: var(--surface); color: var(--gray-600); cursor: pointer; white-space: nowrap; }
@@ -2606,9 +2613,9 @@
     .cal-today-btn { background:var(--navy-50); border:1.5px solid var(--navy-200); color:var(--navy-500); border-radius:var(--radius-md); padding:6px 14px; font-size:13px; font-weight:700; cursor:pointer; }
     .cal-day-labels { display:grid; grid-template-columns:repeat(7,1fr); padding:0 12px; }
     .cal-day-label { text-align:center; font-size:12px; font-weight:700; color:var(--gray-400); padding:4px 0; }
-    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; padding:0 12px 12px; }
+    .cal-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:3px; padding:0 12px 12px; }
     .cal-cell {
-      min-height:68px; background:var(--surface); border-radius:var(--radius-md);
+      min-height:68px; min-width:0; overflow:hidden; background:var(--surface); border-radius:var(--radius-md);
       border:1px solid var(--border); padding:4px; cursor:pointer;
       transition:box-shadow 0.15s, border-color 0.15s, transform 0.15s;
       animation: cal-cell-fade .32s ease both;
@@ -2635,6 +2642,14 @@
     .cal-dot-task { background:var(--blue-100); color:var(--blue-500); }
     .cal-dot-overdue { background:var(--red-100); color:var(--red-600); }
     .cal-dot-followup { background:var(--purple-100); color:var(--purple-500); }
+    /* במובייל התא צר מדי לטקסט: נקודה צבעונית לכל אירוע, והפירוט בלחיצה על היום */
+    @media (max-width: 480px) {
+      .cal-dot { display:inline-block; width:7px; height:7px; padding:0; margin:0 1px 2px; border-radius:50%; font-size:0; }
+      .cal-dot-task { background:var(--blue-500); }
+      .cal-dot-overdue { background:var(--red-600); }
+      .cal-dot-followup { background:var(--purple-500); }
+      .cal-dot.cal-dot-more { width:auto; height:auto; border-radius:3px; background:none; font-size:9px; }
+    }
     .cal-day-panel { padding:16px 20px 20px; }
     .cal-day-panel-title { font-size:15px; font-weight:800; color:var(--gray-800); margin-bottom:12px; }
     .cal-event-item { display:flex; align-items:flex-start; gap:10px; padding:10px 14px; background:var(--surface); border-radius:var(--radius-md); border:1px solid var(--border); margin-bottom:8px; }
@@ -9476,8 +9491,19 @@ function applyIndustryToPropertyForm(prefix) {
 /* ═══════════════════════════════════════════
    MODAL UTILS
 ═══════════════════════════════════════════ */
+// כפתור ההוספה הצף מוצג רק במסכים שבהם הוספה היא הפעולה הראשית
+const FAB_SCREENS = { dashboard: 'ליד חדש', pipeline: 'ליד חדש', leads: 'ליד חדש', properties: 'נכס חדש', tasks: 'משימה חדשה' };
+function updateFab(screen) {
+  const fab = document.getElementById('fab-btn');
+  if (!fab) return;
+  const label = FAB_SCREENS[screen];
+  fab.classList.toggle('hidden', !label);
+  if (label) { fab.title = label; fab.setAttribute('aria-label', label); }
+}
 function fabAction() {
-  if (State.screen === 'properties') {
+  if (State.screen === 'tasks') {
+    openModal('modal-add-task');
+  } else if (State.screen === 'properties') {
     PropImages.resetNew();
     openModal('modal-add-property');
   } else {
@@ -14454,6 +14480,7 @@ const App = {
       if (isCurrent) n.setAttribute('aria-current', 'page');
       else n.removeAttribute('aria-current');
     });
+    updateFab(screen);
     // render
     switch (screen) {
       case 'dashboard':   Dashboard.render(); break;
@@ -16336,12 +16363,12 @@ const Calendar = {
       const upcomingTask = tasks.filter(t => !t.done && dateStr >= todayStr);
 
       let dots = '';
-      if (overdueTask.length) dots += `<div class="cal-dot cal-dot-overdue">⚠ ${overdueTask[0].title || 'משימה'}</div>`;
-      if (upcomingTask.length) dots += `<div class="cal-dot cal-dot-task">✓ ${upcomingTask[0].title || 'משימה'}</div>`;
-      if (followups.length) dots += `<div class="cal-dot cal-dot-followup">👤 ${followups[0].name}</div>`;
+      if (overdueTask.length) dots += `<div class="cal-dot cal-dot-overdue">⚠ ${escapeHtml(overdueTask[0].title || 'משימה')}</div>`;
+      if (upcomingTask.length) dots += `<div class="cal-dot cal-dot-task">✓ ${escapeHtml(upcomingTask[0].title || 'משימה')}</div>`;
+      if (followups.length) dots += `<div class="cal-dot cal-dot-followup">👤 ${escapeHtml(followups[0].name)}</div>`;
       if ((overdueTask.length + upcomingTask.length + followups.length) > 2) {
         const more = overdueTask.length + upcomingTask.length + followups.length - 2;
-        dots += `<div class="cal-dot" style="color:var(--gray-400);">+${more} נוספים</div>`;
+        dots += `<div class="cal-dot cal-dot-more" style="color:var(--gray-400);">+${more} נוספים</div>`;
       }
 
       const cellClass = ['cal-cell', cell.otherMonth ? 'other-month' : '', isToday ? 'today' : '', isSelected ? 'selected' : ''].filter(Boolean).join(' ');
