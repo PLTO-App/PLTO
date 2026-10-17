@@ -205,13 +205,13 @@
     body.theme-accessible .nav-item.a11y-btn {
       border-color: #FFFF00;
     }
-    /* FAB mobile — stacked above the "+ ליד" FAB (56px tall, bottom: bottom-nav-h+16px)
-       so the two never overlap on the dashboard, where both are visible together. */
+    /* FAB mobile: מוצב מעל כפתור התמיכה (48px, bottom: bottom-nav-h+16px) באותו צד,
+       כך ששני כפתורי השירות לא חופפים זה את זה ואת כפתור ההוספה שבצד השני. */
     #a11y-fab {
       display: none;
       position: fixed;
-      bottom: calc(var(--bottom-nav-h) + 82px);
-      left: 26px;
+      bottom: calc(var(--bottom-nav-h) + 76px);
+      right: 22px;
       z-index: 200;
       background: var(--navy-600);
       color: var(--gray-600);
@@ -650,6 +650,7 @@
       overflow: hidden; cursor: pointer; transition: var(--transition);
     }
     .property-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    @media (max-width: 767px) { .property-photo { height: 120px !important; } }
     .property-photo {
       height: 160px; background: linear-gradient(135deg, var(--navy-600), var(--navy-400));
       display: flex; align-items: center; justify-content: center;
@@ -832,6 +833,17 @@
       margin-top: 1px; transition: var(--transition);
     }
     .task-checkbox.checked { background: var(--green-500); border-color: var(--green-500); color: white; }
+    .task-check {
+      flex-shrink: 0; min-width: 44px; min-height: 44px; margin: -12px -10px -12px -4px; padding: 0;
+      background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .task-check:focus-visible { outline: 2px solid var(--blue-500); border-radius: 8px; }
+    .task-check .task-checkbox { margin-top: 0; }
+    .sw-row.task-sw { margin-bottom: 0; }
+    .task-sw .task-item { align-items: center; border-width: 0 3px 0 0; border-style: solid; border-color: transparent; border-radius: 0; }
+    .task-sw .task-item.overdue { border-right-color: var(--red-500); }
+    .task-sw .task-item.urgent { border-right-color: var(--orange-500); }
+    #dash-tasks { display: flex; flex-direction: column; gap: 8px; }
     .task-body { flex: 1; }
     .task-title { font-size: 14px; font-weight: 600; color: var(--gray-900); }
     .task-item.done .task-title { text-decoration: line-through; color: var(--gray-400); }
@@ -842,8 +854,10 @@
     /* ═══════════════════════════════════════
        TABS
     ═══════════════════════════════════════ */
-    .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); }
+    .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+    .tabs::-webkit-scrollbar { display: none; }
     .tab-btn {
+      flex-shrink: 0; white-space: nowrap; min-height: 44px;
       padding: 10px 16px; font-size: 14px; font-weight: 600; color: var(--gray-500);
       background: transparent; border: none; cursor: pointer;
       border-bottom: 2px solid transparent; margin-bottom: -2px;
@@ -953,7 +967,7 @@
       -webkit-user-select: text; user-select: text;
     }
     #main-content {
-      flex: 1; padding-bottom: var(--bottom-nav-h);
+      flex: 1; padding-bottom: calc(var(--bottom-nav-h) + 72px);
       overflow-y: auto;
     }
     @media (min-width: 768px) {
@@ -1317,6 +1331,31 @@
       overflow-x: auto; -webkit-overflow-scrolling: touch;
     }
     .kpi-row::-webkit-scrollbar { height: 0; }
+    @media (max-width: 767px) {
+      .kpi-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: visible; padding: 12px 20px; }
+      .kpi-row > * { min-width: 0; width: auto; }
+    }
+    .dash-more { margin: 8px 0 0; }
+    .dash-more > summary {
+      list-style: none; cursor: pointer; margin: 0 20px 8px; min-height: 44px; padding: 0 14px;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; font-weight: 800; color: var(--gray-700);
+    }
+    .dash-more > summary::-webkit-details-marker { display: none; }
+    .dash-more > summary::after { content: '+'; font-size: 20px; font-weight: 700; color: var(--gray-500); }
+    .dash-more[open] > summary::after { content: '−'; }
+    .dash-more > summary:focus-visible { outline: 2px solid var(--blue-500); outline-offset: 2px; }
+
+    .settings-section-title.sc-toggle {
+      cursor: pointer; min-height: 48px; display: flex; align-items: center; justify-content: space-between;
+      border-bottom: none;
+    }
+    .settings-section-title.sc-toggle::after { content: '+'; font-size: 20px; font-weight: 700; color: var(--gray-500); letter-spacing: 0; }
+    .settings-section.sc-open > .settings-section-title.sc-toggle { border-bottom: 1px solid var(--border); }
+    .settings-section.sc-open > .settings-section-title.sc-toggle::after { content: '−'; }
+    .settings-section:not(.sc-open) > .settings-section-body { display: none; }
+    .settings-section-title.sc-toggle:focus-visible { outline: 2px solid var(--blue-500); outline-offset: -2px; }
 
     .section-header {
       display: flex; align-items: center; justify-content: space-between;
@@ -1719,6 +1758,120 @@
     }
 
     /* ═══════════════════════════════════════
+       ACTION SHEET, SWIPE ROW, LEAD ROW, QUICK EDIT
+    ═══════════════════════════════════════ */
+    .hide-mobile { }
+    @media (max-width: 767px) { .hide-mobile { display: none !important; } }
+    .as-overlay {
+      position: fixed; inset: 0; z-index: 250; background: rgba(10,26,46,.45);
+      display: flex; align-items: flex-end; justify-content: center;
+    }
+    .as-overlay.as-popover { background: transparent; }
+    .as-panel {
+      background: var(--surface); width: 100%; max-width: 520px;
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      padding: 8px 8px calc(12px + env(safe-area-inset-bottom, 0px));
+      box-shadow: var(--shadow-xl); max-height: 85dvh; overflow-y: auto;
+      animation: asUp .18s ease;
+    }
+    .as-overlay.as-popover .as-panel {
+      position: fixed; width: 260px; max-width: calc(100vw - 16px);
+      border-radius: var(--radius-xl); padding: 6px; animation: none;
+      border: 1px solid var(--border);
+    }
+    .as-handle { width: 36px; height: 4px; background: var(--gray-300); border-radius: 99px; margin: 4px auto 8px; }
+    .as-overlay.as-popover .as-handle { display: none; }
+    .as-title { font-size: 12px; font-weight: 700; color: var(--gray-500); padding: 4px 12px 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .as-group { font-size: 11px; font-weight: 800; color: var(--gray-400); padding: 8px 12px 2px; }
+    .as-item {
+      display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px;
+      padding: 10px 12px; border: none; background: none; border-radius: var(--radius-md);
+      font-family: var(--font); font-size: 15px; font-weight: 600; color: var(--gray-800);
+      cursor: pointer; text-align: right;
+    }
+    .as-item:hover, .as-item:focus-visible { background: var(--gray-100); outline: none; }
+    .as-item:focus-visible { box-shadow: inset 0 0 0 2px var(--blue-500); }
+    .as-item-icon { width: 24px; text-align: center; font-size: 18px; flex-shrink: 0; }
+    .as-item-danger { color: var(--red-600); }
+    .as-item[disabled] { opacity: .4; cursor: default; }
+    .as-sep { height: 1px; background: var(--border); margin: 4px 8px; }
+    @keyframes asUp { from { transform: translateY(24px); opacity: .6; } to { transform: none; opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { .as-panel { animation: none; } .sw-content { transition: none !important; } }
+
+    .toast-undo-btn {
+      margin-inline-start: 12px; min-height: 44px; padding: 0 14px; border: none; cursor: pointer;
+      border-radius: 8px; background: rgba(255,255,255,.2); color: #fff;
+      font-family: var(--font); font-size: 13px; font-weight: 800;
+    }
+
+    .sw-row { position: relative; overflow: hidden; border-radius: var(--radius-md); box-shadow: 0 1px 4px rgba(0,0,0,.06); margin-bottom: 8px; }
+    .sw-content {
+      position: relative; z-index: 1; background: var(--surface); touch-action: pan-y;
+      transition: transform .2s ease; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
+    }
+    .sw-row.sw-dragging .sw-content { transition: none; }
+    .sw-tray { position: absolute; top: 0; bottom: 0; display: flex; visibility: hidden; transition: visibility 0s .2s; }
+    .sw-row.sw-open .sw-tray, .sw-row.sw-dragging .sw-tray { visibility: visible; transition-delay: 0s; }
+    .sw-tray-left { left: 0; }
+    .sw-tray-right { right: 0; }
+    .sw-act {
+      width: 76px; border: none; color: #fff; cursor: pointer; font-family: var(--font);
+      font-size: 12px; font-weight: 700; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 4px;
+    }
+    .sw-act .sw-ico { font-size: 20px; }
+    .sw-act[disabled] { opacity: .45; cursor: default; }
+
+    .lr-card {
+      display: flex; align-items: center; gap: 10px; padding: 8px 4px 8px 10px;
+      border-radius: var(--radius-md); box-shadow: none; min-height: 64px;
+    }
+    .lr-card:hover { transform: none; box-shadow: none; }
+    .lr-card:focus-visible { outline: 2px solid var(--blue-500); outline-offset: -2px; }
+    .lr-score { width: 34px; height: 34px; font-size: 12px; flex-shrink: 0; }
+    .lr-main { flex: 1; min-width: 0; align-self: stretch; display: flex; flex-direction: column; justify-content: center; }
+    .lr-main:focus-visible { outline: 2px solid var(--blue-500); outline-offset: 2px; border-radius: 6px; }
+    .lr-name { font-size: 14px; font-weight: 800; color: var(--gray-900); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lr-meta { font-size: 12px; color: var(--gray-500); margin-top: 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; line-height: 1.35; }
+    .lr-tags { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+    .lr-tags:empty { display: none; }
+    .lr-stage { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: color-mix(in srgb, var(--c) 14%, white); color: var(--c); }
+    .lr-due { font-size: 11px; font-weight: 700; color: var(--gray-500); }
+    .lr-due-overdue { color: var(--red-600); }
+    .lr-due-today { color: var(--orange-500); }
+    .lr-btn {
+      flex-shrink: 0; width: 44px; height: 44px; border: none; background: transparent;
+      border-radius: 50%; cursor: pointer; font-size: 18px; color: var(--gray-600);
+      display: flex; align-items: center; justify-content: center; font-family: var(--font);
+    }
+    .lr-btn:hover, .lr-btn:focus-visible { background: var(--gray-100); outline: none; }
+    .lr-btn:focus-visible { box-shadow: inset 0 0 0 2px var(--blue-500); }
+    .lr-more { font-size: 22px; font-weight: 800; }
+
+    .lf-row { display: flex; gap: 8px; align-items: center; }
+    .lf-btn {
+      flex-shrink: 0; min-height: 44px; padding: 0 14px; border-radius: 99px;
+      border: 1.5px solid var(--border); background: var(--surface); color: var(--gray-700);
+      font-family: var(--font); font-size: 13px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .lf-btn.active { border-color: var(--blue-500); color: var(--blue-500); }
+    .lf-count { background: var(--blue-500); color: #fff; border-radius: 99px; font-size: 11px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; padding: 0 5px; }
+    .lf-chips { display: flex; gap: 6px; padding: 0 16px 8px; flex-wrap: wrap; }
+    .lf-chip {
+      min-height: 32px; padding: 0 12px; border-radius: 99px; border: none; cursor: pointer;
+      background: var(--blue-50); color: var(--blue-500); font-family: var(--font); font-size: 12px; font-weight: 700;
+    }
+
+    .qe-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .qe-chip {
+      min-height: 44px; padding: 0 16px; border-radius: 99px; cursor: pointer;
+      border: 2px solid var(--c, var(--border)); background: var(--surface); color: var(--gray-800);
+      font-family: var(--font); font-size: 14px; font-weight: 700;
+    }
+    .qe-chip.active { background: var(--c, var(--navy-500)); color: #fff; }
+
+    /* ═══════════════════════════════════════
        SEARCH BAR
     ═══════════════════════════════════════ */
     .search-wrap { padding: 12px 20px 4px; }
@@ -1835,6 +1988,13 @@
     .act-ticker-item:hover { color: #fff; }
     .act-ticker-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--blue-400,#60A5FA); flex-shrink: 0; }
     @media (prefers-reduced-motion: reduce) { .act-ticker-track { animation: none; } }
+    /* במובייל הסרגל מכסה תוכן ומציג תנועה מתמדת. המידע זמין במסך "פעילות אחרונה". */
+    @media (max-width: 767px) { .act-ticker-strip { display: none !important; } }
+    /* כותרות מסך עם כמה כפתורים לא גולשות אופקית במובייל */
+    @media (max-width: 767px) {
+      .screen-header { flex-wrap: wrap; }
+      .screen-header > div:last-child:not(:first-child) { flex-wrap: wrap; justify-content: flex-end; }
+    }
     /* Recent Activity page */
     .ra-filter-row { display: flex; gap: 8px; overflow-x: auto; padding: 0 0 6px; margin-bottom: 12px; }
     .ra-filter-chip { flex-shrink: 0; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1.5px solid var(--border); background: var(--surface); color: var(--gray-600); cursor: pointer; white-space: nowrap; }
@@ -2606,9 +2766,9 @@
     .cal-today-btn { background:var(--navy-50); border:1.5px solid var(--navy-200); color:var(--navy-500); border-radius:var(--radius-md); padding:6px 14px; font-size:13px; font-weight:700; cursor:pointer; }
     .cal-day-labels { display:grid; grid-template-columns:repeat(7,1fr); padding:0 12px; }
     .cal-day-label { text-align:center; font-size:12px; font-weight:700; color:var(--gray-400); padding:4px 0; }
-    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; padding:0 12px 12px; }
+    .cal-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:3px; padding:0 12px 12px; }
     .cal-cell {
-      min-height:68px; background:var(--surface); border-radius:var(--radius-md);
+      min-height:68px; min-width:0; overflow:hidden; background:var(--surface); border-radius:var(--radius-md);
       border:1px solid var(--border); padding:4px; cursor:pointer;
       transition:box-shadow 0.15s, border-color 0.15s, transform 0.15s;
       animation: cal-cell-fade .32s ease both;
@@ -2635,6 +2795,14 @@
     .cal-dot-task { background:var(--blue-100); color:var(--blue-500); }
     .cal-dot-overdue { background:var(--red-100); color:var(--red-600); }
     .cal-dot-followup { background:var(--purple-100); color:var(--purple-500); }
+    /* במובייל התא צר מדי לטקסט: נקודה צבעונית לכל אירוע, והפירוט בלחיצה על היום */
+    @media (max-width: 480px) {
+      .cal-dot { display:inline-block; width:7px; height:7px; padding:0; margin:0 1px 2px; border-radius:50%; font-size:0; }
+      .cal-dot-task { background:var(--blue-500); }
+      .cal-dot-overdue { background:var(--red-600); }
+      .cal-dot-followup { background:var(--purple-500); }
+      .cal-dot.cal-dot-more { width:auto; height:auto; border-radius:3px; background:none; font-size:9px; }
+    }
     .cal-day-panel { padding:16px 20px 20px; }
     .cal-day-panel-title { font-size:15px; font-weight:800; color:var(--gray-800); margin-bottom:12px; }
     .cal-event-item { display:flex; align-items:flex-start; gap:10px; padding:10px 14px; background:var(--surface); border-radius:var(--radius-md); border:1px solid var(--border); margin-bottom:8px; }
@@ -3829,8 +3997,12 @@
   #screen-analytics { position:relative; }
 
   /* ── Partners / Collaboration ─────────── */
-  .partners-tab-bar { display:flex; gap:8px; padding:14px 16px 12px; border-bottom:1px solid var(--gray-100); }
-  .partners-tab { flex:1; padding:9px 8px; border-radius:10px; border:1.5px solid var(--gray-200); background:transparent; color:var(--gray-500); font-size:13px; font-weight:600; cursor:pointer; transition:var(--transition); font-family:inherit; }
+  .ph-ind::before { content:'+'; font-size:20px; font-weight:700; }
+  .partners-howto[open] .ph-ind::before { content:'−'; }
+  .partners-howto > summary::-webkit-details-marker { display:none; }
+  .partners-tab-bar { display:flex; gap:8px; padding:14px 16px 12px; border-bottom:1px solid var(--gray-100); overflow-x:auto; scrollbar-width:none; }
+  .partners-tab-bar::-webkit-scrollbar { display:none; }
+  .partners-tab { flex:1 0 auto; white-space:nowrap; min-height:44px; padding:9px 12px; border-radius:10px; border:1.5px solid var(--gray-200); background:transparent; color:var(--gray-500); font-size:13px; font-weight:600; cursor:pointer; transition:var(--transition); font-family:inherit; }
   .partners-tab.active { background:var(--navy-500); color:#fff; border-color:var(--navy-500); }
   .share-card { background:var(--surface); border:1px solid var(--gray-200); border-radius:14px; padding:14px; margin-bottom:10px; cursor:pointer; transition:var(--transition); }
   .share-card:active { transform:scale(0.98); }
@@ -4172,7 +4344,7 @@
   <div class="shield-icon">🔒</div>
   <div class="shield-logo">PLT<span>O</span></div>
   <div class="shield-msg">התצוגה מוסתרת זמנית להגנה על פרטיות הנתונים שלך ושל הלקוחות שלך</div>
-  <div class="shield-sub">המסך יחזור להופיע ברגע שתחזר לחלון הזה</div>
+  <div class="shield-sub">המסך יחזור להופיע ברגע שחוזרים לחלון הזה</div>
 </div>
 
 <!-- ═══════════════════════════════════════
@@ -4436,7 +4608,7 @@
     <div id="demo-banner" class="hidden" style="background:linear-gradient(135deg,#0F1F3D,#1a3a6a);border-bottom:2px solid var(--gold-500);color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;">
       <span style="color:var(--gold-300);">👀 מצב דמו</span><span style="color:rgba(255,255,255,0.75);font-weight:500;font-size:12px;">הנתונים לא נשמרים · AI מנוטרל</span>
       <button onclick="document.getElementById('screen-login').classList.remove('hidden');document.getElementById('app-shell').classList.add('hidden');State.isDemo=false;" style="background:var(--gold-500);color:#fff;border:none;border-radius:8px;padding:6px 16px;font-weight:800;font-size:12px;cursor:pointer;white-space:nowrap;">
-        🚀 פתח חשבון חינמי
+        🚀 פתיחת חשבון חינמי
       </button>
     </div>
     <!-- TRIAL BANNER -->
@@ -4477,6 +4649,24 @@
           </div>
         </div>
       </div>
+
+      <!-- URGENT TASKS - actionable items -->
+      <div class="section-header">
+        <div class="section-title">⚡ משימות דחופות</div>
+        <div class="section-link" onclick="App.go('tasks')">כל המשימות</div>
+      </div>
+      <div class="tasks-list" id="dash-tasks"></div>
+      <div id="dash-renewals" class="hidden"></div>
+
+      <!-- KPI CARDS - primary data -->
+      <div class="kpi-row" id="kpi-row"></div>
+
+      <!-- HOT LEADS -->
+      <div class="section-header" style="margin-top:16px;">
+        <div class="section-title">🔥 לידים חמים</div>
+        <div class="section-link" onclick="App.go('pipeline')">כל הפייפליין</div>
+      </div>
+      <div id="dash-hot-leads" style="padding:0 20px 4px;display:flex;flex-direction:column;gap:8px;"></div>
 
       <!-- AI BRIEFING - first thing the agent sees -->
       <div class="ai-card dash-smart-card" id="dash-ai-briefing" style="margin: 0 20px 14px;">
@@ -4553,9 +4743,22 @@
         </div>
       </div>
 
-      <!-- KPI CARDS - primary data -->
-      <div class="kpi-row" id="kpi-row"></div>
+      <!-- COLD LEADS & CHART -->
+      <div class="dash-section hidden">
+        <div class="section-header" style="margin-top:16px;">
+          <div class="section-title">❄️ לידים שדורשים חיזור מחדש</div>
+          <div class="section-link" onclick="App.go('leads')">כל הלידים</div>
+        </div>
+        <div id="dash-cold-leads"></div>
+      </div>
+      <div class="pipeline-flow-card" id="dash-chart-container" style="display:none;">
+        <div class="chart-card-title">📊 שווי צינור לפי שלב, בזמן אמת</div>
+        <div class="pipeline-flow-lanes" id="pipeline-flow-lanes"></div>
+      </div>
 
+      <!-- עוד כלים והישגים: מקופל כברירת מחדל במובייל -->
+      <details class="dash-more" id="dash-more">
+        <summary>כלים, הישגים והשראה</summary>
       <!-- QUICK FEATURES ROW -->
       <div class="dash-features-row" id="dash-features-row">
         <div class="dash-feat-tile" style="background:linear-gradient(135deg,#0F1F3D,#1a3a6a);color:#fff;border-color:transparent;" onclick="QuickLog.open()">
@@ -4594,34 +4797,6 @@
           <div class="dash-feat-tile-icon">➕</div>
           <div class="dash-feat-tile-label">ליד חדש</div>
         </div>
-      </div>
-
-      <!-- URGENT TASKS - actionable items -->
-      <div class="section-header">
-        <div class="section-title">⚡ משימות דחופות</div>
-        <div class="section-link" onclick="App.go('tasks')">כל המשימות</div>
-      </div>
-      <div class="tasks-list" id="dash-tasks"></div>
-      <div id="dash-renewals" class="hidden"></div>
-
-      <!-- HOT LEADS -->
-      <div class="section-header" style="margin-top:16px;">
-        <div class="section-title">🔥 לידים חמים</div>
-        <div class="section-link" onclick="App.go('pipeline')">כל הפייפליין</div>
-      </div>
-      <div id="dash-hot-leads" style="padding:0 20px 4px;display:flex;flex-direction:column;gap:8px;"></div>
-
-      <!-- COLD LEADS & CHART -->
-      <div class="dash-section hidden">
-        <div class="section-header" style="margin-top:16px;">
-          <div class="section-title">❄️ לידים שדורשים חיזור מחדש</div>
-          <div class="section-link" onclick="App.go('leads')">כל הלידים</div>
-        </div>
-        <div id="dash-cold-leads"></div>
-      </div>
-      <div class="pipeline-flow-card" id="dash-chart-container" style="display:none;">
-        <div class="chart-card-title">📊 שווי צינור לפי שלב, בזמן אמת</div>
-        <div class="pipeline-flow-lanes" id="pipeline-flow-lanes"></div>
       </div>
 
       <!-- GAMIFICATION WIDGET - motivation & XP progress. Placed near the bottom
@@ -4724,6 +4899,8 @@
         </div>
       </div>
 
+      </details>
+
       <div class="section-header mt-4">
         <div class="section-title">🕐 פעילות אחרונה</div>
         <div class="section-link" onclick="openModal('modal-add-activity')">+ הוספה</div>
@@ -4736,22 +4913,24 @@
       <div class="screen-header">
         <div class="screen-title" id="screen-pipeline-title">📋 פייפליין לידים</div>
         <div class="flex gap-2">
-          <button class="btn btn-ghost btn-sm" onclick="Settings.openPipelineStages()" title="עריכת שמות שלבים">✏️ שלבים</button>
-          <button class="btn btn-ghost btn-sm" onclick="LeadImport.open()">📋 ייבוא</button>
-          <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-lead')">+ ליד</button>
+          <button class="btn btn-primary btn-sm hide-mobile" onclick="openModal('modal-add-lead')">+ ליד</button>
+          <button class="btn btn-ghost btn-sm" aria-haspopup="menu" aria-label="עוד פעולות" onclick="Pipeline.headerMenu(this)" style="font-size:20px;font-weight:800;">⋯</button>
         </div>
       </div>
-      <div class="pipeline-search-wrap" style="position:relative;">
-        <input type="text" class="pipeline-search-input" id="pipeline-search-input"
-          placeholder="🔍 חיפוש לפי שם, אזור או טלפון..."
-          oninput="Pipeline.search(this.value); document.getElementById('pipeline-search-clear').style.display=this.value?'flex':'none';">
-        <button id="pipeline-search-clear"
-          style="display:none;position:absolute;left:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:16px;color:var(--gray-400);cursor:pointer;width:24px;height:24px;align-items:center;justify-content:center;"
-          onclick="document.getElementById('pipeline-search-input').value='';Pipeline.search('');this.style.display='none';"
-          title="ניקוי חיפוש">×</button>
+      <div class="pipeline-search-wrap lf-row">
+        <div style="position:relative;flex:1;min-width:0;">
+          <input type="text" class="pipeline-search-input" id="pipeline-search-input"
+            placeholder="🔍 חיפוש לפי שם, אזור או טלפון..."
+            oninput="Pipeline.searchInput(this.value); document.getElementById('pipeline-search-clear').style.display=this.value?'flex':'none';">
+          <button id="pipeline-search-clear" aria-label="ניקוי חיפוש"
+            style="display:none;position:absolute;left:4px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:18px;color:var(--gray-400);cursor:pointer;width:44px;height:44px;align-items:center;justify-content:center;"
+            onclick="document.getElementById('pipeline-search-input').value='';Pipeline.search('');this.style.display='none';"
+            title="ניקוי חיפוש">×</button>
+        </div>
+        <button type="button" class="lf-btn" id="pipeline-filter-btn" aria-haspopup="menu" onclick="LeadFilters.open('pipeline',this)">סינון <span class="lf-count" style="display:none;">0</span></button>
       </div>
       <div class="pipeline-stage-tabs" id="pipeline-stage-tabs"></div>
-      <div class="role-filter-pills" id="pipeline-role-filter"></div>
+      <div class="lf-chips" id="pipeline-role-filter" style="display:none;"></div>
       <div class="pipeline-wrapper" id="pipeline-board"></div>
     </div>
 
@@ -4760,16 +4939,17 @@
       <div class="screen-header">
         <div class="screen-title" id="screen-leads-title">👥 כל הלידים</div>
         <div class="flex gap-2">
-          <button class="btn btn-ghost btn-sm" onclick="LeadImport.open()">📋 ייבוא</button>
-          <button class="btn btn-primary btn-sm btn-add-lead-label" onclick="openModal('modal-add-lead')">+ ליד חדש</button>
+          <button class="btn btn-primary btn-sm btn-add-lead-label hide-mobile" onclick="openModal('modal-add-lead')">+ ליד חדש</button>
+          <button class="btn btn-ghost btn-sm" aria-haspopup="menu" aria-label="עוד פעולות" onclick="Leads.headerMenu(this)" style="font-size:20px;font-weight:800;">⋯</button>
         </div>
       </div>
-      <div class="search-wrap">
-        <input type="search" class="search-input" id="leads-search"
+      <div class="search-wrap lf-row">
+        <input type="search" class="search-input" id="leads-search" style="flex:1;min-width:0;"
                placeholder="🔍 חיפוש לפי שם, טלפון, אזור..."
-               oninput="Leads.search(this.value)">
+               oninput="Leads.searchInput(this.value)">
+        <button type="button" class="lf-btn" id="leads-filter-btn" aria-haspopup="menu" onclick="LeadFilters.open('leads',this)">מיון וסינון <span class="lf-count" style="display:none;">0</span></button>
       </div>
-      <div class="role-filter-pills" id="leads-role-filter"></div>
+      <div class="lf-chips" id="leads-role-filter" style="display:none;"></div>
       <div class="screen-body" id="leads-list-container"></div>
     </div>
 
@@ -4783,9 +4963,10 @@
       <div class="screen-header">
         <div class="screen-title" id="screen-properties-title">🏠 נכסים</div>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-outline btn-sm hidden" id="properties-compare-btn" onclick="PropertyCompare.open()">📊 השוואת נכסים</button>
-          <button class="btn btn-outline btn-sm hidden" id="properties-portfolio-btn" onclick="AgentPortfolio.open()">🪟 ויטרינה דיגיטלית</button>
-          <button class="btn btn-primary btn-sm" id="properties-add-btn" onclick="PropImages.resetNew(); openModal('modal-add-property')">+ נכס</button>
+          <button class="btn btn-outline btn-sm hidden hide-mobile" id="properties-compare-btn" onclick="PropertyCompare.open()">📊 השוואת נכסים</button>
+          <button class="btn btn-outline btn-sm hidden hide-mobile" id="properties-portfolio-btn" onclick="AgentPortfolio.open()">🪟 ויטרינה דיגיטלית</button>
+          <button class="btn btn-primary btn-sm hide-mobile" id="properties-add-btn" onclick="PropImages.resetNew(); openModal('modal-add-property')">+ נכס</button>
+          <button class="btn btn-ghost btn-sm" aria-haspopup="menu" aria-label="עוד פעולות" onclick="PropertiesScreen.headerMenu(this)" style="font-size:20px;font-weight:800;">⋯</button>
         </div>
       </div>
       <div class="properties-grid" id="properties-grid"></div>
@@ -4795,7 +4976,7 @@
     <div id="screen-tasks" class="screen hidden">
       <div class="screen-header">
         <div class="screen-title">✅ משימות</div>
-        <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-task')">+ משימה</button>
+        <button class="btn btn-primary btn-sm hide-mobile" onclick="openModal('modal-add-task')">+ משימה</button>
       </div>
       <div class="tasks-filter-bar">
         <div class="filter-chip active" data-filter="all" onclick="Tasks.setFilter('all', this)">הכל</div>
@@ -5113,27 +5294,28 @@
         <div class="screen-title">🤝 שיתופי פעולה</div>
       </div>
 
-      <!-- באנר המשולש הקדוש -->
-      <div style="margin:0 16px 4px;background:linear-gradient(135deg,var(--navy-700) 0%,var(--navy-500) 100%);border-radius:16px;padding:16px 18px;color:#fff;">
-        <div style="font-size:13px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-          <span style="font-size:16px;">🔺</span> המשולש הקדוש של הנדל"ן
+      <!-- הסבר קצר, מקופל כברירת מחדל -->
+      <details class="partners-howto" style="margin:0 16px 4px;">
+        <summary style="list-style:none;cursor:pointer;min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 16px;background:linear-gradient(135deg,var(--navy-700) 0%,var(--navy-500) 100%);border-radius:14px;color:#fff;font-size:13px;font-weight:800;">
+          <span>🤝 איך שיתופי פעולה עובדים</span><span class="ph-ind" aria-hidden="true"></span>
+        </summary>
+        <div style="background:var(--navy-600,#0F1F3D);color:#fff;border-radius:0 0 14px 14px;margin-top:-6px;padding:16px 18px 14px;">
+          <div style="font-size:12px;line-height:1.65;color:rgba(255,255,255,0.85);">
+            עסקים שעובדים עם PLTO יכולים להפנות זה לזה לקוחות, בשני הכיוונים. ההפניה עוברת ישירות לפייפליין של השותף, עם מעקב מלא בתוך המערכת.
+          </div>
+          <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:rgba(255,255,255,0.75);">
+            <div>🏠 סוכן נדל"ן מפנה לעו"ד לחתימה, ולמעצב אחרי הסגירה</div>
+            <div>⚖️ עו"ד מפנה לסוכן מי שרוצה לקנות או למכור</div>
+            <div>🎨 עיצוב פנים מפנה לסוכן מי שרוצה לקנות דירה</div>
+          </div>
         </div>
-        <div style="font-size:12px;line-height:1.65;color:rgba(255,255,255,0.82);">
-          כל אחד מהשלושה יכול להפנות לשניים האחרים, בשני הכיוונים:
-        </div>
-        <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:rgba(255,255,255,0.72);">
-          <div>🏠 <strong style="color:#fff;">סוכן נדל"ן</strong>, מפנה לעו"ד לחתימה, ולמעצב אחרי הסגירה</div>
-          <div>⚖️ <strong style="color:#fff;">עו"ד</strong>, מפנה לסוכן מי שרוצה לקנות/למכור</div>
-          <div>🎨 <strong style="color:#fff;">עיצוב פנים</strong>, מפנה לסוכן מי שרוצה לקנות דירה</div>
-        </div>
-        <div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,0.55);">הפניה עוברת ישירות לפייפליין של הקולגה, עם מעקב מלא בתוך המערכת.</div>
-      </div>
+      </details>
 
-      <div class="partners-tab-bar">
-        <button class="partners-tab active" id="ptab-mine" onclick="Partners.switchTab('mine')">שיתפתי</button>
-        <button class="partners-tab" id="ptab-join" onclick="Partners.switchTab('join')">הצטרף לשיתוף</button>
-        <button class="partners-tab" id="ptab-referrals" onclick="Partners.switchTab('referrals')">🔗 הפניות</button>
-        <button class="partners-tab" id="ptab-board" onclick="Partners.switchTab('board')">📋 לוח הזדמנויות</button>
+      <div class="partners-tab-bar" role="tablist">
+        <button class="partners-tab active" id="ptab-mine" role="tab" onclick="Partners.switchTab('mine')">שיתפתי</button>
+        <button class="partners-tab" id="ptab-join" role="tab" onclick="Partners.switchTab('join')">הצטרפות</button>
+        <button class="partners-tab" id="ptab-referrals" role="tab" onclick="Partners.switchTab('referrals')">הפניות</button>
+        <button class="partners-tab" id="ptab-board" role="tab" onclick="Partners.switchTab('board')">הזדמנויות</button>
       </div>
 
       <!-- My outgoing shares -->
@@ -5141,8 +5323,8 @@
         <div id="partners-mine-list">
           <div style="text-align:center;padding:40px 0;color:var(--gray-400);">
             <div style="font-size:40px;margin-bottom:12px;">📤</div>
-            <div style="font-size:14px;">עדיין לא שיתפת לידים</div>
-            <div style="font-size:12px;margin-top:4px;">פתיחת כרטיס ליד ולחיצה על "שתף עם שותף"</div>
+            <div style="font-size:14px;">עדיין לא שותפו לידים</div>
+            <div style="font-size:12px;margin-top:4px;">בכרטיס הליד, תחת "עוד", אפשר לבחור "שיתוף עם שותף"</div>
           </div>
         </div>
       </div>
@@ -5151,8 +5333,8 @@
       <div id="ptab-content-join" class="hidden">
         <div style="padding:28px 16px 8px;text-align:center;">
           <div style="font-size:48px;margin-bottom:12px;">🔑</div>
-          <div style="font-size:16px;font-weight:700;color:var(--navy-500);margin-bottom:6px;">קיבלת קוד שיתוף?</div>
-          <div style="font-size:13px;color:var(--gray-500);margin-bottom:20px;line-height:1.5;">שותף שעובד עם PLTO שלח לך קוד ו-PIN, ניתן להזין אותם כאן</div>
+          <div style="font-size:16px;font-weight:700;color:var(--navy-500);margin-bottom:6px;">יש לכם קוד שיתוף?</div>
+          <div style="font-size:13px;color:var(--gray-500);margin-bottom:20px;line-height:1.5;">שותף שעובד עם PLTO שלח קוד ו-PIN, אפשר להזין אותם כאן</div>
           <button class="btn btn-primary" style="width:100%;max-width:280px;" onclick="openModal('modal-accept-share')">🔑 הזנת קוד שיתוף</button>
         </div>
         <div style="padding:8px 16px 16px;" id="partners-joined-list"></div>
@@ -5583,22 +5765,18 @@
       <div class="bni-icon">📋</div>
       <div id="bn-label-pipeline">פייפליין</div>
     </div>
-    <div class="bottom-nav-item" role="button" tabindex="0" data-screen="properties" onclick="navRipple(this);App.go('properties')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
-      <div class="bni-icon" id="bn-icon-properties">🏠</div>
-      <div id="bn-label-properties">נכסים</div>
+    <div class="bottom-nav-item" role="button" tabindex="0" data-screen="leads" onclick="navRipple(this);App.go('leads')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
+      <div class="bni-icon">👥</div>
+      <div id="bn-label-leads">לידים</div>
     </div>
     <div class="bottom-nav-item" role="button" tabindex="0" data-screen="tasks" onclick="navRipple(this);App.go('tasks')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
       <div class="bni-icon">✅</div>
       <div>משימות</div>
     </div>
-    <div class="bottom-nav-item" role="button" tabindex="0" data-screen="partners" onclick="navRipple(this);App.go('partners')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" style="position:relative;">
-      <div class="bni-icon">🤝</div>
-      <div>שותפים</div>
-      <span id="bn-badge-partners" style="display:none;position:absolute;top:6px;right:10px;background:#EF4444;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;padding:0 4px;display:none;align-items:center;justify-content:center;"></span>
-    </div>
-    <div class="bottom-nav-item" role="button" tabindex="0" data-screen="settings" onclick="navRipple(this);App.go('settings')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
-      <div class="bni-icon">⚙️</div>
-      <div>הגדרות</div>
+    <div class="bottom-nav-item" role="button" tabindex="0" aria-haspopup="menu" data-screen="more" onclick="navRipple(this);App.moreMenu(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" style="position:relative;">
+      <div class="bni-icon">⋯</div>
+      <div>עוד</div>
+      <span id="bn-badge-partners" style="display:none;position:absolute;top:6px;right:calc(50% - 22px);background:#EF4444;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;padding:0 4px;align-items:center;justify-content:center;"></span>
     </div>
   </nav>
 
@@ -6182,7 +6360,7 @@
     <div style="text-align:center;font-size:16px;font-weight:800;color:var(--navy);margin-bottom:4px;">לא שמרת את הפרטים</div>
     <div style="text-align:center;font-size:13px;color:var(--gray-500);margin-bottom:20px;">הפרטים שהקלדת יימחקו לגמרי אם תצא עכשיו</div>
     <button class="call-result-btn" style="background:#DCFCE7;color:#166534;font-size:15px;" onclick="addLead()">💾 &nbsp;שמירת ליד עכשיו</button>
-    <button class="call-result-btn" style="background:#DBEAFE;color:#1D4ED8;font-size:15px;" onclick="closeDiscardSheet()">חזור לטופס</button>
+    <button class="call-result-btn" style="background:#DBEAFE;color:#1D4ED8;font-size:15px;" onclick="closeDiscardSheet()">חזרה לטופס</button>
     <button class="call-result-btn" style="background:#FEE2E2;color:#991B1B;font-size:15px;" onclick="discardAndClose()">🗑 &nbsp;מחיקה ויציאה בלי שמירה</button>
   </div>
 </div>
@@ -6622,7 +6800,7 @@
     </div>
     <div class="modal-footer" style="flex-direction:column;gap:8px;">
       <button class="btn btn-primary" style="width:100%;" onclick="document.getElementById('modal-lead-quality').classList.add('hidden');addLead(true)">המשך ללא הערות</button>
-      <button class="btn btn-ghost" style="width:100%;" onclick="document.getElementById('modal-lead-quality').classList.add('hidden');document.getElementById('new-lead-notes')?.focus()">חזור להוסיף הערות</button>
+      <button class="btn btn-ghost" style="width:100%;" onclick="document.getElementById('modal-lead-quality').classList.add('hidden');document.getElementById('new-lead-notes')?.focus()">חזרה להוספת הערות</button>
     </div>
   </div>
 </div>
@@ -6732,6 +6910,18 @@
 <!-- ═══════════════════════════════════════
      MODAL: MOVE STAGE
 ═══════════════════════════════════════ -->
+<!-- מודל: עדכון מהיר של ליד (שלב, מעקב או הערה) -->
+<div id="modal-quick-edit" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-quick-edit')">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="qe-title">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="qe-title"></div>
+      <button class="modal-close" onclick="closeModal('modal-quick-edit')" aria-label="סגירה">✕</button>
+    </div>
+    <div id="qe-body"></div>
+  </div>
+</div>
+
 <div id="modal-move-stage" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-move-stage')">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -7535,6 +7725,21 @@ function formatRelDate(dateStr) {
   if (d < 0) return `לפני ${Math.abs(d)} ימים`;
   return `בעוד ${d} ימים`;
 }
+// מספר ל-wa.me אחרי הקידומת 972: ספרות בלבד, בלי 0 מוביל ובלי 972 או 00972.
+function waNumber(phone) {
+  let d = String(phone || '').replace(/\D/g, '');
+  if (d.startsWith('00972')) d = d.slice(5);
+  else if (d.startsWith('972')) d = d.slice(3);
+  return d.replace(/^0+/, '');
+}
+// לתצוגה בכרטיסים: ריק כשאין ערך, כדי שלא יוצג "~~".
+function formatMoneyOpt(n) { return n ? formatMoney(n) : ''; }
+function formatBudgetRange(min, max) {
+  if (!min && !max) return '';
+  if (!min) return 'עד ' + formatMoney(max);
+  if (!max) return 'מ-' + formatMoney(min);
+  return formatMoney(min) + '~' + formatMoney(max);
+}
 function formatMoney(n) {
   if (!n) return '~~';
   if (n >= 1000000) return `₪${(n/1000000).toFixed(1)}M`;
@@ -7561,6 +7766,16 @@ function roleBadgeHtml(r) {
 function showsBuyerSellerRole() {
   const ind = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
   return ind !== 'interior';
+}
+// שלב הסגירה נקבע לפי is_won של השלב, ובהיעדרו לפי השלב האחרון. מספר השלבים משתנה
+// (2 עד 8), ולכן אסור להניח ש-s5 הוא שלב הסגירה.
+function wonStageId() {
+  const st = State.stages || [];
+  if (!st.length) return null;
+  return (st.find(x => x.is_won) || st[st.length - 1]).id;
+}
+function isWonStage(stageId) {
+  return !!stageId && stageId === wonStageId();
 }
 // Shared label source for the role filter pills, so Pipeline/Leads/the prefs
 // modal all show the exact same text instead of three separate copies.
@@ -7914,7 +8129,7 @@ const DB = {
         }).select().single();
         if (data) {
           const sid = 's' + (i + 1);
-          existing.push({ id: sid, name: data.name, color: data.color, order: data.order_idx, is_terminal: data.is_terminal, _uuid: data.id });
+          existing.push({ id: sid, name: data.name, color: data.color, order: data.order_idx, is_terminal: data.is_terminal, is_won: !!data.is_won, _uuid: data.id });
           this.stageMap[data.id] = sid;
           this.stageRev[sid] = data.id;
         }
@@ -7943,37 +8158,46 @@ const DB = {
   async updateStageNamesFull(entries, deletedUuids = []) {
     if (State.isDemo || !this.tenantId) return;
     const COLORS = ['#94A3B8','#3B82F6','#8B5CF6','#F59E0B','#10B981','#EF4444','#6366F1','#EC4899'];
+    const oldRev = { ...this.stageRev };
     const newStages = [];
     for (let i = 0; i < entries.length; i++) {
       const { name, uuid } = entries[i];
       if (uuid) {
-        await sbClient.from('pipeline_stages').update({ name, order_idx: i + 1 }).eq('id', uuid);
+        const { error } = await sbClient.from('pipeline_stages').update({ name, order_idx: i + 1 }).eq('id', uuid);
+        if (error) throw error;
         const s = State.stages.find(s => s._uuid === uuid) || {};
         const updated = { ...s, id: 's'+(i+1), name, order: i+1, _uuid: uuid };
         newStages.push(updated);
       } else {
-        const { data } = await sbClient.from('pipeline_stages').insert({
+        const { data, error } = await sbClient.from('pipeline_stages').insert({
           tenant_id: this.tenantId, name,
           color: COLORS[i % COLORS.length], order_idx: i + 1,
           is_terminal: false, is_won: false,
         }).select().single();
-        if (data) newStages.push({ id: 's'+(i+1), name: data.name, color: data.color, order: data.order_idx, is_terminal: data.is_terminal, _uuid: data.id });
+        if (error) throw error;
+        if (data) newStages.push({ id: 's'+(i+1), name: data.name, color: data.color, order: data.order_idx, is_terminal: data.is_terminal, is_won: !!data.is_won, _uuid: data.id });
       }
     }
     if (deletedUuids.length) {
       const fallbackUuid = newStages[0]?._uuid;
       for (const uuid of deletedUuids) {
+        // הלידים עוברים לשלב הראשון לפני המחיקה. ב-DB המפתח הזר הוא SET NULL, ולכן אם
+        // ההעברה נכשלה עוצרים כדי שלא יישארו לידים בלי שלב.
         if (fallbackUuid) {
-          await sbClient.from('leads').update({ pipeline_stage_id: fallbackUuid }).eq('tenant_id', this.tenantId).eq('pipeline_stage_id', uuid);
-          const fallbackSid = newStages[0]?.id || 's1';
-          State.leads?.forEach(l => { if (this.stageMap[uuid] === l.stage) l.stage = fallbackSid; });
+          const { error } = await sbClient.from('leads').update({ pipeline_stage_id: fallbackUuid }).eq('tenant_id', this.tenantId).eq('pipeline_stage_id', uuid);
+          if (error) throw error;
         }
-        await sbClient.from('pipeline_stages').delete().eq('id', uuid);
+        const { error: delErr } = await sbClient.from('pipeline_stages').delete().eq('id', uuid);
+        if (delErr) throw delErr;
       }
     }
     this.stageMap = {};
     this.stageRev = {};
     newStages.forEach(s => { this.stageMap[s._uuid] = s.id; this.stageRev[s.id] = s._uuid; });
+    // המזהים הקצרים מחושבים מחדש לפי הסדר, ולכן כל ליד מקבל את המזהה של השלב שלו לפי uuid.
+    // ליד ששלבו נמחק עובר לשלב הראשון.
+    const firstSid = newStages[0]?.id || 's1';
+    State.leads?.forEach(l => { l.stage = this.stageMap[oldRev[l.stage]] || firstSid; });
     State.stages = newStages;
   },
 
@@ -7987,6 +8211,10 @@ const DB = {
       sbClient.from('tenants').select('id,name,slug,plan,trial_ends_at,make_webhook_url,whatsapp_number,industry,phone,city,region,created_at').eq('id', this.tenantId).single(),
       this.agentId ? sbClient.from('agent_users').select('id,name,email,role').eq('id', this.agentId).maybeSingle() : Promise.resolve({ data: null }),
     ]);
+    // שגיאת רשת או הרשאה לא אמורה להיראות כמו "אין לידים עדיין"
+    if ([stagesR, leadsR, tasksR, propsR].some(r => r.error)) {
+      throw new Error('טעינת הנתונים נכשלה, יש לבדוק את החיבור ולנסות שוב');
+    }
     this.stageMap = {};
     this.stageRev = {};
     (stagesR.data || []).forEach(s => {
@@ -7997,7 +8225,7 @@ const DB = {
     return {
       stages: (stagesR.data || []).map(s => ({
         id: 's' + s.order_idx, name: s.name, color: s.color,
-        order: s.order_idx, is_terminal: s.is_terminal, _uuid: s.id,
+        order: s.order_idx, is_terminal: s.is_terminal, is_won: !!s.is_won, _uuid: s.id,
       })),
       leads: (leadsR.data || []).map(l => ({
         id: l.id, name: l.name, phone: l.phone, phone2: l.phone2 || '', email: l.email || '',
@@ -8115,6 +8343,7 @@ const DB = {
       patch.done = updates.done;
       if (updates.done) patch.done_at = new Date().toISOString();
     }
+    if ('due' in updates) patch.due_date = updates.due;
     const { error } = await sbClient.from('tasks').update(patch)
       .eq('id', id).eq('tenant_id', this.tenantId);
     if (error) throw error;
@@ -8211,7 +8440,7 @@ const DB = {
 
   async moveLead(leadId, shortStageId) {
     const uuid = this.stageRev[shortStageId];
-    if (!uuid) return;
+    if (!uuid) throw new Error('השלב לא נמצא, יש לרענן את העמוד');
     const { error } = await sbClient.from('leads')
       .update({ pipeline_stage_id: uuid })
       .eq('id', leadId).eq('tenant_id', this.tenantId);
@@ -8281,7 +8510,7 @@ const DEMO = {
     { id:'s2', name:'יצרנו קשר',      color:'#3B82F6', order:2 },
     { id:'s3', name:'ביקור מדידה',    color:'#8B5CF6', order:3 },
     { id:'s4', name:'הצעת מחיר',      color:'#F59E0B', order:4 },
-    { id:'s5', name:'פרויקט פעיל ✓',  color:'#10B981', order:5, is_terminal:true },
+    { id:'s5', name:'פרויקט פעיל ✓',  color:'#10B981', order:5, is_terminal:true, is_won:true },
   ],
 
   leads: [
@@ -8618,7 +8847,7 @@ const Billing = {
     const tickerMsg = [
       `🎉 נשארו לך ${days === 1 ? 'יום אחד' : days + ' ימים'} בניסיון החינמי`,
       `💎 שדרג עכשיו ותשמור על כל הנתונים שלך`,
-      `🚀 פתח את כל הפיצ׳רים המתקדמים`
+      `🚀 פתיחת כל הפיצ׳רים המתקדמים`
     ].join('&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;');
     banner.innerHTML = `
       <div class="trial-banner-row">
@@ -9121,7 +9350,7 @@ const Onboarding = {
       DB.updateIndustry(ind);
       const industryChanged = this._data.prevIndustry !== ind;
       if (this._data.stageNames?.length && (!State.stages?.length || this._data.stagesEdited || industryChanged)) {
-        DB.updateStageNames(this._data.stageNames).catch(() => {});
+        DB.updateStageNames(this._data.stageNames).catch(() => toast('שמות השלבים לא נשמרו, אפשר לעדכן אותם בהמשך מהפייפליין', 'warning'));
       }
       if (this._data.agentName) {
         try {
@@ -9438,8 +9667,19 @@ function applyIndustryToPropertyForm(prefix) {
 /* ═══════════════════════════════════════════
    MODAL UTILS
 ═══════════════════════════════════════════ */
+// כפתור ההוספה הצף מוצג רק במסכים שבהם הוספה היא הפעולה הראשית
+const FAB_SCREENS = { dashboard: 'ליד חדש', pipeline: 'ליד חדש', leads: 'ליד חדש', properties: 'נכס חדש', tasks: 'משימה חדשה' };
+function updateFab(screen) {
+  const fab = document.getElementById('fab-btn');
+  if (!fab) return;
+  const label = FAB_SCREENS[screen];
+  fab.classList.toggle('hidden', !label);
+  if (label) { fab.title = label; fab.setAttribute('aria-label', label); }
+}
 function fabAction() {
-  if (State.screen === 'properties') {
+  if (State.screen === 'tasks') {
+    openModal('modal-add-task');
+  } else if (State.screen === 'properties') {
     PropImages.resetNew();
     openModal('modal-add-property');
   } else {
@@ -9691,17 +9931,17 @@ ${referralLine}
   },
 
   async getDailyBriefing() {
-    const active = State.leads.filter(l => l.stage !== 's5');
+    const active = State.leads.filter(l => !isWonStage(l.stage));
     const stageName = id => State.stages.find(s => s.id === id)?.name || '~~';
     const hot = [...active].sort((a,b) => (b.score||0) - (a.score||0)).slice(0, 5);
     const urgentTasks = State.tasks.filter(t => !t.done && diffDays(t.due) <= 0)
       .sort((a,b) => new Date(a.due) - new Date(b.due)).slice(0, 5);
     const cold = State.leads.filter(l => {
-      if (l.stage === 's5') return false;
+      if (isWonStage(l.stage)) return false;
       if (!l.last_contact) return diffDays(l.created_at) < -14;
       return diffDays(l.last_contact) < -14;
     }).slice(0, 5);
-    const closedTotal = State.leads.filter(l => l.stage === 's5').length;
+    const closedTotal = State.leads.filter(l => isWonStage(l.stage)).length;
     const pipelineVal = active.reduce((s,l) => s + (l.budget_max||0), 0);
 
     const fmtLead = l => `${l.name}, ציון ${l.score ?? '~~'}, שלב "${stageName(l.stage)}", ${l.desired_area || 'אזור לא ידוע'}, תקציב ${formatMoney(l.budget_max)}`;
@@ -10068,8 +10308,8 @@ const Partners = {
       el.innerHTML = `
         <div style="text-align:center;padding:40px 0;color:var(--gray-400);">
           <div style="font-size:40px;margin-bottom:12px;">📤</div>
-          <div style="font-size:14px;">עדיין לא שיתפת לידים</div>
-          <div style="font-size:12px;margin-top:4px;">פתיחת כרטיס ליד ולחיצה על "🤝 שתף עם שותף"</div>
+          <div style="font-size:14px;">עדיין לא שותפו לידים</div>
+          <div style="font-size:12px;margin-top:4px;">בכרטיס הליד, תחת "עוד", אפשר לבחור "שיתוף עם שותף"</div>
         </div>`;
       return;
     }
@@ -11339,7 +11579,7 @@ ${safeArea ? 'אזור/פרויקט: ' + safeArea : ''}
 אל תכלול כותרת (כמו "הודעה ל${safeName}"), סימני markdown (כמו ** או ---), או כל משפט לפני/אחרי ההודעה. החזר אך ורק את גוף ההודעה עצמה, מילה ראשונה עד אחרונה, מוכן להעתקה ושליחה ישירה ללקוח בלי שום עריכה.`,
       }], 200, { type: 'marketing', system: AI._clientLangSystem() });
       const cleanMsg = stripAiMessageArtifacts(msg);
-      const phone = (lead.phone || '').replace(/^0/, '').replace(/-/g, '');
+      const phone = waNumber(lead.phone);
       const waUrl = 'https://wa.me/972' + phone + '?text=' + encodeURIComponent(cleanMsg);
       const usageLabel = AiLimits.limitLabel('marketing');
       container.innerHTML = `
@@ -11398,7 +11638,7 @@ const Gamify = {
     { id:'streak_7',     icon:'⚡', name:'שבוע רצוף',         desc:'7 ימים רצופים, יוצא מן הכלל',     xp:37,  check: d => d.streak >= 7      },
     { id:'streak_30',    icon:'💎', name:'חודש רצוף',         desc:'30 ימים רצופים, זה מדהים!',       xp:125, check: d => d.streak >= 30     },
     { id:'ai_master',    icon:'🤖', name:'מאסטר AI',          desc:'שימוש ב-AI ב-10 הזדמנויות שונות', xp:25,  check: d => d.aiUses >= 10     },
-    { id:'pipeline_100k',icon:'💼', name:'פייפליין 100K',      desc:'שווי הפייפליין עבר את ה-100K ₪',   xp:50,  check: d => (State.leads?.filter(l=>l.stage!=='s5').reduce((s,l)=>s+(l.budget_max||0),0)||0) >= 100000 },
+    { id:'pipeline_100k',icon:'💼', name:'פייפליין 100K',      desc:'שווי הפייפליין עבר את ה-100K ₪',   xp:50,  check: d => (State.leads?.filter(l=>!isWonStage(l.stage)).reduce((s,l)=>s+(l.budget_max||0),0)||0) >= 100000 },
   ],
   DAILY_CHALLENGES: [
     'ניצור קשר עם 3 לידים שלא קיבלו מענה השבוע',
@@ -11808,7 +12048,7 @@ const Gamify = {
     setStyle('gamify-xp-fill', 'width', prog.pct + '%');
 
     set('gamify-leads-count', d.leadsAdded || State.leads?.length || 0);
-    set('gamify-closed-count', d.dealsClosed || State.leads?.filter(l=>l.stage==='s5').length || 0);
+    set('gamify-closed-count', d.dealsClosed || State.leads?.filter(l=>isWonStage(l.stage)).length || 0);
     set('gamify-tasks-count', d.tasksCompleted || 0);
 
     // Badges row - show first 5 achievements
@@ -13227,8 +13467,8 @@ const LeadReferral = {
 
   shareWhatsApp() {
     if (!this._lastMsg) return;
-    const digits = (this._waTargetPhone || '').replace(/\D/g, '');
-    const base = digits ? `https://wa.me/972${digits.replace(/^0/, '')}` : 'https://wa.me/';
+    const digits = waNumber(this._waTargetPhone);
+    const base = digits ? `https://wa.me/972${digits}` : 'https://wa.me/';
     window.open(`${base}?text=${encodeURIComponent(this._lastMsg)}`, '_blank');
   },
 
@@ -13464,8 +13704,8 @@ const PageBuilder = {
 
   shareWhatsApp() {
     if (!this._lastMsg) return;
-    const digits = (LeadReferral._waTargetPhone || '').replace(/\D/g, '');
-    const base = digits ? `https://wa.me/972${digits.replace(/^0/, '')}` : 'https://wa.me/';
+    const digits = waNumber(LeadReferral._waTargetPhone);
+    const base = digits ? `https://wa.me/972${digits}` : 'https://wa.me/';
     window.open(`${base}?text=${encodeURIComponent(this._lastMsg)}`, '_blank');
   },
 
@@ -14294,6 +14534,7 @@ const App = {
     set('label-all-leads',         getLabel('allLeads'));
     set('label-pipeline',          getLabel('pipeline'));
     set('bn-label-pipeline',       'פייפליין');
+    set('bn-label-leads',          getLabel('leads'));
     set('fab-label-lead',          getLabel('addLead'));
     set('fab-label-property',      getLabel('properties').replace(/ים$/, '') + ' חדש');
     set('screen-pipeline-title',   '📋 ' + getLabel('pipeline'));
@@ -14410,12 +14651,14 @@ const App = {
       if (isCurrent) n.setAttribute('aria-current', 'page');
       else n.removeAttribute('aria-current');
     });
+    const MAIN_NAV = ['dashboard', 'pipeline', 'leads', 'tasks', 'lead-detail'];
     document.querySelectorAll('.bottom-nav-item').forEach(n => {
-      const isCurrent = n.dataset.screen === screen;
+      const isCurrent = n.dataset.screen === screen || (n.dataset.screen === 'more' && !MAIN_NAV.includes(screen));
       n.classList.toggle('active', isCurrent);
       if (isCurrent) n.setAttribute('aria-current', 'page');
       else n.removeAttribute('aria-current');
     });
+    updateFab(screen);
     // render
     switch (screen) {
       case 'dashboard':   Dashboard.render(); break;
@@ -14439,11 +14682,32 @@ const App = {
     window.scrollTo(0, 0);
     PrivacyShield.onScreenChange();
   },
+  // תפריט "עוד" בניווט התחתון: כל המסכים שלא מופיעים בו, מקובצים לפי נושא
+  moreMenu(anchor) {
+    const go = scr => () => App.go(scr);
+    ActionSheet.open('עוד', [
+      { header: 'עבודה יומית' },
+      { icon: getLabel('propertiesIcon'), label: getLabel('properties'), run: go('properties') },
+      { icon: '📅', label: 'לוח שנה', run: go('calendar') },
+      { icon: '🤝', label: 'שיתופי פעולה', run: go('partners') },
+      { icon: '🕐', label: 'פעילות אחרונה', run: go('recent-activity') },
+      { sep: true }, { header: 'כלים' },
+      { icon: '📈', label: 'אנליטיקס', run: go('analytics') },
+      { icon: '🛠️', label: 'מרכז כלים', run: go('tools') },
+      { icon: '📣', label: 'שירותי שיווק', run: go('marketing') },
+      { icon: '📧', label: 'תיבת דואר', run: go('email') },
+      { sep: true }, { header: 'עוד' },
+      { icon: '✨', label: 'פיצ\'רים PRO', run: go('pro') },
+      { icon: '🏆', label: 'חנות XP', run: go('xp-store') },
+      { icon: '🎁', label: 'הזמנת חבר', run: go('referral') },
+      { icon: '⚙️', label: 'הגדרות', run: go('settings') },
+    ], anchor);
+  },
   updateBadges() {
     const overdue = State.tasks.filter(t => !t.done && diffDays(t.due) < 0).length;
     const today_ = State.tasks.filter(t => !t.done && diffDays(t.due) === 0).length;
     const urgent = overdue + today_;
-    const pipelineActive = State.leads.filter(l => l.stage !== 's5').length;
+    const pipelineActive = State.leads.filter(l => !isWonStage(l.stage)).length;
     document.getElementById('nav-badge-tasks').textContent = urgent || '';
     document.getElementById('nav-badge-tasks').style.display = urgent ? '' : 'none';
     document.getElementById('nav-badge-pipeline').textContent = pipelineActive || '';
@@ -14457,6 +14721,9 @@ const App = {
 const Dashboard = {
   render() {
     this._activityExpanded = false;
+    // ברירת מחדל: פתוח בדסקטופ ומקופל במובייל, ורק בטעינה הראשונה כדי לכבד בחירה של המשתמש
+    const more = document.getElementById('dash-more');
+    if (more && !this._moreInit) { this._moreInit = true; more.open = window.matchMedia('(min-width: 768px)').matches; }
     document.getElementById('dash-agent-name').textContent = (State.agent?.name || '').split(' ')[0];
     document.getElementById('dash-date').textContent = hebrewDate();
     const gs = document.getElementById('dash-getting-started');
@@ -14539,7 +14806,7 @@ const Dashboard = {
     const el = document.getElementById('dash-hot-leads');
     if (!el) return;
     const hot = State.leads
-      .filter(l => l.stage !== 's5')
+      .filter(l => !isWonStage(l.stage))
       .sort((a,b) => (b.score||0) - (a.score||0))
       .slice(0, 5);
     if (!hot.length) { el.style.display = 'none'; return; }
@@ -14564,7 +14831,7 @@ const Dashboard = {
             <div class="score-badge ${scoreClass(l.score)}" style="min-width:42px;height:42px;font-size:14px;font-weight:900;">${l.score||'~~'}</div>
             <div style="flex:1;min-width:0;">
               <div style="font-weight:800;font-size:15px;color:#7C2D12;">${escapeHtml(l.name)}</div>
-              <div style="font-size:11.5px;color:#9A3412;">${escapeHtml(l.desired_area||'~~')} · ${formatMoney(l.budget_max)}</div>
+              <div style="font-size:11.5px;color:#9A3412;">${[l.desired_area, formatMoneyOpt(l.budget_max)].filter(Boolean).map(escapeHtml).join(' · ')}</div>
             </div>
             <div style="font-size:11px;color:#D97706;font-weight:700;">${i+1}/${hot.length}</div>
           </div>
@@ -14586,14 +14853,14 @@ const Dashboard = {
   },
   renderKPIs() {
     const newToday   = State.leads.filter(l => l.created_at === today()).length;
-    const activeDeals= State.leads.filter(l => l.stage !== 's5').length;
-    const closedTotal= State.leads.filter(l => l.stage === 's5').length;
-    const pipelineVal= State.leads.filter(l=>l.stage!=='s5').reduce((s,l)=>s+(l.budget_max||0),0);
+    const activeDeals= State.leads.filter(l => !isWonStage(l.stage)).length;
+    const closedTotal= State.leads.filter(l => isWonStage(l.stage)).length;
+    const pipelineVal= State.leads.filter(l=>!isWonStage(l.stage)).reduce((s,l)=>s+(l.budget_max||0),0);
     const kpis = [
       { label:'לידים חדשים היום', value: newToday,               rawVal: newToday,    sub:'נרשמו היום',     accent:'#2563EB', icon:'🆕', nav:'leads' },
       { label:'עסקאות פעילות',   value: activeDeals,             rawVal: activeDeals, sub:'בצינור כעת',    accent:'#7C3AED', icon:'📋', nav:'pipeline' },
       { label:'עסקאות שנסגרו',   value: closedTotal,             rawVal: closedTotal, sub:'כולל הכל',      accent:'#16A34A', icon:'🎉', nav:'pipeline' },
-      { label:'שווי צינור',      value: formatMoney(pipelineVal),rawVal: null,        sub:'ערך פוטנציאלי', accent:'#C49A2A', icon:'💰', nav:'pipeline' },
+      { label:'שווי צינור',      value: pipelineVal ? formatMoney(pipelineVal) : '₪0',rawVal: null,        sub:'ערך פוטנציאלי', accent:'#C49A2A', icon:'💰', nav:'pipeline' },
     ];
     document.getElementById('kpi-row').innerHTML = kpis.map(k => `
       <div class="kpi-card kpi-pop" style="--kpi-accent:${k.accent};cursor:pointer;" onclick="App.go('${k.nav}')">
@@ -14631,7 +14898,7 @@ const Dashboard = {
         <div class="pipeline-flow-chip" style="--chip-color:${s.stage.color};" onclick="App.go('lead-detail',{currentLeadId:'${l.id}'})">
           <span class="pipeline-flow-chip-avatar" style="--chip-color:${s.stage.color};">${initials(l.name)}</span>
           <span>${escapeHtml(l.name)}</span>
-          <span class="pipeline-flow-chip-val">${formatMoney(l.budget_max)}</span>
+          ${l.budget_max ? `<span class="pipeline-flow-chip-val">${formatMoney(l.budget_max)}</span>` : ''}
         </div>
       `).join('');
       const duration = Math.max(10, s.leads.length * 4);
@@ -14643,7 +14910,7 @@ const Dashboard = {
               <span class="pipeline-flow-dot" style="background:${s.stage.color};"></span>
               ${escapeHtml(s.stage.name)} · ${s.leads.length}
             </span>
-            <span class="pipeline-flow-lane-total">${formatMoney(s.value)}</span>
+            <span class="pipeline-flow-lane-total">${s.value ? formatMoney(s.value) : ''}</span>
           </div>
           <div class="pipeline-flow-track">
             <div class="pipeline-flow-chips" style="animation-duration:${duration}s;animation-direction:${direction};">
@@ -14694,7 +14961,7 @@ const Dashboard = {
     const el = document.getElementById('dash-cold-leads');
     if (!el) return;
     const cold = State.leads.filter(l => {
-      if (l.stage === 's5') return false;
+      if (isWonStage(l.stage)) return false;
       if (!l.last_contact) return diffDays(l.created_at) < -14;
       return diffDays(l.last_contact) < -14;
     }).slice(0, 5);
@@ -14709,7 +14976,7 @@ const Dashboard = {
           return `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(147,197,253,0.35);">
             <div style="flex:1;min-width:0;cursor:pointer;" onclick="App.go('lead-detail',{currentLeadId:'${l.id}'})">
               <div style="font-weight:700;font-size:13.5px;color:#1E3A5F;">${escapeHtml(l.name)}</div>
-              <div style="font-size:11px;color:#3B82F6;">❄️ <span class="cold-days ${daysCls}">${daysNum} ימים ללא מגע</span> · ${formatMoney(l.budget_max)}</div>
+              <div style="font-size:11px;color:#3B82F6;">❄️ <span class="cold-days ${daysCls}">${daysNum} ימים ללא מגע</span>${l.budget_max ? ' · ' + formatMoney(l.budget_max) : ''}</div>
             </div>
             <button class="btn btn-sm" style="background:linear-gradient(135deg,#2563EB,#3B82F6);color:white;border:none;font-size:11.5px;padding:5px 10px;border-radius:8px;flex-shrink:0;white-space:nowrap;"
               onclick="App.go('lead-detail',{currentLeadId:'${l.id}'});setTimeout(()=>SmartWA.open('${l.id}'),250)">
@@ -14771,7 +15038,7 @@ const Dashboard = {
     }
 
     const coldLeads = State.leads.filter(l => {
-      if (l.stage === 's5') return false;
+      if (isWonStage(l.stage)) return false;
       if (!l.last_contact) return diffDays(l.created_at) < -14;
       return diffDays(l.last_contact) < -14;
     });
@@ -14952,53 +15219,599 @@ const TrackerUnread = {
 };
 window.TrackerUnread = TrackerUnread;
 
+/* ═══════════════════════════════════════════
+   ACTION SHEET, UNDO, SWIPE ROW, LEAD ROW, QUICK EDIT, FILTERS
+   כל פעולה שזמינה במחווה (swipe או לחיצה ארוכה) זמינה גם בתפריט ⋯.
+═══════════════════════════════════════════ */
+function safeColor(c) { return /^#[0-9a-fA-F]{3,8}$/.test(c || '') ? c : '#94A3B8'; }
+
+// חלונית תחתונה במובייל ו-popover צמוד לכפתור בדסקטופ. items יכול להיות מערך או פונקציה
+// שמחזירה מערך (לפריטי keepOpen שמציירים את עצמם מחדש אחרי כל בחירה).
+const ActionSheet = {
+  _el: null, _items: null, _title: '', _anchor: null, _prevFocus: null, _keyHandler: null,
+  open(title, items, anchor) {
+    this.close(true);
+    this._title = title || '';
+    this._items = items;
+    this._anchor = anchor || null;
+    this._prevFocus = document.activeElement;
+    const popover = !!anchor && window.matchMedia('(min-width: 768px)').matches;
+    const ov = document.createElement('div');
+    ov.id = 'action-sheet';
+    ov.className = 'as-overlay' + (popover ? ' as-popover' : '');
+    ov.addEventListener('click', e => {
+      if (e.target === ov) { this.close(); return; }
+      const btn = e.target.closest('.as-item');
+      if (!btn || btn.disabled) return;
+      const it = this._list()[+btn.dataset.i];
+      if (!it) return;
+      if (it.keepOpen) { if (it.run) it.run(); this._paint(true); return; }
+      this.close();
+      if (it.run) it.run();
+    });
+    this._keyHandler = e => this._key(e);
+    document.addEventListener('keydown', this._keyHandler, true);
+    document.body.appendChild(ov);
+    this._el = ov;
+    this._paint(false);
+    const first = ov.querySelector('.as-item:not([disabled])');
+    if (first) first.focus();
+  },
+  _list() { return typeof this._items === 'function' ? this._items() : this._items; },
+  _paint(keepFocus) {
+    const ov = this._el;
+    if (!ov) return;
+    const idx = keepFocus ? [...ov.querySelectorAll('.as-item')].indexOf(document.activeElement) : -1;
+    const items = this._list();
+    ov.innerHTML = `<div class="as-panel" role="menu" aria-label="${escapeHtml(this._title || 'פעולות')}"><div class="as-handle"></div>${
+      this._title ? `<div class="as-title">${escapeHtml(this._title)}</div>` : ''}${
+      items.map((it, i) => it.sep ? '<div class="as-sep" role="separator"></div>'
+        : it.header ? `<div class="as-group">${escapeHtml(it.header)}</div>`
+        : `<button type="button" role="menuitem" class="as-item${it.danger ? ' as-item-danger' : ''}" data-i="${i}"${it.disabled ? ' disabled' : ''}><span class="as-item-icon" aria-hidden="true">${escapeHtml(it.icon || '')}</span><span>${escapeHtml(it.label)}</span></button>`
+      ).join('')}</div>`;
+    if (keepFocus && idx >= 0) { const b = ov.querySelectorAll('.as-item')[idx]; if (b) b.focus(); }
+    if (ov.classList.contains('as-popover')) this._place();
+  },
+  _place() {
+    const panel = this._el && this._el.querySelector('.as-panel');
+    const a = this._anchor;
+    if (!panel || !a || !a.isConnected) return;
+    const r = a.getBoundingClientRect();
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    const left = Math.min(Math.max(8, r.right - w), window.innerWidth - w - 8);
+    let top = r.bottom + 6;
+    if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 6);
+    panel.style.left = left + 'px';
+    panel.style.top = top + 'px';
+  },
+  close(silent) {
+    if (!this._el) return;
+    document.removeEventListener('keydown', this._keyHandler, true);
+    this._el.remove();
+    this._el = null;
+    if (!silent && this._prevFocus && this._prevFocus.isConnected && this._prevFocus.focus) this._prevFocus.focus();
+  },
+  _key(e) {
+    if (!this._el) return;
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); this.close(); return; }
+    const items = [...this._el.querySelectorAll('.as-item:not([disabled])')];
+    if (!items.length) return;
+    const i = items.indexOf(document.activeElement);
+    const go = d => items[(i + d + items.length) % items.length].focus();
+    if (e.key === 'ArrowDown') { e.preventDefault(); go(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); go(-1); }
+    else if (e.key === 'Tab') { e.preventDefault(); go(e.shiftKey ? -1 : 1); }
+  },
+};
+
+// מחיקה עם ביטול: הפעולה מתבצעת בשרת רק כשחלף הזמן. סגירת האפליקציה או מעבר לרקע
+// מבצעים אותה מיד, וסגירה פתאומית בתוך החלון משאירה את הפריט במקומו (הכיוון הבטוח).
+const Undo = {
+  _pending: new Set(),
+  show(msg, onUndo, onCommit, ms = 6000) {
+    this.flush();
+    const c = document.getElementById('toast-container');
+    if (!c) { onCommit(); return; }
+    const t = document.createElement('div');
+    t.className = 'toast toast-info';
+    const span = document.createElement('span');
+    span.textContent = msg;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'toast-undo-btn';
+    b.textContent = 'ביטול';
+    t.append(span, b);
+    c.appendChild(t);
+    const p = { done: false, timer: 0 };
+    const finish = fn => { if (p.done) return; p.done = true; clearTimeout(p.timer); t.remove(); this._pending.delete(p); fn(); };
+    p.commit = () => finish(onCommit);
+    p.undo = () => finish(onUndo);
+    b.addEventListener('click', p.undo);
+    p.timer = setTimeout(p.commit, ms);
+    this._pending.add(p);
+  },
+  flush() { [...this._pending].forEach(p => p.commit()); },
+};
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') Undo.flush(); });
+
+// שורה עם מגשי פעולות שנחשפים בגרירה אופקית (מגע בלבד). המגש לא מבצע פעולה בעצמו.
+const SwipeRow = {
+  _drag: null, _open: null, _suppressUntil: 0, _lp: 0, _ctxAt: 0,
+  init() {
+    document.addEventListener('pointerdown', e => this._down(e), { passive: true });
+    document.addEventListener('pointermove', e => this._move(e), { passive: true });
+    document.addEventListener('pointerup', e => this._up(e), { passive: true });
+    document.addEventListener('pointercancel', e => this._up(e, true), { passive: true });
+    document.addEventListener('click', e => this._click(e), true);
+    // לחיצה ימנית בדסקטופ ולחיצה ארוכה באנדרואיד פותחות את אותו תפריט פעולות
+    document.addEventListener('contextmenu', e => {
+      const row = e.target.closest && e.target.closest('.sw-row');
+      if (!row || !(row.dataset.lpLead || row.dataset.lpTask)) return;
+      e.preventDefault();
+      this._ctxAt = Date.now();
+      this._menu(row);
+    });
+  },
+  _enabled() { return !State.isAccessibleMode; },
+  _menu(row) {
+    if (row.dataset.lpLead) LeadRow.menu(row.dataset.lpLead);
+    else if (row.dataset.lpTask) TaskRow.menu(row.dataset.lpTask);
+  },
+  _down(e) {
+    if (e.pointerType === 'mouse' || !this._enabled()) return;
+    if (e.target.closest && e.target.closest('.sw-tray')) return;
+    const content = e.target.closest && e.target.closest('.sw-content');
+    if (!content) { if (this._open) this.close(); return; }
+    const row = content.closest('.sw-row');
+    if (this._open && this._open !== row) this.close();
+    const l = row.querySelector('.sw-tray-left'), r = row.querySelector('.sw-tray-right');
+    this._drag = {
+      id: e.pointerId, row, content, x: e.clientX, y: e.clientY,
+      wl: l ? l.offsetWidth : 0, wr: r ? r.offsetWidth : 0,
+      start: row._swOffset || 0, cur: null, decided: false, horiz: false,
+    };
+    clearTimeout(this._lp);
+    if (row.dataset.lpLead || row.dataset.lpTask) this._lp = setTimeout(() => this._longPress(row), 550);
+  },
+  _move(e) {
+    const d = this._drag;
+    if (!d || e.pointerId !== d.id) return;
+    const dx = e.clientX - d.x, dy = e.clientY - d.y;
+    if (!d.decided) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      d.decided = true;
+      clearTimeout(this._lp);
+      d.horiz = Math.abs(dx) > Math.abs(dy) * 1.2;
+      if (!d.horiz) { this._drag = null; return; }
+      d.row.classList.add('sw-dragging');
+      try { d.content.setPointerCapture(e.pointerId); } catch (_) { /* לא קריטי */ }
+    }
+    const off = Math.max(d.wr ? -d.wr - 24 : 0, Math.min(d.wl ? d.wl + 24 : 0, d.start + dx));
+    d.cur = off;
+    d.content.style.transform = `translateX(${off}px)`;
+  },
+  _up(e, cancel) {
+    clearTimeout(this._lp);
+    const d = this._drag;
+    if (!d || e.pointerId !== d.id) return;
+    this._drag = null;
+    if (!d.horiz) return;
+    const off = d.cur == null ? d.start : d.cur;
+    let target = 0;
+    if (!cancel) {
+      if (d.wl && off > d.wl * 0.4) target = d.wl;
+      else if (d.wr && off < -d.wr * 0.4) target = -d.wr;
+    }
+    this._suppressUntil = Date.now() + 350;
+    this._set(d.row, d.content, target);
+  },
+  _set(row, content, target) {
+    row._swOffset = target;
+    content.style.transform = target ? `translateX(${target}px)` : '';
+    row.classList.remove('sw-dragging');
+    row.classList.toggle('sw-open', !!target);
+    if (target) this._open = row;
+    else if (this._open === row) this._open = null;
+  },
+  close() {
+    const row = this._open;
+    this._open = null;
+    if (row && row.isConnected) this._set(row, row.querySelector('.sw-content'), 0);
+  },
+  _longPress(row) {
+    if (!row.isConnected || (this._drag && this._drag.horiz)) return;
+    this._drag = null;
+    this._suppressUntil = Date.now() + 700;
+    if (Date.now() - this._ctxAt < 800) return;
+    if (navigator.vibrate) navigator.vibrate(12);
+    this._menu(row);
+  },
+  _click(e) {
+    if (Date.now() < this._suppressUntil) { e.stopPropagation(); e.preventDefault(); return; }
+    if (e.target.closest && e.target.closest('.sw-tray')) { setTimeout(() => this.close(), 0); return; }
+    if (!this._open) return;
+    const inOpen = e.target.closest && e.target.closest('.sw-row') === this._open && e.target.closest('.sw-content');
+    if (inOpen) { e.stopPropagation(); e.preventDefault(); }
+    this.close();
+  },
+};
+SwipeRow.init();
+
+const LeadRow = {
+  animate: true,
+  _tasks: null,
+  // מפה של המשימה הפתוחה הקרובה לכל ליד, כדי שלא לחפש במערך המשימות לכל כרטיס
+  prep() {
+    const m = new Map();
+    for (const t of State.tasks || []) {
+      if (t.done || !t.lead_id) continue;
+      const cur = m.get(t.lead_id);
+      if (!cur || t.due < cur.due) m.set(t.lead_id, t);
+    }
+    this._tasks = m;
+  },
+  nextTask(leadId) {
+    if (this._tasks) return this._tasks.get(leadId) || null;
+    return (State.tasks || []).filter(t => t.lead_id === leadId && !t.done).sort((a, b) => (a.due < b.due ? -1 : 1))[0] || null;
+  },
+  render(lead, opts = {}) {
+    const { variant = 'card', color = '', idx = 0 } = opts;
+    const id = escapeHtml(lead.id);
+    const name = lead.name || 'ללא שם';
+    const stage = State.stages.find(s => s.id === lead.stage);
+    const task = this.nextTask(lead.id);
+    // שורת מטא אחת: התקציב קודם, כי קיצור הטקסט חותך את הסוף
+    const meta = [
+      formatBudgetRange(lead.budget_min, lead.budget_max),
+      lead.desired_area,
+      _getInd() === 'realestate' && lead.rooms ? lead.rooms + ' חד׳' : '',
+    ].filter(Boolean).map(escapeHtml).join(' · ');
+    const tags = [];
+    if (isLeadStale(lead)) tags.push('<span class="stale-badge">⏰ ממתין</span>');
+    if (variant === 'row' && stage) tags.push(`<span class="lr-stage" style="--c:${safeColor(stage.color)}">${escapeHtml(stage.name)}</span>`);
+    const role = variant === 'row' ? '' : roleBadgeHtml(lead.lead_role);
+    if (role) tags.push(role);
+    let due = '';
+    if (task) {
+      const d = diffDays(task.due);
+      due = `<span class="lr-due ${d < 0 ? 'lr-due-overdue' : d === 0 ? 'lr-due-today' : ''}">${typeEmoji(task.type)} ${escapeHtml(formatRelDate(task.due))}</span>`;
+    }
+    const unread = TrackerUnread.get(lead.id);
+    const chips = tags.slice(0, 2).join('') + due + (unread ? `<span class="lr-due" style="color:var(--blue-500)">💬 ${Number(unread) || ''}</span>` : '');
+    const phone = waNumber(lead.phone);
+    const idx2 = State.stages.findIndex(s => s.id === lead.stage);
+    const canNext = idx2 >= 0 && idx2 < State.stages.length - 1 && !isWonStage(lead.stage);
+    const isNew = lead.id === State.newCardId;
+    if (isNew) setTimeout(() => { State.newCardId = null; }, 1500);
+    const anim = this.animate && idx < 8 ? ` card-enter${isNew ? ' card-new-shine' : ''}` : '';
+    return `
+      <div class="sw-row${anim}" data-lp-lead="${id}" style="--stage-color:${safeColor(color || (stage && stage.color))};${anim ? 'animation-delay:' + idx * 40 + 'ms' : ''}">
+        ${phone ? `<div class="sw-tray sw-tray-left">
+          <button type="button" class="sw-act" style="background:#16A34A" onclick="LeadDetail.openDirectWA('${id}')"><span class="sw-ico">💬</span>WhatsApp</button>
+          <button type="button" class="sw-act" style="background:#2563EB" onclick="LeadRow.call('${id}')"><span class="sw-ico">📞</span>שיחה</button>
+        </div>` : ''}
+        <div class="sw-tray sw-tray-right">
+          <button type="button" class="sw-act" style="background:#D97706" onclick="QuickEdit.open('${id}','followup')"><span class="sw-ico">🔔</span>מעקב</button>
+          <button type="button" class="sw-act" style="background:#0F1F3D" onclick="LeadRow.nextStage('${id}')"${canNext ? '' : ' disabled'}><span class="sw-ico">⏭️</span>שלב הבא</button>
+        </div>
+        <div class="sw-content">
+          <div class="lead-card lr-card" onclick="App.go('lead-detail',{currentLeadId:'${id}'})">
+            <div class="score-badge ${scoreClass(lead.score)} lr-score">${lead.score ?? ''}</div>
+            <div class="lr-main" role="button" tabindex="0" aria-label="${escapeHtml(name)}, פתיחת כרטיס"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
+              <div class="lr-name">${escapeHtml(name)}</div>
+              ${meta ? `<div class="lr-meta">${meta}</div>` : ''}
+              ${chips ? `<div class="lr-tags">${chips}</div>` : ''}
+            </div>
+            ${phone ? `<button type="button" class="lr-btn" aria-label="WhatsApp ל${escapeHtml(name)}" onclick="event.stopPropagation();LeadDetail.openDirectWA('${id}')">💬</button>` : ''}
+            <button type="button" class="lr-btn lr-more" aria-haspopup="menu" aria-label="פעולות על ${escapeHtml(name)}" onclick="event.stopPropagation();LeadRow.menu('${id}',this)">⋯</button>
+          </div>
+        </div>
+      </div>`;
+  },
+  call(id) {
+    const lead = State.leads.find(l => l.id === id);
+    if (!lead || !lead.phone) { toast('אין מספר טלפון לשיחה', 'error'); return; }
+    if (State.isDemo) { toast('⚡ מצב דמו, בגרסה האמיתית ייחייג ללקוח', 'warning'); return; }
+    CallLog.show(id, lead.phone);
+  },
+  nextStage(id) {
+    const lead = State.leads.find(l => l.id === id);
+    if (!lead) return;
+    const i = State.stages.findIndex(s => s.id === lead.stage);
+    const next = State.stages[i + 1];
+    if (i < 0 || !next || isWonStage(lead.stage)) { toast('הליד כבר בשלב האחרון', 'info'); return; }
+    moveLead(id, next.id);
+  },
+  menu(id, anchor) {
+    const lead = State.leads.find(l => l.id === id);
+    if (!lead) return;
+    const hasPhone = !!waNumber(lead.phone);
+    ActionSheet.open(lead.name || 'ליד', [
+      { icon: '📂', label: 'פתיחת כרטיס', run: () => App.go('lead-detail', { currentLeadId: id }) },
+      { icon: '💬', label: 'WhatsApp', disabled: !hasPhone, run: () => LeadDetail.openDirectWA(id) },
+      { icon: '📞', label: 'שיחה', disabled: !hasPhone, run: () => this.call(id) },
+      { sep: true },
+      { icon: '🔄', label: 'שינוי שלב', run: () => QuickEdit.open(id, 'stage') },
+      { icon: '🔔', label: 'קביעת מעקב', run: () => QuickEdit.open(id, 'followup') },
+      { icon: '📝', label: 'הוספת הערה', run: () => QuickEdit.open(id, 'note') },
+      { icon: '✏️', label: 'עריכת פרטים', run: () => openEditLead(id) },
+      { sep: true },
+      { icon: '🗑', label: 'מחיקה', danger: true, run: () => quickDeleteLead(id) },
+    ], anchor);
+  },
+  // רענון המסך הפעיל בלי להריץ מחדש את אנימציית הכניסה של הכרטיסים
+  refresh() {
+    this.animate = false;
+    try {
+      if (State.screen === 'pipeline') Pipeline.render();
+      else if (State.screen === 'leads') Leads.render();
+      else if (State.screen === 'lead-detail') LeadDetail.render(State.currentLeadId);
+      else if (State.screen === 'tasks') Tasks.render();
+      else if (State.screen === 'dashboard') Dashboard.render();
+    } finally { this.animate = true; }
+  },
+};
+
+const QuickEdit = {
+  _id: null,
+  open(leadId, mode) {
+    const lead = State.leads.find(l => l.id === leadId);
+    if (!lead) return;
+    this._id = leadId;
+    const titles = { stage: 'שינוי שלב', followup: 'קביעת מעקב', note: 'הוספת הערה' };
+    document.getElementById('qe-title').textContent = `${titles[mode] || 'עדכון מהיר'}: ${lead.name || ''}`;
+    const body = document.getElementById('qe-body');
+    if (mode === 'stage') {
+      body.innerHTML = `<div class="qe-chips">${State.stages.map(s =>
+        `<button type="button" class="qe-chip${s.id === lead.stage ? ' active' : ''}" style="--c:${safeColor(s.color)}" onclick="QuickEdit.stage('${escapeHtml(s.id)}')">${escapeHtml(s.name)}</button>`).join('')}</div>`;
+    } else if (mode === 'followup') {
+      body.innerHTML = `<div class="qe-chips">${[['היום', 0], ['מחר', 1], ['בעוד 3 ימים', 3], ['בעוד שבוע', 7]].map(([l, d]) =>
+        `<button type="button" class="qe-chip" onclick="QuickEdit.followup(${d})">${l}</button>`).join('')}</div>
+        <div class="form-group" style="margin-top:16px;">
+          <label class="form-label" for="qe-date">תאריך אחר</label>
+          <div style="display:flex;gap:8px;">
+            <input type="date" id="qe-date" class="form-input" min="${today()}" style="flex:1;">
+            <button type="button" class="btn btn-primary" onclick="QuickEdit.followupDate()">שמירה</button>
+          </div>
+        </div>`;
+    } else {
+      body.innerHTML = `<div class="form-group">
+          <label class="form-label" for="qe-note">הערה</label>
+          <textarea id="qe-note" class="form-input form-textarea" maxlength="1000" placeholder="מה חשוב לזכור על השיחה או על הליד"></textarea>
+        </div>
+        <div class="modal-footer" style="margin-top:12px;">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('modal-quick-edit')">ביטול</button>
+          <button type="button" class="btn btn-primary" style="flex:1;" id="qe-note-save" onclick="QuickEdit.note()">שמירת הערה</button>
+        </div>`;
+    }
+    openModal('modal-quick-edit');
+    const first = body.querySelector('textarea, .qe-chip');
+    if (first) setTimeout(() => first.focus(), 60);
+  },
+  stage(stageId) {
+    closeModal('modal-quick-edit');
+    moveLead(this._id, stageId);
+  },
+  followup(days) { return this._createFollowup(addDays(days)); },
+  followupDate() {
+    const v = (document.getElementById('qe-date') || {}).value;
+    if (!v) { toast('יש לבחור תאריך', 'warning'); return; }
+    return this._createFollowup(v);
+  },
+  async _createFollowup(due) {
+    if (demoGuard()) return;
+    const lead = State.leads.find(l => l.id === this._id);
+    if (!lead) return;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(due) || due < today()) { toast('יש לבחור תאריך מהיום והלאה', 'warning'); return; }
+    closeModal('modal-quick-edit');
+    try {
+      const t = await DB.addTask({ lead_id: lead.id, title: `מעקב: ${lead.name}`, type: 'call', priority: 'medium', due });
+      State.tasks.push(t);
+    } catch (e) {
+      toast('המעקב לא נשמר, יש לנסות שוב', 'error');
+      return;
+    }
+    App.updateBadges();
+    LeadRow.refresh();
+    toast(`נקבע מעקב: ${formatRelDate(due)}`, 'success');
+  },
+  async note() {
+    if (demoGuard()) return;
+    const text = ((document.getElementById('qe-note') || {}).value || '').trim();
+    if (!text) { toast('יש לכתוב הערה לפני השמירה', 'warning'); return; }
+    const btn = document.getElementById('qe-note-save');
+    if (btn) btn.disabled = true;
+    try {
+      const act = await DB.addActivity({ lead_id: this._id, type: 'note', content: text.slice(0, 1000) });
+      State.activities.unshift(act);
+    } catch (e) {
+      // הטקסט נשאר בחלון כדי שלא יאבד
+      if (btn) btn.disabled = false;
+      toast('ההערה לא נשמרה, אפשר לנסות שוב', 'error');
+      return;
+    }
+    closeModal('modal-quick-edit');
+    toast('ההערה נשמרה', 'success');
+    if (State.screen === 'lead-detail') LeadDetail.render(this._id);
+  },
+};
+
+// סינון ומיון משותפים לפייפליין ולרשימת הלידים. המצב נשמר על אובייקט המסך (Pipeline או Leads).
+const LeadFilters = {
+  _SORT_KEY: 'plto_leads_sort',
+  SORTS: [
+    { id: 'created', label: 'נוצרו לאחרונה' },
+    { id: 'followup', label: 'מעקב קרוב' },
+    { id: 'contact', label: 'ללא קשר הכי הרבה זמן' },
+    { id: 'score', label: 'ציון גבוה' },
+  ],
+  sort() {
+    try { const v = localStorage.getItem(this._SORT_KEY); if (this.SORTS.some(s => s.id === v)) return v; } catch (_) { /* ללא אחסון */ }
+    return 'created';
+  },
+  setSort(v) { try { localStorage.setItem(this._SORT_KEY, v); } catch (_) { /* ללא אחסון */ } },
+  hasOverdue(lead) { const t = LeadRow.nextTask(lead.id); return !!t && diffDays(t.due) < 0; },
+  apply(list, scr) {
+    return list.filter(l =>
+      roleMatchesFilter(l.lead_role, scr._roleFilter) &&
+      (!scr._stale || isLeadStale(l)) &&
+      (!scr._overdue || this.hasOverdue(l)) &&
+      (!scr._stage || scr._stage === 'all' || l.stage === scr._stage));
+  },
+  sorted(list) {
+    const mode = this.sort();
+    if (mode === 'created') return list;
+    const out = [...list];
+    const due = l => { const t = LeadRow.nextTask(l.id); return t ? t.due : '9999-12-31'; };
+    if (mode === 'followup') out.sort((a, b) => (due(a) < due(b) ? -1 : due(a) > due(b) ? 1 : 0));
+    else if (mode === 'contact') out.sort((a, b) => (a.last_contact || '') < (b.last_contact || '') ? -1 : (a.last_contact || '') > (b.last_contact || '') ? 1 : 0);
+    else if (mode === 'score') out.sort((a, b) => (b.score || 0) - (a.score || 0));
+    return out;
+  },
+  _scr(name) { return name === 'pipeline' ? Pipeline : Leads; },
+  _active(scr) {
+    const a = [];
+    if (scr._roleFilter && scr._roleFilter !== 'all' && showsBuyerSellerRole()) {
+      const p = ROLE_FILTER_PILLS.find(x => x.id === scr._roleFilter);
+      a.push({ key: 'role', label: p ? p.label : scr._roleFilter });
+    }
+    if (scr._stale) a.push({ key: 'stale', label: 'ממתינים בלי תנועה' });
+    if (scr._overdue) a.push({ key: 'overdue', label: 'מעקב באיחור' });
+    if (scr._stage && scr._stage !== 'all') {
+      const s = State.stages.find(x => x.id === scr._stage);
+      a.push({ key: 'stage', label: s ? s.name : 'שלב' });
+    }
+    return a;
+  },
+  // כפתור הסינון (ספירה) ושורת צ'יפים של סינון פעיל
+  paint(name) {
+    const scr = this._scr(name);
+    const active = this._active(scr);
+    const btn = document.getElementById(`${name}-filter-btn`);
+    if (btn) {
+      btn.classList.toggle('active', active.length > 0);
+      const c = btn.querySelector('.lf-count');
+      if (c) { c.textContent = active.length; c.style.display = active.length ? '' : 'none'; }
+    }
+    const el = document.getElementById(`${name}-role-filter`);
+    if (!el) return;
+    el.className = 'lf-chips';
+    el.style.display = active.length ? '' : 'none';
+    el.innerHTML = active.map(a => `<button type="button" class="lf-chip" onclick="LeadFilters.clear('${name}','${a.key}')" aria-label="הסרת סינון ${escapeHtml(a.label)}">✕ ${escapeHtml(a.label)}</button>`).join('');
+  },
+  clear(name, key) {
+    const scr = this._scr(name);
+    if (key === 'role' || key === 'all') scr._roleFilter = 'all';
+    if (key === 'stale' || key === 'all') scr._stale = false;
+    if (key === 'overdue' || key === 'all') scr._overdue = false;
+    if ((key === 'stage' || key === 'all') && '_stage' in scr) scr._stage = 'all';
+    scr.render();
+  },
+  open(name, anchor) {
+    const scr = this._scr(name);
+    const items = () => {
+      const out = [];
+      if (showsBuyerSellerRole()) {
+        const enabled = RoleFilterPrefs.get();
+        out.push({ header: 'סוג ליד' });
+        [{ id: 'all', label: 'הכל' }, ...ROLE_FILTER_PILLS.filter(p => enabled.includes(p.id))].forEach(p =>
+          out.push({ icon: scr._roleFilter === p.id ? '✓' : '', label: p.label, keepOpen: true, run: () => { scr._roleFilter = p.id; scr.render(); } }));
+        out.push({ icon: '⚙️', label: 'התאמת סוגי הלידים המוצגים', run: () => RoleFilterSettings.open() });
+        out.push({ sep: true });
+      }
+      out.push({ header: 'מצב' });
+      out.push({ icon: scr._stale ? '✓' : '', label: 'ממתינים בלי תנועה', keepOpen: true, run: () => { scr._stale = !scr._stale; scr.render(); } });
+      out.push({ icon: scr._overdue ? '✓' : '', label: 'מעקב באיחור', keepOpen: true, run: () => { scr._overdue = !scr._overdue; scr.render(); } });
+      if (name === 'leads') {
+        out.push({ sep: true });
+        out.push({ header: 'שלב' });
+        [{ id: 'all', name: 'כל השלבים' }, ...State.stages].forEach(s =>
+          out.push({ icon: scr._stage === s.id ? '✓' : '', label: s.name, keepOpen: true, run: () => { scr._stage = s.id; scr.render(); } }));
+        out.push({ sep: true });
+        out.push({ header: 'מיון' });
+        this.SORTS.forEach(s =>
+          out.push({ icon: this.sort() === s.id ? '✓' : '', label: s.label, keepOpen: true, run: () => { this.setSort(s.id); scr.render(); } }));
+      }
+      if (this._active(scr).length) {
+        out.push({ sep: true });
+        out.push({ icon: '🧹', label: 'ניקוי כל הסינונים', keepOpen: true, run: () => this.clear(name, 'all') });
+      }
+      return out;
+    };
+    ActionSheet.open(name === 'leads' ? 'מיון וסינון' : 'סינון', items, anchor);
+  },
+};
+
+window.matchMedia('(max-width: 767px)').addEventListener('change', () => { if (State.screen === 'pipeline') Pipeline.render(); });
+
 const Pipeline = {
   _query: '',
   _activeStage: null,
   _roleFilter: 'all',
+  _stale: false,
+  _overdue: false,
+  _limits: {},
+  _sig: '',
+  PAGE: 40,
+  _mobile: () => window.matchMedia('(max-width: 767px)').matches,
 
   render() {
-    if (!this._activeStage && State.stages.length) {
+    if (State.stages.length && !State.stages.some(s => s.id === this._activeStage)) {
       this._activeStage = State.stages[0].id;
     }
+    // שינוי חיפוש או סינון מאפס את מספר הכרטיסים המוצגים בכל עמודה
+    const sig = JSON.stringify([this._query, this._roleFilter, this._stale, this._overdue]);
+    if (sig !== this._sig) { this._sig = sig; this._limits = {}; }
+    LeadRow.prep();
     this._renderTabs();
-    this._renderRoleFilter();
+    LeadFilters.paint('pipeline');
     const q = this._query.toLowerCase().trim();
+    const match = l =>
+      (l.name||'').toLowerCase().includes(q) ||
+      (l.phone||'').includes(q) ||
+      (l.desired_area||'').toLowerCase().includes(q);
     const board = document.getElementById('pipeline-board');
     board.classList.toggle('is-searching', !!q);
+    const filtersOn = LeadFilters._active(this).length > 0;
+    const mobile = this._mobile();
     board.innerHTML = State.stages.map((stage, stageIdx) => {
-      let leads = State.leads.filter(l => l.stage === stage.id && roleMatchesFilter(l.lead_role, this._roleFilter));
+      let leads = LeadFilters.apply(State.leads.filter(l => l.stage === stage.id), this);
       const allCount = leads.length;
-      if (q) leads = leads.filter(l =>
-        (l.name||'').toLowerCase().includes(q) ||
-        (l.phone||'').includes(q) ||
-        (l.desired_area||'').toLowerCase().includes(q)
-      );
+      if (q) leads = leads.filter(match);
       const hasHits = q && leads.length > 0;
       const isTabActive = !q && this._activeStage === stage.id;
       const totalVal = leads.reduce((s,l) => s + (l.budget_max||0), 0);
       const classes = ['kanban-col', isTabActive ? 'tab-active' : '', hasHits ? 'has-hits' : ''].filter(Boolean).join(' ');
+      const color = safeColor(stage.color);
+      // במובייל מוצגת עמודה אחת בכל רגע (או תוצאות חיפוש), ולכן לא בונים כרטיסים לשאר העמודות
+      const showCards = !mobile || q || isTabActive;
+      const limit = this._limits[stage.id] || this.PAGE;
+      const shown = showCards ? leads.slice(0, limit) : [];
       return `
-        <div class="${classes}" style="--col-clr:${stage.color}" data-stage-id="${stage.id}">
+        <div class="${classes}" style="--col-clr:${color}" data-stage-id="${escapeHtml(stage.id)}">
           <div class="kanban-col-header">
-            <div class="kanban-stage-dot" style="background:${stage.color}"></div>
-            <div class="kanban-stage-name" style="color:${stage.color}">${escapeHtml(stage.name)}</div>
+            <div class="kanban-stage-dot" style="background:${color}"></div>
+            <div class="kanban-stage-name" style="color:${color}">${escapeHtml(stage.name)}</div>
             <div class="kanban-count">${q ? leads.length + '/' + allCount : leads.length}</div>
           </div>
-          ${totalVal ? `<div class="kanban-value">${formatMoney(totalVal)}</div>` : ''}
+          ${totalVal ? `<div class="kanban-value hide-mobile">${formatMoney(totalVal)}</div>` : ''}
           <div class="kanban-cards">
-            ${leads.length
-              ? leads.map((l, idx) => this.renderCard(l, stage.color, idx)).join('')
+            ${shown.length
+              ? shown.map((l, idx) => LeadRow.render(l, { variant: 'card', color, idx })).join('') + (leads.length > shown.length ? `<button type="button" class="btn btn-ghost btn-sm w-full" onclick="Pipeline.more('${escapeHtml(stage.id)}')">הצגת עוד (${leads.length - shown.length})</button>` : '')
+              : !showCards ? ''
               : q
                 ? '<div style="padding:14px 10px;text-align:center;color:var(--gray-400);font-size:13px;">אין תוצאות בשלב זה</div>'
-                : pipelineEmptyTip(stageIdx)
+                : filtersOn
+                  ? '<div style="padding:14px 10px;text-align:center;color:var(--gray-400);font-size:13px;">אין לידים בשלב הזה לפי הסינון</div>'
+                  : pipelineEmptyTip(stageIdx)
             }
           </div>
           <button class="kanban-add-btn" onclick="openModal('modal-add-lead')">+ הוספת ליד</button>
         </div>
       `;
     }).join('');
-    if (q && !State.leads.some(l => (l.name||'').toLowerCase().includes(q) || (l.phone||'').includes(q) || (l.desired_area||'').toLowerCase().includes(q))) {
+    if (q && !State.leads.some(match)) {
       board.innerHTML = `<div style="padding:40px 20px;text-align:center;color:var(--gray-400);">
         <div style="font-size:32px;margin-bottom:10px;">🔍</div>
         <div style="font-weight:700;margin-bottom:6px;">לא נמצאו תוצאות</div>
@@ -15010,37 +15823,29 @@ const Pipeline = {
   _renderTabs() {
     const el = document.getElementById('pipeline-stage-tabs');
     if (!el) return;
+    const counts = {};
+    State.leads.forEach(l => { counts[l.stage] = (counts[l.stage] || 0) + 1; });
     el.innerHTML = State.stages.map(s => {
-      const count = State.leads.filter(l => l.stage === s.id).length;
       const active = s.id === this._activeStage;
       return `
         <button class="pipeline-stage-tab${active ? ' active' : ''}"
-          style="--tab-clr:${s.color}"
-          onclick="Pipeline.setTab('${s.id}')">
+          style="--tab-clr:${safeColor(s.color)}"
+          onclick="Pipeline.setTab('${escapeHtml(s.id)}')">
           ${escapeHtml(s.name)}
-          <span class="pipeline-stage-tab-count">${count}</span>
+          <span class="pipeline-stage-tab-count">${counts[s.id] || 0}</span>
         </button>`;
     }).join('');
-  },
-
-  _renderRoleFilter() {
-    const el = document.getElementById('pipeline-role-filter');
-    if (!el) return;
-    if (!showsBuyerSellerRole()) { el.innerHTML = ''; this._roleFilter = 'all'; return; }
-    const enabled = RoleFilterPrefs.get();
-    const pills = [{ id: 'all', label: 'הכל' }, ...ROLE_FILTER_PILLS.filter(p => enabled.includes(p.id))];
-    el.innerHTML = pills.map(p => `
-      <button class="role-filter-pill role-filter-${p.id}${this._roleFilter === p.id ? ' active' : ''}"
-        onclick="Pipeline.setRoleFilter('${p.id}')">${p.label}</button>
-    `).join('') + `
-      <button class="role-filter-edit-btn" onclick="RoleFilterSettings.open()"
-        title="עריכת סוגי לידים מוצגים" aria-label="עריכת סוגי לידים מוצגים">⚙️</button>
-    `;
   },
 
   setRoleFilter(role) {
     this._roleFilter = role;
     this.render();
+  },
+
+  more(stageId) {
+    this._limits[stageId] = (this._limits[stageId] || this.PAGE) + this.PAGE;
+    LeadRow.animate = false;
+    try { this.render(); } finally { LeadRow.animate = true; }
   },
 
   setTab(stageId) {
@@ -15055,43 +15860,22 @@ const Pipeline = {
     this._query = q;
     this.render();
   },
+  // הקלדה בשדה החיפוש: המתנה קצרה כדי לא לבנות מחדש את הלוח אחרי כל תו
+  searchInput(q) {
+    this._query = q;
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.render(), 150);
+  },
+
+  headerMenu(anchor) {
+    ActionSheet.open('פייפליין', [
+      { icon: '✏️', label: 'עריכת שלבים', run: () => Settings.openPipelineStages() },
+      { icon: '📋', label: 'ייבוא לידים מקובץ', run: () => LeadImport.open() },
+    ], anchor);
+  },
 
   renderCard(lead, color, idx = 0) {
-    const task = State.tasks.find(t => t.lead_id === lead.id && !t.done);
-    const isOverdue = task && diffDays(task.due) < 0;
-    const isToday = task && diffDays(task.due) === 0;
-    const initials = escapeHtml(lead.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase());
-    const stale = isLeadStale(lead);
-    const waPhone = (lead.phone||'').replace(/^0/,'').replace(/-/g,'');
-    const scoreGlow = lead.score >= 80 ? ' score-glow' : '';
-    const isNew = lead.id === State.newCardId ? ' card-new-shine' : '';
-    if (isNew) setTimeout(() => { State.newCardId = null; }, 1500);
-    const unread = TrackerUnread.get(lead.id);
-    return `
-      <div class="lead-card card-enter${isNew}" style="--stage-color:${color}; animation-delay:${idx * 55}ms"
-           onclick="App.go('lead-detail', {currentLeadId:'${lead.id}'})">
-        <button class="quick-del-btn" style="position:absolute;top:6px;left:6px;" onclick="event.stopPropagation();quickDeleteLead('${lead.id}')">✕</button>
-        ${unread ? `<span style="position:absolute;top:6px;left:28px;background:#2563EB;color:#fff;font-size:10px;font-weight:800;border-radius:99px;padding:1px 6px;">💬 ${unread}</span>` : ''}
-        <div style="display:flex; align-items:flex-start; gap:8px;">
-          <div class="lead-card-avatar">${initials}</div>
-          <div style="flex:1; min-width:0;">
-            <div class="lead-card-name truncate">${escapeHtml(lead.name)}</div>
-            <div class="lead-card-meta truncate">${escapeHtml(lead.desired_area || '~~')}${_getInd() === 'realestate' && lead.rooms ? ' · ' + lead.rooms + ' חד׳' : ''}</div>
-            <div class="lead-card-meta">${formatMoney(lead.budget_min)}~${formatMoney(lead.budget_max)}</div>
-          </div>
-          <div class="score-badge ${scoreClass(lead.score)}${scoreGlow}">${lead.score}</div>
-        </div>
-        <div class="lead-card-footer" style="margin-top:8px;">
-          <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
-            ${roleBadgeHtml(lead.lead_role)}
-            <span class="badge badge-${safeSource(lead.source)}">${escapeHtml(sourceLabel(lead.source))}</span>
-            ${stale ? '<span class="stale-badge">⏰ ממתין</span>' : ''}
-            ${task ? `<span style="font-size:11px; color:${isOverdue?'var(--red-600)':isToday?'var(--orange-500)':'var(--gray-400)'}; font-weight:600;">${typeEmoji(task.type)} ${formatRelDate(task.due)}</span>` : ''}
-          </div>
-          ${waPhone ? `<span class="card-wa-btn" onclick="event.stopPropagation();window.open('https://wa.me/972${waPhone}')">💬 WA</span>` : ''}
-        </div>
-      </div>
-    `;
+    return LeadRow.render(lead, { variant: 'card', color, idx });
   }
 };
 
@@ -15101,19 +15885,32 @@ const Pipeline = {
 const Leads = {
   _query: '',
   _roleFilter: 'all',
+  _stale: false,
+  _overdue: false,
+  _stage: 'all',
+  _limit: 60,
+  _sig: '',
+  PAGE: 60,
   render() {
-    this._renderRoleFilter();
+    const sig = JSON.stringify([this._query, this._roleFilter, this._stale, this._overdue, this._stage, LeadFilters.sort()]);
+    if (sig !== this._sig) { this._sig = sig; this._limit = this.PAGE; }
+    LeadRow.prep();
+    LeadFilters.paint('leads');
     const q = this._query.toLowerCase();
-    let list = State.leads.filter(l => roleMatchesFilter(l.lead_role, this._roleFilter));
+    let list = LeadFilters.apply(State.leads, this);
     if (q) list = list.filter(l =>
       (l.name||'').toLowerCase().includes(q) ||
       (l.phone||'').includes(q) ||
       (l.desired_area||'').toLowerCase().includes(q)
     );
+    list = LeadFilters.sorted(list);
     const el = document.getElementById('leads-list-container');
+    const filtersOn = LeadFilters._active(this).length > 0;
+    const shown = list.slice(0, this._limit);
     el.innerHTML = list.length
-      ? `<div style="display:flex;flex-direction:column;gap:10px;padding:0 0 80px;">
-           ${list.map((l, idx) => this.renderRow(l, idx)).join('')}
+      ? `<div style="padding:0 0 80px;">
+           ${shown.map((l, idx) => LeadRow.render(l, { variant: 'row', idx })).join('')}
+           ${list.length > shown.length ? `<button type="button" class="btn btn-ghost w-full" onclick="Leads.more()">הצגת עוד (${list.length - shown.length})</button>` : ''}
          </div>`
       : State.leads.length === 0
       ? (() => { const e = MICRO_COPY.emptyPipeline[_getInd()] || MICRO_COPY.emptyPipeline.other; return `<div class="empty-state">
@@ -15125,49 +15922,34 @@ const Leads = {
              <button class="btn btn-ghost btn-sm" onclick="LeadImport.open()">📋 ייבוא מקובץ</button>
            </div>
          </div>`; })()
-      : `<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">לא נמצאו תוצאות</div></div>`;
+      : `<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">לא נמצאו תוצאות</div>
+           ${filtersOn ? `<button class="btn btn-ghost btn-sm" style="margin-top:12px;" onclick="LeadFilters.clear('leads','all')">ניקוי הסינון</button>` : ''}</div>`;
   },
   search(q) {
     this._query = q;
     this.render();
   },
-  _renderRoleFilter() {
-    const el = document.getElementById('leads-role-filter');
-    if (!el) return;
-    if (!showsBuyerSellerRole()) { el.innerHTML = ''; this._roleFilter = 'all'; return; }
-    const enabled = RoleFilterPrefs.get();
-    const pills = [{ id: 'all', label: 'הכל' }, ...ROLE_FILTER_PILLS.filter(p => enabled.includes(p.id))];
-    el.innerHTML = pills.map(p => `
-      <button class="role-filter-pill role-filter-${p.id}${this._roleFilter === p.id ? ' active' : ''}"
-        onclick="Leads.setRoleFilter('${p.id}')">${p.label}</button>
-    `).join('');
+  searchInput(q) {
+    this._query = q;
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.render(), 150);
+  },
+  more() {
+    this._limit += this.PAGE;
+    LeadRow.animate = false;
+    try { this.render(); } finally { LeadRow.animate = true; }
   },
   setRoleFilter(role) {
     this._roleFilter = role;
     this.render();
   },
+  headerMenu(anchor) {
+    ActionSheet.open('לידים', [
+      { icon: '📋', label: 'ייבוא לידים מקובץ', run: () => LeadImport.open() },
+    ], anchor);
+  },
   renderRow(lead, idx = 0) {
-    const stage = State.stages.find(s => s.id === lead.stage);
-    const task = State.tasks.find(t => t.lead_id === lead.id && !t.done);
-    const scoreGlow = lead.score >= 80 ? ' score-glow' : '';
-    return `
-      <div class="card card-enter" style="padding:14px; cursor:pointer; display:flex; gap:12px; align-items:center; animation-delay:${idx * 40}ms"
-           onclick="App.go('lead-detail', {currentLeadId:'${lead.id}'})">
-        <div class="score-badge ${scoreClass(lead.score)}${scoreGlow}" style="width:40px;height:40px;font-size:13px;">${lead.score}</div>
-        <div style="flex:1; min-width:0;">
-          <div style="display:flex;align-items:center;gap:6px;">
-            <div style="font-weight:700; font-size:15px;">${escapeHtml(lead.name)}</div>
-            ${roleBadgeHtml(lead.lead_role)}
-          </div>
-          <div style="font-size:12px; color:var(--gray-500);">${escapeHtml(maskPhone(lead.phone))} · ${escapeHtml(lead.desired_area||'~~')}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-          <span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;background:${stage?.color+'22'};color:${stage?.color};">${escapeHtml(stage?.name||'~~')}</span>
-          ${task?`<span style="font-size:11px;color:${diffDays(task.due)<0?'var(--red-600)':'var(--gray-400)'};">${typeEmoji(task.type)} ${formatRelDate(task.due)}</span>`:''}
-        </div>
-        <button class="quick-del-btn" onclick="event.stopPropagation();quickDeleteLead('${lead.id}')">✕</button>
-      </div>
-    `;
+    return LeadRow.render(lead, { variant: 'row', idx });
   }
 };
 
@@ -15226,6 +16008,7 @@ const DealChecklist = {
   async toggle(leadId, key, checkEl) {
     const lead = State.leads.find(l => l.id === leadId);
     if (!lead) return;
+    const prevChecklist = lead.checklist;
     const checklist = { ...(lead.checklist || {}) };
     const cur = checklist[key] || {};
     checklist[key] = { ...cur, done: !cur.done };
@@ -15240,17 +16023,30 @@ const DealChecklist = {
       const doneCount = template.filter(it => checklist[it.key]?.done).length;
       progressEl.textContent = `${doneCount} מתוך ${template.length} הושלמו`;
     }
-    if (!State.isDemo) await DB.updateLead(leadId, { checklist }).catch(() => {});
+    if (!State.isDemo) await this._save(leadId, checklist, prevChecklist);
+  },
+
+  // שמירה עם החזרת המצב הקודם בכישלון, כדי שהסימון לא יישאר בממשק בלי שנשמר
+  async _save(leadId, checklist, prevChecklist) {
+    try {
+      await DB.updateLead(leadId, { checklist });
+    } catch (e) {
+      const lead = State.leads.find(l => l.id === leadId);
+      if (lead) lead.checklist = prevChecklist;
+      toast('השינוי לא נשמר, יש לנסות שוב', 'error');
+      if (State.screen === 'lead-detail') LeadDetail.render(leadId);
+    }
   },
 
   async setDate(leadId, key, value) {
     const lead = State.leads.find(l => l.id === leadId);
     if (!lead) return;
+    const prevChecklist = lead.checklist;
     const checklist = { ...(lead.checklist || {}) };
     const cur = checklist[key] || {};
     checklist[key] = { ...cur, due_date: value || null };
     lead.checklist = checklist;
-    if (!State.isDemo) await DB.updateLead(leadId, { checklist }).catch(() => {});
+    if (!State.isDemo) await this._save(leadId, checklist, prevChecklist);
     if (State.screen === 'lead-detail') LeadDetail.render(leadId);
   },
 };
@@ -15281,20 +16077,12 @@ const LeadDetail = {
         <div style="margin-top:12px; display:flex; gap:6px; flex-wrap:wrap;">
           ${roleBadgeHtml(lead.lead_role)}
           <span class="badge badge-${safeSource(lead.source)}">${escapeHtml(sourceLabel(lead.source))}</span>
-          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:${stage?.color+'33'};color:white;">${escapeHtml(stage?.name||'~~')}</span>
+          <button type="button" aria-label="שינוי שלב, השלב הנוכחי ${escapeHtml(stage?.name||'')}" onclick="QuickEdit.open('${lead.id}','stage')" style="font-family:inherit;font-size:12px;font-weight:700;padding:0 14px;min-height:44px;border:none;cursor:pointer;border-radius:99px;background:${safeColor(stage?.color)}55;color:white;">🔄 ${escapeHtml(stage?.name||'ללא שלב')}</button>
         </div>
         <div class="lead-detail-actions">
           <button class="lead-action-btn" aria-label="שיחה טלפונית עם ${escapeHtml(lead.name)}" data-phone="${escapeHtml(lead.phone)}" onclick="if(State.isDemo){toast('⚡ מצב דמו, בגרסה האמיתית ייחייג ללקוח','warning');}else{CallLog.show('${lead.id}',this.dataset.phone);}">📞 שיחה</button>
-          ${lead.phone2 ? `<button class="lead-action-btn" aria-label="שיחה לטלפון שני של ${escapeHtml(lead.name)}" data-phone="${escapeHtml(lead.phone2)}" onclick="if(State.isDemo){toast('⚡ מצב דמו, בגרסה האמיתית ייחייג ללקוח','warning');}else{CallLog.show('${lead.id}',this.dataset.phone);}">📞 טלפון 2</button>` : ''}
           <button class="lead-action-btn" aria-label="שליחת WhatsApp ל${escapeHtml(lead.name)}" onclick="LeadDetail.openDirectWA('${lead.id}')">💬 WhatsApp</button>
-          ${State.tenant?.industry === 'realestate' ? `<button class="lead-action-btn" aria-label="שליפת מספר טלפון ממדלן עבור ${escapeHtml(lead.name)}" style="background:linear-gradient(135deg,#0369A1,#0EA5E9);color:white;" onclick="LeadDetail.openMadlanModal('${lead.id}')">📞 שליפה ממדלן</button>` : ''}
-          ${Marketing.hasMktgAccess() ? `<button class="lead-action-btn" aria-label="שליחת WhatsApp חכם ל${escapeHtml(lead.name)}" style="background:linear-gradient(135deg,#7C3AED,#2563EB);color:white;" onclick="SmartWA.open('${lead.id}')">✨ WA חכם</button>` : ''}
-          <button class="lead-action-btn" aria-label="שינוי שלב עבור ${escapeHtml(lead.name)}" onclick="openMoveStage('${lead.id}')">🔄 שינוי שלב</button>
-          <button class="lead-action-btn" aria-label="הוספת פעילות ל${escapeHtml(lead.name)}" onclick="State.currentLeadId='${lead.id}'; openModal('modal-add-activity')">📝 הוספה</button>
-          <button class="lead-action-btn" aria-label="עריכת פרטי ${escapeHtml(lead.name)}" onclick="openEditLead('${lead.id}')">✏️ עריכה</button>
-          ${!State.isDemo ? `<button class="lead-action-btn" aria-label="שיתוף ${escapeHtml(lead.name)} עם שותף" style="background:linear-gradient(135deg,#0F1F3D,#2563EB);color:white;" onclick="Partners.openShareModal('${lead.id}')">🤝 שיתוף עם שותף</button>` : ''}
-          ${!State.isDemo ? `<button class="lead-action-btn" aria-label="הפניית ${escapeHtml(lead.name)} לקולגה" style="background:linear-gradient(135deg,#15803D,#16A34A);color:white;" onclick="LeadReferral.openModal('${lead.id}')">🔗 הפניה לקולגה</button>` : ''}
-          ${!State.isDemo ? `<button class="lead-action-btn" aria-label="מעקב חי ל${escapeHtml(lead.name)}" style="background:linear-gradient(135deg,#7C3AED,#4C1D95);color:white;" onclick="LeadTracker.open('${lead.id}')">🔗 מעקב חי ללקוח</button>` : ''}
+          <button class="lead-action-btn" aria-haspopup="menu" aria-label="עוד פעולות על ${escapeHtml(lead.name)}" onclick="LeadDetail.more('${lead.id}',this)">⋯ עוד</button>
         </div>
         ${State.isAccessibleMode ? `
         <div class="a11y-quick-replies">
@@ -15320,13 +16108,14 @@ const LeadDetail = {
         <!-- INFO TAB -->
         <div class="tab-content active" id="tab-info">
           <div class="info-grid">
-            <div class="info-item"><div class="info-label">תקציב</div><div class="info-value">${formatMoney(lead.budget_min)}~${formatMoney(lead.budget_max)}</div></div>
-            <div class="info-item"><div class="info-label">חדרים</div><div class="info-value">${lead.rooms||'~~'}</div></div>
-            <div class="info-item"><div class="info-label">אזור מבוקש</div><div class="info-value">${escapeHtml(lead.desired_area||'~~')}</div></div>
-            <div class="info-item"><div class="info-label">מקור</div><div class="info-value">${escapeHtml(sourceLabel(lead.source))}</div></div>
-            <div class="info-item"><div class="info-label">קשר אחרון</div><div class="info-value">${formatRelDate(lead.last_contact)||'~~'}</div></div>
-            <div class="info-item"><div class="info-label">מעקב הבא</div><div class="info-value ${diffDays(lead.next_followup)<0?'':''}">
-              ${lead.next_followup ? formatRelDate(lead.next_followup) : '~~'}</div></div>
+            ${[
+              ['תקציב', formatBudgetRange(lead.budget_min, lead.budget_max)],
+              ['חדרים', lead.rooms || ''],
+              ['אזור מבוקש', lead.desired_area || ''],
+              ['מקור', sourceLabel(lead.source)],
+              ['קשר אחרון', lead.last_contact ? formatRelDate(lead.last_contact) : ''],
+              ['מעקב הבא', lead.next_followup ? formatRelDate(lead.next_followup) : ''],
+            ].filter(([, v]) => v).map(([k, v]) => `<div class="info-item"><div class="info-label">${k}</div><div class="info-value">${escapeHtml(String(v))}</div></div>`).join('')}
             ${lead.commission_renewal_date ? (() => {
               const rd = lead.commission_renewal_date;
               const days = Math.round((new Date(rd) - new Date()) / 86400000);
@@ -15346,18 +16135,7 @@ const LeadDetail = {
             </div>
           </a>` : ''}
           ${DealChecklist.templateFor(ind) ? `<div style="margin-top:14px;">${DealChecklist.renderBlock(lead)}</div>` : ''}
-          <div style="margin:16px 0 90px;">
-            <div style="font-size:13px;font-weight:700;color:var(--gray-600);margin-bottom:8px;">שינוי שלב:</div>
-            <div class="stage-pills">
-              ${State.stages.map(s => `
-                <div class="stage-pill ${s.id===lead.stage?'active':''}"
-                     style="${s.id===lead.stage?'background:'+s.color+';border-color:'+s.color:''}"
-                     onclick="moveLead('${lead.id}','${s.id}')">
-                  ${escapeHtml(s.name)}
-                </div>
-              `).join('')}
-            </div>
-          </div>
+          <div style="height:90px;"></div>
         </div>
 
         <!-- ACTIVITY TAB -->
@@ -15493,6 +16271,27 @@ const LeadDetail = {
 
       </div>
     `;
+  },
+  // תפריט "עוד": כל פעולות הכרטיס שאינן ראשיות, מקובצות לפי נושא
+  more(leadId, anchor) {
+    const lead = State.leads.find(l => l.id === leadId);
+    if (!lead) return;
+    const items = [{ header: 'תקשורת' }];
+    if (lead.phone2) items.push({ icon: '📞', label: 'שיחה לטלפון השני', run: () => { if (State.isDemo) toast('⚡ מצב דמו, בגרסה האמיתית ייחייג ללקוח', 'warning'); else CallLog.show(leadId, lead.phone2); } });
+    if (Marketing.hasMktgAccess()) items.push({ icon: '✨', label: 'WhatsApp חכם', run: () => SmartWA.open(leadId) });
+    if (State.tenant?.industry === 'realestate') items.push({ icon: '🏠', label: 'שליפת טלפון ממדלן', run: () => LeadDetail.openMadlanModal(leadId) });
+    items.push({ icon: '🔔', label: 'קביעת מעקב', run: () => QuickEdit.open(leadId, 'followup') });
+    items.push({ sep: true }, { header: 'ניהול' });
+    items.push({ icon: '🔄', label: 'שינוי שלב', run: () => QuickEdit.open(leadId, 'stage') });
+    items.push({ icon: '📝', label: 'הוספת פעילות', run: () => { State.currentLeadId = leadId; openModal('modal-add-activity'); } });
+    items.push({ icon: '✏️', label: 'עריכת פרטים', run: () => openEditLead(leadId) });
+    if (!State.isDemo) {
+      items.push({ sep: true }, { header: 'שיתוף' });
+      items.push({ icon: '🤝', label: 'שיתוף עם שותף', run: () => Partners.openShareModal(leadId) });
+      items.push({ icon: '🔗', label: 'הפניה לקולגה', run: () => LeadReferral.openModal(leadId) });
+      items.push({ icon: '📍', label: 'מעקב חי ללקוח', run: () => LeadTracker.open(leadId) });
+    }
+    ActionSheet.open(lead.name || 'ליד', items, anchor);
   },
   // Returns to whichever screen the user actually came from (dashboard, leads,
   // pipeline, referral, etc.) instead of always forcing them back to pipeline.
@@ -15745,7 +16544,7 @@ const LeadDetail = {
   },
 
   _doWA(phone) {
-    const num = phone.replace(/^0/, '').replace(/[-\s]/g, '');
+    const num = waNumber(phone);
     window.open('https://wa.me/972' + num, '_blank');
   },
 
@@ -15759,7 +16558,7 @@ const LeadDetail = {
     if (!lead) return;
     const firstName = (lead.name || '').split(' ')[0] || 'לקוח';
     const text = Tools._waTemplates[type]?.(firstName) || '';
-    const phone = (lead.phone || '').replace(/^0/, '').replace(/[-\s]/g, '');
+    const phone = waNumber(lead.phone);
     if (!phone) { toast('אין מספר טלפון לשליחה', 'error'); return; }
     window.open('https://wa.me/972' + phone + '?text=' + encodeURIComponent(text), '_blank');
   },
@@ -15781,6 +16580,24 @@ function switchTab(btn, tabId) {
    PROPERTIES SCREEN
 ═══════════════════════════════════════════ */
 const PropertiesScreen = {
+  // במובייל כפתורי הכותרת עוברים לתפריט. הפריטים תלויים באותם תנאים שקובעים את נראות הכפתורים בדסקטופ.
+  menu(id, anchor) {
+    const p = State.properties.find(x => x.id === id);
+    if (!p) return;
+    ActionSheet.open(p.title || getLabel('property'), [
+      { icon: '✏️', label: 'עריכה', run: () => openEditProperty(id) },
+      { icon: '📤', label: 'שיתוף', run: () => shareProperty(id) },
+      { sep: true },
+      { icon: '🗑', label: 'מחיקה', danger: true, run: () => quickDeleteProp(id) },
+    ], anchor);
+  },
+  headerMenu(anchor) {
+    const shown = id => { const b = document.getElementById(id); return !!b && !b.classList.contains('hidden'); };
+    const items = [{ icon: '➕', label: `הוספת ${getLabel('property')}`, run: () => { PropImages.resetNew(); openModal('modal-add-property'); } }];
+    if (shown('properties-compare-btn')) items.push({ icon: '📊', label: 'השוואת נכסים', run: () => PropertyCompare.open() });
+    if (shown('properties-portfolio-btn')) items.push({ icon: '🪟', label: 'ויטרינה דיגיטלית', run: () => AgentPortfolio.open() });
+    ActionSheet.open(getLabel('properties'), items, anchor);
+  },
   render() {
     const cfg = propConfig();
     const typeLabels  = Object.fromEntries(cfg.typeOptions.map(o => [o.v, o.l]));
@@ -15798,7 +16615,7 @@ const PropertiesScreen = {
             <div class="property-price">${p.price ? formatMoney(p.price) : '~~'}</div>
             <div style="display:flex;gap:6px;align-items:center;">
               <span class="badge ${statusClass[p.status]||'badge-status-new'}">${escapeHtml(statusBadge[p.status]||p.status)}</span>
-              <button class="quick-del-btn" onclick="event.stopPropagation();quickDeleteProp('${p.id}')">✕</button>
+              <button type="button" class="lr-btn lr-more" style="width:36px;height:36px;margin:-6px -6px -6px 0;" aria-haspopup="menu" aria-label="פעולות על ${escapeHtml(p.title)}" onclick="event.stopPropagation();PropertiesScreen.menu('${escapeHtml(p.id)}',this)">⋯</button>
             </div>
           </div>
           <div class="property-title">${escapeHtml(p.title)}</div>
@@ -15954,29 +16771,77 @@ const Tasks = {
   }
 };
 
-function renderTaskItem(task) {
-  const lead = State.leads.find(l => l.id === task.lead_id);
-  const d = diffDays(task.due);
-  const isOverdue = !task.done && d < 0;
-  const isToday = !task.done && d === 0;
-  return `
-    <div class="task-item ${task.done?'done':''} ${isOverdue?'overdue':''} ${task.priority==='urgent'&&!task.done?'urgent':''}">
-      <div class="priority-dot priority-${task.priority}"></div>
-      <div class="task-checkbox ${task.done?'checked':''}" onclick="toggleTask('${task.id}')">
-        ${task.done ? '✓' : ''}
+// שורת משימה עם swipe (בוצע ודחייה למחר) ותפריט ⋯. כל פעולה זמינה גם בתפריט.
+const TaskRow = {
+  render(task) {
+    const lead = State.leads.find(l => l.id === task.lead_id);
+    const d = diffDays(task.due);
+    const isOverdue = !task.done && d < 0;
+    const isToday = !task.done && d === 0;
+    const old = !task.done && d < -30;
+    const id = escapeHtml(task.id);
+    return `
+    <div class="sw-row task-sw" data-lp-task="${id}">
+      <div class="sw-tray sw-tray-left">
+        <button type="button" class="sw-act" style="background:#16A34A" onclick="toggleTask('${id}')"><span class="sw-ico">✅</span>${task.done ? 'פתיחה' : 'בוצע'}</button>
+        ${task.done ? '' : `<button type="button" class="sw-act" style="background:#D97706" onclick="TaskRow.defer('${id}',1)"><span class="sw-ico">⏭️</span>למחר</button>`}
       </div>
-      <div class="task-body">
-        <div class="task-title">${typeEmoji(task.type)} ${escapeHtml(task.title)}</div>
-        <div class="task-meta">
-          ${lead ? `<span onclick="App.go('lead-detail',{currentLeadId:'${lead.id}'})" style="cursor:pointer;color:var(--navy-400);">${escapeHtml(lead.name)}</span>` : ''}
-          <span class="${isOverdue?'task-due-overdue':isToday?'task-due-today':''}">${formatRelDate(task.due)}</span>
-          <span style="opacity:0.6">${escapeHtml(priorityLabel(task.priority))}</span>
+      <div class="sw-content">
+        <div class="task-item ${task.done?'done':''} ${isOverdue?'overdue':''} ${task.priority==='urgent'&&!task.done?'urgent':''}">
+          <div class="priority-dot priority-${escapeHtml(task.priority)}"></div>
+          <button type="button" class="task-check" role="checkbox" aria-checked="${task.done ? 'true' : 'false'}" aria-label="סימון המשימה ${escapeHtml(task.title)} כבוצעה" onclick="toggleTask('${id}')">
+            <span class="task-checkbox ${task.done?'checked':''}">${task.done ? '✓' : ''}</span>
+          </button>
+          <div class="task-body">
+            <div class="task-title">${typeEmoji(task.type)} ${escapeHtml(task.title)}</div>
+            <div class="task-meta">
+              ${lead ? `<span onclick="App.go('lead-detail',{currentLeadId:'${escapeHtml(lead.id)}'})" style="cursor:pointer;color:var(--navy-400);">${escapeHtml(lead.name)}</span>` : ''}
+              <span class="${isOverdue?'task-due-overdue':isToday?'task-due-today':''}">${escapeHtml(formatRelDate(task.due))}</span>
+              ${old ? '<span class="lr-stage" style="--c:#6B7280">ישנה</span>' : `<span style="opacity:0.6">${escapeHtml(priorityLabel(task.priority))}</span>`}
+            </div>
+          </div>
+          <button type="button" class="lr-btn lr-more" aria-haspopup="menu" aria-label="פעולות על המשימה ${escapeHtml(task.title)}" onclick="event.stopPropagation();TaskRow.menu('${id}',this)">⋯</button>
         </div>
       </div>
-      <button class="quick-del-btn" onclick="event.stopPropagation();quickDeleteTask('${task.id}')">✕</button>
-    </div>
-  `;
-}
+    </div>`;
+  },
+  menu(id, anchor) {
+    const task = State.tasks.find(t => t.id === id);
+    if (!task) return;
+    const items = [];
+    if (task.lead_id) items.push({ icon: '📂', label: 'פתיחת הליד', run: () => App.go('lead-detail', { currentLeadId: task.lead_id }) });
+    items.push({ icon: task.done ? '↩️' : '✅', label: task.done ? 'פתיחה מחדש' : 'סימון כבוצעה', run: () => toggleTask(id) });
+    if (!task.done) {
+      items.push({ icon: '⏭️', label: 'דחייה למחר', run: () => this.defer(id, 1) });
+      items.push({ icon: '📅', label: 'דחייה לשבוע', run: () => this.defer(id, 7) });
+    }
+    items.push({ sep: true }, { icon: '🗑', label: 'מחיקה', danger: true, run: () => quickDeleteTask(id) });
+    ActionSheet.open(task.title || 'משימה', items, anchor);
+  },
+  async defer(id, days) {
+    if (demoGuard()) return;
+    const task = State.tasks.find(t => t.id === id);
+    if (!task) return;
+    const prev = task.due;
+    task.due = addDays(days);
+    try {
+      await DB.updateTask(id, { due: task.due });
+    } catch (e) {
+      task.due = prev;
+      toast('הדחייה לא נשמרה, יש לנסות שוב', 'error');
+      return;
+    }
+    toast(`המשימה נדחתה: ${formatRelDate(task.due)}`, 'success');
+    this.refresh();
+  },
+  refresh() {
+    App.updateBadges();
+    if (State.screen === 'tasks') Tasks.render();
+    else if (State.screen === 'dashboard') Dashboard.renderTasks();
+    else if (State.screen === 'lead-detail') LeadDetail.render(State.currentLeadId);
+  },
+};
+function renderTaskItem(task) { return TaskRow.render(task); }
 
 /* ═══════════════════════════════════════════
    ANALYTICS SCREEN
@@ -16018,13 +16883,13 @@ const Analytics = {
 
   renderKPIs() {
     const total = State.leads.length;
-    const closed = State.leads.filter(l => l.stage === 's5').length;
+    const closed = State.leads.filter(l => isWonStage(l.stage)).length;
     const convRate = total ? Math.round((closed / total) * 100) : 0;
     const pipelineVal = State.leads
-      .filter(l => l.stage !== 's5')
+      .filter(l => !isWonStage(l.stage))
       .reduce((s, l) => s + (l.budget_max || 0), 0);
     // avg days to close: use leads in s5 with created_at
-    const closedLeads = State.leads.filter(l => l.stage === 's5' && l.created_at);
+    const closedLeads = State.leads.filter(l => isWonStage(l.stage) && l.created_at);
     const avgDays = closedLeads.length
       ? Math.round(closedLeads.reduce((s, l) => s + Math.abs(diffDays(l.created_at)), 0) / closedLeads.length)
       : 0;
@@ -16032,7 +16897,7 @@ const Analytics = {
     const kpis = [
       { icon: '👥', label: 'סה"כ לידים',       value: total,               sub: 'כל הזמנים',     accent: '#2563EB' },
       { icon: '🎯', label: 'אחוז המרה',          value: convRate + '%',       sub: 'סגירות מסה"כ', accent: '#16A34A' },
-      { icon: '💰', label: 'שווי צינור',         value: formatMoney(pipelineVal), sub: 'פוטנציאל',   accent: '#C49A2A' },
+      { icon: '💰', label: 'שווי צינור',         value: pipelineVal ? formatMoney(pipelineVal) : '₪0', sub: 'פוטנציאל',   accent: '#C49A2A' },
       { icon: '⏱️', label: 'ממוצע ימים לסגירה',  value: avgDays || '~~',       sub: 'ימים',           accent: '#7C3AED' },
     ];
     document.getElementById('analytics-kpis').innerHTML = kpis.map(k => `
@@ -16284,12 +17149,12 @@ const Calendar = {
       const upcomingTask = tasks.filter(t => !t.done && dateStr >= todayStr);
 
       let dots = '';
-      if (overdueTask.length) dots += `<div class="cal-dot cal-dot-overdue">⚠ ${overdueTask[0].title || 'משימה'}</div>`;
-      if (upcomingTask.length) dots += `<div class="cal-dot cal-dot-task">✓ ${upcomingTask[0].title || 'משימה'}</div>`;
-      if (followups.length) dots += `<div class="cal-dot cal-dot-followup">👤 ${followups[0].name}</div>`;
+      if (overdueTask.length) dots += `<div class="cal-dot cal-dot-overdue">⚠ ${escapeHtml(overdueTask[0].title || 'משימה')}</div>`;
+      if (upcomingTask.length) dots += `<div class="cal-dot cal-dot-task">✓ ${escapeHtml(upcomingTask[0].title || 'משימה')}</div>`;
+      if (followups.length) dots += `<div class="cal-dot cal-dot-followup">👤 ${escapeHtml(followups[0].name)}</div>`;
       if ((overdueTask.length + upcomingTask.length + followups.length) > 2) {
         const more = overdueTask.length + upcomingTask.length + followups.length - 2;
-        dots += `<div class="cal-dot" style="color:var(--gray-400);">+${more} נוספים</div>`;
+        dots += `<div class="cal-dot cal-dot-more" style="color:var(--gray-400);">+${more} נוספים</div>`;
       }
 
       const cellClass = ['cal-cell', cell.otherMonth ? 'other-month' : '', isToday ? 'today' : '', isSelected ? 'selected' : ''].filter(Boolean).join(' ');
@@ -16582,7 +17447,35 @@ const IdleSession = {
    SETTINGS SCREEN
 ═══════════════════════════════════════════ */
 const Settings = {
-  render() {
+  // כותרות הקבוצות נפתחות ונסגרות. המצב נשמר בזיכרון כדי שרענון אחרי פעולה לא יסגור את הקבוצה.
+  _open: new Set(['הפרופיל שלי']),
+  render() { this._renderRaw(); this._collapsible(); },
+  _collapsible() {
+    const body = document.getElementById('settings-body');
+    if (!body) return;
+    body.querySelectorAll(':scope > .settings-section').forEach(sec => {
+      const title = sec.querySelector(':scope > .settings-section-title');
+      if (!title) return;
+      const inner = document.createElement('div');
+      inner.className = 'settings-section-body';
+      [...sec.children].filter(c => c !== title).forEach(c => inner.appendChild(c));
+      sec.appendChild(inner);
+      const key = title.textContent.trim();
+      const apply = open => { sec.classList.toggle('sc-open', open); title.setAttribute('aria-expanded', String(open)); };
+      title.classList.add('sc-toggle');
+      title.setAttribute('role', 'button');
+      title.tabIndex = 0;
+      apply(this._open.has(key));
+      const toggle = () => {
+        const open = !sec.classList.contains('sc-open');
+        apply(open);
+        if (open) this._open.add(key); else this._open.delete(key);
+      };
+      title.addEventListener('click', toggle);
+      title.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+    });
+  },
+  _renderRaw() {
     document.getElementById('settings-body').innerHTML = `
       <div class="settings-section">
         <div class="settings-section-title">הפרופיל שלי</div>
@@ -17056,10 +17949,11 @@ const Settings = {
     try {
       await DB.updateStageNamesFull(entries, deletedUuids);
       closeModal('modal-edit-stages');
-      Pipeline._renderTabs();
+      Pipeline.render();
+      if (State.screen === 'leads') Leads.render();
       toast('✅ שלבי הפייפליין עודכנו', 'success');
     } catch(e) {
-      toast('שגיאה: ' + e.message, 'error');
+      toast('שגיאה בשמירת השלבים, יש לרענן את העמוד ולנסות שוב: ' + (e?.message || ''), 'error');
     }
   },
   editName() {
@@ -17716,8 +18610,8 @@ ${fileData}
           <div class="lead-card-avatar">${initials}</div>
           <div style="flex:1; min-width:0;">
             <div class="lead-card-name truncate">${escapeHtml(lead.name)}</div>
-            <div class="lead-card-meta truncate">${escapeHtml(lead.desired_area || '~~')}</div>
-            <div class="lead-card-meta">${formatMoney(0)}~${formatMoney(lead.budget_max)}</div>
+            ${lead.desired_area ? `<div class="lead-card-meta truncate">${escapeHtml(lead.desired_area)}</div>` : ''}
+            ${formatBudgetRange(0, lead.budget_max) ? `<div class="lead-card-meta">${formatBudgetRange(0, lead.budget_max)}</div>` : ''}
           </div>
           <div class="score-badge ${scoreClass(50)}">50</div>
         </div>
@@ -18058,6 +18952,11 @@ async function moveLeadActual(leadId, stageId, regressionNote) {
     ? `🔄 הועבר מ-"${oldStage?.name}" ל-"${stage.name}", סיבה: ${regressionNote}`
     : `🔄 הועבר מ-"${oldStage?.name}" ל-"${stage.name}"`;
   State.activities.unshift({ id: uid(), lead_id: leadId, type: 'stage_change', content: actContent, created_at: today() });
+  // ה-trigger ב-DB רושם רק "שלב הועבר", ולכן הסיבה נשמרת כהערה נפרדת כדי שלא תיעלם ברענון
+  if (regressionNote && !State.isDemo) {
+    DB.addActivity({ lead_id: leadId, type: 'note', content: `סיבת החזרת שלב: ${regressionNote}` })
+      .catch(() => toast('סיבת ההחזרה לא נשמרה, כדאי להוסיף אותה כהערה בכרטיס הליד', 'warning'));
+  }
   Make.stageChanged(lead, oldStage?.name, stage.name);
   Twilio.notifyStageChanged(lead, stage.name);
   closeModal('modal-move-stage');
@@ -18077,12 +18976,13 @@ async function moveLeadActual(leadId, stageId, regressionNote) {
       deducted = true;
     }
     if (!deducted) Gamify.save();
-  } else if (stageId === 's5') {
+  } else if (isWonStage(stageId)) {
     Gamify.event('close_deal', lead);
   } else {
     Gamify.event('advance_stage', lead);
   }
   if (State.screen === 'pipeline') Pipeline.render();
+  else if (State.screen === 'leads') Leads.render();
   else if (State.screen === 'lead-detail') LeadDetail.render(leadId);
 }
 
@@ -18539,54 +19439,76 @@ async function deleteProperty() {
   }
 }
 
-async function quickDeleteTask(id) {
+function quickDeleteTask(id) {
   if (demoGuard()) return;
   const task = State.tasks.find(t => t.id === id);
   if (!task) return;
-  if (!confirm(`למחוק את המשימה "${task.title}"?`)) return;
-  try {
-    await DB.deleteTask(id);
-    State.tasks = State.tasks.filter(t => t.id !== id);
-    toast('🗑 המשימה נמחקה', 'success');
-    if (State.screen === 'tasks') Tasks.render();
-    else if (State.screen === 'dashboard') Dashboard.renderTasks();
-    else if (State.screen === 'lead-detail') LeadDetail.render(State.currentLeadId);
-  } catch(e) {
-    toast('שגיאה במחיקה: ' + e.message, 'error');
-  }
+  const idx = State.tasks.indexOf(task);
+  const restore = () => {
+    if (!State.tasks.some(t => t.id === id)) State.tasks.splice(Math.min(idx, State.tasks.length), 0, task);
+    TaskRow.refresh();
+  };
+  State.tasks = State.tasks.filter(t => t.id !== id);
+  TaskRow.refresh();
+  Undo.show(`המשימה "${task.title || ''}" נמחקה`, restore, async () => {
+    try {
+      await DB.deleteTask(id);
+    } catch (e) {
+      restore();
+      toast('שגיאה במחיקה: ' + (e?.message || ''), 'error');
+    }
+  });
 }
 
-async function quickDeleteLead(id) {
+// מחיקת ליד עם אפשרות ביטול: הליד מוסתר מיד, והמחיקה בשרת מתבצעת רק כשחלון הביטול נסגר.
+function quickDeleteLead(id) {
   if (demoGuard()) return;
   const lead = State.leads.find(l => l.id === id);
   if (!lead) return;
-  if (!confirm(`למחוק את הליד "${lead.name}"?`)) return;
-  try {
-    await DB.deleteLead(id);
-    State.leads = State.leads.filter(l => l.id !== id);
-    State.tasks = State.tasks.filter(t => t.lead_id !== id);
-    if (State.activities) State.activities = State.activities.filter(a => a.lead_id !== id);
-    toast('🗑 הליד נמחק', 'success');
-    if (State.screen === 'pipeline') Pipeline.render();
-    else if (State.screen === 'leads') Leads.render();
-  } catch(e) {
-    toast('שגיאה במחיקה: ' + e.message, 'error');
-  }
+  const idx = State.leads.indexOf(lead);
+  const tasks = State.tasks.filter(t => t.lead_id === id);
+  const acts = (State.activities || []).filter(a => a.lead_id === id);
+  const restore = () => {
+    if (!State.leads.some(l => l.id === id)) State.leads.splice(Math.min(idx, State.leads.length), 0, lead);
+    tasks.forEach(t => { if (!State.tasks.some(x => x.id === t.id)) State.tasks.push(t); });
+    acts.forEach(a => { if (!State.activities.some(x => x.id === a.id)) State.activities.push(a); });
+    App.updateBadges();
+    LeadRow.refresh();
+  };
+  State.leads = State.leads.filter(l => l.id !== id);
+  State.tasks = State.tasks.filter(t => t.lead_id !== id);
+  if (State.activities) State.activities = State.activities.filter(a => a.lead_id !== id);
+  App.updateBadges();
+  LeadRow.refresh();
+  Undo.show(`הליד "${lead.name || ''}" נמחק`, restore, async () => {
+    try {
+      await DB.deleteLead(id);
+    } catch (e) {
+      restore();
+      toast('שגיאה במחיקה: ' + (e?.message || ''), 'error');
+    }
+  });
 }
 
-async function quickDeleteProp(id) {
+function quickDeleteProp(id) {
   if (demoGuard()) return;
   const prop = State.properties.find(p => p.id === id);
   if (!prop) return;
-  if (!confirm(`למחוק את ה${getLabel('property')} "${prop.title}"?`)) return;
-  try {
-    await DB.deleteProperty(id);
-    State.properties = State.properties.filter(p => p.id !== id);
-    toast(`🗑 ה${getLabel('property')} נמחק`, 'success');
+  const idx = State.properties.indexOf(prop);
+  const restore = () => {
+    if (!State.properties.some(p => p.id === id)) State.properties.splice(Math.min(idx, State.properties.length), 0, prop);
     if (State.screen === 'properties') PropertiesScreen.render();
-  } catch(e) {
-    toast('שגיאה במחיקה: ' + e.message, 'error');
-  }
+  };
+  State.properties = State.properties.filter(p => p.id !== id);
+  if (State.screen === 'properties') PropertiesScreen.render();
+  Undo.show(`ה${getLabel('property')} "${prop.title || ''}" נמחק`, restore, async () => {
+    try {
+      await DB.deleteProperty(id);
+    } catch (e) {
+      restore();
+      toast('שגיאה במחיקה: ' + (e?.message || ''), 'error');
+    }
+  });
 }
 
 function _shareFallback(text) {
@@ -19374,7 +20296,7 @@ const ProHub = {
 
   _openLeadScore() {
     const leads = [...(State.leads || [])]
-      .filter(l => l.stage !== 's5')
+      .filter(l => !isWonStage(l.stage))
       .map(l => ({ ...l, score: this._scoreLead(l) }))
       .sort((a, b) => b.score - a.score);
 
@@ -19401,7 +20323,7 @@ const ProHub = {
     const prob = { s1: 0.05, s2: 0.15, s3: 0.35, s4: 0.60, s5: 1.0 };
     const stageNames = this._stageNames();
     const byStage = {};
-    (State.leads || []).filter(l => l.stage !== 's5').forEach(l => {
+    (State.leads || []).filter(l => !isWonStage(l.stage)).forEach(l => {
       if (!byStage[l.stage]) byStage[l.stage] = { count: 0, value: 0, prob: prob[l.stage] || 0.05 };
       byStage[l.stage].count++;
       byStage[l.stage].value += parseFloat(l.value) || 0;
@@ -19419,7 +20341,7 @@ const ProHub = {
         </div>`;
       }).join('');
 
-    const closedVal = (State.leads || []).filter(l => l.stage === 's5')
+    const closedVal = (State.leads || []).filter(l => isWonStage(l.stage))
       .reduce((s, l) => s + (parseFloat(l.value) || 0), 0);
 
     document.getElementById('pro-fc-body').innerHTML = `
@@ -19439,7 +20361,7 @@ const ProHub = {
   /* ── WA BROADCAST ── */
   _openBroadcast() {
     const stageNames = this._stageNames();
-    const opts = (State.stages || []).filter(s => s.id !== 's5')
+    const opts = (State.stages || []).filter(s => !isWonStage(s.id))
       .map(s => `<option value="${s.id}">${s.name}</option>`).join('');
 
     document.getElementById('pro-bc-body').innerHTML = `
@@ -19465,7 +20387,7 @@ const ProHub = {
   _bcUpdateList() {
     const stage = document.getElementById('bc-stage')?.value || '';
     const stageNames = this._stageNames();
-    const leads = (State.leads || []).filter(l => l.stage !== 's5' && (!stage || l.stage === stage));
+    const leads = (State.leads || []).filter(l => !isWonStage(l.stage) && (!stage || l.stage === stage));
     const wrap = document.getElementById('bc-list-wrap');
     if (!wrap) return;
     if (!leads.length) {
@@ -19494,7 +20416,7 @@ const ProHub = {
 
   _bcSendAll() {
     const stage = document.getElementById('bc-stage')?.value || '';
-    const leads = (State.leads || []).filter(l => l.stage !== 's5' && (!stage || l.stage === stage) && l.phone);
+    const leads = (State.leads || []).filter(l => !isWonStage(l.stage) && (!stage || l.stage === stage) && l.phone);
     if (!leads.length) { toast('אין לידים עם טלפון בשלב זה', 'error'); return; }
     toast(`📢 פותח WhatsApp עבור ${leads.length} לידים, לחיצה על כל אחד`);
     leads.forEach((l, i) => setTimeout(() => this._sendWa(l.id), i * 800));
@@ -19507,7 +20429,7 @@ const ProHub = {
       const s = l.source || 'לא ידוע';
       if (!src[s]) src[s] = { total: 0, closed: 0, value: 0 };
       src[s].total++;
-      if (l.stage === 's5') src[s].closed++;
+      if (isWonStage(l.stage)) src[s].closed++;
       src[s].value += parseFloat(l.value) || 0;
     });
     const sorted = Object.entries(src).sort((a, b) => b[1].total - a[1].total);
@@ -20301,7 +21223,7 @@ const QuickLog = {
           mtg.duration_min || 60,
           this._parsed.activity_summary
         );
-        const phone = (lead.phone || '').replace(/^0/,'').replace(/-/g,'');
+        const phone = waNumber(lead.phone);
         const mtgDateStr = mtg.date_iso
           ? new Date(mtg.date_iso).toLocaleString('he-IL', { weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' })
           : '';
@@ -20707,6 +21629,8 @@ const GuidedTour = {
     if (step.target) {
       const targetEl = document.querySelector(step.target);
       if (targetEl) {
+        const det = targetEl.closest('details');
+        if (det) det.open = true;
         targetEl.classList.add('tour-highlight-pulse');
         targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
