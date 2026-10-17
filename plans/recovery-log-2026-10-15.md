@@ -188,49 +188,90 @@
 ## 6. ניקוי חשבון הבדיקה (ממתין לדוד)
 
 חשבון הבדיקה נוצר ב-16.10: עסק "QA-TEST (בדיקה, למחיקה)" והמשתמש `qa-nonadmin-20261016@example.org`, בעל עסק רגיל ללא הרשאות אדמין. החשבון נחסם (`banned_until`) והסיסמה לא נשמרה. כלי ה-SQL של הסשן דורש אישור ידני לכל DELETE, ולכן המחיקה לא בוצעה. נבדק לפני כן:
-- מחיקת העסק מוחקת אוטומטית (CASCADE) את הלידים, המשימות, הפעילויות, השלבים, ההפניות, ההסכמות, דפי הלקוח, עדכוני המעקב והמשתמשים. מחיקת משתמש ה-auth מוחקת זהויות, sessions ו-refresh tokens.
-- `audit_log` אינה מקושרת בהפניה זרה (10 שורות), ולכן נמחקת במפורש.
+- מחיקת העסק מוחקת אוטומטית (CASCADE) את הלידים, המשימות, הפעילויות, השלבים, ההפניות, ההסכמות, דפי הלקוח, עדכוני המעקב והמשתמשים. מחיקת משתמש ה-auth מוחקת את הזהויות, ה-sessions וה-refresh tokens.
+- `audit_log` אינה מקושרת בהפניה זרה (10 שורות), ולכן נמחקת במפורש, לפי העסק ולפי מזהי הסוכן של QA.
 - אין trigger או rule שחוסמים מחיקה בטבלאות האלה.
-- הסקריפט נבדק בתחביר עם מפרק Postgres (כולל גוף ה-plpgsql). הוא עוצר אם המזהים אינם של עסק ומשתמש הבדיקה, ואם נשארה שורה אחת אחריו הוא מבטל הכול. הוא עצמו לא הורץ.
+- **גרסה 2 (17.10.2026):** נוספו בדיקת "רק QA נמחק" (מספר העסקים והמשתמשים יורד בדיוק ב-1, ומספר הלידים והסוכנים של עסקים אחרים לא משתנה), בדיקת לידים לפי העסק והסוכן של QA במקום לפי שם גלובלי, וסריקה של כל עמודה מסוג uuid, טקסט ו-json בכל טבלה ב-`public` וב-`auth` (גם טבלאות בלי `tenant_id`) אחרי המחיקה. הסריקה נבדקה בקריאה בלבד על 459 עמודות לפני המחיקה: כל ההתאמות היו בשורות של QA בלבד.
+- התחביר נבדק עם מפרק Postgres (כולל גוף ה-plpgsql). הפקודה עצמה לא הורצה. אם ספירה גלובלית משתנה בזמן ההרצה (למשל הרשמה של משתמש בדיוק אז), הפקודה מתבטלת ואפשר להריץ שוב.
 
 להרצה ב-SQL Editor של פרויקט PLTO (פקודה אחת, אטומית):
 
 ```sql
 DO $cleanup$
 DECLARE
-  v_tid uuid := '20dd3198-d5a3-4460-b942-6170d86acd9a';
-  v_uid uuid := '72819a42-6805-4ba0-b7ae-8f269b7eabc9';
+  v_tid     uuid := '20dd3198-d5a3-4460-b942-6170d86acd9a';
+  v_uid     uuid := '72819a42-6805-4ba0-b7ae-8f269b7eabc9';
+  v_email   text := 'qa-nonadmin-20261016@example.org';
+  v_agents  uuid[];
+  v_ids     text[];
+  v_like    text[];
+  v_tenants_before      int;
+  v_users_before        int;
+  v_other_leads_before  int;
+  v_other_agents_before int;
   r record;
   n int;
 BEGIN
   -- Guards: stop unless these are exactly the QA test tenant and user.
-  IF NOT EXISTS (SELECT 1 FROM tenants WHERE id = v_tid AND billing_email = 'qa-nonadmin-20261016@example.org' AND name LIKE 'QA-TEST%') THEN
+  IF NOT EXISTS (SELECT 1 FROM tenants WHERE id = v_tid AND billing_email = v_email AND name LIKE 'QA-TEST%') THEN
     RAISE EXCEPTION 'tenant does not match the QA test tenant, nothing deleted';
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = v_uid AND email = 'qa-nonadmin-20261016@example.org') THEN
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = v_uid AND email = v_email) THEN
     RAISE EXCEPTION 'user does not match the QA test user, nothing deleted';
   END IF;
-
-  DELETE FROM audit_log WHERE tenant_id = v_tid;   -- no foreign key, so it is not cascaded
-  DELETE FROM tenants   WHERE id = v_tid;          -- cascades to leads, tasks, activities, stages, referrals, consents, pages, tracker, agent_users
-  DELETE FROM auth.users WHERE id = v_uid;         -- cascades to identities, sessions, refresh tokens
-
-  -- Post-conditions: any leftover rolls everything back.
-  FOR r IN
-    SELECT c.table_name FROM information_schema.columns c
-    JOIN information_schema.tables t ON t.table_schema = c.table_schema AND t.table_name = c.table_name AND t.table_type = 'BASE TABLE'
-    WHERE c.table_schema = 'public' AND c.column_name = 'tenant_id'
-  LOOP
-    EXECUTE format('SELECT count(*) FROM public.%I WHERE tenant_id = $1', r.table_name) INTO n USING v_tid;
-    IF n > 0 THEN RAISE EXCEPTION 'leftover rows in %: %', r.table_name, n; END IF;
-  END LOOP;
-  IF EXISTS (SELECT 1 FROM tenants WHERE id = v_tid)
-     OR EXISTS (SELECT 1 FROM auth.users WHERE id = v_uid)
-     OR EXISTS (SELECT 1 FROM auth.identities WHERE user_id = v_uid)
-     OR EXISTS (SELECT 1 FROM lead_referrals WHERE from_tenant_id = v_tid)
-     OR EXISTS (SELECT 1 FROM leads WHERE name IN ('QA ליד בדיקה', '<img src=x onerror=alert(1)>')) THEN
-    RAISE EXCEPTION 'leftovers remain, rolled back';
+  IF EXISTS (SELECT 1 FROM agent_users WHERE tenant_id = v_tid AND auth_user_id IS DISTINCT FROM v_uid) THEN
+    RAISE EXCEPTION 'the QA tenant has an agent that is not the QA user, nothing deleted';
   END IF;
+  IF EXISTS (SELECT 1 FROM agent_users WHERE auth_user_id = v_uid AND tenant_id <> v_tid) THEN
+    RAISE EXCEPTION 'the QA user belongs to another tenant, nothing deleted';
+  END IF;
+
+  -- Snapshot before deleting: the QA agent ids, the identifiers to search for afterwards, and counts of everything else.
+  SELECT coalesce(array_agg(id), '{}') INTO v_agents FROM agent_users WHERE tenant_id = v_tid;
+  v_ids  := ARRAY[v_tid::text, v_uid::text, v_email] || (SELECT coalesce(array_agg(x::text), '{}') FROM unnest(v_agents) x);
+  v_like := (SELECT array_agg('%' || x || '%') FROM unnest(v_ids) x);
+  SELECT count(*) INTO v_tenants_before      FROM tenants;
+  SELECT count(*) INTO v_users_before        FROM auth.users;
+  SELECT count(*) INTO v_other_leads_before  FROM leads       WHERE tenant_id <> v_tid;
+  SELECT count(*) INTO v_other_agents_before FROM agent_users WHERE tenant_id <> v_tid;
+
+  DELETE FROM audit_log  WHERE tenant_id = v_tid OR agent_id = ANY(v_agents);  -- no foreign key, so it is not cascaded
+  DELETE FROM tenants    WHERE id = v_tid;   -- cascades to leads, tasks, activities, stages, referrals, consents, pages, tracker, agent_users
+  DELETE FROM auth.users WHERE id = v_uid;   -- cascades to identities, sessions, refresh tokens
+
+  -- Post-check 1: only the QA tenant and user were removed, nothing belonging to anyone else.
+  IF (SELECT count(*) FROM tenants)    <> v_tenants_before - 1 THEN RAISE EXCEPTION 'unexpected change in the number of tenants, rolled back'; END IF;
+  IF (SELECT count(*) FROM auth.users) <> v_users_before - 1   THEN RAISE EXCEPTION 'unexpected change in the number of auth users, rolled back'; END IF;
+  IF (SELECT count(*) FROM leads       WHERE tenant_id <> v_tid) <> v_other_leads_before  THEN RAISE EXCEPTION 'leads of other tenants changed, rolled back'; END IF;
+  IF (SELECT count(*) FROM agent_users WHERE tenant_id <> v_tid) <> v_other_agents_before THEN RAISE EXCEPTION 'agents of other tenants changed, rolled back'; END IF;
+
+  -- Post-check 2: no lead tied to the QA tenant or to a QA agent remains.
+  IF EXISTS (SELECT 1 FROM leads WHERE tenant_id = v_tid OR agent_id = ANY(v_agents)) THEN
+    RAISE EXCEPTION 'leads tied to the QA tenant or agent remain, rolled back';
+  END IF;
+
+  -- Post-check 3: no column that holds a uuid or text, in any table of public or auth (with or without tenant_id),
+  -- still holds the QA tenant id, user id, agent ids or email.
+  FOR r IN
+    SELECT c.table_schema, c.table_name, c.column_name
+    FROM information_schema.columns c
+    JOIN information_schema.tables t ON t.table_schema = c.table_schema AND t.table_name = c.table_name AND t.table_type = 'BASE TABLE'
+    WHERE c.table_schema IN ('public', 'auth') AND c.data_type IN ('uuid', 'text', 'character varying')
+  LOOP
+    EXECUTE format('SELECT count(*) FROM %I.%I WHERE %I::text = ANY($1)', r.table_schema, r.table_name, r.column_name) INTO n USING v_ids;
+    IF n > 0 THEN RAISE EXCEPTION 'leftover references in %.%.%: %, rolled back', r.table_schema, r.table_name, r.column_name, n; END IF;
+  END LOOP;
+
+  -- Post-check 4: the same for json and jsonb columns (substring match).
+  FOR r IN
+    SELECT c.table_schema, c.table_name, c.column_name
+    FROM information_schema.columns c
+    JOIN information_schema.tables t ON t.table_schema = c.table_schema AND t.table_name = c.table_name AND t.table_type = 'BASE TABLE'
+    WHERE c.table_schema IN ('public', 'auth') AND c.data_type IN ('json', 'jsonb')
+  LOOP
+    EXECUTE format('SELECT count(*) FROM %I.%I WHERE %I::text LIKE ANY($1)', r.table_schema, r.table_name, r.column_name) INTO n USING v_like;
+    IF n > 0 THEN RAISE EXCEPTION 'leftover references in %.%.% (json): %, rolled back', r.table_schema, r.table_name, r.column_name, n; END IF;
+  END LOOP;
 END
 $cleanup$;
 ```
@@ -388,3 +429,4 @@ WHERE id::text LIKE '68a2f70a%' AND plan = 'trial';
 | 16.10.2026 | נבדקו חשבונות אמיתיים מול ה-DB (אין משתמש פעיל). הוארך הניסיון של העסק של דקלה יהושע עד 31.12.2028 (`trial_ends_at` בלבד, והתראת 14 יום נוטרלה), אומת בקריאה בלבד (סעיף 12) |
 | 16.10.2026 | באנר הניסיון מוסתר כשנשארו יותר מ-365 ימים (`Billing.isExtendedTrial`), כך שהעסק של דקלה לא רואה ספירה של כ-800 ימים |
 | 17.10.2026 | אומת חוזר שההארכה של דקלה יהושע (עד 31.12.2028) ושדה ההתראה בתוקף, הגישה פעילה, התוכנית `trial` ואין חיוב. טרם נכנסה מאז ההארכה |
+| 17.10.2026 | פקודת הניקוי של חשבון ה-QA עודכנה לגרסה 2 (סעיף 6): בדיקת לידים לפי עסק QA, בדיקת שרק QA נמחק, וסריקת שאריות בכל הטבלאות. טרם הורצה |
