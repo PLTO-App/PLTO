@@ -455,6 +455,8 @@ The existing architecture is HTML/JS + Supabase RPCs and Edge Functions.
 
 Use existing integrations instead of creating parallel implementations.
 
+Current state (17.10.2026): owner notifications go only through the `notify-owner` Edge Function and `_notify_owner_email` (Resend). The old Make hook and scenarios were deleted. Make remains only as an optional per-tenant webhook feature in the app. Do not reintroduce Make for owner notifications.
+
 ---
 
 ## Supabase & Multi-Tenancy
@@ -608,6 +610,10 @@ Do not place new secrets in CLAUDE.md.
 If an existing technical document contains a secret-like value, do not propagate it into new files.
 
 Client code may use only intentionally public configuration.
+
+Make tools: `scenarios_get` prints the whole blueprint including HTTP headers with keys. Use `scenarios_list` instead and never read blueprints of scenarios that call APIs.
+
+Deleting data through the Supabase MCP `execute_sql` requires manual approval and fails in cloud sessions. Destructive SQL is run by the owner in the SQL Editor, after a read-only guard and dry-run check.
 
 ---
 
@@ -1388,6 +1394,7 @@ Move detailed implementation history to dedicated documentation when appropriate
 - Verify every manual action the owner reports with a read-only check before marking it done.
 - Update the document at the end of every session: date, statuses, open tasks, change log. Never present an unrun check as passed.
 - Do not mark the recovery as "Recovery Complete" until every completion condition in the document is met.
+- Items marked completed and verified in the document are not re-checked in later sessions unless the owner asks or there is a sign of a problem. Work only on the open items.
 
 ---
 
