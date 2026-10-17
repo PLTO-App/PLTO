@@ -5,7 +5,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const defaultRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 async function loadChromium() {
   try { return (await import('playwright')).chromium; } catch (_) {
@@ -54,7 +54,7 @@ const SUPABASE_MOCK = `
 const CHART_MOCK = `window.Chart=function(){this.destroy=function(){};this.data={datasets:[]};this.update=function(){};};window.Chart.register=function(){};`;
 
 
-export async function startHarness({ touch = false } = {}) {
+export async function startHarness({ touch = false, root = defaultRoot } = {}) {
   const chromium = await loadChromium();
   const server = http.createServer((req, res) => {
     const path = decodeURIComponent(req.url.split('?')[0]);

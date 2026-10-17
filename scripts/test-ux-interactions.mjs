@@ -276,6 +276,31 @@ await page.waitForTimeout(300);
 check('בכרטיסי הנכסים אין כפתור מחיקה גלוי', await page.locator('#properties-grid .quick-del-btn').count() === 0);
 check('כותרת הנכסים לא גולשת', await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
 
+
+// ביצועים: רינדור הדרגתי ועמודה פעילה בלבד במובייל
+await page.evaluate(() => {
+  const st = State.stages;
+  window.__savedLeads = State.leads;
+  State.leads = Array.from({ length: 150 }, (_, i) => ({ id: 'bulk' + i, name: 'ליד ' + i, phone: '050-' + (2000000 + i), phone2: '', email: '', stage: st[i % st.length].id, source: 'other', budget_min: 0, budget_max: 0, desired_area: '', score: i % 100, lead_role: 'buyer', notes: '', tags: [], created_at: today() }));
+  App.go('leads');
+});
+await page.waitForTimeout(300);
+check('ברשימת לידים גדולה מוצגים 60 בהתחלה וכפתור "הצגת עוד"', await page.locator('#leads-list-container .sw-row').count() === 60 && await page.locator('#leads-list-container button', { hasText: 'הצגת עוד (90)' }).count() === 1);
+await page.locator('#leads-list-container button', { hasText: 'הצגת עוד' }).click();
+check('"הצגת עוד" מוסיף 60', await page.locator('#leads-list-container .sw-row').count() === 120);
+await page.fill('#leads-search', 'ליד 14');
+await page.waitForTimeout(400);
+check('חיפוש מאפס את מספר השורות המוצגות ומסנן', await page.locator('#leads-list-container .sw-row').count() === 11, String(await page.locator('#leads-list-container .sw-row').count()));
+await page.fill('#leads-search', '');
+await page.evaluate(() => { App.go('pipeline'); });
+await page.waitForTimeout(300);
+check('בפייפליין במובייל כרטיסים נבנים רק לעמודה הפעילה', await page.evaluate(() => {
+  const cols = [...document.querySelectorAll('#pipeline-board .kanban-col')];
+  return cols.filter(c => c.querySelector('.sw-row')).length === 1 && document.querySelector('#pipeline-board .kanban-col.tab-active .sw-row') !== null;
+}));
+check('בעמודה פעילה גדולה מוצגים 40 וכפתור הצגת עוד', await page.evaluate(() => document.querySelectorAll('#pipeline-board .kanban-col.tab-active .sw-row').length <= 40));
+await page.evaluate(() => { State.leads = window.__savedLeads; App.go('pipeline'); });
+
 check('אין שגיאות JS', errors.length === 0, errors.join(' | '));
 await close();
 console.log(`\n${passed} עברו, ${fails.length} נכשלו`);

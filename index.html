@@ -4344,7 +4344,7 @@
   <div class="shield-icon">🔒</div>
   <div class="shield-logo">PLT<span>O</span></div>
   <div class="shield-msg">התצוגה מוסתרת זמנית להגנה על פרטיות הנתונים שלך ושל הלקוחות שלך</div>
-  <div class="shield-sub">המסך יחזור להופיע ברגע שתחזר לחלון הזה</div>
+  <div class="shield-sub">המסך יחזור להופיע ברגע שחוזרים לחלון הזה</div>
 </div>
 
 <!-- ═══════════════════════════════════════
@@ -4608,7 +4608,7 @@
     <div id="demo-banner" class="hidden" style="background:linear-gradient(135deg,#0F1F3D,#1a3a6a);border-bottom:2px solid var(--gold-500);color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;">
       <span style="color:var(--gold-300);">👀 מצב דמו</span><span style="color:rgba(255,255,255,0.75);font-weight:500;font-size:12px;">הנתונים לא נשמרים · AI מנוטרל</span>
       <button onclick="document.getElementById('screen-login').classList.remove('hidden');document.getElementById('app-shell').classList.add('hidden');State.isDemo=false;" style="background:var(--gold-500);color:#fff;border:none;border-radius:8px;padding:6px 16px;font-weight:800;font-size:12px;cursor:pointer;white-space:nowrap;">
-        🚀 פתח חשבון חינמי
+        🚀 פתיחת חשבון חינמי
       </button>
     </div>
     <!-- TRIAL BANNER -->
@@ -4921,7 +4921,7 @@
         <div style="position:relative;flex:1;min-width:0;">
           <input type="text" class="pipeline-search-input" id="pipeline-search-input"
             placeholder="🔍 חיפוש לפי שם, אזור או טלפון..."
-            oninput="Pipeline.search(this.value); document.getElementById('pipeline-search-clear').style.display=this.value?'flex':'none';">
+            oninput="Pipeline.searchInput(this.value); document.getElementById('pipeline-search-clear').style.display=this.value?'flex':'none';">
           <button id="pipeline-search-clear" aria-label="ניקוי חיפוש"
             style="display:none;position:absolute;left:4px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:18px;color:var(--gray-400);cursor:pointer;width:44px;height:44px;align-items:center;justify-content:center;"
             onclick="document.getElementById('pipeline-search-input').value='';Pipeline.search('');this.style.display='none';"
@@ -4946,7 +4946,7 @@
       <div class="search-wrap lf-row">
         <input type="search" class="search-input" id="leads-search" style="flex:1;min-width:0;"
                placeholder="🔍 חיפוש לפי שם, טלפון, אזור..."
-               oninput="Leads.search(this.value)">
+               oninput="Leads.searchInput(this.value)">
         <button type="button" class="lf-btn" id="leads-filter-btn" aria-haspopup="menu" onclick="LeadFilters.open('leads',this)">מיון וסינון <span class="lf-count" style="display:none;">0</span></button>
       </div>
       <div class="lf-chips" id="leads-role-filter" style="display:none;"></div>
@@ -6360,7 +6360,7 @@
     <div style="text-align:center;font-size:16px;font-weight:800;color:var(--navy);margin-bottom:4px;">לא שמרת את הפרטים</div>
     <div style="text-align:center;font-size:13px;color:var(--gray-500);margin-bottom:20px;">הפרטים שהקלדת יימחקו לגמרי אם תצא עכשיו</div>
     <button class="call-result-btn" style="background:#DCFCE7;color:#166534;font-size:15px;" onclick="addLead()">💾 &nbsp;שמירת ליד עכשיו</button>
-    <button class="call-result-btn" style="background:#DBEAFE;color:#1D4ED8;font-size:15px;" onclick="closeDiscardSheet()">חזור לטופס</button>
+    <button class="call-result-btn" style="background:#DBEAFE;color:#1D4ED8;font-size:15px;" onclick="closeDiscardSheet()">חזרה לטופס</button>
     <button class="call-result-btn" style="background:#FEE2E2;color:#991B1B;font-size:15px;" onclick="discardAndClose()">🗑 &nbsp;מחיקה ויציאה בלי שמירה</button>
   </div>
 </div>
@@ -6800,7 +6800,7 @@
     </div>
     <div class="modal-footer" style="flex-direction:column;gap:8px;">
       <button class="btn btn-primary" style="width:100%;" onclick="document.getElementById('modal-lead-quality').classList.add('hidden');addLead(true)">המשך ללא הערות</button>
-      <button class="btn btn-ghost" style="width:100%;" onclick="document.getElementById('modal-lead-quality').classList.add('hidden');document.getElementById('new-lead-notes')?.focus()">חזור להוסיף הערות</button>
+      <button class="btn btn-ghost" style="width:100%;" onclick="document.getElementById('modal-lead-quality').classList.add('hidden');document.getElementById('new-lead-notes')?.focus()">חזרה להוספת הערות</button>
     </div>
   </div>
 </div>
@@ -8847,7 +8847,7 @@ const Billing = {
     const tickerMsg = [
       `🎉 נשארו לך ${days === 1 ? 'יום אחד' : days + ' ימים'} בניסיון החינמי`,
       `💎 שדרג עכשיו ותשמור על כל הנתונים שלך`,
-      `🚀 פתח את כל הפיצ׳רים המתקדמים`
+      `🚀 פתיחת כל הפיצ׳רים המתקדמים`
     ].join('&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;');
     banner.innerHTML = `
       <div class="trial-banner-row">
@@ -15743,17 +15743,26 @@ const LeadFilters = {
   },
 };
 
+window.matchMedia('(max-width: 767px)').addEventListener('change', () => { if (State.screen === 'pipeline') Pipeline.render(); });
+
 const Pipeline = {
   _query: '',
   _activeStage: null,
   _roleFilter: 'all',
   _stale: false,
   _overdue: false,
+  _limits: {},
+  _sig: '',
+  PAGE: 40,
+  _mobile: () => window.matchMedia('(max-width: 767px)').matches,
 
   render() {
     if (State.stages.length && !State.stages.some(s => s.id === this._activeStage)) {
       this._activeStage = State.stages[0].id;
     }
+    // שינוי חיפוש או סינון מאפס את מספר הכרטיסים המוצגים בכל עמודה
+    const sig = JSON.stringify([this._query, this._roleFilter, this._stale, this._overdue]);
+    if (sig !== this._sig) { this._sig = sig; this._limits = {}; }
     LeadRow.prep();
     this._renderTabs();
     LeadFilters.paint('pipeline');
@@ -15765,6 +15774,7 @@ const Pipeline = {
     const board = document.getElementById('pipeline-board');
     board.classList.toggle('is-searching', !!q);
     const filtersOn = LeadFilters._active(this).length > 0;
+    const mobile = this._mobile();
     board.innerHTML = State.stages.map((stage, stageIdx) => {
       let leads = LeadFilters.apply(State.leads.filter(l => l.stage === stage.id), this);
       const allCount = leads.length;
@@ -15774,6 +15784,10 @@ const Pipeline = {
       const totalVal = leads.reduce((s,l) => s + (l.budget_max||0), 0);
       const classes = ['kanban-col', isTabActive ? 'tab-active' : '', hasHits ? 'has-hits' : ''].filter(Boolean).join(' ');
       const color = safeColor(stage.color);
+      // במובייל מוצגת עמודה אחת בכל רגע (או תוצאות חיפוש), ולכן לא בונים כרטיסים לשאר העמודות
+      const showCards = !mobile || q || isTabActive;
+      const limit = this._limits[stage.id] || this.PAGE;
+      const shown = showCards ? leads.slice(0, limit) : [];
       return `
         <div class="${classes}" style="--col-clr:${color}" data-stage-id="${escapeHtml(stage.id)}">
           <div class="kanban-col-header">
@@ -15783,8 +15797,9 @@ const Pipeline = {
           </div>
           ${totalVal ? `<div class="kanban-value hide-mobile">${formatMoney(totalVal)}</div>` : ''}
           <div class="kanban-cards">
-            ${leads.length
-              ? leads.map((l, idx) => LeadRow.render(l, { variant: 'card', color, idx })).join('')
+            ${shown.length
+              ? shown.map((l, idx) => LeadRow.render(l, { variant: 'card', color, idx })).join('') + (leads.length > shown.length ? `<button type="button" class="btn btn-ghost btn-sm w-full" onclick="Pipeline.more('${escapeHtml(stage.id)}')">הצגת עוד (${leads.length - shown.length})</button>` : '')
+              : !showCards ? ''
               : q
                 ? '<div style="padding:14px 10px;text-align:center;color:var(--gray-400);font-size:13px;">אין תוצאות בשלב זה</div>'
                 : filtersOn
@@ -15827,6 +15842,12 @@ const Pipeline = {
     this.render();
   },
 
+  more(stageId) {
+    this._limits[stageId] = (this._limits[stageId] || this.PAGE) + this.PAGE;
+    LeadRow.animate = false;
+    try { this.render(); } finally { LeadRow.animate = true; }
+  },
+
   setTab(stageId) {
     this._activeStage = stageId;
     this._query = '';
@@ -15838,6 +15859,12 @@ const Pipeline = {
   search(q) {
     this._query = q;
     this.render();
+  },
+  // הקלדה בשדה החיפוש: המתנה קצרה כדי לא לבנות מחדש את הלוח אחרי כל תו
+  searchInput(q) {
+    this._query = q;
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.render(), 150);
   },
 
   headerMenu(anchor) {
@@ -15861,7 +15888,12 @@ const Leads = {
   _stale: false,
   _overdue: false,
   _stage: 'all',
+  _limit: 60,
+  _sig: '',
+  PAGE: 60,
   render() {
+    const sig = JSON.stringify([this._query, this._roleFilter, this._stale, this._overdue, this._stage, LeadFilters.sort()]);
+    if (sig !== this._sig) { this._sig = sig; this._limit = this.PAGE; }
     LeadRow.prep();
     LeadFilters.paint('leads');
     const q = this._query.toLowerCase();
@@ -15874,9 +15906,11 @@ const Leads = {
     list = LeadFilters.sorted(list);
     const el = document.getElementById('leads-list-container');
     const filtersOn = LeadFilters._active(this).length > 0;
+    const shown = list.slice(0, this._limit);
     el.innerHTML = list.length
       ? `<div style="padding:0 0 80px;">
-           ${list.map((l, idx) => LeadRow.render(l, { variant: 'row', idx })).join('')}
+           ${shown.map((l, idx) => LeadRow.render(l, { variant: 'row', idx })).join('')}
+           ${list.length > shown.length ? `<button type="button" class="btn btn-ghost w-full" onclick="Leads.more()">הצגת עוד (${list.length - shown.length})</button>` : ''}
          </div>`
       : State.leads.length === 0
       ? (() => { const e = MICRO_COPY.emptyPipeline[_getInd()] || MICRO_COPY.emptyPipeline.other; return `<div class="empty-state">
@@ -15894,6 +15928,16 @@ const Leads = {
   search(q) {
     this._query = q;
     this.render();
+  },
+  searchInput(q) {
+    this._query = q;
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.render(), 150);
+  },
+  more() {
+    this._limit += this.PAGE;
+    LeadRow.animate = false;
+    try { this.render(); } finally { LeadRow.animate = true; }
   },
   setRoleFilter(role) {
     this._roleFilter = role;
