@@ -236,6 +236,8 @@ Current primary verticals:
 2. Law
 3. Interior design and architecture
 
+Product direction (owner decision, 17.10.2026): PLTO is positioned as a general sales system for any business (warming leads, keeping in touch with customers, follow-ups, saving time), not only a real-estate CRM. This is a direction for decisions, not a mandate to rebuild. Do not start broad product or vertical changes without a plan approved by the owner.
+
 Internal identifiers may differ from UI labels. Never change an internal identifier only because the public label changed.
 
 Current important internal vertical identifiers include:
