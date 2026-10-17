@@ -7535,6 +7535,21 @@ function formatRelDate(dateStr) {
   if (d < 0) return `לפני ${Math.abs(d)} ימים`;
   return `בעוד ${d} ימים`;
 }
+// מספר ל-wa.me אחרי הקידומת 972: ספרות בלבד, בלי 0 מוביל ובלי 972 או 00972.
+function waNumber(phone) {
+  let d = String(phone || '').replace(/\D/g, '');
+  if (d.startsWith('00972')) d = d.slice(5);
+  else if (d.startsWith('972')) d = d.slice(3);
+  return d.replace(/^0+/, '');
+}
+// לתצוגה בכרטיסים: ריק כשאין ערך, כדי שלא יוצג "~~".
+function formatMoneyOpt(n) { return n ? formatMoney(n) : ''; }
+function formatBudgetRange(min, max) {
+  if (!min && !max) return '';
+  if (!min) return 'עד ' + formatMoney(max);
+  if (!max) return 'מ-' + formatMoney(min);
+  return formatMoney(min) + '~' + formatMoney(max);
+}
 function formatMoney(n) {
   if (!n) return '~~';
   if (n >= 1000000) return `₪${(n/1000000).toFixed(1)}M`;
@@ -7561,6 +7576,16 @@ function roleBadgeHtml(r) {
 function showsBuyerSellerRole() {
   const ind = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
   return ind !== 'interior';
+}
+// שלב הסגירה נקבע לפי is_won של השלב, ובהיעדרו לפי השלב האחרון. מספר השלבים משתנה
+// (2 עד 8), ולכן אסור להניח ש-s5 הוא שלב הסגירה.
+function wonStageId() {
+  const st = State.stages || [];
+  if (!st.length) return null;
+  return (st.find(x => x.is_won) || st[st.length - 1]).id;
+}
+function isWonStage(stageId) {
+  return !!stageId && stageId === wonStageId();
 }
 // Shared label source for the role filter pills, so Pipeline/Leads/the prefs
 // modal all show the exact same text instead of three separate copies.
@@ -7914,7 +7939,7 @@ const DB = {
         }).select().single();
         if (data) {
           const sid = 's' + (i + 1);
-          existing.push({ id: sid, name: data.name, color: data.color, order: data.order_idx, is_terminal: data.is_terminal, _uuid: data.id });
+          existing.push({ id: sid, name: data.name, color: data.color, order: data.order_idx, is_terminal: data.is_terminal, is_won: !!data.is_won, _uuid: data.id });
           this.stageMap[data.id] = sid;
           this.stageRev[sid] = data.id;
         }
@@ -7943,37 +7968,46 @@ const DB = {
   async updateStageNamesFull(entries, deletedUuids = []) {
     if (State.isDemo || !this.tenantId) return;
     const COLORS = ['#94A3B8','#3B82F6','#8B5CF6','#F59E0B','#10B981','#EF4444','#6366F1','#EC4899'];
+    const oldRev = { ...this.stageRev };
     const newStages = [];
     for (let i = 0; i < entries.length; i++) {
       const { name, uuid } = entries[i];
       if (uuid) {
-        await sbClient.from('pipeline_stages').update({ name, order_idx: i + 1 }).eq('id', uuid);
+        const { error } = await sbClient.from('pipeline_stages').update({ name, order_idx: i + 1 }).eq('id', uuid);
+        if (error) throw error;
         const s = State.stages.find(s => s._uuid === uuid) || {};
         const updated = { ...s, id: 's'+(i+1), name, order: i+1, _uuid: uuid };
         newStages.push(updated);
       } else {
-        const { data } = await sbClient.from('pipeline_stages').insert({
+        const { data, error } = await sbClient.from('pipeline_stages').insert({
           tenant_id: this.tenantId, name,
           color: COLORS[i % COLORS.length], order_idx: i + 1,
           is_terminal: false, is_won: false,
         }).select().single();
-        if (data) newStages.push({ id: 's'+(i+1), name: data.name, color: data.color, order: data.order_idx, is_terminal: data.is_terminal, _uuid: data.id });
+        if (error) throw error;
+        if (data) newStages.push({ id: 's'+(i+1), name: data.name, color: data.color, order: data.order_idx, is_terminal: data.is_terminal, is_won: !!data.is_won, _uuid: data.id });
       }
     }
     if (deletedUuids.length) {
       const fallbackUuid = newStages[0]?._uuid;
       for (const uuid of deletedUuids) {
+        // הלידים עוברים לשלב הראשון לפני המחיקה. ב-DB המפתח הזר הוא SET NULL, ולכן אם
+        // ההעברה נכשלה עוצרים כדי שלא יישארו לידים בלי שלב.
         if (fallbackUuid) {
-          await sbClient.from('leads').update({ pipeline_stage_id: fallbackUuid }).eq('tenant_id', this.tenantId).eq('pipeline_stage_id', uuid);
-          const fallbackSid = newStages[0]?.id || 's1';
-          State.leads?.forEach(l => { if (this.stageMap[uuid] === l.stage) l.stage = fallbackSid; });
+          const { error } = await sbClient.from('leads').update({ pipeline_stage_id: fallbackUuid }).eq('tenant_id', this.tenantId).eq('pipeline_stage_id', uuid);
+          if (error) throw error;
         }
-        await sbClient.from('pipeline_stages').delete().eq('id', uuid);
+        const { error: delErr } = await sbClient.from('pipeline_stages').delete().eq('id', uuid);
+        if (delErr) throw delErr;
       }
     }
     this.stageMap = {};
     this.stageRev = {};
     newStages.forEach(s => { this.stageMap[s._uuid] = s.id; this.stageRev[s.id] = s._uuid; });
+    // המזהים הקצרים מחושבים מחדש לפי הסדר, ולכן כל ליד מקבל את המזהה של השלב שלו לפי uuid.
+    // ליד ששלבו נמחק עובר לשלב הראשון.
+    const firstSid = newStages[0]?.id || 's1';
+    State.leads?.forEach(l => { l.stage = this.stageMap[oldRev[l.stage]] || firstSid; });
     State.stages = newStages;
   },
 
@@ -7987,6 +8021,10 @@ const DB = {
       sbClient.from('tenants').select('id,name,slug,plan,trial_ends_at,make_webhook_url,whatsapp_number,industry,phone,city,region,created_at').eq('id', this.tenantId).single(),
       this.agentId ? sbClient.from('agent_users').select('id,name,email,role').eq('id', this.agentId).maybeSingle() : Promise.resolve({ data: null }),
     ]);
+    // שגיאת רשת או הרשאה לא אמורה להיראות כמו "אין לידים עדיין"
+    if ([stagesR, leadsR, tasksR, propsR].some(r => r.error)) {
+      throw new Error('טעינת הנתונים נכשלה, יש לבדוק את החיבור ולנסות שוב');
+    }
     this.stageMap = {};
     this.stageRev = {};
     (stagesR.data || []).forEach(s => {
@@ -7997,7 +8035,7 @@ const DB = {
     return {
       stages: (stagesR.data || []).map(s => ({
         id: 's' + s.order_idx, name: s.name, color: s.color,
-        order: s.order_idx, is_terminal: s.is_terminal, _uuid: s.id,
+        order: s.order_idx, is_terminal: s.is_terminal, is_won: !!s.is_won, _uuid: s.id,
       })),
       leads: (leadsR.data || []).map(l => ({
         id: l.id, name: l.name, phone: l.phone, phone2: l.phone2 || '', email: l.email || '',
@@ -8211,7 +8249,7 @@ const DB = {
 
   async moveLead(leadId, shortStageId) {
     const uuid = this.stageRev[shortStageId];
-    if (!uuid) return;
+    if (!uuid) throw new Error('השלב לא נמצא, יש לרענן את העמוד');
     const { error } = await sbClient.from('leads')
       .update({ pipeline_stage_id: uuid })
       .eq('id', leadId).eq('tenant_id', this.tenantId);
@@ -8281,7 +8319,7 @@ const DEMO = {
     { id:'s2', name:'יצרנו קשר',      color:'#3B82F6', order:2 },
     { id:'s3', name:'ביקור מדידה',    color:'#8B5CF6', order:3 },
     { id:'s4', name:'הצעת מחיר',      color:'#F59E0B', order:4 },
-    { id:'s5', name:'פרויקט פעיל ✓',  color:'#10B981', order:5, is_terminal:true },
+    { id:'s5', name:'פרויקט פעיל ✓',  color:'#10B981', order:5, is_terminal:true, is_won:true },
   ],
 
   leads: [
@@ -9121,7 +9159,7 @@ const Onboarding = {
       DB.updateIndustry(ind);
       const industryChanged = this._data.prevIndustry !== ind;
       if (this._data.stageNames?.length && (!State.stages?.length || this._data.stagesEdited || industryChanged)) {
-        DB.updateStageNames(this._data.stageNames).catch(() => {});
+        DB.updateStageNames(this._data.stageNames).catch(() => toast('שמות השלבים לא נשמרו, אפשר לעדכן אותם בהמשך מהפייפליין', 'warning'));
       }
       if (this._data.agentName) {
         try {
@@ -9691,17 +9729,17 @@ ${referralLine}
   },
 
   async getDailyBriefing() {
-    const active = State.leads.filter(l => l.stage !== 's5');
+    const active = State.leads.filter(l => !isWonStage(l.stage));
     const stageName = id => State.stages.find(s => s.id === id)?.name || '~~';
     const hot = [...active].sort((a,b) => (b.score||0) - (a.score||0)).slice(0, 5);
     const urgentTasks = State.tasks.filter(t => !t.done && diffDays(t.due) <= 0)
       .sort((a,b) => new Date(a.due) - new Date(b.due)).slice(0, 5);
     const cold = State.leads.filter(l => {
-      if (l.stage === 's5') return false;
+      if (isWonStage(l.stage)) return false;
       if (!l.last_contact) return diffDays(l.created_at) < -14;
       return diffDays(l.last_contact) < -14;
     }).slice(0, 5);
-    const closedTotal = State.leads.filter(l => l.stage === 's5').length;
+    const closedTotal = State.leads.filter(l => isWonStage(l.stage)).length;
     const pipelineVal = active.reduce((s,l) => s + (l.budget_max||0), 0);
 
     const fmtLead = l => `${l.name}, ציון ${l.score ?? '~~'}, שלב "${stageName(l.stage)}", ${l.desired_area || 'אזור לא ידוע'}, תקציב ${formatMoney(l.budget_max)}`;
@@ -11339,7 +11377,7 @@ ${safeArea ? 'אזור/פרויקט: ' + safeArea : ''}
 אל תכלול כותרת (כמו "הודעה ל${safeName}"), סימני markdown (כמו ** או ---), או כל משפט לפני/אחרי ההודעה. החזר אך ורק את גוף ההודעה עצמה, מילה ראשונה עד אחרונה, מוכן להעתקה ושליחה ישירה ללקוח בלי שום עריכה.`,
       }], 200, { type: 'marketing', system: AI._clientLangSystem() });
       const cleanMsg = stripAiMessageArtifacts(msg);
-      const phone = (lead.phone || '').replace(/^0/, '').replace(/-/g, '');
+      const phone = waNumber(lead.phone);
       const waUrl = 'https://wa.me/972' + phone + '?text=' + encodeURIComponent(cleanMsg);
       const usageLabel = AiLimits.limitLabel('marketing');
       container.innerHTML = `
@@ -11398,7 +11436,7 @@ const Gamify = {
     { id:'streak_7',     icon:'⚡', name:'שבוע רצוף',         desc:'7 ימים רצופים, יוצא מן הכלל',     xp:37,  check: d => d.streak >= 7      },
     { id:'streak_30',    icon:'💎', name:'חודש רצוף',         desc:'30 ימים רצופים, זה מדהים!',       xp:125, check: d => d.streak >= 30     },
     { id:'ai_master',    icon:'🤖', name:'מאסטר AI',          desc:'שימוש ב-AI ב-10 הזדמנויות שונות', xp:25,  check: d => d.aiUses >= 10     },
-    { id:'pipeline_100k',icon:'💼', name:'פייפליין 100K',      desc:'שווי הפייפליין עבר את ה-100K ₪',   xp:50,  check: d => (State.leads?.filter(l=>l.stage!=='s5').reduce((s,l)=>s+(l.budget_max||0),0)||0) >= 100000 },
+    { id:'pipeline_100k',icon:'💼', name:'פייפליין 100K',      desc:'שווי הפייפליין עבר את ה-100K ₪',   xp:50,  check: d => (State.leads?.filter(l=>!isWonStage(l.stage)).reduce((s,l)=>s+(l.budget_max||0),0)||0) >= 100000 },
   ],
   DAILY_CHALLENGES: [
     'ניצור קשר עם 3 לידים שלא קיבלו מענה השבוע',
@@ -11808,7 +11846,7 @@ const Gamify = {
     setStyle('gamify-xp-fill', 'width', prog.pct + '%');
 
     set('gamify-leads-count', d.leadsAdded || State.leads?.length || 0);
-    set('gamify-closed-count', d.dealsClosed || State.leads?.filter(l=>l.stage==='s5').length || 0);
+    set('gamify-closed-count', d.dealsClosed || State.leads?.filter(l=>isWonStage(l.stage)).length || 0);
     set('gamify-tasks-count', d.tasksCompleted || 0);
 
     // Badges row - show first 5 achievements
@@ -13227,8 +13265,8 @@ const LeadReferral = {
 
   shareWhatsApp() {
     if (!this._lastMsg) return;
-    const digits = (this._waTargetPhone || '').replace(/\D/g, '');
-    const base = digits ? `https://wa.me/972${digits.replace(/^0/, '')}` : 'https://wa.me/';
+    const digits = waNumber(this._waTargetPhone);
+    const base = digits ? `https://wa.me/972${digits}` : 'https://wa.me/';
     window.open(`${base}?text=${encodeURIComponent(this._lastMsg)}`, '_blank');
   },
 
@@ -13464,8 +13502,8 @@ const PageBuilder = {
 
   shareWhatsApp() {
     if (!this._lastMsg) return;
-    const digits = (LeadReferral._waTargetPhone || '').replace(/\D/g, '');
-    const base = digits ? `https://wa.me/972${digits.replace(/^0/, '')}` : 'https://wa.me/';
+    const digits = waNumber(LeadReferral._waTargetPhone);
+    const base = digits ? `https://wa.me/972${digits}` : 'https://wa.me/';
     window.open(`${base}?text=${encodeURIComponent(this._lastMsg)}`, '_blank');
   },
 
@@ -14443,7 +14481,7 @@ const App = {
     const overdue = State.tasks.filter(t => !t.done && diffDays(t.due) < 0).length;
     const today_ = State.tasks.filter(t => !t.done && diffDays(t.due) === 0).length;
     const urgent = overdue + today_;
-    const pipelineActive = State.leads.filter(l => l.stage !== 's5').length;
+    const pipelineActive = State.leads.filter(l => !isWonStage(l.stage)).length;
     document.getElementById('nav-badge-tasks').textContent = urgent || '';
     document.getElementById('nav-badge-tasks').style.display = urgent ? '' : 'none';
     document.getElementById('nav-badge-pipeline').textContent = pipelineActive || '';
@@ -14539,7 +14577,7 @@ const Dashboard = {
     const el = document.getElementById('dash-hot-leads');
     if (!el) return;
     const hot = State.leads
-      .filter(l => l.stage !== 's5')
+      .filter(l => !isWonStage(l.stage))
       .sort((a,b) => (b.score||0) - (a.score||0))
       .slice(0, 5);
     if (!hot.length) { el.style.display = 'none'; return; }
@@ -14564,7 +14602,7 @@ const Dashboard = {
             <div class="score-badge ${scoreClass(l.score)}" style="min-width:42px;height:42px;font-size:14px;font-weight:900;">${l.score||'~~'}</div>
             <div style="flex:1;min-width:0;">
               <div style="font-weight:800;font-size:15px;color:#7C2D12;">${escapeHtml(l.name)}</div>
-              <div style="font-size:11.5px;color:#9A3412;">${escapeHtml(l.desired_area||'~~')} · ${formatMoney(l.budget_max)}</div>
+              <div style="font-size:11.5px;color:#9A3412;">${[l.desired_area, formatMoneyOpt(l.budget_max)].filter(Boolean).map(escapeHtml).join(' · ')}</div>
             </div>
             <div style="font-size:11px;color:#D97706;font-weight:700;">${i+1}/${hot.length}</div>
           </div>
@@ -14586,14 +14624,14 @@ const Dashboard = {
   },
   renderKPIs() {
     const newToday   = State.leads.filter(l => l.created_at === today()).length;
-    const activeDeals= State.leads.filter(l => l.stage !== 's5').length;
-    const closedTotal= State.leads.filter(l => l.stage === 's5').length;
-    const pipelineVal= State.leads.filter(l=>l.stage!=='s5').reduce((s,l)=>s+(l.budget_max||0),0);
+    const activeDeals= State.leads.filter(l => !isWonStage(l.stage)).length;
+    const closedTotal= State.leads.filter(l => isWonStage(l.stage)).length;
+    const pipelineVal= State.leads.filter(l=>!isWonStage(l.stage)).reduce((s,l)=>s+(l.budget_max||0),0);
     const kpis = [
       { label:'לידים חדשים היום', value: newToday,               rawVal: newToday,    sub:'נרשמו היום',     accent:'#2563EB', icon:'🆕', nav:'leads' },
       { label:'עסקאות פעילות',   value: activeDeals,             rawVal: activeDeals, sub:'בצינור כעת',    accent:'#7C3AED', icon:'📋', nav:'pipeline' },
       { label:'עסקאות שנסגרו',   value: closedTotal,             rawVal: closedTotal, sub:'כולל הכל',      accent:'#16A34A', icon:'🎉', nav:'pipeline' },
-      { label:'שווי צינור',      value: formatMoney(pipelineVal),rawVal: null,        sub:'ערך פוטנציאלי', accent:'#C49A2A', icon:'💰', nav:'pipeline' },
+      { label:'שווי צינור',      value: pipelineVal ? formatMoney(pipelineVal) : '₪0',rawVal: null,        sub:'ערך פוטנציאלי', accent:'#C49A2A', icon:'💰', nav:'pipeline' },
     ];
     document.getElementById('kpi-row').innerHTML = kpis.map(k => `
       <div class="kpi-card kpi-pop" style="--kpi-accent:${k.accent};cursor:pointer;" onclick="App.go('${k.nav}')">
@@ -14631,7 +14669,7 @@ const Dashboard = {
         <div class="pipeline-flow-chip" style="--chip-color:${s.stage.color};" onclick="App.go('lead-detail',{currentLeadId:'${l.id}'})">
           <span class="pipeline-flow-chip-avatar" style="--chip-color:${s.stage.color};">${initials(l.name)}</span>
           <span>${escapeHtml(l.name)}</span>
-          <span class="pipeline-flow-chip-val">${formatMoney(l.budget_max)}</span>
+          ${l.budget_max ? `<span class="pipeline-flow-chip-val">${formatMoney(l.budget_max)}</span>` : ''}
         </div>
       `).join('');
       const duration = Math.max(10, s.leads.length * 4);
@@ -14643,7 +14681,7 @@ const Dashboard = {
               <span class="pipeline-flow-dot" style="background:${s.stage.color};"></span>
               ${escapeHtml(s.stage.name)} · ${s.leads.length}
             </span>
-            <span class="pipeline-flow-lane-total">${formatMoney(s.value)}</span>
+            <span class="pipeline-flow-lane-total">${s.value ? formatMoney(s.value) : ''}</span>
           </div>
           <div class="pipeline-flow-track">
             <div class="pipeline-flow-chips" style="animation-duration:${duration}s;animation-direction:${direction};">
@@ -14694,7 +14732,7 @@ const Dashboard = {
     const el = document.getElementById('dash-cold-leads');
     if (!el) return;
     const cold = State.leads.filter(l => {
-      if (l.stage === 's5') return false;
+      if (isWonStage(l.stage)) return false;
       if (!l.last_contact) return diffDays(l.created_at) < -14;
       return diffDays(l.last_contact) < -14;
     }).slice(0, 5);
@@ -14709,7 +14747,7 @@ const Dashboard = {
           return `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(147,197,253,0.35);">
             <div style="flex:1;min-width:0;cursor:pointer;" onclick="App.go('lead-detail',{currentLeadId:'${l.id}'})">
               <div style="font-weight:700;font-size:13.5px;color:#1E3A5F;">${escapeHtml(l.name)}</div>
-              <div style="font-size:11px;color:#3B82F6;">❄️ <span class="cold-days ${daysCls}">${daysNum} ימים ללא מגע</span> · ${formatMoney(l.budget_max)}</div>
+              <div style="font-size:11px;color:#3B82F6;">❄️ <span class="cold-days ${daysCls}">${daysNum} ימים ללא מגע</span>${l.budget_max ? ' · ' + formatMoney(l.budget_max) : ''}</div>
             </div>
             <button class="btn btn-sm" style="background:linear-gradient(135deg,#2563EB,#3B82F6);color:white;border:none;font-size:11.5px;padding:5px 10px;border-radius:8px;flex-shrink:0;white-space:nowrap;"
               onclick="App.go('lead-detail',{currentLeadId:'${l.id}'});setTimeout(()=>SmartWA.open('${l.id}'),250)">
@@ -14771,7 +14809,7 @@ const Dashboard = {
     }
 
     const coldLeads = State.leads.filter(l => {
-      if (l.stage === 's5') return false;
+      if (isWonStage(l.stage)) return false;
       if (!l.last_contact) return diffDays(l.created_at) < -14;
       return diffDays(l.last_contact) < -14;
     });
@@ -14958,7 +14996,7 @@ const Pipeline = {
   _roleFilter: 'all',
 
   render() {
-    if (!this._activeStage && State.stages.length) {
+    if (State.stages.length && !State.stages.some(s => s.id === this._activeStage)) {
       this._activeStage = State.stages[0].id;
     }
     this._renderTabs();
@@ -15060,9 +15098,9 @@ const Pipeline = {
     const task = State.tasks.find(t => t.lead_id === lead.id && !t.done);
     const isOverdue = task && diffDays(task.due) < 0;
     const isToday = task && diffDays(task.due) === 0;
-    const initials = escapeHtml(lead.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase());
+    const initials = escapeHtml((lead.name || '').split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase());
     const stale = isLeadStale(lead);
-    const waPhone = (lead.phone||'').replace(/^0/,'').replace(/-/g,'');
+    const waPhone = waNumber(lead.phone);
     const scoreGlow = lead.score >= 80 ? ' score-glow' : '';
     const isNew = lead.id === State.newCardId ? ' card-new-shine' : '';
     if (isNew) setTimeout(() => { State.newCardId = null; }, 1500);
@@ -15076,8 +15114,8 @@ const Pipeline = {
           <div class="lead-card-avatar">${initials}</div>
           <div style="flex:1; min-width:0;">
             <div class="lead-card-name truncate">${escapeHtml(lead.name)}</div>
-            <div class="lead-card-meta truncate">${escapeHtml(lead.desired_area || '~~')}${_getInd() === 'realestate' && lead.rooms ? ' · ' + lead.rooms + ' חד׳' : ''}</div>
-            <div class="lead-card-meta">${formatMoney(lead.budget_min)}~${formatMoney(lead.budget_max)}</div>
+            ${(lead.desired_area || (_getInd() === 'realestate' && lead.rooms)) ? `<div class="lead-card-meta truncate">${escapeHtml(lead.desired_area || '')}${_getInd() === 'realestate' && lead.rooms ? (lead.desired_area ? ' · ' : '') + lead.rooms + ' חד׳' : ''}</div>` : ''}
+            ${formatBudgetRange(lead.budget_min, lead.budget_max) ? `<div class="lead-card-meta">${formatBudgetRange(lead.budget_min, lead.budget_max)}</div>` : ''}
           </div>
           <div class="score-badge ${scoreClass(lead.score)}${scoreGlow}">${lead.score}</div>
         </div>
@@ -15088,7 +15126,7 @@ const Pipeline = {
             ${stale ? '<span class="stale-badge">⏰ ממתין</span>' : ''}
             ${task ? `<span style="font-size:11px; color:${isOverdue?'var(--red-600)':isToday?'var(--orange-500)':'var(--gray-400)'}; font-weight:600;">${typeEmoji(task.type)} ${formatRelDate(task.due)}</span>` : ''}
           </div>
-          ${waPhone ? `<span class="card-wa-btn" onclick="event.stopPropagation();window.open('https://wa.me/972${waPhone}')">💬 WA</span>` : ''}
+          ${waPhone ? `<span class="card-wa-btn" onclick="event.stopPropagation();LeadDetail.openDirectWA('${lead.id}')">💬 WA</span>` : ''}
         </div>
       </div>
     `;
@@ -15226,6 +15264,7 @@ const DealChecklist = {
   async toggle(leadId, key, checkEl) {
     const lead = State.leads.find(l => l.id === leadId);
     if (!lead) return;
+    const prevChecklist = lead.checklist;
     const checklist = { ...(lead.checklist || {}) };
     const cur = checklist[key] || {};
     checklist[key] = { ...cur, done: !cur.done };
@@ -15240,17 +15279,30 @@ const DealChecklist = {
       const doneCount = template.filter(it => checklist[it.key]?.done).length;
       progressEl.textContent = `${doneCount} מתוך ${template.length} הושלמו`;
     }
-    if (!State.isDemo) await DB.updateLead(leadId, { checklist }).catch(() => {});
+    if (!State.isDemo) await this._save(leadId, checklist, prevChecklist);
+  },
+
+  // שמירה עם החזרת המצב הקודם בכישלון, כדי שהסימון לא יישאר בממשק בלי שנשמר
+  async _save(leadId, checklist, prevChecklist) {
+    try {
+      await DB.updateLead(leadId, { checklist });
+    } catch (e) {
+      const lead = State.leads.find(l => l.id === leadId);
+      if (lead) lead.checklist = prevChecklist;
+      toast('השינוי לא נשמר, יש לנסות שוב', 'error');
+      if (State.screen === 'lead-detail') LeadDetail.render(leadId);
+    }
   },
 
   async setDate(leadId, key, value) {
     const lead = State.leads.find(l => l.id === leadId);
     if (!lead) return;
+    const prevChecklist = lead.checklist;
     const checklist = { ...(lead.checklist || {}) };
     const cur = checklist[key] || {};
     checklist[key] = { ...cur, due_date: value || null };
     lead.checklist = checklist;
-    if (!State.isDemo) await DB.updateLead(leadId, { checklist }).catch(() => {});
+    if (!State.isDemo) await this._save(leadId, checklist, prevChecklist);
     if (State.screen === 'lead-detail') LeadDetail.render(leadId);
   },
 };
@@ -15320,7 +15372,7 @@ const LeadDetail = {
         <!-- INFO TAB -->
         <div class="tab-content active" id="tab-info">
           <div class="info-grid">
-            <div class="info-item"><div class="info-label">תקציב</div><div class="info-value">${formatMoney(lead.budget_min)}~${formatMoney(lead.budget_max)}</div></div>
+            <div class="info-item"><div class="info-label">תקציב</div><div class="info-value">${formatBudgetRange(lead.budget_min, lead.budget_max) || '~~'}</div></div>
             <div class="info-item"><div class="info-label">חדרים</div><div class="info-value">${lead.rooms||'~~'}</div></div>
             <div class="info-item"><div class="info-label">אזור מבוקש</div><div class="info-value">${escapeHtml(lead.desired_area||'~~')}</div></div>
             <div class="info-item"><div class="info-label">מקור</div><div class="info-value">${escapeHtml(sourceLabel(lead.source))}</div></div>
@@ -15745,7 +15797,7 @@ const LeadDetail = {
   },
 
   _doWA(phone) {
-    const num = phone.replace(/^0/, '').replace(/[-\s]/g, '');
+    const num = waNumber(phone);
     window.open('https://wa.me/972' + num, '_blank');
   },
 
@@ -15759,7 +15811,7 @@ const LeadDetail = {
     if (!lead) return;
     const firstName = (lead.name || '').split(' ')[0] || 'לקוח';
     const text = Tools._waTemplates[type]?.(firstName) || '';
-    const phone = (lead.phone || '').replace(/^0/, '').replace(/[-\s]/g, '');
+    const phone = waNumber(lead.phone);
     if (!phone) { toast('אין מספר טלפון לשליחה', 'error'); return; }
     window.open('https://wa.me/972' + phone + '?text=' + encodeURIComponent(text), '_blank');
   },
@@ -16018,13 +16070,13 @@ const Analytics = {
 
   renderKPIs() {
     const total = State.leads.length;
-    const closed = State.leads.filter(l => l.stage === 's5').length;
+    const closed = State.leads.filter(l => isWonStage(l.stage)).length;
     const convRate = total ? Math.round((closed / total) * 100) : 0;
     const pipelineVal = State.leads
-      .filter(l => l.stage !== 's5')
+      .filter(l => !isWonStage(l.stage))
       .reduce((s, l) => s + (l.budget_max || 0), 0);
     // avg days to close: use leads in s5 with created_at
-    const closedLeads = State.leads.filter(l => l.stage === 's5' && l.created_at);
+    const closedLeads = State.leads.filter(l => isWonStage(l.stage) && l.created_at);
     const avgDays = closedLeads.length
       ? Math.round(closedLeads.reduce((s, l) => s + Math.abs(diffDays(l.created_at)), 0) / closedLeads.length)
       : 0;
@@ -16032,7 +16084,7 @@ const Analytics = {
     const kpis = [
       { icon: '👥', label: 'סה"כ לידים',       value: total,               sub: 'כל הזמנים',     accent: '#2563EB' },
       { icon: '🎯', label: 'אחוז המרה',          value: convRate + '%',       sub: 'סגירות מסה"כ', accent: '#16A34A' },
-      { icon: '💰', label: 'שווי צינור',         value: formatMoney(pipelineVal), sub: 'פוטנציאל',   accent: '#C49A2A' },
+      { icon: '💰', label: 'שווי צינור',         value: pipelineVal ? formatMoney(pipelineVal) : '₪0', sub: 'פוטנציאל',   accent: '#C49A2A' },
       { icon: '⏱️', label: 'ממוצע ימים לסגירה',  value: avgDays || '~~',       sub: 'ימים',           accent: '#7C3AED' },
     ];
     document.getElementById('analytics-kpis').innerHTML = kpis.map(k => `
@@ -17056,10 +17108,11 @@ const Settings = {
     try {
       await DB.updateStageNamesFull(entries, deletedUuids);
       closeModal('modal-edit-stages');
-      Pipeline._renderTabs();
+      Pipeline.render();
+      if (State.screen === 'leads') Leads.render();
       toast('✅ שלבי הפייפליין עודכנו', 'success');
     } catch(e) {
-      toast('שגיאה: ' + e.message, 'error');
+      toast('שגיאה בשמירת השלבים, יש לרענן את העמוד ולנסות שוב: ' + (e?.message || ''), 'error');
     }
   },
   editName() {
@@ -17716,8 +17769,8 @@ ${fileData}
           <div class="lead-card-avatar">${initials}</div>
           <div style="flex:1; min-width:0;">
             <div class="lead-card-name truncate">${escapeHtml(lead.name)}</div>
-            <div class="lead-card-meta truncate">${escapeHtml(lead.desired_area || '~~')}</div>
-            <div class="lead-card-meta">${formatMoney(0)}~${formatMoney(lead.budget_max)}</div>
+            ${lead.desired_area ? `<div class="lead-card-meta truncate">${escapeHtml(lead.desired_area)}</div>` : ''}
+            ${formatBudgetRange(0, lead.budget_max) ? `<div class="lead-card-meta">${formatBudgetRange(0, lead.budget_max)}</div>` : ''}
           </div>
           <div class="score-badge ${scoreClass(50)}">50</div>
         </div>
@@ -18058,6 +18111,11 @@ async function moveLeadActual(leadId, stageId, regressionNote) {
     ? `🔄 הועבר מ-"${oldStage?.name}" ל-"${stage.name}", סיבה: ${regressionNote}`
     : `🔄 הועבר מ-"${oldStage?.name}" ל-"${stage.name}"`;
   State.activities.unshift({ id: uid(), lead_id: leadId, type: 'stage_change', content: actContent, created_at: today() });
+  // ה-trigger ב-DB רושם רק "שלב הועבר", ולכן הסיבה נשמרת כהערה נפרדת כדי שלא תיעלם ברענון
+  if (regressionNote && !State.isDemo) {
+    DB.addActivity({ lead_id: leadId, type: 'note', content: `סיבת החזרת שלב: ${regressionNote}` })
+      .catch(() => toast('סיבת ההחזרה לא נשמרה, כדאי להוסיף אותה כהערה בכרטיס הליד', 'warning'));
+  }
   Make.stageChanged(lead, oldStage?.name, stage.name);
   Twilio.notifyStageChanged(lead, stage.name);
   closeModal('modal-move-stage');
@@ -18077,7 +18135,7 @@ async function moveLeadActual(leadId, stageId, regressionNote) {
       deducted = true;
     }
     if (!deducted) Gamify.save();
-  } else if (stageId === 's5') {
+  } else if (isWonStage(stageId)) {
     Gamify.event('close_deal', lead);
   } else {
     Gamify.event('advance_stage', lead);
@@ -19374,7 +19432,7 @@ const ProHub = {
 
   _openLeadScore() {
     const leads = [...(State.leads || [])]
-      .filter(l => l.stage !== 's5')
+      .filter(l => !isWonStage(l.stage))
       .map(l => ({ ...l, score: this._scoreLead(l) }))
       .sort((a, b) => b.score - a.score);
 
@@ -19401,7 +19459,7 @@ const ProHub = {
     const prob = { s1: 0.05, s2: 0.15, s3: 0.35, s4: 0.60, s5: 1.0 };
     const stageNames = this._stageNames();
     const byStage = {};
-    (State.leads || []).filter(l => l.stage !== 's5').forEach(l => {
+    (State.leads || []).filter(l => !isWonStage(l.stage)).forEach(l => {
       if (!byStage[l.stage]) byStage[l.stage] = { count: 0, value: 0, prob: prob[l.stage] || 0.05 };
       byStage[l.stage].count++;
       byStage[l.stage].value += parseFloat(l.value) || 0;
@@ -19419,7 +19477,7 @@ const ProHub = {
         </div>`;
       }).join('');
 
-    const closedVal = (State.leads || []).filter(l => l.stage === 's5')
+    const closedVal = (State.leads || []).filter(l => isWonStage(l.stage))
       .reduce((s, l) => s + (parseFloat(l.value) || 0), 0);
 
     document.getElementById('pro-fc-body').innerHTML = `
@@ -19439,7 +19497,7 @@ const ProHub = {
   /* ── WA BROADCAST ── */
   _openBroadcast() {
     const stageNames = this._stageNames();
-    const opts = (State.stages || []).filter(s => s.id !== 's5')
+    const opts = (State.stages || []).filter(s => !isWonStage(s.id))
       .map(s => `<option value="${s.id}">${s.name}</option>`).join('');
 
     document.getElementById('pro-bc-body').innerHTML = `
@@ -19465,7 +19523,7 @@ const ProHub = {
   _bcUpdateList() {
     const stage = document.getElementById('bc-stage')?.value || '';
     const stageNames = this._stageNames();
-    const leads = (State.leads || []).filter(l => l.stage !== 's5' && (!stage || l.stage === stage));
+    const leads = (State.leads || []).filter(l => !isWonStage(l.stage) && (!stage || l.stage === stage));
     const wrap = document.getElementById('bc-list-wrap');
     if (!wrap) return;
     if (!leads.length) {
@@ -19494,7 +19552,7 @@ const ProHub = {
 
   _bcSendAll() {
     const stage = document.getElementById('bc-stage')?.value || '';
-    const leads = (State.leads || []).filter(l => l.stage !== 's5' && (!stage || l.stage === stage) && l.phone);
+    const leads = (State.leads || []).filter(l => !isWonStage(l.stage) && (!stage || l.stage === stage) && l.phone);
     if (!leads.length) { toast('אין לידים עם טלפון בשלב זה', 'error'); return; }
     toast(`📢 פותח WhatsApp עבור ${leads.length} לידים, לחיצה על כל אחד`);
     leads.forEach((l, i) => setTimeout(() => this._sendWa(l.id), i * 800));
@@ -19507,7 +19565,7 @@ const ProHub = {
       const s = l.source || 'לא ידוע';
       if (!src[s]) src[s] = { total: 0, closed: 0, value: 0 };
       src[s].total++;
-      if (l.stage === 's5') src[s].closed++;
+      if (isWonStage(l.stage)) src[s].closed++;
       src[s].value += parseFloat(l.value) || 0;
     });
     const sorted = Object.entries(src).sort((a, b) => b[1].total - a[1].total);
@@ -20301,7 +20359,7 @@ const QuickLog = {
           mtg.duration_min || 60,
           this._parsed.activity_summary
         );
-        const phone = (lead.phone || '').replace(/^0/,'').replace(/-/g,'');
+        const phone = waNumber(lead.phone);
         const mtgDateStr = mtg.date_iso
           ? new Date(mtg.date_iso).toLocaleString('he-IL', { weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' })
           : '';
