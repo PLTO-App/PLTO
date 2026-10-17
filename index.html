@@ -842,8 +842,10 @@
     /* ═══════════════════════════════════════
        TABS
     ═══════════════════════════════════════ */
-    .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); }
+    .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+    .tabs::-webkit-scrollbar { display: none; }
     .tab-btn {
+      flex-shrink: 0; white-space: nowrap; min-height: 44px;
       padding: 10px 16px; font-size: 14px; font-weight: 600; color: var(--gray-500);
       background: transparent; border: none; cursor: pointer;
       border-bottom: 2px solid transparent; margin-bottom: -2px;
@@ -1717,6 +1719,120 @@
       color: white; font-size: 11px; font-weight: 800;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
+
+    /* ═══════════════════════════════════════
+       ACTION SHEET, SWIPE ROW, LEAD ROW, QUICK EDIT
+    ═══════════════════════════════════════ */
+    .hide-mobile { }
+    @media (max-width: 767px) { .hide-mobile { display: none !important; } }
+    .as-overlay {
+      position: fixed; inset: 0; z-index: 250; background: rgba(10,26,46,.45);
+      display: flex; align-items: flex-end; justify-content: center;
+    }
+    .as-overlay.as-popover { background: transparent; }
+    .as-panel {
+      background: var(--surface); width: 100%; max-width: 520px;
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      padding: 8px 8px calc(12px + env(safe-area-inset-bottom, 0px));
+      box-shadow: var(--shadow-xl); max-height: 85dvh; overflow-y: auto;
+      animation: asUp .18s ease;
+    }
+    .as-overlay.as-popover .as-panel {
+      position: fixed; width: 260px; max-width: calc(100vw - 16px);
+      border-radius: var(--radius-xl); padding: 6px; animation: none;
+      border: 1px solid var(--border);
+    }
+    .as-handle { width: 36px; height: 4px; background: var(--gray-300); border-radius: 99px; margin: 4px auto 8px; }
+    .as-overlay.as-popover .as-handle { display: none; }
+    .as-title { font-size: 12px; font-weight: 700; color: var(--gray-500); padding: 4px 12px 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .as-group { font-size: 11px; font-weight: 800; color: var(--gray-400); padding: 8px 12px 2px; }
+    .as-item {
+      display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px;
+      padding: 10px 12px; border: none; background: none; border-radius: var(--radius-md);
+      font-family: var(--font); font-size: 15px; font-weight: 600; color: var(--gray-800);
+      cursor: pointer; text-align: right;
+    }
+    .as-item:hover, .as-item:focus-visible { background: var(--gray-100); outline: none; }
+    .as-item:focus-visible { box-shadow: inset 0 0 0 2px var(--blue-500); }
+    .as-item-icon { width: 24px; text-align: center; font-size: 18px; flex-shrink: 0; }
+    .as-item-danger { color: var(--red-600); }
+    .as-item[disabled] { opacity: .4; cursor: default; }
+    .as-sep { height: 1px; background: var(--border); margin: 4px 8px; }
+    @keyframes asUp { from { transform: translateY(24px); opacity: .6; } to { transform: none; opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { .as-panel { animation: none; } .sw-content { transition: none !important; } }
+
+    .toast-undo-btn {
+      margin-inline-start: 12px; min-height: 44px; padding: 0 14px; border: none; cursor: pointer;
+      border-radius: 8px; background: rgba(255,255,255,.2); color: #fff;
+      font-family: var(--font); font-size: 13px; font-weight: 800;
+    }
+
+    .sw-row { position: relative; overflow: hidden; border-radius: var(--radius-md); box-shadow: 0 1px 4px rgba(0,0,0,.06); margin-bottom: 8px; }
+    .sw-content {
+      position: relative; z-index: 1; background: var(--surface); touch-action: pan-y;
+      transition: transform .2s ease; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
+    }
+    .sw-row.sw-dragging .sw-content { transition: none; }
+    .sw-tray { position: absolute; top: 0; bottom: 0; display: flex; visibility: hidden; transition: visibility 0s .2s; }
+    .sw-row.sw-open .sw-tray, .sw-row.sw-dragging .sw-tray { visibility: visible; transition-delay: 0s; }
+    .sw-tray-left { left: 0; }
+    .sw-tray-right { right: 0; }
+    .sw-act {
+      width: 76px; border: none; color: #fff; cursor: pointer; font-family: var(--font);
+      font-size: 12px; font-weight: 700; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 4px;
+    }
+    .sw-act .sw-ico { font-size: 20px; }
+    .sw-act[disabled] { opacity: .45; cursor: default; }
+
+    .lr-card {
+      display: flex; align-items: center; gap: 10px; padding: 8px 4px 8px 10px;
+      border-radius: var(--radius-md); box-shadow: none; min-height: 64px;
+    }
+    .lr-card:hover { transform: none; box-shadow: none; }
+    .lr-card:focus-visible { outline: 2px solid var(--blue-500); outline-offset: -2px; }
+    .lr-score { width: 34px; height: 34px; font-size: 12px; flex-shrink: 0; }
+    .lr-main { flex: 1; min-width: 0; align-self: stretch; display: flex; flex-direction: column; justify-content: center; }
+    .lr-main:focus-visible { outline: 2px solid var(--blue-500); outline-offset: 2px; border-radius: 6px; }
+    .lr-name { font-size: 14px; font-weight: 800; color: var(--gray-900); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lr-meta { font-size: 12px; color: var(--gray-500); margin-top: 2px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.35; }
+    .lr-tags { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+    .lr-tags:empty { display: none; }
+    .lr-stage { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: color-mix(in srgb, var(--c) 14%, white); color: var(--c); }
+    .lr-due { font-size: 11px; font-weight: 700; color: var(--gray-500); }
+    .lr-due-overdue { color: var(--red-600); }
+    .lr-due-today { color: var(--orange-500); }
+    .lr-btn {
+      flex-shrink: 0; width: 44px; height: 44px; border: none; background: transparent;
+      border-radius: 50%; cursor: pointer; font-size: 18px; color: var(--gray-600);
+      display: flex; align-items: center; justify-content: center; font-family: var(--font);
+    }
+    .lr-btn:hover, .lr-btn:focus-visible { background: var(--gray-100); outline: none; }
+    .lr-btn:focus-visible { box-shadow: inset 0 0 0 2px var(--blue-500); }
+    .lr-more { font-size: 22px; font-weight: 800; }
+
+    .lf-row { display: flex; gap: 8px; align-items: center; }
+    .lf-btn {
+      flex-shrink: 0; min-height: 44px; padding: 0 14px; border-radius: 99px;
+      border: 1.5px solid var(--border); background: var(--surface); color: var(--gray-700);
+      font-family: var(--font); font-size: 13px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .lf-btn.active { border-color: var(--blue-500); color: var(--blue-500); }
+    .lf-count { background: var(--blue-500); color: #fff; border-radius: 99px; font-size: 11px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; padding: 0 5px; }
+    .lf-chips { display: flex; gap: 6px; padding: 0 16px 8px; flex-wrap: wrap; }
+    .lf-chip {
+      min-height: 32px; padding: 0 12px; border-radius: 99px; border: none; cursor: pointer;
+      background: var(--blue-50); color: var(--blue-500); font-family: var(--font); font-size: 12px; font-weight: 700;
+    }
+
+    .qe-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .qe-chip {
+      min-height: 44px; padding: 0 16px; border-radius: 99px; cursor: pointer;
+      border: 2px solid var(--c, var(--border)); background: var(--surface); color: var(--gray-800);
+      font-family: var(--font); font-size: 14px; font-weight: 700;
+    }
+    .qe-chip.active { background: var(--c, var(--navy-500)); color: #fff; }
 
     /* ═══════════════════════════════════════
        SEARCH BAR
@@ -4751,22 +4867,24 @@
       <div class="screen-header">
         <div class="screen-title" id="screen-pipeline-title">📋 פייפליין לידים</div>
         <div class="flex gap-2">
-          <button class="btn btn-ghost btn-sm" onclick="Settings.openPipelineStages()" title="עריכת שמות שלבים">✏️ שלבים</button>
-          <button class="btn btn-ghost btn-sm" onclick="LeadImport.open()">📋 ייבוא</button>
-          <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-lead')">+ ליד</button>
+          <button class="btn btn-primary btn-sm hide-mobile" onclick="openModal('modal-add-lead')">+ ליד</button>
+          <button class="btn btn-ghost btn-sm" aria-haspopup="menu" aria-label="עוד פעולות" onclick="Pipeline.headerMenu(this)" style="font-size:20px;font-weight:800;">⋯</button>
         </div>
       </div>
-      <div class="pipeline-search-wrap" style="position:relative;">
-        <input type="text" class="pipeline-search-input" id="pipeline-search-input"
-          placeholder="🔍 חיפוש לפי שם, אזור או טלפון..."
-          oninput="Pipeline.search(this.value); document.getElementById('pipeline-search-clear').style.display=this.value?'flex':'none';">
-        <button id="pipeline-search-clear"
-          style="display:none;position:absolute;left:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:16px;color:var(--gray-400);cursor:pointer;width:24px;height:24px;align-items:center;justify-content:center;"
-          onclick="document.getElementById('pipeline-search-input').value='';Pipeline.search('');this.style.display='none';"
-          title="ניקוי חיפוש">×</button>
+      <div class="pipeline-search-wrap lf-row">
+        <div style="position:relative;flex:1;min-width:0;">
+          <input type="text" class="pipeline-search-input" id="pipeline-search-input"
+            placeholder="🔍 חיפוש לפי שם, אזור או טלפון..."
+            oninput="Pipeline.search(this.value); document.getElementById('pipeline-search-clear').style.display=this.value?'flex':'none';">
+          <button id="pipeline-search-clear" aria-label="ניקוי חיפוש"
+            style="display:none;position:absolute;left:4px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:18px;color:var(--gray-400);cursor:pointer;width:44px;height:44px;align-items:center;justify-content:center;"
+            onclick="document.getElementById('pipeline-search-input').value='';Pipeline.search('');this.style.display='none';"
+            title="ניקוי חיפוש">×</button>
+        </div>
+        <button type="button" class="lf-btn" id="pipeline-filter-btn" aria-haspopup="menu" onclick="LeadFilters.open('pipeline',this)">סינון <span class="lf-count" style="display:none;">0</span></button>
       </div>
       <div class="pipeline-stage-tabs" id="pipeline-stage-tabs"></div>
-      <div class="role-filter-pills" id="pipeline-role-filter"></div>
+      <div class="lf-chips" id="pipeline-role-filter" style="display:none;"></div>
       <div class="pipeline-wrapper" id="pipeline-board"></div>
     </div>
 
@@ -4775,16 +4893,17 @@
       <div class="screen-header">
         <div class="screen-title" id="screen-leads-title">👥 כל הלידים</div>
         <div class="flex gap-2">
-          <button class="btn btn-ghost btn-sm" onclick="LeadImport.open()">📋 ייבוא</button>
-          <button class="btn btn-primary btn-sm btn-add-lead-label" onclick="openModal('modal-add-lead')">+ ליד חדש</button>
+          <button class="btn btn-primary btn-sm btn-add-lead-label hide-mobile" onclick="openModal('modal-add-lead')">+ ליד חדש</button>
+          <button class="btn btn-ghost btn-sm" aria-haspopup="menu" aria-label="עוד פעולות" onclick="Leads.headerMenu(this)" style="font-size:20px;font-weight:800;">⋯</button>
         </div>
       </div>
-      <div class="search-wrap">
-        <input type="search" class="search-input" id="leads-search"
+      <div class="search-wrap lf-row">
+        <input type="search" class="search-input" id="leads-search" style="flex:1;min-width:0;"
                placeholder="🔍 חיפוש לפי שם, טלפון, אזור..."
                oninput="Leads.search(this.value)">
+        <button type="button" class="lf-btn" id="leads-filter-btn" aria-haspopup="menu" onclick="LeadFilters.open('leads',this)">מיון וסינון <span class="lf-count" style="display:none;">0</span></button>
       </div>
-      <div class="role-filter-pills" id="leads-role-filter"></div>
+      <div class="lf-chips" id="leads-role-filter" style="display:none;"></div>
       <div class="screen-body" id="leads-list-container"></div>
     </div>
 
@@ -6747,6 +6866,18 @@
 <!-- ═══════════════════════════════════════
      MODAL: MOVE STAGE
 ═══════════════════════════════════════ -->
+<!-- מודל: עדכון מהיר של ליד (שלב, מעקב או הערה) -->
+<div id="modal-quick-edit" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-quick-edit')">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="qe-title">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="qe-title"></div>
+      <button class="modal-close" onclick="closeModal('modal-quick-edit')" aria-label="סגירה">✕</button>
+    </div>
+    <div id="qe-body"></div>
+  </div>
+</div>
+
 <div id="modal-move-stage" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-move-stage')">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -15017,53 +15148,584 @@ const TrackerUnread = {
 };
 window.TrackerUnread = TrackerUnread;
 
+/* ═══════════════════════════════════════════
+   ACTION SHEET, UNDO, SWIPE ROW, LEAD ROW, QUICK EDIT, FILTERS
+   כל פעולה שזמינה במחווה (swipe או לחיצה ארוכה) זמינה גם בתפריט ⋯.
+═══════════════════════════════════════════ */
+function safeColor(c) { return /^#[0-9a-fA-F]{3,8}$/.test(c || '') ? c : '#94A3B8'; }
+
+// חלונית תחתונה במובייל ו-popover צמוד לכפתור בדסקטופ. items יכול להיות מערך או פונקציה
+// שמחזירה מערך (לפריטי keepOpen שמציירים את עצמם מחדש אחרי כל בחירה).
+const ActionSheet = {
+  _el: null, _items: null, _title: '', _anchor: null, _prevFocus: null, _keyHandler: null,
+  open(title, items, anchor) {
+    this.close(true);
+    this._title = title || '';
+    this._items = items;
+    this._anchor = anchor || null;
+    this._prevFocus = document.activeElement;
+    const popover = !!anchor && window.matchMedia('(min-width: 768px)').matches;
+    const ov = document.createElement('div');
+    ov.id = 'action-sheet';
+    ov.className = 'as-overlay' + (popover ? ' as-popover' : '');
+    ov.addEventListener('click', e => {
+      if (e.target === ov) { this.close(); return; }
+      const btn = e.target.closest('.as-item');
+      if (!btn || btn.disabled) return;
+      const it = this._list()[+btn.dataset.i];
+      if (!it) return;
+      if (it.keepOpen) { if (it.run) it.run(); this._paint(true); return; }
+      this.close();
+      if (it.run) it.run();
+    });
+    this._keyHandler = e => this._key(e);
+    document.addEventListener('keydown', this._keyHandler, true);
+    document.body.appendChild(ov);
+    this._el = ov;
+    this._paint(false);
+    const first = ov.querySelector('.as-item:not([disabled])');
+    if (first) first.focus();
+  },
+  _list() { return typeof this._items === 'function' ? this._items() : this._items; },
+  _paint(keepFocus) {
+    const ov = this._el;
+    if (!ov) return;
+    const idx = keepFocus ? [...ov.querySelectorAll('.as-item')].indexOf(document.activeElement) : -1;
+    const items = this._list();
+    ov.innerHTML = `<div class="as-panel" role="menu" aria-label="${escapeHtml(this._title || 'פעולות')}"><div class="as-handle"></div>${
+      this._title ? `<div class="as-title">${escapeHtml(this._title)}</div>` : ''}${
+      items.map((it, i) => it.sep ? '<div class="as-sep" role="separator"></div>'
+        : it.header ? `<div class="as-group">${escapeHtml(it.header)}</div>`
+        : `<button type="button" role="menuitem" class="as-item${it.danger ? ' as-item-danger' : ''}" data-i="${i}"${it.disabled ? ' disabled' : ''}><span class="as-item-icon" aria-hidden="true">${escapeHtml(it.icon || '')}</span><span>${escapeHtml(it.label)}</span></button>`
+      ).join('')}</div>`;
+    if (keepFocus && idx >= 0) { const b = ov.querySelectorAll('.as-item')[idx]; if (b) b.focus(); }
+    if (ov.classList.contains('as-popover')) this._place();
+  },
+  _place() {
+    const panel = this._el && this._el.querySelector('.as-panel');
+    const a = this._anchor;
+    if (!panel || !a || !a.isConnected) return;
+    const r = a.getBoundingClientRect();
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    const left = Math.min(Math.max(8, r.right - w), window.innerWidth - w - 8);
+    let top = r.bottom + 6;
+    if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 6);
+    panel.style.left = left + 'px';
+    panel.style.top = top + 'px';
+  },
+  close(silent) {
+    if (!this._el) return;
+    document.removeEventListener('keydown', this._keyHandler, true);
+    this._el.remove();
+    this._el = null;
+    if (!silent && this._prevFocus && this._prevFocus.isConnected && this._prevFocus.focus) this._prevFocus.focus();
+  },
+  _key(e) {
+    if (!this._el) return;
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); this.close(); return; }
+    const items = [...this._el.querySelectorAll('.as-item:not([disabled])')];
+    if (!items.length) return;
+    const i = items.indexOf(document.activeElement);
+    const go = d => items[(i + d + items.length) % items.length].focus();
+    if (e.key === 'ArrowDown') { e.preventDefault(); go(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); go(-1); }
+    else if (e.key === 'Tab') { e.preventDefault(); go(e.shiftKey ? -1 : 1); }
+  },
+};
+
+// מחיקה עם ביטול: הפעולה מתבצעת בשרת רק כשחלף הזמן. סגירת האפליקציה או מעבר לרקע
+// מבצעים אותה מיד, וסגירה פתאומית בתוך החלון משאירה את הפריט במקומו (הכיוון הבטוח).
+const Undo = {
+  _pending: new Set(),
+  show(msg, onUndo, onCommit, ms = 6000) {
+    this.flush();
+    const c = document.getElementById('toast-container');
+    if (!c) { onCommit(); return; }
+    const t = document.createElement('div');
+    t.className = 'toast toast-info';
+    const span = document.createElement('span');
+    span.textContent = msg;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'toast-undo-btn';
+    b.textContent = 'ביטול';
+    t.append(span, b);
+    c.appendChild(t);
+    const p = { done: false, timer: 0 };
+    const finish = fn => { if (p.done) return; p.done = true; clearTimeout(p.timer); t.remove(); this._pending.delete(p); fn(); };
+    p.commit = () => finish(onCommit);
+    p.undo = () => finish(onUndo);
+    b.addEventListener('click', p.undo);
+    p.timer = setTimeout(p.commit, ms);
+    this._pending.add(p);
+  },
+  flush() { [...this._pending].forEach(p => p.commit()); },
+};
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') Undo.flush(); });
+
+// שורה עם מגשי פעולות שנחשפים בגרירה אופקית (מגע בלבד). המגש לא מבצע פעולה בעצמו.
+const SwipeRow = {
+  _drag: null, _open: null, _suppressUntil: 0, _lp: 0, _ctxAt: 0,
+  init() {
+    document.addEventListener('pointerdown', e => this._down(e), { passive: true });
+    document.addEventListener('pointermove', e => this._move(e), { passive: true });
+    document.addEventListener('pointerup', e => this._up(e), { passive: true });
+    document.addEventListener('pointercancel', e => this._up(e, true), { passive: true });
+    document.addEventListener('click', e => this._click(e), true);
+    // לחיצה ימנית בדסקטופ ולחיצה ארוכה באנדרואיד פותחות את אותו תפריט פעולות
+    document.addEventListener('contextmenu', e => {
+      const row = e.target.closest && e.target.closest('.sw-row');
+      if (!row || !(row.dataset.lpLead || row.dataset.lpTask)) return;
+      e.preventDefault();
+      this._ctxAt = Date.now();
+      this._menu(row);
+    });
+  },
+  _enabled() { return !State.isAccessibleMode; },
+  _menu(row) {
+    if (row.dataset.lpLead) LeadRow.menu(row.dataset.lpLead);
+    else if (row.dataset.lpTask) TaskRow.menu(row.dataset.lpTask);
+  },
+  _down(e) {
+    if (e.pointerType === 'mouse' || !this._enabled()) return;
+    if (e.target.closest && e.target.closest('.sw-tray')) return;
+    const content = e.target.closest && e.target.closest('.sw-content');
+    if (!content) { if (this._open) this.close(); return; }
+    const row = content.closest('.sw-row');
+    if (this._open && this._open !== row) this.close();
+    const l = row.querySelector('.sw-tray-left'), r = row.querySelector('.sw-tray-right');
+    this._drag = {
+      id: e.pointerId, row, content, x: e.clientX, y: e.clientY,
+      wl: l ? l.offsetWidth : 0, wr: r ? r.offsetWidth : 0,
+      start: row._swOffset || 0, cur: null, decided: false, horiz: false,
+    };
+    clearTimeout(this._lp);
+    if (row.dataset.lpLead || row.dataset.lpTask) this._lp = setTimeout(() => this._longPress(row), 550);
+  },
+  _move(e) {
+    const d = this._drag;
+    if (!d || e.pointerId !== d.id) return;
+    const dx = e.clientX - d.x, dy = e.clientY - d.y;
+    if (!d.decided) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      d.decided = true;
+      clearTimeout(this._lp);
+      d.horiz = Math.abs(dx) > Math.abs(dy) * 1.2;
+      if (!d.horiz) { this._drag = null; return; }
+      d.row.classList.add('sw-dragging');
+      try { d.content.setPointerCapture(e.pointerId); } catch (_) { /* לא קריטי */ }
+    }
+    const off = Math.max(d.wr ? -d.wr - 24 : 0, Math.min(d.wl ? d.wl + 24 : 0, d.start + dx));
+    d.cur = off;
+    d.content.style.transform = `translateX(${off}px)`;
+  },
+  _up(e, cancel) {
+    clearTimeout(this._lp);
+    const d = this._drag;
+    if (!d || e.pointerId !== d.id) return;
+    this._drag = null;
+    if (!d.horiz) return;
+    const off = d.cur == null ? d.start : d.cur;
+    let target = 0;
+    if (!cancel) {
+      if (d.wl && off > d.wl * 0.4) target = d.wl;
+      else if (d.wr && off < -d.wr * 0.4) target = -d.wr;
+    }
+    this._suppressUntil = Date.now() + 350;
+    this._set(d.row, d.content, target);
+  },
+  _set(row, content, target) {
+    row._swOffset = target;
+    content.style.transform = target ? `translateX(${target}px)` : '';
+    row.classList.remove('sw-dragging');
+    row.classList.toggle('sw-open', !!target);
+    if (target) this._open = row;
+    else if (this._open === row) this._open = null;
+  },
+  close() {
+    const row = this._open;
+    this._open = null;
+    if (row && row.isConnected) this._set(row, row.querySelector('.sw-content'), 0);
+  },
+  _longPress(row) {
+    if (!row.isConnected || (this._drag && this._drag.horiz)) return;
+    this._drag = null;
+    this._suppressUntil = Date.now() + 700;
+    if (Date.now() - this._ctxAt < 800) return;
+    if (navigator.vibrate) navigator.vibrate(12);
+    this._menu(row);
+  },
+  _click(e) {
+    if (Date.now() < this._suppressUntil) { e.stopPropagation(); e.preventDefault(); return; }
+    if (e.target.closest && e.target.closest('.sw-tray')) { setTimeout(() => this.close(), 0); return; }
+    if (!this._open) return;
+    const inOpen = e.target.closest && e.target.closest('.sw-row') === this._open && e.target.closest('.sw-content');
+    if (inOpen) { e.stopPropagation(); e.preventDefault(); }
+    this.close();
+  },
+};
+SwipeRow.init();
+
+const LeadRow = {
+  animate: true,
+  _tasks: null,
+  // מפה של המשימה הפתוחה הקרובה לכל ליד, כדי שלא לחפש במערך המשימות לכל כרטיס
+  prep() {
+    const m = new Map();
+    for (const t of State.tasks || []) {
+      if (t.done || !t.lead_id) continue;
+      const cur = m.get(t.lead_id);
+      if (!cur || t.due < cur.due) m.set(t.lead_id, t);
+    }
+    this._tasks = m;
+  },
+  nextTask(leadId) {
+    if (this._tasks) return this._tasks.get(leadId) || null;
+    return (State.tasks || []).filter(t => t.lead_id === leadId && !t.done).sort((a, b) => (a.due < b.due ? -1 : 1))[0] || null;
+  },
+  render(lead, opts = {}) {
+    const { variant = 'card', color = '', idx = 0 } = opts;
+    const id = escapeHtml(lead.id);
+    const name = lead.name || 'ללא שם';
+    const stage = State.stages.find(s => s.id === lead.stage);
+    const task = this.nextTask(lead.id);
+    const meta = [
+      variant === 'row' ? maskPhone(lead.phone) : '',
+      lead.desired_area,
+      _getInd() === 'realestate' && lead.rooms ? lead.rooms + ' חד׳' : '',
+      formatBudgetRange(lead.budget_min, lead.budget_max),
+    ].filter(Boolean).map(escapeHtml).join(' · ');
+    const tags = [];
+    if (isLeadStale(lead)) tags.push('<span class="stale-badge">⏰ ממתין</span>');
+    if (variant === 'row' && stage) tags.push(`<span class="lr-stage" style="--c:${safeColor(stage.color)}">${escapeHtml(stage.name)}</span>`);
+    const role = roleBadgeHtml(lead.lead_role);
+    if (role) tags.push(role);
+    let due = '';
+    if (task) {
+      const d = diffDays(task.due);
+      due = `<span class="lr-due ${d < 0 ? 'lr-due-overdue' : d === 0 ? 'lr-due-today' : ''}">${typeEmoji(task.type)} ${escapeHtml(formatRelDate(task.due))}</span>`;
+    }
+    const unread = TrackerUnread.get(lead.id);
+    const chips = tags.slice(0, 2).join('') + due + (unread ? `<span class="lr-due" style="color:var(--blue-500)">💬 ${Number(unread) || ''}</span>` : '');
+    const phone = waNumber(lead.phone);
+    const idx2 = State.stages.findIndex(s => s.id === lead.stage);
+    const canNext = idx2 >= 0 && idx2 < State.stages.length - 1 && !isWonStage(lead.stage);
+    const isNew = lead.id === State.newCardId;
+    if (isNew) setTimeout(() => { State.newCardId = null; }, 1500);
+    const anim = this.animate && idx < 8 ? ` card-enter${isNew ? ' card-new-shine' : ''}` : '';
+    return `
+      <div class="sw-row${anim}" data-lp-lead="${id}" style="--stage-color:${safeColor(color || (stage && stage.color))};${anim ? 'animation-delay:' + idx * 40 + 'ms' : ''}">
+        ${phone ? `<div class="sw-tray sw-tray-left">
+          <button type="button" class="sw-act" style="background:#16A34A" onclick="LeadDetail.openDirectWA('${id}')"><span class="sw-ico">💬</span>WhatsApp</button>
+          <button type="button" class="sw-act" style="background:#2563EB" onclick="LeadRow.call('${id}')"><span class="sw-ico">📞</span>שיחה</button>
+        </div>` : ''}
+        <div class="sw-tray sw-tray-right">
+          <button type="button" class="sw-act" style="background:#D97706" onclick="QuickEdit.open('${id}','followup')"><span class="sw-ico">🔔</span>מעקב</button>
+          <button type="button" class="sw-act" style="background:#0F1F3D" onclick="LeadRow.nextStage('${id}')"${canNext ? '' : ' disabled'}><span class="sw-ico">⏭️</span>שלב הבא</button>
+        </div>
+        <div class="sw-content">
+          <div class="lead-card lr-card" onclick="App.go('lead-detail',{currentLeadId:'${id}'})">
+            <div class="score-badge ${scoreClass(lead.score)} lr-score">${lead.score ?? ''}</div>
+            <div class="lr-main" role="button" tabindex="0" aria-label="${escapeHtml(name)}, פתיחת כרטיס"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
+              <div class="lr-name">${escapeHtml(name)}</div>
+              ${meta ? `<div class="lr-meta">${meta}</div>` : ''}
+              ${chips ? `<div class="lr-tags">${chips}</div>` : ''}
+            </div>
+            ${phone ? `<button type="button" class="lr-btn" aria-label="WhatsApp ל${escapeHtml(name)}" onclick="event.stopPropagation();LeadDetail.openDirectWA('${id}')">💬</button>` : ''}
+            <button type="button" class="lr-btn lr-more" aria-haspopup="menu" aria-label="פעולות על ${escapeHtml(name)}" onclick="event.stopPropagation();LeadRow.menu('${id}',this)">⋯</button>
+          </div>
+        </div>
+      </div>`;
+  },
+  call(id) {
+    const lead = State.leads.find(l => l.id === id);
+    if (!lead || !lead.phone) { toast('אין מספר טלפון לשיחה', 'error'); return; }
+    if (State.isDemo) { toast('⚡ מצב דמו, בגרסה האמיתית ייחייג ללקוח', 'warning'); return; }
+    CallLog.show(id, lead.phone);
+  },
+  nextStage(id) {
+    const lead = State.leads.find(l => l.id === id);
+    if (!lead) return;
+    const i = State.stages.findIndex(s => s.id === lead.stage);
+    const next = State.stages[i + 1];
+    if (i < 0 || !next || isWonStage(lead.stage)) { toast('הליד כבר בשלב האחרון', 'info'); return; }
+    moveLead(id, next.id);
+  },
+  menu(id, anchor) {
+    const lead = State.leads.find(l => l.id === id);
+    if (!lead) return;
+    const hasPhone = !!waNumber(lead.phone);
+    ActionSheet.open(lead.name || 'ליד', [
+      { icon: '📂', label: 'פתיחת כרטיס', run: () => App.go('lead-detail', { currentLeadId: id }) },
+      { icon: '💬', label: 'WhatsApp', disabled: !hasPhone, run: () => LeadDetail.openDirectWA(id) },
+      { icon: '📞', label: 'שיחה', disabled: !hasPhone, run: () => this.call(id) },
+      { sep: true },
+      { icon: '🔄', label: 'שינוי שלב', run: () => QuickEdit.open(id, 'stage') },
+      { icon: '🔔', label: 'קביעת מעקב', run: () => QuickEdit.open(id, 'followup') },
+      { icon: '📝', label: 'הוספת הערה', run: () => QuickEdit.open(id, 'note') },
+      { icon: '✏️', label: 'עריכת פרטים', run: () => openEditLead(id) },
+      { sep: true },
+      { icon: '🗑', label: 'מחיקה', danger: true, run: () => quickDeleteLead(id) },
+    ], anchor);
+  },
+  // רענון המסך הפעיל בלי להריץ מחדש את אנימציית הכניסה של הכרטיסים
+  refresh() {
+    this.animate = false;
+    try {
+      if (State.screen === 'pipeline') Pipeline.render();
+      else if (State.screen === 'leads') Leads.render();
+      else if (State.screen === 'lead-detail') LeadDetail.render(State.currentLeadId);
+      else if (State.screen === 'tasks') Tasks.render();
+      else if (State.screen === 'dashboard') Dashboard.render();
+    } finally { this.animate = true; }
+  },
+};
+
+const QuickEdit = {
+  _id: null,
+  open(leadId, mode) {
+    const lead = State.leads.find(l => l.id === leadId);
+    if (!lead) return;
+    this._id = leadId;
+    const titles = { stage: 'שינוי שלב', followup: 'קביעת מעקב', note: 'הוספת הערה' };
+    document.getElementById('qe-title').textContent = `${titles[mode] || 'עדכון מהיר'}: ${lead.name || ''}`;
+    const body = document.getElementById('qe-body');
+    if (mode === 'stage') {
+      body.innerHTML = `<div class="qe-chips">${State.stages.map(s =>
+        `<button type="button" class="qe-chip${s.id === lead.stage ? ' active' : ''}" style="--c:${safeColor(s.color)}" onclick="QuickEdit.stage('${escapeHtml(s.id)}')">${escapeHtml(s.name)}</button>`).join('')}</div>`;
+    } else if (mode === 'followup') {
+      body.innerHTML = `<div class="qe-chips">${[['היום', 0], ['מחר', 1], ['בעוד 3 ימים', 3], ['בעוד שבוע', 7]].map(([l, d]) =>
+        `<button type="button" class="qe-chip" onclick="QuickEdit.followup(${d})">${l}</button>`).join('')}</div>
+        <div class="form-group" style="margin-top:16px;">
+          <label class="form-label" for="qe-date">תאריך אחר</label>
+          <div style="display:flex;gap:8px;">
+            <input type="date" id="qe-date" class="form-input" min="${today()}" style="flex:1;">
+            <button type="button" class="btn btn-primary" onclick="QuickEdit.followupDate()">שמירה</button>
+          </div>
+        </div>`;
+    } else {
+      body.innerHTML = `<div class="form-group">
+          <label class="form-label" for="qe-note">הערה</label>
+          <textarea id="qe-note" class="form-input form-textarea" maxlength="1000" placeholder="מה חשוב לזכור על השיחה או על הליד"></textarea>
+        </div>
+        <div class="modal-footer" style="margin-top:12px;">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('modal-quick-edit')">ביטול</button>
+          <button type="button" class="btn btn-primary" style="flex:1;" id="qe-note-save" onclick="QuickEdit.note()">שמירת הערה</button>
+        </div>`;
+    }
+    openModal('modal-quick-edit');
+    const first = body.querySelector('textarea, .qe-chip');
+    if (first) setTimeout(() => first.focus(), 60);
+  },
+  stage(stageId) {
+    closeModal('modal-quick-edit');
+    moveLead(this._id, stageId);
+  },
+  followup(days) { return this._createFollowup(addDays(days)); },
+  followupDate() {
+    const v = (document.getElementById('qe-date') || {}).value;
+    if (!v) { toast('יש לבחור תאריך', 'warning'); return; }
+    return this._createFollowup(v);
+  },
+  async _createFollowup(due) {
+    if (demoGuard()) return;
+    const lead = State.leads.find(l => l.id === this._id);
+    if (!lead) return;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(due) || due < today()) { toast('יש לבחור תאריך מהיום והלאה', 'warning'); return; }
+    closeModal('modal-quick-edit');
+    try {
+      const t = await DB.addTask({ lead_id: lead.id, title: `מעקב: ${lead.name}`, type: 'call', priority: 'medium', due });
+      State.tasks.push(t);
+    } catch (e) {
+      toast('המעקב לא נשמר, יש לנסות שוב', 'error');
+      return;
+    }
+    App.updateBadges();
+    LeadRow.refresh();
+    toast(`נקבע מעקב: ${formatRelDate(due)}`, 'success');
+  },
+  async note() {
+    if (demoGuard()) return;
+    const text = ((document.getElementById('qe-note') || {}).value || '').trim();
+    if (!text) { toast('יש לכתוב הערה לפני השמירה', 'warning'); return; }
+    const btn = document.getElementById('qe-note-save');
+    if (btn) btn.disabled = true;
+    try {
+      const act = await DB.addActivity({ lead_id: this._id, type: 'note', content: text.slice(0, 1000) });
+      State.activities.unshift(act);
+    } catch (e) {
+      // הטקסט נשאר בחלון כדי שלא יאבד
+      if (btn) btn.disabled = false;
+      toast('ההערה לא נשמרה, אפשר לנסות שוב', 'error');
+      return;
+    }
+    closeModal('modal-quick-edit');
+    toast('ההערה נשמרה', 'success');
+    if (State.screen === 'lead-detail') LeadDetail.render(this._id);
+  },
+};
+
+// סינון ומיון משותפים לפייפליין ולרשימת הלידים. המצב נשמר על אובייקט המסך (Pipeline או Leads).
+const LeadFilters = {
+  _SORT_KEY: 'plto_leads_sort',
+  SORTS: [
+    { id: 'created', label: 'נוצרו לאחרונה' },
+    { id: 'followup', label: 'מעקב קרוב' },
+    { id: 'contact', label: 'ללא קשר הכי הרבה זמן' },
+    { id: 'score', label: 'ציון גבוה' },
+  ],
+  sort() {
+    try { const v = localStorage.getItem(this._SORT_KEY); if (this.SORTS.some(s => s.id === v)) return v; } catch (_) { /* ללא אחסון */ }
+    return 'created';
+  },
+  setSort(v) { try { localStorage.setItem(this._SORT_KEY, v); } catch (_) { /* ללא אחסון */ } },
+  hasOverdue(lead) { const t = LeadRow.nextTask(lead.id); return !!t && diffDays(t.due) < 0; },
+  apply(list, scr) {
+    return list.filter(l =>
+      roleMatchesFilter(l.lead_role, scr._roleFilter) &&
+      (!scr._stale || isLeadStale(l)) &&
+      (!scr._overdue || this.hasOverdue(l)) &&
+      (!scr._stage || scr._stage === 'all' || l.stage === scr._stage));
+  },
+  sorted(list) {
+    const mode = this.sort();
+    if (mode === 'created') return list;
+    const out = [...list];
+    const due = l => { const t = LeadRow.nextTask(l.id); return t ? t.due : '9999-12-31'; };
+    if (mode === 'followup') out.sort((a, b) => (due(a) < due(b) ? -1 : due(a) > due(b) ? 1 : 0));
+    else if (mode === 'contact') out.sort((a, b) => (a.last_contact || '') < (b.last_contact || '') ? -1 : (a.last_contact || '') > (b.last_contact || '') ? 1 : 0);
+    else if (mode === 'score') out.sort((a, b) => (b.score || 0) - (a.score || 0));
+    return out;
+  },
+  _scr(name) { return name === 'pipeline' ? Pipeline : Leads; },
+  _active(scr) {
+    const a = [];
+    if (scr._roleFilter && scr._roleFilter !== 'all' && showsBuyerSellerRole()) {
+      const p = ROLE_FILTER_PILLS.find(x => x.id === scr._roleFilter);
+      a.push({ key: 'role', label: p ? p.label : scr._roleFilter });
+    }
+    if (scr._stale) a.push({ key: 'stale', label: 'ממתינים בלי תנועה' });
+    if (scr._overdue) a.push({ key: 'overdue', label: 'מעקב באיחור' });
+    if (scr._stage && scr._stage !== 'all') {
+      const s = State.stages.find(x => x.id === scr._stage);
+      a.push({ key: 'stage', label: s ? s.name : 'שלב' });
+    }
+    return a;
+  },
+  // כפתור הסינון (ספירה) ושורת צ'יפים של סינון פעיל
+  paint(name) {
+    const scr = this._scr(name);
+    const active = this._active(scr);
+    const btn = document.getElementById(`${name}-filter-btn`);
+    if (btn) {
+      btn.classList.toggle('active', active.length > 0);
+      const c = btn.querySelector('.lf-count');
+      if (c) { c.textContent = active.length; c.style.display = active.length ? '' : 'none'; }
+    }
+    const el = document.getElementById(`${name}-role-filter`);
+    if (!el) return;
+    el.className = 'lf-chips';
+    el.style.display = active.length ? '' : 'none';
+    el.innerHTML = active.map(a => `<button type="button" class="lf-chip" onclick="LeadFilters.clear('${name}','${a.key}')" aria-label="הסרת סינון ${escapeHtml(a.label)}">✕ ${escapeHtml(a.label)}</button>`).join('');
+  },
+  clear(name, key) {
+    const scr = this._scr(name);
+    if (key === 'role' || key === 'all') scr._roleFilter = 'all';
+    if (key === 'stale' || key === 'all') scr._stale = false;
+    if (key === 'overdue' || key === 'all') scr._overdue = false;
+    if ((key === 'stage' || key === 'all') && '_stage' in scr) scr._stage = 'all';
+    scr.render();
+  },
+  open(name, anchor) {
+    const scr = this._scr(name);
+    const items = () => {
+      const out = [];
+      if (showsBuyerSellerRole()) {
+        const enabled = RoleFilterPrefs.get();
+        out.push({ header: 'סוג ליד' });
+        [{ id: 'all', label: 'הכל' }, ...ROLE_FILTER_PILLS.filter(p => enabled.includes(p.id))].forEach(p =>
+          out.push({ icon: scr._roleFilter === p.id ? '✓' : '', label: p.label, keepOpen: true, run: () => { scr._roleFilter = p.id; scr.render(); } }));
+        out.push({ icon: '⚙️', label: 'התאמת סוגי הלידים המוצגים', run: () => RoleFilterSettings.open() });
+        out.push({ sep: true });
+      }
+      out.push({ header: 'מצב' });
+      out.push({ icon: scr._stale ? '✓' : '', label: 'ממתינים בלי תנועה', keepOpen: true, run: () => { scr._stale = !scr._stale; scr.render(); } });
+      out.push({ icon: scr._overdue ? '✓' : '', label: 'מעקב באיחור', keepOpen: true, run: () => { scr._overdue = !scr._overdue; scr.render(); } });
+      if (name === 'leads') {
+        out.push({ sep: true });
+        out.push({ header: 'שלב' });
+        [{ id: 'all', name: 'כל השלבים' }, ...State.stages].forEach(s =>
+          out.push({ icon: scr._stage === s.id ? '✓' : '', label: s.name, keepOpen: true, run: () => { scr._stage = s.id; scr.render(); } }));
+        out.push({ sep: true });
+        out.push({ header: 'מיון' });
+        this.SORTS.forEach(s =>
+          out.push({ icon: this.sort() === s.id ? '✓' : '', label: s.label, keepOpen: true, run: () => { this.setSort(s.id); scr.render(); } }));
+      }
+      if (this._active(scr).length) {
+        out.push({ sep: true });
+        out.push({ icon: '🧹', label: 'ניקוי כל הסינונים', keepOpen: true, run: () => this.clear(name, 'all') });
+      }
+      return out;
+    };
+    ActionSheet.open(name === 'leads' ? 'מיון וסינון' : 'סינון', items, anchor);
+  },
+};
+
 const Pipeline = {
   _query: '',
   _activeStage: null,
   _roleFilter: 'all',
+  _stale: false,
+  _overdue: false,
 
   render() {
     if (State.stages.length && !State.stages.some(s => s.id === this._activeStage)) {
       this._activeStage = State.stages[0].id;
     }
+    LeadRow.prep();
     this._renderTabs();
-    this._renderRoleFilter();
+    LeadFilters.paint('pipeline');
     const q = this._query.toLowerCase().trim();
+    const match = l =>
+      (l.name||'').toLowerCase().includes(q) ||
+      (l.phone||'').includes(q) ||
+      (l.desired_area||'').toLowerCase().includes(q);
     const board = document.getElementById('pipeline-board');
     board.classList.toggle('is-searching', !!q);
+    const filtersOn = LeadFilters._active(this).length > 0;
     board.innerHTML = State.stages.map((stage, stageIdx) => {
-      let leads = State.leads.filter(l => l.stage === stage.id && roleMatchesFilter(l.lead_role, this._roleFilter));
+      let leads = LeadFilters.apply(State.leads.filter(l => l.stage === stage.id), this);
       const allCount = leads.length;
-      if (q) leads = leads.filter(l =>
-        (l.name||'').toLowerCase().includes(q) ||
-        (l.phone||'').includes(q) ||
-        (l.desired_area||'').toLowerCase().includes(q)
-      );
+      if (q) leads = leads.filter(match);
       const hasHits = q && leads.length > 0;
       const isTabActive = !q && this._activeStage === stage.id;
       const totalVal = leads.reduce((s,l) => s + (l.budget_max||0), 0);
       const classes = ['kanban-col', isTabActive ? 'tab-active' : '', hasHits ? 'has-hits' : ''].filter(Boolean).join(' ');
+      const color = safeColor(stage.color);
       return `
-        <div class="${classes}" style="--col-clr:${stage.color}" data-stage-id="${stage.id}">
+        <div class="${classes}" style="--col-clr:${color}" data-stage-id="${escapeHtml(stage.id)}">
           <div class="kanban-col-header">
-            <div class="kanban-stage-dot" style="background:${stage.color}"></div>
-            <div class="kanban-stage-name" style="color:${stage.color}">${escapeHtml(stage.name)}</div>
+            <div class="kanban-stage-dot" style="background:${color}"></div>
+            <div class="kanban-stage-name" style="color:${color}">${escapeHtml(stage.name)}</div>
             <div class="kanban-count">${q ? leads.length + '/' + allCount : leads.length}</div>
           </div>
-          ${totalVal ? `<div class="kanban-value">${formatMoney(totalVal)}</div>` : ''}
+          ${totalVal ? `<div class="kanban-value hide-mobile">${formatMoney(totalVal)}</div>` : ''}
           <div class="kanban-cards">
             ${leads.length
-              ? leads.map((l, idx) => this.renderCard(l, stage.color, idx)).join('')
+              ? leads.map((l, idx) => LeadRow.render(l, { variant: 'card', color, idx })).join('')
               : q
                 ? '<div style="padding:14px 10px;text-align:center;color:var(--gray-400);font-size:13px;">אין תוצאות בשלב זה</div>'
-                : pipelineEmptyTip(stageIdx)
+                : filtersOn
+                  ? '<div style="padding:14px 10px;text-align:center;color:var(--gray-400);font-size:13px;">אין לידים בשלב הזה לפי הסינון</div>'
+                  : pipelineEmptyTip(stageIdx)
             }
           </div>
           <button class="kanban-add-btn" onclick="openModal('modal-add-lead')">+ הוספת ליד</button>
         </div>
       `;
     }).join('');
-    if (q && !State.leads.some(l => (l.name||'').toLowerCase().includes(q) || (l.phone||'').includes(q) || (l.desired_area||'').toLowerCase().includes(q))) {
+    if (q && !State.leads.some(match)) {
       board.innerHTML = `<div style="padding:40px 20px;text-align:center;color:var(--gray-400);">
         <div style="font-size:32px;margin-bottom:10px;">🔍</div>
         <div style="font-weight:700;margin-bottom:6px;">לא נמצאו תוצאות</div>
@@ -15075,32 +15737,18 @@ const Pipeline = {
   _renderTabs() {
     const el = document.getElementById('pipeline-stage-tabs');
     if (!el) return;
+    const counts = {};
+    State.leads.forEach(l => { counts[l.stage] = (counts[l.stage] || 0) + 1; });
     el.innerHTML = State.stages.map(s => {
-      const count = State.leads.filter(l => l.stage === s.id).length;
       const active = s.id === this._activeStage;
       return `
         <button class="pipeline-stage-tab${active ? ' active' : ''}"
-          style="--tab-clr:${s.color}"
-          onclick="Pipeline.setTab('${s.id}')">
+          style="--tab-clr:${safeColor(s.color)}"
+          onclick="Pipeline.setTab('${escapeHtml(s.id)}')">
           ${escapeHtml(s.name)}
-          <span class="pipeline-stage-tab-count">${count}</span>
+          <span class="pipeline-stage-tab-count">${counts[s.id] || 0}</span>
         </button>`;
     }).join('');
-  },
-
-  _renderRoleFilter() {
-    const el = document.getElementById('pipeline-role-filter');
-    if (!el) return;
-    if (!showsBuyerSellerRole()) { el.innerHTML = ''; this._roleFilter = 'all'; return; }
-    const enabled = RoleFilterPrefs.get();
-    const pills = [{ id: 'all', label: 'הכל' }, ...ROLE_FILTER_PILLS.filter(p => enabled.includes(p.id))];
-    el.innerHTML = pills.map(p => `
-      <button class="role-filter-pill role-filter-${p.id}${this._roleFilter === p.id ? ' active' : ''}"
-        onclick="Pipeline.setRoleFilter('${p.id}')">${p.label}</button>
-    `).join('') + `
-      <button class="role-filter-edit-btn" onclick="RoleFilterSettings.open()"
-        title="עריכת סוגי לידים מוצגים" aria-label="עריכת סוגי לידים מוצגים">⚙️</button>
-    `;
   },
 
   setRoleFilter(role) {
@@ -15121,42 +15769,15 @@ const Pipeline = {
     this.render();
   },
 
+  headerMenu(anchor) {
+    ActionSheet.open('פייפליין', [
+      { icon: '✏️', label: 'עריכת שלבים', run: () => Settings.openPipelineStages() },
+      { icon: '📋', label: 'ייבוא לידים מקובץ', run: () => LeadImport.open() },
+    ], anchor);
+  },
+
   renderCard(lead, color, idx = 0) {
-    const task = State.tasks.find(t => t.lead_id === lead.id && !t.done);
-    const isOverdue = task && diffDays(task.due) < 0;
-    const isToday = task && diffDays(task.due) === 0;
-    const initials = escapeHtml((lead.name || '').split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase());
-    const stale = isLeadStale(lead);
-    const waPhone = waNumber(lead.phone);
-    const scoreGlow = lead.score >= 80 ? ' score-glow' : '';
-    const isNew = lead.id === State.newCardId ? ' card-new-shine' : '';
-    if (isNew) setTimeout(() => { State.newCardId = null; }, 1500);
-    const unread = TrackerUnread.get(lead.id);
-    return `
-      <div class="lead-card card-enter${isNew}" style="--stage-color:${color}; animation-delay:${idx * 55}ms"
-           onclick="App.go('lead-detail', {currentLeadId:'${lead.id}'})">
-        <button class="quick-del-btn" style="position:absolute;top:6px;left:6px;" onclick="event.stopPropagation();quickDeleteLead('${lead.id}')">✕</button>
-        ${unread ? `<span style="position:absolute;top:6px;left:28px;background:#2563EB;color:#fff;font-size:10px;font-weight:800;border-radius:99px;padding:1px 6px;">💬 ${unread}</span>` : ''}
-        <div style="display:flex; align-items:flex-start; gap:8px;">
-          <div class="lead-card-avatar">${initials}</div>
-          <div style="flex:1; min-width:0;">
-            <div class="lead-card-name truncate">${escapeHtml(lead.name)}</div>
-            ${(lead.desired_area || (_getInd() === 'realestate' && lead.rooms)) ? `<div class="lead-card-meta truncate">${escapeHtml(lead.desired_area || '')}${_getInd() === 'realestate' && lead.rooms ? (lead.desired_area ? ' · ' : '') + lead.rooms + ' חד׳' : ''}</div>` : ''}
-            ${formatBudgetRange(lead.budget_min, lead.budget_max) ? `<div class="lead-card-meta">${formatBudgetRange(lead.budget_min, lead.budget_max)}</div>` : ''}
-          </div>
-          <div class="score-badge ${scoreClass(lead.score)}${scoreGlow}">${lead.score}</div>
-        </div>
-        <div class="lead-card-footer" style="margin-top:8px;">
-          <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
-            ${roleBadgeHtml(lead.lead_role)}
-            <span class="badge badge-${safeSource(lead.source)}">${escapeHtml(sourceLabel(lead.source))}</span>
-            ${stale ? '<span class="stale-badge">⏰ ממתין</span>' : ''}
-            ${task ? `<span style="font-size:11px; color:${isOverdue?'var(--red-600)':isToday?'var(--orange-500)':'var(--gray-400)'}; font-weight:600;">${typeEmoji(task.type)} ${formatRelDate(task.due)}</span>` : ''}
-          </div>
-          ${waPhone ? `<span class="card-wa-btn" onclick="event.stopPropagation();LeadDetail.openDirectWA('${lead.id}')">💬 WA</span>` : ''}
-        </div>
-      </div>
-    `;
+    return LeadRow.render(lead, { variant: 'card', color, idx });
   }
 };
 
@@ -15166,19 +15787,25 @@ const Pipeline = {
 const Leads = {
   _query: '',
   _roleFilter: 'all',
+  _stale: false,
+  _overdue: false,
+  _stage: 'all',
   render() {
-    this._renderRoleFilter();
+    LeadRow.prep();
+    LeadFilters.paint('leads');
     const q = this._query.toLowerCase();
-    let list = State.leads.filter(l => roleMatchesFilter(l.lead_role, this._roleFilter));
+    let list = LeadFilters.apply(State.leads, this);
     if (q) list = list.filter(l =>
       (l.name||'').toLowerCase().includes(q) ||
       (l.phone||'').includes(q) ||
       (l.desired_area||'').toLowerCase().includes(q)
     );
+    list = LeadFilters.sorted(list);
     const el = document.getElementById('leads-list-container');
+    const filtersOn = LeadFilters._active(this).length > 0;
     el.innerHTML = list.length
-      ? `<div style="display:flex;flex-direction:column;gap:10px;padding:0 0 80px;">
-           ${list.map((l, idx) => this.renderRow(l, idx)).join('')}
+      ? `<div style="padding:0 0 80px;">
+           ${list.map((l, idx) => LeadRow.render(l, { variant: 'row', idx })).join('')}
          </div>`
       : State.leads.length === 0
       ? (() => { const e = MICRO_COPY.emptyPipeline[_getInd()] || MICRO_COPY.emptyPipeline.other; return `<div class="empty-state">
@@ -15190,49 +15817,24 @@ const Leads = {
              <button class="btn btn-ghost btn-sm" onclick="LeadImport.open()">📋 ייבוא מקובץ</button>
            </div>
          </div>`; })()
-      : `<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">לא נמצאו תוצאות</div></div>`;
+      : `<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">לא נמצאו תוצאות</div>
+           ${filtersOn ? `<button class="btn btn-ghost btn-sm" style="margin-top:12px;" onclick="LeadFilters.clear('leads','all')">ניקוי הסינון</button>` : ''}</div>`;
   },
   search(q) {
     this._query = q;
     this.render();
   },
-  _renderRoleFilter() {
-    const el = document.getElementById('leads-role-filter');
-    if (!el) return;
-    if (!showsBuyerSellerRole()) { el.innerHTML = ''; this._roleFilter = 'all'; return; }
-    const enabled = RoleFilterPrefs.get();
-    const pills = [{ id: 'all', label: 'הכל' }, ...ROLE_FILTER_PILLS.filter(p => enabled.includes(p.id))];
-    el.innerHTML = pills.map(p => `
-      <button class="role-filter-pill role-filter-${p.id}${this._roleFilter === p.id ? ' active' : ''}"
-        onclick="Leads.setRoleFilter('${p.id}')">${p.label}</button>
-    `).join('');
-  },
   setRoleFilter(role) {
     this._roleFilter = role;
     this.render();
   },
+  headerMenu(anchor) {
+    ActionSheet.open('לידים', [
+      { icon: '📋', label: 'ייבוא לידים מקובץ', run: () => LeadImport.open() },
+    ], anchor);
+  },
   renderRow(lead, idx = 0) {
-    const stage = State.stages.find(s => s.id === lead.stage);
-    const task = State.tasks.find(t => t.lead_id === lead.id && !t.done);
-    const scoreGlow = lead.score >= 80 ? ' score-glow' : '';
-    return `
-      <div class="card card-enter" style="padding:14px; cursor:pointer; display:flex; gap:12px; align-items:center; animation-delay:${idx * 40}ms"
-           onclick="App.go('lead-detail', {currentLeadId:'${lead.id}'})">
-        <div class="score-badge ${scoreClass(lead.score)}${scoreGlow}" style="width:40px;height:40px;font-size:13px;">${lead.score}</div>
-        <div style="flex:1; min-width:0;">
-          <div style="display:flex;align-items:center;gap:6px;">
-            <div style="font-weight:700; font-size:15px;">${escapeHtml(lead.name)}</div>
-            ${roleBadgeHtml(lead.lead_role)}
-          </div>
-          <div style="font-size:12px; color:var(--gray-500);">${escapeHtml(maskPhone(lead.phone))} · ${escapeHtml(lead.desired_area||'~~')}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-          <span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;background:${stage?.color+'22'};color:${stage?.color};">${escapeHtml(stage?.name||'~~')}</span>
-          ${task?`<span style="font-size:11px;color:${diffDays(task.due)<0?'var(--red-600)':'var(--gray-400)'};">${typeEmoji(task.type)} ${formatRelDate(task.due)}</span>`:''}
-        </div>
-        <button class="quick-del-btn" onclick="event.stopPropagation();quickDeleteLead('${lead.id}')">✕</button>
-      </div>
-    `;
+    return LeadRow.render(lead, { variant: 'row', idx });
   }
 };
 
@@ -15360,20 +15962,12 @@ const LeadDetail = {
         <div style="margin-top:12px; display:flex; gap:6px; flex-wrap:wrap;">
           ${roleBadgeHtml(lead.lead_role)}
           <span class="badge badge-${safeSource(lead.source)}">${escapeHtml(sourceLabel(lead.source))}</span>
-          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:${stage?.color+'33'};color:white;">${escapeHtml(stage?.name||'~~')}</span>
+          <button type="button" aria-label="שינוי שלב, השלב הנוכחי ${escapeHtml(stage?.name||'')}" onclick="QuickEdit.open('${lead.id}','stage')" style="font-family:inherit;font-size:12px;font-weight:700;padding:0 14px;min-height:44px;border:none;cursor:pointer;border-radius:99px;background:${safeColor(stage?.color)}55;color:white;">🔄 ${escapeHtml(stage?.name||'ללא שלב')}</button>
         </div>
         <div class="lead-detail-actions">
           <button class="lead-action-btn" aria-label="שיחה טלפונית עם ${escapeHtml(lead.name)}" data-phone="${escapeHtml(lead.phone)}" onclick="if(State.isDemo){toast('⚡ מצב דמו, בגרסה האמיתית ייחייג ללקוח','warning');}else{CallLog.show('${lead.id}',this.dataset.phone);}">📞 שיחה</button>
-          ${lead.phone2 ? `<button class="lead-action-btn" aria-label="שיחה לטלפון שני של ${escapeHtml(lead.name)}" data-phone="${escapeHtml(lead.phone2)}" onclick="if(State.isDemo){toast('⚡ מצב דמו, בגרסה האמיתית ייחייג ללקוח','warning');}else{CallLog.show('${lead.id}',this.dataset.phone);}">📞 טלפון 2</button>` : ''}
           <button class="lead-action-btn" aria-label="שליחת WhatsApp ל${escapeHtml(lead.name)}" onclick="LeadDetail.openDirectWA('${lead.id}')">💬 WhatsApp</button>
-          ${State.tenant?.industry === 'realestate' ? `<button class="lead-action-btn" aria-label="שליפת מספר טלפון ממדלן עבור ${escapeHtml(lead.name)}" style="background:linear-gradient(135deg,#0369A1,#0EA5E9);color:white;" onclick="LeadDetail.openMadlanModal('${lead.id}')">📞 שליפה ממדלן</button>` : ''}
-          ${Marketing.hasMktgAccess() ? `<button class="lead-action-btn" aria-label="שליחת WhatsApp חכם ל${escapeHtml(lead.name)}" style="background:linear-gradient(135deg,#7C3AED,#2563EB);color:white;" onclick="SmartWA.open('${lead.id}')">✨ WA חכם</button>` : ''}
-          <button class="lead-action-btn" aria-label="שינוי שלב עבור ${escapeHtml(lead.name)}" onclick="openMoveStage('${lead.id}')">🔄 שינוי שלב</button>
-          <button class="lead-action-btn" aria-label="הוספת פעילות ל${escapeHtml(lead.name)}" onclick="State.currentLeadId='${lead.id}'; openModal('modal-add-activity')">📝 הוספה</button>
-          <button class="lead-action-btn" aria-label="עריכת פרטי ${escapeHtml(lead.name)}" onclick="openEditLead('${lead.id}')">✏️ עריכה</button>
-          ${!State.isDemo ? `<button class="lead-action-btn" aria-label="שיתוף ${escapeHtml(lead.name)} עם שותף" style="background:linear-gradient(135deg,#0F1F3D,#2563EB);color:white;" onclick="Partners.openShareModal('${lead.id}')">🤝 שיתוף עם שותף</button>` : ''}
-          ${!State.isDemo ? `<button class="lead-action-btn" aria-label="הפניית ${escapeHtml(lead.name)} לקולגה" style="background:linear-gradient(135deg,#15803D,#16A34A);color:white;" onclick="LeadReferral.openModal('${lead.id}')">🔗 הפניה לקולגה</button>` : ''}
-          ${!State.isDemo ? `<button class="lead-action-btn" aria-label="מעקב חי ל${escapeHtml(lead.name)}" style="background:linear-gradient(135deg,#7C3AED,#4C1D95);color:white;" onclick="LeadTracker.open('${lead.id}')">🔗 מעקב חי ללקוח</button>` : ''}
+          <button class="lead-action-btn" aria-haspopup="menu" aria-label="עוד פעולות על ${escapeHtml(lead.name)}" onclick="LeadDetail.more('${lead.id}',this)">⋯ עוד</button>
         </div>
         ${State.isAccessibleMode ? `
         <div class="a11y-quick-replies">
@@ -15399,13 +15993,14 @@ const LeadDetail = {
         <!-- INFO TAB -->
         <div class="tab-content active" id="tab-info">
           <div class="info-grid">
-            <div class="info-item"><div class="info-label">תקציב</div><div class="info-value">${formatBudgetRange(lead.budget_min, lead.budget_max) || '~~'}</div></div>
-            <div class="info-item"><div class="info-label">חדרים</div><div class="info-value">${lead.rooms||'~~'}</div></div>
-            <div class="info-item"><div class="info-label">אזור מבוקש</div><div class="info-value">${escapeHtml(lead.desired_area||'~~')}</div></div>
-            <div class="info-item"><div class="info-label">מקור</div><div class="info-value">${escapeHtml(sourceLabel(lead.source))}</div></div>
-            <div class="info-item"><div class="info-label">קשר אחרון</div><div class="info-value">${formatRelDate(lead.last_contact)||'~~'}</div></div>
-            <div class="info-item"><div class="info-label">מעקב הבא</div><div class="info-value ${diffDays(lead.next_followup)<0?'':''}">
-              ${lead.next_followup ? formatRelDate(lead.next_followup) : '~~'}</div></div>
+            ${[
+              ['תקציב', formatBudgetRange(lead.budget_min, lead.budget_max)],
+              ['חדרים', lead.rooms || ''],
+              ['אזור מבוקש', lead.desired_area || ''],
+              ['מקור', sourceLabel(lead.source)],
+              ['קשר אחרון', lead.last_contact ? formatRelDate(lead.last_contact) : ''],
+              ['מעקב הבא', lead.next_followup ? formatRelDate(lead.next_followup) : ''],
+            ].filter(([, v]) => v).map(([k, v]) => `<div class="info-item"><div class="info-label">${k}</div><div class="info-value">${escapeHtml(String(v))}</div></div>`).join('')}
             ${lead.commission_renewal_date ? (() => {
               const rd = lead.commission_renewal_date;
               const days = Math.round((new Date(rd) - new Date()) / 86400000);
@@ -15425,18 +16020,7 @@ const LeadDetail = {
             </div>
           </a>` : ''}
           ${DealChecklist.templateFor(ind) ? `<div style="margin-top:14px;">${DealChecklist.renderBlock(lead)}</div>` : ''}
-          <div style="margin:16px 0 90px;">
-            <div style="font-size:13px;font-weight:700;color:var(--gray-600);margin-bottom:8px;">שינוי שלב:</div>
-            <div class="stage-pills">
-              ${State.stages.map(s => `
-                <div class="stage-pill ${s.id===lead.stage?'active':''}"
-                     style="${s.id===lead.stage?'background:'+s.color+';border-color:'+s.color:''}"
-                     onclick="moveLead('${lead.id}','${s.id}')">
-                  ${escapeHtml(s.name)}
-                </div>
-              `).join('')}
-            </div>
-          </div>
+          <div style="height:90px;"></div>
         </div>
 
         <!-- ACTIVITY TAB -->
@@ -15572,6 +16156,27 @@ const LeadDetail = {
 
       </div>
     `;
+  },
+  // תפריט "עוד": כל פעולות הכרטיס שאינן ראשיות, מקובצות לפי נושא
+  more(leadId, anchor) {
+    const lead = State.leads.find(l => l.id === leadId);
+    if (!lead) return;
+    const items = [{ header: 'תקשורת' }];
+    if (lead.phone2) items.push({ icon: '📞', label: 'שיחה לטלפון השני', run: () => { if (State.isDemo) toast('⚡ מצב דמו, בגרסה האמיתית ייחייג ללקוח', 'warning'); else CallLog.show(leadId, lead.phone2); } });
+    if (Marketing.hasMktgAccess()) items.push({ icon: '✨', label: 'WhatsApp חכם', run: () => SmartWA.open(leadId) });
+    if (State.tenant?.industry === 'realestate') items.push({ icon: '🏠', label: 'שליפת טלפון ממדלן', run: () => LeadDetail.openMadlanModal(leadId) });
+    items.push({ icon: '🔔', label: 'קביעת מעקב', run: () => QuickEdit.open(leadId, 'followup') });
+    items.push({ sep: true }, { header: 'ניהול' });
+    items.push({ icon: '🔄', label: 'שינוי שלב', run: () => QuickEdit.open(leadId, 'stage') });
+    items.push({ icon: '📝', label: 'הוספת פעילות', run: () => { State.currentLeadId = leadId; openModal('modal-add-activity'); } });
+    items.push({ icon: '✏️', label: 'עריכת פרטים', run: () => openEditLead(leadId) });
+    if (!State.isDemo) {
+      items.push({ sep: true }, { header: 'שיתוף' });
+      items.push({ icon: '🤝', label: 'שיתוף עם שותף', run: () => Partners.openShareModal(leadId) });
+      items.push({ icon: '🔗', label: 'הפניה לקולגה', run: () => LeadReferral.openModal(leadId) });
+      items.push({ icon: '📍', label: 'מעקב חי ללקוח', run: () => LeadTracker.open(leadId) });
+    }
+    ActionSheet.open(lead.name || 'ליד', items, anchor);
   },
   // Returns to whichever screen the user actually came from (dashboard, leads,
   // pipeline, referral, etc.) instead of always forcing them back to pipeline.
@@ -18168,6 +18773,7 @@ async function moveLeadActual(leadId, stageId, regressionNote) {
     Gamify.event('advance_stage', lead);
   }
   if (State.screen === 'pipeline') Pipeline.render();
+  else if (State.screen === 'leads') Leads.render();
   else if (State.screen === 'lead-detail') LeadDetail.render(leadId);
 }
 
@@ -18641,22 +19247,34 @@ async function quickDeleteTask(id) {
   }
 }
 
-async function quickDeleteLead(id) {
+// מחיקת ליד עם אפשרות ביטול: הליד מוסתר מיד, והמחיקה בשרת מתבצעת רק כשחלון הביטול נסגר.
+function quickDeleteLead(id) {
   if (demoGuard()) return;
   const lead = State.leads.find(l => l.id === id);
   if (!lead) return;
-  if (!confirm(`למחוק את הליד "${lead.name}"?`)) return;
-  try {
-    await DB.deleteLead(id);
-    State.leads = State.leads.filter(l => l.id !== id);
-    State.tasks = State.tasks.filter(t => t.lead_id !== id);
-    if (State.activities) State.activities = State.activities.filter(a => a.lead_id !== id);
-    toast('🗑 הליד נמחק', 'success');
-    if (State.screen === 'pipeline') Pipeline.render();
-    else if (State.screen === 'leads') Leads.render();
-  } catch(e) {
-    toast('שגיאה במחיקה: ' + e.message, 'error');
-  }
+  const idx = State.leads.indexOf(lead);
+  const tasks = State.tasks.filter(t => t.lead_id === id);
+  const acts = (State.activities || []).filter(a => a.lead_id === id);
+  const restore = () => {
+    if (!State.leads.some(l => l.id === id)) State.leads.splice(Math.min(idx, State.leads.length), 0, lead);
+    tasks.forEach(t => { if (!State.tasks.some(x => x.id === t.id)) State.tasks.push(t); });
+    acts.forEach(a => { if (!State.activities.some(x => x.id === a.id)) State.activities.push(a); });
+    App.updateBadges();
+    LeadRow.refresh();
+  };
+  State.leads = State.leads.filter(l => l.id !== id);
+  State.tasks = State.tasks.filter(t => t.lead_id !== id);
+  if (State.activities) State.activities = State.activities.filter(a => a.lead_id !== id);
+  App.updateBadges();
+  LeadRow.refresh();
+  Undo.show(`הליד "${lead.name || ''}" נמחק`, restore, async () => {
+    try {
+      await DB.deleteLead(id);
+    } catch (e) {
+      restore();
+      toast('שגיאה במחיקה: ' + (e?.message || ''), 'error');
+    }
+  });
 }
 
 async function quickDeleteProp(id) {
