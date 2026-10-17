@@ -650,6 +650,7 @@
       overflow: hidden; cursor: pointer; transition: var(--transition);
     }
     .property-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    @media (max-width: 767px) { .property-photo { height: 120px !important; } }
     .property-photo {
       height: 160px; background: linear-gradient(135deg, var(--navy-600), var(--navy-400));
       display: flex; align-items: center; justify-content: center;
@@ -832,6 +833,17 @@
       margin-top: 1px; transition: var(--transition);
     }
     .task-checkbox.checked { background: var(--green-500); border-color: var(--green-500); color: white; }
+    .task-check {
+      flex-shrink: 0; min-width: 44px; min-height: 44px; margin: -12px -10px -12px -4px; padding: 0;
+      background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .task-check:focus-visible { outline: 2px solid var(--blue-500); border-radius: 8px; }
+    .task-check .task-checkbox { margin-top: 0; }
+    .sw-row.task-sw { margin-bottom: 0; }
+    .task-sw .task-item { align-items: center; border-width: 0 3px 0 0; border-style: solid; border-color: transparent; border-radius: 0; }
+    .task-sw .task-item.overdue { border-right-color: var(--red-500); }
+    .task-sw .task-item.urgent { border-right-color: var(--orange-500); }
+    #dash-tasks { display: flex; flex-direction: column; gap: 8px; }
     .task-body { flex: 1; }
     .task-title { font-size: 14px; font-weight: 600; color: var(--gray-900); }
     .task-item.done .task-title { text-decoration: line-through; color: var(--gray-400); }
@@ -1319,6 +1331,31 @@
       overflow-x: auto; -webkit-overflow-scrolling: touch;
     }
     .kpi-row::-webkit-scrollbar { height: 0; }
+    @media (max-width: 767px) {
+      .kpi-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: visible; padding: 12px 20px; }
+      .kpi-row > * { min-width: 0; width: auto; }
+    }
+    .dash-more { margin: 8px 0 0; }
+    .dash-more > summary {
+      list-style: none; cursor: pointer; margin: 0 20px 8px; min-height: 44px; padding: 0 14px;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; font-weight: 800; color: var(--gray-700);
+    }
+    .dash-more > summary::-webkit-details-marker { display: none; }
+    .dash-more > summary::after { content: '+'; font-size: 20px; font-weight: 700; color: var(--gray-500); }
+    .dash-more[open] > summary::after { content: '−'; }
+    .dash-more > summary:focus-visible { outline: 2px solid var(--blue-500); outline-offset: 2px; }
+
+    .settings-section-title.sc-toggle {
+      cursor: pointer; min-height: 48px; display: flex; align-items: center; justify-content: space-between;
+      border-bottom: none;
+    }
+    .settings-section-title.sc-toggle::after { content: '+'; font-size: 20px; font-weight: 700; color: var(--gray-500); letter-spacing: 0; }
+    .settings-section.sc-open > .settings-section-title.sc-toggle { border-bottom: 1px solid var(--border); }
+    .settings-section.sc-open > .settings-section-title.sc-toggle::after { content: '−'; }
+    .settings-section:not(.sc-open) > .settings-section-body { display: none; }
+    .settings-section-title.sc-toggle:focus-visible { outline: 2px solid var(--blue-500); outline-offset: -2px; }
 
     .section-header {
       display: flex; align-items: center; justify-content: space-between;
@@ -1795,7 +1832,7 @@
     .lr-main { flex: 1; min-width: 0; align-self: stretch; display: flex; flex-direction: column; justify-content: center; }
     .lr-main:focus-visible { outline: 2px solid var(--blue-500); outline-offset: 2px; border-radius: 6px; }
     .lr-name { font-size: 14px; font-weight: 800; color: var(--gray-900); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .lr-meta { font-size: 12px; color: var(--gray-500); margin-top: 2px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.35; }
+    .lr-meta { font-size: 12px; color: var(--gray-500); margin-top: 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; line-height: 1.35; }
     .lr-tags { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
     .lr-tags:empty { display: none; }
     .lr-stage { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: color-mix(in srgb, var(--c) 14%, white); color: var(--c); }
@@ -3960,8 +3997,12 @@
   #screen-analytics { position:relative; }
 
   /* ── Partners / Collaboration ─────────── */
-  .partners-tab-bar { display:flex; gap:8px; padding:14px 16px 12px; border-bottom:1px solid var(--gray-100); }
-  .partners-tab { flex:1; padding:9px 8px; border-radius:10px; border:1.5px solid var(--gray-200); background:transparent; color:var(--gray-500); font-size:13px; font-weight:600; cursor:pointer; transition:var(--transition); font-family:inherit; }
+  .ph-ind::before { content:'+'; font-size:20px; font-weight:700; }
+  .partners-howto[open] .ph-ind::before { content:'−'; }
+  .partners-howto > summary::-webkit-details-marker { display:none; }
+  .partners-tab-bar { display:flex; gap:8px; padding:14px 16px 12px; border-bottom:1px solid var(--gray-100); overflow-x:auto; scrollbar-width:none; }
+  .partners-tab-bar::-webkit-scrollbar { display:none; }
+  .partners-tab { flex:1 0 auto; white-space:nowrap; min-height:44px; padding:9px 12px; border-radius:10px; border:1.5px solid var(--gray-200); background:transparent; color:var(--gray-500); font-size:13px; font-weight:600; cursor:pointer; transition:var(--transition); font-family:inherit; }
   .partners-tab.active { background:var(--navy-500); color:#fff; border-color:var(--navy-500); }
   .share-card { background:var(--surface); border:1px solid var(--gray-200); border-radius:14px; padding:14px; margin-bottom:10px; cursor:pointer; transition:var(--transition); }
   .share-card:active { transform:scale(0.98); }
@@ -4609,6 +4650,24 @@
         </div>
       </div>
 
+      <!-- URGENT TASKS - actionable items -->
+      <div class="section-header">
+        <div class="section-title">⚡ משימות דחופות</div>
+        <div class="section-link" onclick="App.go('tasks')">כל המשימות</div>
+      </div>
+      <div class="tasks-list" id="dash-tasks"></div>
+      <div id="dash-renewals" class="hidden"></div>
+
+      <!-- KPI CARDS - primary data -->
+      <div class="kpi-row" id="kpi-row"></div>
+
+      <!-- HOT LEADS -->
+      <div class="section-header" style="margin-top:16px;">
+        <div class="section-title">🔥 לידים חמים</div>
+        <div class="section-link" onclick="App.go('pipeline')">כל הפייפליין</div>
+      </div>
+      <div id="dash-hot-leads" style="padding:0 20px 4px;display:flex;flex-direction:column;gap:8px;"></div>
+
       <!-- AI BRIEFING - first thing the agent sees -->
       <div class="ai-card dash-smart-card" id="dash-ai-briefing" style="margin: 0 20px 14px;">
         <div class="ai-card-title" style="font-size:13px; gap:8px;">
@@ -4684,9 +4743,22 @@
         </div>
       </div>
 
-      <!-- KPI CARDS - primary data -->
-      <div class="kpi-row" id="kpi-row"></div>
+      <!-- COLD LEADS & CHART -->
+      <div class="dash-section hidden">
+        <div class="section-header" style="margin-top:16px;">
+          <div class="section-title">❄️ לידים שדורשים חיזור מחדש</div>
+          <div class="section-link" onclick="App.go('leads')">כל הלידים</div>
+        </div>
+        <div id="dash-cold-leads"></div>
+      </div>
+      <div class="pipeline-flow-card" id="dash-chart-container" style="display:none;">
+        <div class="chart-card-title">📊 שווי צינור לפי שלב, בזמן אמת</div>
+        <div class="pipeline-flow-lanes" id="pipeline-flow-lanes"></div>
+      </div>
 
+      <!-- עוד כלים והישגים: מקופל כברירת מחדל במובייל -->
+      <details class="dash-more" id="dash-more">
+        <summary>כלים, הישגים והשראה</summary>
       <!-- QUICK FEATURES ROW -->
       <div class="dash-features-row" id="dash-features-row">
         <div class="dash-feat-tile" style="background:linear-gradient(135deg,#0F1F3D,#1a3a6a);color:#fff;border-color:transparent;" onclick="QuickLog.open()">
@@ -4725,34 +4797,6 @@
           <div class="dash-feat-tile-icon">➕</div>
           <div class="dash-feat-tile-label">ליד חדש</div>
         </div>
-      </div>
-
-      <!-- URGENT TASKS - actionable items -->
-      <div class="section-header">
-        <div class="section-title">⚡ משימות דחופות</div>
-        <div class="section-link" onclick="App.go('tasks')">כל המשימות</div>
-      </div>
-      <div class="tasks-list" id="dash-tasks"></div>
-      <div id="dash-renewals" class="hidden"></div>
-
-      <!-- HOT LEADS -->
-      <div class="section-header" style="margin-top:16px;">
-        <div class="section-title">🔥 לידים חמים</div>
-        <div class="section-link" onclick="App.go('pipeline')">כל הפייפליין</div>
-      </div>
-      <div id="dash-hot-leads" style="padding:0 20px 4px;display:flex;flex-direction:column;gap:8px;"></div>
-
-      <!-- COLD LEADS & CHART -->
-      <div class="dash-section hidden">
-        <div class="section-header" style="margin-top:16px;">
-          <div class="section-title">❄️ לידים שדורשים חיזור מחדש</div>
-          <div class="section-link" onclick="App.go('leads')">כל הלידים</div>
-        </div>
-        <div id="dash-cold-leads"></div>
-      </div>
-      <div class="pipeline-flow-card" id="dash-chart-container" style="display:none;">
-        <div class="chart-card-title">📊 שווי צינור לפי שלב, בזמן אמת</div>
-        <div class="pipeline-flow-lanes" id="pipeline-flow-lanes"></div>
       </div>
 
       <!-- GAMIFICATION WIDGET - motivation & XP progress. Placed near the bottom
@@ -4855,6 +4899,8 @@
         </div>
       </div>
 
+      </details>
+
       <div class="section-header mt-4">
         <div class="section-title">🕐 פעילות אחרונה</div>
         <div class="section-link" onclick="openModal('modal-add-activity')">+ הוספה</div>
@@ -4917,9 +4963,10 @@
       <div class="screen-header">
         <div class="screen-title" id="screen-properties-title">🏠 נכסים</div>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-outline btn-sm hidden" id="properties-compare-btn" onclick="PropertyCompare.open()">📊 השוואת נכסים</button>
-          <button class="btn btn-outline btn-sm hidden" id="properties-portfolio-btn" onclick="AgentPortfolio.open()">🪟 ויטרינה דיגיטלית</button>
-          <button class="btn btn-primary btn-sm" id="properties-add-btn" onclick="PropImages.resetNew(); openModal('modal-add-property')">+ נכס</button>
+          <button class="btn btn-outline btn-sm hidden hide-mobile" id="properties-compare-btn" onclick="PropertyCompare.open()">📊 השוואת נכסים</button>
+          <button class="btn btn-outline btn-sm hidden hide-mobile" id="properties-portfolio-btn" onclick="AgentPortfolio.open()">🪟 ויטרינה דיגיטלית</button>
+          <button class="btn btn-primary btn-sm hide-mobile" id="properties-add-btn" onclick="PropImages.resetNew(); openModal('modal-add-property')">+ נכס</button>
+          <button class="btn btn-ghost btn-sm" aria-haspopup="menu" aria-label="עוד פעולות" onclick="PropertiesScreen.headerMenu(this)" style="font-size:20px;font-weight:800;">⋯</button>
         </div>
       </div>
       <div class="properties-grid" id="properties-grid"></div>
@@ -4929,7 +4976,7 @@
     <div id="screen-tasks" class="screen hidden">
       <div class="screen-header">
         <div class="screen-title">✅ משימות</div>
-        <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-task')">+ משימה</button>
+        <button class="btn btn-primary btn-sm hide-mobile" onclick="openModal('modal-add-task')">+ משימה</button>
       </div>
       <div class="tasks-filter-bar">
         <div class="filter-chip active" data-filter="all" onclick="Tasks.setFilter('all', this)">הכל</div>
@@ -5247,27 +5294,28 @@
         <div class="screen-title">🤝 שיתופי פעולה</div>
       </div>
 
-      <!-- באנר המשולש הקדוש -->
-      <div style="margin:0 16px 4px;background:linear-gradient(135deg,var(--navy-700) 0%,var(--navy-500) 100%);border-radius:16px;padding:16px 18px;color:#fff;">
-        <div style="font-size:13px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-          <span style="font-size:16px;">🔺</span> המשולש הקדוש של הנדל"ן
+      <!-- הסבר קצר, מקופל כברירת מחדל -->
+      <details class="partners-howto" style="margin:0 16px 4px;">
+        <summary style="list-style:none;cursor:pointer;min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 16px;background:linear-gradient(135deg,var(--navy-700) 0%,var(--navy-500) 100%);border-radius:14px;color:#fff;font-size:13px;font-weight:800;">
+          <span>🤝 איך שיתופי פעולה עובדים</span><span class="ph-ind" aria-hidden="true"></span>
+        </summary>
+        <div style="background:var(--navy-600,#0F1F3D);color:#fff;border-radius:0 0 14px 14px;margin-top:-6px;padding:16px 18px 14px;">
+          <div style="font-size:12px;line-height:1.65;color:rgba(255,255,255,0.85);">
+            עסקים שעובדים עם PLTO יכולים להפנות זה לזה לקוחות, בשני הכיוונים. ההפניה עוברת ישירות לפייפליין של השותף, עם מעקב מלא בתוך המערכת.
+          </div>
+          <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:rgba(255,255,255,0.75);">
+            <div>🏠 סוכן נדל"ן מפנה לעו"ד לחתימה, ולמעצב אחרי הסגירה</div>
+            <div>⚖️ עו"ד מפנה לסוכן מי שרוצה לקנות או למכור</div>
+            <div>🎨 עיצוב פנים מפנה לסוכן מי שרוצה לקנות דירה</div>
+          </div>
         </div>
-        <div style="font-size:12px;line-height:1.65;color:rgba(255,255,255,0.82);">
-          כל אחד מהשלושה יכול להפנות לשניים האחרים, בשני הכיוונים:
-        </div>
-        <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:rgba(255,255,255,0.72);">
-          <div>🏠 <strong style="color:#fff;">סוכן נדל"ן</strong>, מפנה לעו"ד לחתימה, ולמעצב אחרי הסגירה</div>
-          <div>⚖️ <strong style="color:#fff;">עו"ד</strong>, מפנה לסוכן מי שרוצה לקנות/למכור</div>
-          <div>🎨 <strong style="color:#fff;">עיצוב פנים</strong>, מפנה לסוכן מי שרוצה לקנות דירה</div>
-        </div>
-        <div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,0.55);">הפניה עוברת ישירות לפייפליין של הקולגה, עם מעקב מלא בתוך המערכת.</div>
-      </div>
+      </details>
 
-      <div class="partners-tab-bar">
-        <button class="partners-tab active" id="ptab-mine" onclick="Partners.switchTab('mine')">שיתפתי</button>
-        <button class="partners-tab" id="ptab-join" onclick="Partners.switchTab('join')">הצטרף לשיתוף</button>
-        <button class="partners-tab" id="ptab-referrals" onclick="Partners.switchTab('referrals')">🔗 הפניות</button>
-        <button class="partners-tab" id="ptab-board" onclick="Partners.switchTab('board')">📋 לוח הזדמנויות</button>
+      <div class="partners-tab-bar" role="tablist">
+        <button class="partners-tab active" id="ptab-mine" role="tab" onclick="Partners.switchTab('mine')">שיתפתי</button>
+        <button class="partners-tab" id="ptab-join" role="tab" onclick="Partners.switchTab('join')">הצטרפות</button>
+        <button class="partners-tab" id="ptab-referrals" role="tab" onclick="Partners.switchTab('referrals')">הפניות</button>
+        <button class="partners-tab" id="ptab-board" role="tab" onclick="Partners.switchTab('board')">הזדמנויות</button>
       </div>
 
       <!-- My outgoing shares -->
@@ -5275,8 +5323,8 @@
         <div id="partners-mine-list">
           <div style="text-align:center;padding:40px 0;color:var(--gray-400);">
             <div style="font-size:40px;margin-bottom:12px;">📤</div>
-            <div style="font-size:14px;">עדיין לא שיתפת לידים</div>
-            <div style="font-size:12px;margin-top:4px;">פתיחת כרטיס ליד ולחיצה על "שתף עם שותף"</div>
+            <div style="font-size:14px;">עדיין לא שותפו לידים</div>
+            <div style="font-size:12px;margin-top:4px;">בכרטיס הליד, תחת "עוד", אפשר לבחור "שיתוף עם שותף"</div>
           </div>
         </div>
       </div>
@@ -5285,8 +5333,8 @@
       <div id="ptab-content-join" class="hidden">
         <div style="padding:28px 16px 8px;text-align:center;">
           <div style="font-size:48px;margin-bottom:12px;">🔑</div>
-          <div style="font-size:16px;font-weight:700;color:var(--navy-500);margin-bottom:6px;">קיבלת קוד שיתוף?</div>
-          <div style="font-size:13px;color:var(--gray-500);margin-bottom:20px;line-height:1.5;">שותף שעובד עם PLTO שלח לך קוד ו-PIN, ניתן להזין אותם כאן</div>
+          <div style="font-size:16px;font-weight:700;color:var(--navy-500);margin-bottom:6px;">יש לכם קוד שיתוף?</div>
+          <div style="font-size:13px;color:var(--gray-500);margin-bottom:20px;line-height:1.5;">שותף שעובד עם PLTO שלח קוד ו-PIN, אפשר להזין אותם כאן</div>
           <button class="btn btn-primary" style="width:100%;max-width:280px;" onclick="openModal('modal-accept-share')">🔑 הזנת קוד שיתוף</button>
         </div>
         <div style="padding:8px 16px 16px;" id="partners-joined-list"></div>
@@ -5717,22 +5765,18 @@
       <div class="bni-icon">📋</div>
       <div id="bn-label-pipeline">פייפליין</div>
     </div>
-    <div class="bottom-nav-item" role="button" tabindex="0" data-screen="properties" onclick="navRipple(this);App.go('properties')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
-      <div class="bni-icon" id="bn-icon-properties">🏠</div>
-      <div id="bn-label-properties">נכסים</div>
+    <div class="bottom-nav-item" role="button" tabindex="0" data-screen="leads" onclick="navRipple(this);App.go('leads')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
+      <div class="bni-icon">👥</div>
+      <div id="bn-label-leads">לידים</div>
     </div>
     <div class="bottom-nav-item" role="button" tabindex="0" data-screen="tasks" onclick="navRipple(this);App.go('tasks')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
       <div class="bni-icon">✅</div>
       <div>משימות</div>
     </div>
-    <div class="bottom-nav-item" role="button" tabindex="0" data-screen="partners" onclick="navRipple(this);App.go('partners')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" style="position:relative;">
-      <div class="bni-icon">🤝</div>
-      <div>שותפים</div>
-      <span id="bn-badge-partners" style="display:none;position:absolute;top:6px;right:10px;background:#EF4444;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;padding:0 4px;display:none;align-items:center;justify-content:center;"></span>
-    </div>
-    <div class="bottom-nav-item" role="button" tabindex="0" data-screen="settings" onclick="navRipple(this);App.go('settings')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
-      <div class="bni-icon">⚙️</div>
-      <div>הגדרות</div>
+    <div class="bottom-nav-item" role="button" tabindex="0" aria-haspopup="menu" data-screen="more" onclick="navRipple(this);App.moreMenu(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" style="position:relative;">
+      <div class="bni-icon">⋯</div>
+      <div>עוד</div>
+      <span id="bn-badge-partners" style="display:none;position:absolute;top:6px;right:calc(50% - 22px);background:#EF4444;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;padding:0 4px;align-items:center;justify-content:center;"></span>
     </div>
   </nav>
 
@@ -8299,6 +8343,7 @@ const DB = {
       patch.done = updates.done;
       if (updates.done) patch.done_at = new Date().toISOString();
     }
+    if ('due' in updates) patch.due_date = updates.due;
     const { error } = await sbClient.from('tasks').update(patch)
       .eq('id', id).eq('tenant_id', this.tenantId);
     if (error) throw error;
@@ -10263,8 +10308,8 @@ const Partners = {
       el.innerHTML = `
         <div style="text-align:center;padding:40px 0;color:var(--gray-400);">
           <div style="font-size:40px;margin-bottom:12px;">📤</div>
-          <div style="font-size:14px;">עדיין לא שיתפת לידים</div>
-          <div style="font-size:12px;margin-top:4px;">פתיחת כרטיס ליד ולחיצה על "🤝 שתף עם שותף"</div>
+          <div style="font-size:14px;">עדיין לא שותפו לידים</div>
+          <div style="font-size:12px;margin-top:4px;">בכרטיס הליד, תחת "עוד", אפשר לבחור "שיתוף עם שותף"</div>
         </div>`;
       return;
     }
@@ -14489,6 +14534,7 @@ const App = {
     set('label-all-leads',         getLabel('allLeads'));
     set('label-pipeline',          getLabel('pipeline'));
     set('bn-label-pipeline',       'פייפליין');
+    set('bn-label-leads',          getLabel('leads'));
     set('fab-label-lead',          getLabel('addLead'));
     set('fab-label-property',      getLabel('properties').replace(/ים$/, '') + ' חדש');
     set('screen-pipeline-title',   '📋 ' + getLabel('pipeline'));
@@ -14605,8 +14651,9 @@ const App = {
       if (isCurrent) n.setAttribute('aria-current', 'page');
       else n.removeAttribute('aria-current');
     });
+    const MAIN_NAV = ['dashboard', 'pipeline', 'leads', 'tasks', 'lead-detail'];
     document.querySelectorAll('.bottom-nav-item').forEach(n => {
-      const isCurrent = n.dataset.screen === screen;
+      const isCurrent = n.dataset.screen === screen || (n.dataset.screen === 'more' && !MAIN_NAV.includes(screen));
       n.classList.toggle('active', isCurrent);
       if (isCurrent) n.setAttribute('aria-current', 'page');
       else n.removeAttribute('aria-current');
@@ -14635,6 +14682,27 @@ const App = {
     window.scrollTo(0, 0);
     PrivacyShield.onScreenChange();
   },
+  // תפריט "עוד" בניווט התחתון: כל המסכים שלא מופיעים בו, מקובצים לפי נושא
+  moreMenu(anchor) {
+    const go = scr => () => App.go(scr);
+    ActionSheet.open('עוד', [
+      { header: 'עבודה יומית' },
+      { icon: getLabel('propertiesIcon'), label: getLabel('properties'), run: go('properties') },
+      { icon: '📅', label: 'לוח שנה', run: go('calendar') },
+      { icon: '🤝', label: 'שיתופי פעולה', run: go('partners') },
+      { icon: '🕐', label: 'פעילות אחרונה', run: go('recent-activity') },
+      { sep: true }, { header: 'כלים' },
+      { icon: '📈', label: 'אנליטיקס', run: go('analytics') },
+      { icon: '🛠️', label: 'מרכז כלים', run: go('tools') },
+      { icon: '📣', label: 'שירותי שיווק', run: go('marketing') },
+      { icon: '📧', label: 'תיבת דואר', run: go('email') },
+      { sep: true }, { header: 'עוד' },
+      { icon: '✨', label: 'פיצ\'רים PRO', run: go('pro') },
+      { icon: '🏆', label: 'חנות XP', run: go('xp-store') },
+      { icon: '🎁', label: 'הזמנת חבר', run: go('referral') },
+      { icon: '⚙️', label: 'הגדרות', run: go('settings') },
+    ], anchor);
+  },
   updateBadges() {
     const overdue = State.tasks.filter(t => !t.done && diffDays(t.due) < 0).length;
     const today_ = State.tasks.filter(t => !t.done && diffDays(t.due) === 0).length;
@@ -14653,6 +14721,9 @@ const App = {
 const Dashboard = {
   render() {
     this._activityExpanded = false;
+    // ברירת מחדל: פתוח בדסקטופ ומקופל במובייל, ורק בטעינה הראשונה כדי לכבד בחירה של המשתמש
+    const more = document.getElementById('dash-more');
+    if (more && !this._moreInit) { this._moreInit = true; more.open = window.matchMedia('(min-width: 768px)').matches; }
     document.getElementById('dash-agent-name').textContent = (State.agent?.name || '').split(' ')[0];
     document.getElementById('dash-date').textContent = hebrewDate();
     const gs = document.getElementById('dash-getting-started');
@@ -15389,16 +15460,16 @@ const LeadRow = {
     const name = lead.name || 'ללא שם';
     const stage = State.stages.find(s => s.id === lead.stage);
     const task = this.nextTask(lead.id);
+    // שורת מטא אחת: התקציב קודם, כי קיצור הטקסט חותך את הסוף
     const meta = [
-      variant === 'row' ? maskPhone(lead.phone) : '',
+      formatBudgetRange(lead.budget_min, lead.budget_max),
       lead.desired_area,
       _getInd() === 'realestate' && lead.rooms ? lead.rooms + ' חד׳' : '',
-      formatBudgetRange(lead.budget_min, lead.budget_max),
     ].filter(Boolean).map(escapeHtml).join(' · ');
     const tags = [];
     if (isLeadStale(lead)) tags.push('<span class="stale-badge">⏰ ממתין</span>');
     if (variant === 'row' && stage) tags.push(`<span class="lr-stage" style="--c:${safeColor(stage.color)}">${escapeHtml(stage.name)}</span>`);
-    const role = roleBadgeHtml(lead.lead_role);
+    const role = variant === 'row' ? '' : roleBadgeHtml(lead.lead_role);
     if (role) tags.push(role);
     let due = '';
     if (task) {
@@ -16465,6 +16536,24 @@ function switchTab(btn, tabId) {
    PROPERTIES SCREEN
 ═══════════════════════════════════════════ */
 const PropertiesScreen = {
+  // במובייל כפתורי הכותרת עוברים לתפריט. הפריטים תלויים באותם תנאים שקובעים את נראות הכפתורים בדסקטופ.
+  menu(id, anchor) {
+    const p = State.properties.find(x => x.id === id);
+    if (!p) return;
+    ActionSheet.open(p.title || getLabel('property'), [
+      { icon: '✏️', label: 'עריכה', run: () => openEditProperty(id) },
+      { icon: '📤', label: 'שיתוף', run: () => shareProperty(id) },
+      { sep: true },
+      { icon: '🗑', label: 'מחיקה', danger: true, run: () => quickDeleteProp(id) },
+    ], anchor);
+  },
+  headerMenu(anchor) {
+    const shown = id => { const b = document.getElementById(id); return !!b && !b.classList.contains('hidden'); };
+    const items = [{ icon: '➕', label: `הוספת ${getLabel('property')}`, run: () => { PropImages.resetNew(); openModal('modal-add-property'); } }];
+    if (shown('properties-compare-btn')) items.push({ icon: '📊', label: 'השוואת נכסים', run: () => PropertyCompare.open() });
+    if (shown('properties-portfolio-btn')) items.push({ icon: '🪟', label: 'ויטרינה דיגיטלית', run: () => AgentPortfolio.open() });
+    ActionSheet.open(getLabel('properties'), items, anchor);
+  },
   render() {
     const cfg = propConfig();
     const typeLabels  = Object.fromEntries(cfg.typeOptions.map(o => [o.v, o.l]));
@@ -16482,7 +16571,7 @@ const PropertiesScreen = {
             <div class="property-price">${p.price ? formatMoney(p.price) : '~~'}</div>
             <div style="display:flex;gap:6px;align-items:center;">
               <span class="badge ${statusClass[p.status]||'badge-status-new'}">${escapeHtml(statusBadge[p.status]||p.status)}</span>
-              <button class="quick-del-btn" onclick="event.stopPropagation();quickDeleteProp('${p.id}')">✕</button>
+              <button type="button" class="lr-btn lr-more" style="width:36px;height:36px;margin:-6px -6px -6px 0;" aria-haspopup="menu" aria-label="פעולות על ${escapeHtml(p.title)}" onclick="event.stopPropagation();PropertiesScreen.menu('${escapeHtml(p.id)}',this)">⋯</button>
             </div>
           </div>
           <div class="property-title">${escapeHtml(p.title)}</div>
@@ -16638,29 +16727,77 @@ const Tasks = {
   }
 };
 
-function renderTaskItem(task) {
-  const lead = State.leads.find(l => l.id === task.lead_id);
-  const d = diffDays(task.due);
-  const isOverdue = !task.done && d < 0;
-  const isToday = !task.done && d === 0;
-  return `
-    <div class="task-item ${task.done?'done':''} ${isOverdue?'overdue':''} ${task.priority==='urgent'&&!task.done?'urgent':''}">
-      <div class="priority-dot priority-${task.priority}"></div>
-      <div class="task-checkbox ${task.done?'checked':''}" onclick="toggleTask('${task.id}')">
-        ${task.done ? '✓' : ''}
+// שורת משימה עם swipe (בוצע ודחייה למחר) ותפריט ⋯. כל פעולה זמינה גם בתפריט.
+const TaskRow = {
+  render(task) {
+    const lead = State.leads.find(l => l.id === task.lead_id);
+    const d = diffDays(task.due);
+    const isOverdue = !task.done && d < 0;
+    const isToday = !task.done && d === 0;
+    const old = !task.done && d < -30;
+    const id = escapeHtml(task.id);
+    return `
+    <div class="sw-row task-sw" data-lp-task="${id}">
+      <div class="sw-tray sw-tray-left">
+        <button type="button" class="sw-act" style="background:#16A34A" onclick="toggleTask('${id}')"><span class="sw-ico">✅</span>${task.done ? 'פתיחה' : 'בוצע'}</button>
+        ${task.done ? '' : `<button type="button" class="sw-act" style="background:#D97706" onclick="TaskRow.defer('${id}',1)"><span class="sw-ico">⏭️</span>למחר</button>`}
       </div>
-      <div class="task-body">
-        <div class="task-title">${typeEmoji(task.type)} ${escapeHtml(task.title)}</div>
-        <div class="task-meta">
-          ${lead ? `<span onclick="App.go('lead-detail',{currentLeadId:'${lead.id}'})" style="cursor:pointer;color:var(--navy-400);">${escapeHtml(lead.name)}</span>` : ''}
-          <span class="${isOverdue?'task-due-overdue':isToday?'task-due-today':''}">${formatRelDate(task.due)}</span>
-          <span style="opacity:0.6">${escapeHtml(priorityLabel(task.priority))}</span>
+      <div class="sw-content">
+        <div class="task-item ${task.done?'done':''} ${isOverdue?'overdue':''} ${task.priority==='urgent'&&!task.done?'urgent':''}">
+          <div class="priority-dot priority-${escapeHtml(task.priority)}"></div>
+          <button type="button" class="task-check" role="checkbox" aria-checked="${task.done ? 'true' : 'false'}" aria-label="סימון המשימה ${escapeHtml(task.title)} כבוצעה" onclick="toggleTask('${id}')">
+            <span class="task-checkbox ${task.done?'checked':''}">${task.done ? '✓' : ''}</span>
+          </button>
+          <div class="task-body">
+            <div class="task-title">${typeEmoji(task.type)} ${escapeHtml(task.title)}</div>
+            <div class="task-meta">
+              ${lead ? `<span onclick="App.go('lead-detail',{currentLeadId:'${escapeHtml(lead.id)}'})" style="cursor:pointer;color:var(--navy-400);">${escapeHtml(lead.name)}</span>` : ''}
+              <span class="${isOverdue?'task-due-overdue':isToday?'task-due-today':''}">${escapeHtml(formatRelDate(task.due))}</span>
+              ${old ? '<span class="lr-stage" style="--c:#6B7280">ישנה</span>' : `<span style="opacity:0.6">${escapeHtml(priorityLabel(task.priority))}</span>`}
+            </div>
+          </div>
+          <button type="button" class="lr-btn lr-more" aria-haspopup="menu" aria-label="פעולות על המשימה ${escapeHtml(task.title)}" onclick="event.stopPropagation();TaskRow.menu('${id}',this)">⋯</button>
         </div>
       </div>
-      <button class="quick-del-btn" onclick="event.stopPropagation();quickDeleteTask('${task.id}')">✕</button>
-    </div>
-  `;
-}
+    </div>`;
+  },
+  menu(id, anchor) {
+    const task = State.tasks.find(t => t.id === id);
+    if (!task) return;
+    const items = [];
+    if (task.lead_id) items.push({ icon: '📂', label: 'פתיחת הליד', run: () => App.go('lead-detail', { currentLeadId: task.lead_id }) });
+    items.push({ icon: task.done ? '↩️' : '✅', label: task.done ? 'פתיחה מחדש' : 'סימון כבוצעה', run: () => toggleTask(id) });
+    if (!task.done) {
+      items.push({ icon: '⏭️', label: 'דחייה למחר', run: () => this.defer(id, 1) });
+      items.push({ icon: '📅', label: 'דחייה לשבוע', run: () => this.defer(id, 7) });
+    }
+    items.push({ sep: true }, { icon: '🗑', label: 'מחיקה', danger: true, run: () => quickDeleteTask(id) });
+    ActionSheet.open(task.title || 'משימה', items, anchor);
+  },
+  async defer(id, days) {
+    if (demoGuard()) return;
+    const task = State.tasks.find(t => t.id === id);
+    if (!task) return;
+    const prev = task.due;
+    task.due = addDays(days);
+    try {
+      await DB.updateTask(id, { due: task.due });
+    } catch (e) {
+      task.due = prev;
+      toast('הדחייה לא נשמרה, יש לנסות שוב', 'error');
+      return;
+    }
+    toast(`המשימה נדחתה: ${formatRelDate(task.due)}`, 'success');
+    this.refresh();
+  },
+  refresh() {
+    App.updateBadges();
+    if (State.screen === 'tasks') Tasks.render();
+    else if (State.screen === 'dashboard') Dashboard.renderTasks();
+    else if (State.screen === 'lead-detail') LeadDetail.render(State.currentLeadId);
+  },
+};
+function renderTaskItem(task) { return TaskRow.render(task); }
 
 /* ═══════════════════════════════════════════
    ANALYTICS SCREEN
@@ -17266,7 +17403,35 @@ const IdleSession = {
    SETTINGS SCREEN
 ═══════════════════════════════════════════ */
 const Settings = {
-  render() {
+  // כותרות הקבוצות נפתחות ונסגרות. המצב נשמר בזיכרון כדי שרענון אחרי פעולה לא יסגור את הקבוצה.
+  _open: new Set(['הפרופיל שלי']),
+  render() { this._renderRaw(); this._collapsible(); },
+  _collapsible() {
+    const body = document.getElementById('settings-body');
+    if (!body) return;
+    body.querySelectorAll(':scope > .settings-section').forEach(sec => {
+      const title = sec.querySelector(':scope > .settings-section-title');
+      if (!title) return;
+      const inner = document.createElement('div');
+      inner.className = 'settings-section-body';
+      [...sec.children].filter(c => c !== title).forEach(c => inner.appendChild(c));
+      sec.appendChild(inner);
+      const key = title.textContent.trim();
+      const apply = open => { sec.classList.toggle('sc-open', open); title.setAttribute('aria-expanded', String(open)); };
+      title.classList.add('sc-toggle');
+      title.setAttribute('role', 'button');
+      title.tabIndex = 0;
+      apply(this._open.has(key));
+      const toggle = () => {
+        const open = !sec.classList.contains('sc-open');
+        apply(open);
+        if (open) this._open.add(key); else this._open.delete(key);
+      };
+      title.addEventListener('click', toggle);
+      title.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+    });
+  },
+  _renderRaw() {
     document.getElementById('settings-body').innerHTML = `
       <div class="settings-section">
         <div class="settings-section-title">הפרופיל שלי</div>
@@ -19230,21 +19395,25 @@ async function deleteProperty() {
   }
 }
 
-async function quickDeleteTask(id) {
+function quickDeleteTask(id) {
   if (demoGuard()) return;
   const task = State.tasks.find(t => t.id === id);
   if (!task) return;
-  if (!confirm(`למחוק את המשימה "${task.title}"?`)) return;
-  try {
-    await DB.deleteTask(id);
-    State.tasks = State.tasks.filter(t => t.id !== id);
-    toast('🗑 המשימה נמחקה', 'success');
-    if (State.screen === 'tasks') Tasks.render();
-    else if (State.screen === 'dashboard') Dashboard.renderTasks();
-    else if (State.screen === 'lead-detail') LeadDetail.render(State.currentLeadId);
-  } catch(e) {
-    toast('שגיאה במחיקה: ' + e.message, 'error');
-  }
+  const idx = State.tasks.indexOf(task);
+  const restore = () => {
+    if (!State.tasks.some(t => t.id === id)) State.tasks.splice(Math.min(idx, State.tasks.length), 0, task);
+    TaskRow.refresh();
+  };
+  State.tasks = State.tasks.filter(t => t.id !== id);
+  TaskRow.refresh();
+  Undo.show(`המשימה "${task.title || ''}" נמחקה`, restore, async () => {
+    try {
+      await DB.deleteTask(id);
+    } catch (e) {
+      restore();
+      toast('שגיאה במחיקה: ' + (e?.message || ''), 'error');
+    }
+  });
 }
 
 // מחיקת ליד עם אפשרות ביטול: הליד מוסתר מיד, והמחיקה בשרת מתבצעת רק כשחלון הביטול נסגר.
@@ -19277,19 +19446,25 @@ function quickDeleteLead(id) {
   });
 }
 
-async function quickDeleteProp(id) {
+function quickDeleteProp(id) {
   if (demoGuard()) return;
   const prop = State.properties.find(p => p.id === id);
   if (!prop) return;
-  if (!confirm(`למחוק את ה${getLabel('property')} "${prop.title}"?`)) return;
-  try {
-    await DB.deleteProperty(id);
-    State.properties = State.properties.filter(p => p.id !== id);
-    toast(`🗑 ה${getLabel('property')} נמחק`, 'success');
+  const idx = State.properties.indexOf(prop);
+  const restore = () => {
+    if (!State.properties.some(p => p.id === id)) State.properties.splice(Math.min(idx, State.properties.length), 0, prop);
     if (State.screen === 'properties') PropertiesScreen.render();
-  } catch(e) {
-    toast('שגיאה במחיקה: ' + e.message, 'error');
-  }
+  };
+  State.properties = State.properties.filter(p => p.id !== id);
+  if (State.screen === 'properties') PropertiesScreen.render();
+  Undo.show(`ה${getLabel('property')} "${prop.title || ''}" נמחק`, restore, async () => {
+    try {
+      await DB.deleteProperty(id);
+    } catch (e) {
+      restore();
+      toast('שגיאה במחיקה: ' + (e?.message || ''), 'error');
+    }
+  });
 }
 
 function _shareFallback(text) {
@@ -21410,6 +21585,8 @@ const GuidedTour = {
     if (step.target) {
       const targetEl = document.querySelector(step.target);
       if (targetEl) {
+        const det = targetEl.closest('details');
+        if (det) det.open = true;
         targetEl.classList.add('tour-highlight-pulse');
         targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }

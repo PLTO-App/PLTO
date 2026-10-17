@@ -204,6 +204,78 @@ await page.locator('.lead-detail-header button[aria-label^="שינוי שלב"]'
 check('צ\'יפ השלב בכותרת פותח בחירת שלב', await page.locator('#modal-quick-edit:not(.hidden) .qe-chip').count() >= 2);
 await page.evaluate(() => closeModal('modal-quick-edit'));
 
+
+// ניווט תחתון: חמישה פריטים ותפריט "עוד"
+await page.evaluate(() => App.go('dashboard'));
+await page.waitForTimeout(300);
+check('בניווט התחתון חמישה פריטים', (await page.locator('#bottom-nav .bottom-nav-item').count()) === 5);
+check('הפריטים בניווט בגובה 44px לפחות', await page.locator('#bottom-nav .bottom-nav-item').evaluateAll(els => els.every(e => e.getBoundingClientRect().height >= 44)));
+await page.click('#bottom-nav .bottom-nav-item[data-screen="more"]');
+const moreLabels = await page.locator('#action-sheet .as-item').allTextContents();
+check('תפריט "עוד" כולל את כל המסכים שירדו מהניווט', ['לוח שנה', 'שיתופי פעולה', 'אנליטיקס', 'מרכז כלים', 'שירותי שיווק', 'תיבת דואר', 'הגדרות'].every(l => moreLabels.some(t => t.includes(l))), moreLabels.join('|'));
+await page.locator('#action-sheet .as-item', { hasText: 'הגדרות' }).click();
+await page.waitForTimeout(300);
+check('בחירה בתפריט "עוד" מנווטת למסך', await page.evaluate(() => State.screen === 'settings'));
+check('פריט "עוד" מסומן כפעיל במסך שאינו בניווט', await page.locator('#bottom-nav .bottom-nav-item[data-screen="more"].active').count() === 1);
+
+// הגדרות: קבוצות מתקפלות
+check('בהגדרות רק קבוצה אחת פתוחה בהתחלה', await page.locator('#settings-body .settings-section.sc-open').count() === 1);
+await page.locator('#settings-body .settings-section:not(.sc-open) .sc-toggle').first().focus();
+await page.keyboard.press('Enter');
+check('מקש Enter פותח קבוצה', await page.locator('#settings-body .settings-section.sc-open').count() === 2);
+await page.evaluate(() => Settings.render());
+check('מצב הפתיחה נשמר אחרי רענון המסך', await page.locator('#settings-body .settings-section.sc-open').count() === 2);
+
+// דשבורד: משימות לפני כרטיס ה-AI, והכלים מקופלים במובייל
+await page.evaluate(() => { Dashboard._moreInit = false; App.go('dashboard'); });
+await page.waitForTimeout(300);
+const order = await page.evaluate(() => {
+  const y = id => document.getElementById(id).getBoundingClientRect().top + scrollY;
+  return { tasks: y('dash-tasks'), kpi: y('kpi-row'), ai: y('dash-ai-briefing') };
+});
+check('בדשבורד המשימות הדחופות מעל כרטיס ה-AI', order.tasks < order.ai && order.kpi < order.ai, JSON.stringify(order));
+check('כלים והישגים מקופלים במובייל', await page.evaluate(() => !document.getElementById('dash-more').open));
+check('סיור מודרך פותח את הקבוצה המקופלת כשהיעד בתוכה', await page.evaluate(() => {
+  const w = document.getElementById('gamify-widget'); const det = w.closest('details');
+  if (!det) return false;
+  det.open = false; GuidedTour._cachedSteps = [{ target: '#gamify-widget', emoji: '', title: 't', text: 't' }]; GuidedTour._step = 0; GuidedTour._render();
+  const ok = det.open; GuidedTour.done && GuidedTour.done(false); return ok;
+}));
+
+// משימות: swipe, דחייה ומחיקה עם ביטול
+await page.evaluate(() => { document.getElementById('tour-overlay')?.remove(); document.getElementById('tour-tooltip')?.remove(); App.go('tasks'); });
+await page.waitForTimeout(400);
+const taskRow = '#tasks-list .sw-row';
+check('במשימות אין כפתור מחיקה גלוי', await page.locator('#tasks-list .quick-del-btn').count() === 0);
+check('תיבת הסימון בגודל לחיצה של 44px', await page.locator(`${taskRow} .task-check`).first().evaluate(e => { const r = e.getBoundingClientRect(); return r.width >= 44 && r.height >= 44; }));
+const tid = await page.evaluate(sel => document.querySelector(sel).dataset.lpTask, taskRow);
+await page.evaluate(() => { window.__calls = []; DB.updateTask = async (id, u) => { window.__calls.push(['updateTask', id, JSON.stringify(u)]); }; DB.deleteTask = async id => { window.__calls.push(['deleteTask', id]); }; });
+let tc = await center(`${taskRow} .sw-content`);
+await swipe(tc.x - 40, tc.y, tc.x + 130, tc.y);
+check('swipe במשימה חושף "בוצע" ו"למחר"', await page.evaluate(sel => { const r = document.querySelector(sel); return r.classList.contains('sw-open') && r.querySelectorAll('.sw-tray-left .sw-act').length === 2; }, taskRow));
+await page.evaluate(sel => document.querySelectorAll(sel)[0].querySelectorAll('.sw-tray-left .sw-act')[1].click(), taskRow);
+await page.waitForTimeout(300);
+const defer = await page.evaluate(() => window.__calls.filter(x => x[0] === 'updateTask'));
+check('דחייה למחר שומרת תאריך של מחר', defer.length === 1 && defer[0][1] === tid && JSON.parse(defer[0][2]).due === new Date(Date.now() + 86400000).toISOString().slice(0, 10), JSON.stringify(defer));
+await page.evaluate(sel => { const r = document.querySelector(sel); if (r) r.querySelector('.lr-more').click(); }, `#tasks-list .sw-row[data-lp-task="${tid}"]`);
+await page.locator('#action-sheet .as-item', { hasText: 'מחיקה' }).click();
+await page.waitForSelector('.toast-undo-btn');
+check('מחיקת משימה מסירה אותה מיד וממתינה לביטול', await page.evaluate(id => !State.tasks.some(t => t.id === id) && window.__calls.every(x => x[0] !== 'deleteTask'), tid));
+await page.locator('.toast-undo-btn').click();
+check('ביטול מחזיר את המשימה', await page.evaluate(id => State.tasks.some(t => t.id === id), tid));
+
+// שותפים: כל הטאבים בשורה אחת והבאנר מקופל
+await page.evaluate(() => App.go('partners'));
+await page.waitForTimeout(300);
+check('טאבי שיתופי הפעולה בשורה אחת', await page.locator('.partners-tab').evaluateAll(els => els.every(e => e.getBoundingClientRect().height <= 56)));
+check('באנר ההסבר מקופל', await page.evaluate(() => !document.querySelector('.partners-howto').open));
+
+// נכסים: תפריט במקום ✕ גלוי
+await page.evaluate(() => App.go('properties'));
+await page.waitForTimeout(300);
+check('בכרטיסי הנכסים אין כפתור מחיקה גלוי', await page.locator('#properties-grid .quick-del-btn').count() === 0);
+check('כותרת הנכסים לא גולשת', await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+
 check('אין שגיאות JS', errors.length === 0, errors.join(' | '));
 await close();
 console.log(`\n${passed} עברו, ${fails.length} נכשלו`);
