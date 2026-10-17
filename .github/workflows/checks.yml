@@ -1,0 +1,20 @@
+name: Checks
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Inline JS syntax
+        run: node scripts/check-inline-js.mjs
+      - name: Edge function tests
+        run: node --experimental-strip-types --test supabase/tests/*.test.ts
