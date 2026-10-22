@@ -12537,10 +12537,10 @@ const Gamify = {
       }).join('');
     }
 
-    // Marketing teaser - show only when no access and not in demo
+    // Marketing teaser - show only when no access and not in demo. כשה-AI כבוי הוא לא מוצג, כי הוא מוכר יכולות AI מושבתות
     const mktgTeaserEl = document.getElementById('gamify-mktg-teaser');
     if (mktgTeaserEl) {
-      mktgTeaserEl.style.display = (!Marketing.hasMktgAccess() && !State.isDemo) ? '' : 'none';
+      mktgTeaserEl.style.display = (AI.ENABLED && !Marketing.hasMktgAccess() && !State.isDemo) ? '' : 'none';
     }
   },
 

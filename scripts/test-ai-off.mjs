@@ -170,6 +170,11 @@ const o = await page.evaluate(async () => {
   Roadmap.fetch = async () => [{ title: 'ייצוא לידים לקובץ אקסל', description: 'הורדת כל הלידים לקובץ' }];
   out.dup = [await Roadmap.checkDuplicate('אפשרות ייצוא לידים לקובץ אקסל'), await Roadmap.checkDuplicate('חיבור ליומן גוגל לתיאום פגישות אוטומטי')];
 
+  // פרסומת תוסף ה-AI בווידג'ט ההתקדמות לא מוצגת
+  const origAccess = Marketing.hasMktgAccess; Marketing.hasMktgAccess = () => false; // מצב שבו הפרסומת הייתה מוצגת
+  Gamify.renderWidget();
+  out.teaser = document.getElementById('gamify-mktg-teaser')?.style.display;
+  Marketing.hasMktgAccess = origAccess;
   // כותרות ותוויות
   out.proHub = document.getElementById('screen-pro').innerText;
   window.toast = origToast;
@@ -191,6 +196,7 @@ check(!/AI|בינה מלאכותית/.test(o.importText) && /מושבת זמני
 check(o.mk.n === 3 && o.mk.allDisabled && o.mk.banner && o.mk.fullService && !o.mk.usage, 'שיווק: שלושת הכלים מושבתים בבירור, בקשת שירות מלא נשארת פעילה');
 check(o.dup[0] === true && o.dup[1] === false, 'בדיקת רעיון כפול עובדת מקומית ושמרנית');
 check(!/בינה מלאכותית/.test(o.proHub) && /ניתוח וחיזוי/.test(o.proHub), 'מרכז ה-PRO לא מציג כותרת בינה מלאכותית');
+check(o.teaser === 'none', 'פרסומת "תוסף AI" בווידג\'ט ההתקדמות לא מוצגת כשה-AI כבוי');
 check(o.aiInvokes === 0, 'אף אחת מהפעולות לא שלחה בקשה ל-ai-proxy');
 
 check(errors.length === 0, 'אין שגיאות בקונסולה' + (errors.length ? ': ' + errors.join(' | ') : ''));
