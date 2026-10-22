@@ -3356,6 +3356,11 @@
 
   /* ── Smart WA modal ─────────────────────── */
   .smart-wa-modal { max-width:420px; border-radius:20px 20px 0 0; padding:0; }
+  .swa-label { font-size:13px; font-weight:700; color:var(--gray-600); margin:4px 0 8px; }
+  .swa-chips { margin-bottom:14px; }
+  .swa-chip { font-size:13px; padding:0 12px; }
+  .swa-text { width:100%; min-height:150px; resize:vertical; font-size:15px; line-height:1.7; text-align:right; }
+  .swa-note { font-size:12px; color:var(--gray-500); margin:8px 0 12px; text-align:center; line-height:1.6; }
 
   /* ══ Motion & Micro-animations ══ */
 
@@ -6489,7 +6494,7 @@
 <div id="modal-smart-wa" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-smart-wa')">
   <div class="modal-sheet smart-wa-modal">
     <div class="modal-header" style="padding:16px 16px 12px;">
-      <span style="font-weight:800;">✨ הודעת WhatsApp חכמה</span>
+      <span style="font-weight:800;">💬 הודעת WhatsApp מוכנה</span>
       <button class="modal-close" onclick="closeModal('modal-smart-wa')">✕</button>
     </div>
     <div id="smart-wa-content" style="padding:0 16px 24px;min-height:120px;"></div>
@@ -10056,6 +10061,195 @@ function copyAIText(elId) {
 }
 
 /* ═══════════════════════════════════════════
+   MESSAGE TEMPLATES, הודעות ללקוח בלי AI
+   ספריית תבניות לפי מטרה וסגנון, עם מילוי אוטומטי מפרטי הליד, המשתמש והעסק.
+   הכול רץ בדפדפן, בלי קריאה לשרת ובלי עלות. channel שמור להרחבה למייל בהמשך.
+   כללי ניסוח: בלי פעלים בגוף ראשון בהווה (שולח/שולחת) ובלי פנייה מגדרית ללקוח.
+   {about} מופיע רק אחרי "לגבי", כי לשמות התחום יש מינים שונים ואסור לצרף להם תואר או תחילית.
+═══════════════════════════════════════════ */
+const MsgTemplates = {
+  PURPOSES: [
+    { id: 'intro',         label: 'פנייה ראשונה', icon: '👋' },
+    { id: 'followup',      label: 'מעקב',          icon: '🔔' },
+    { id: 'meeting',       label: 'תיאום שיחה',    icon: '📅' },
+    { id: 'proposal',      label: 'אחרי הצעה',     icon: '📄' },
+    { id: 'closing',       label: 'אחרי פגישה',    icon: '🤝' },
+    { id: 'cold_referral', label: 'חימום ליד קר',  icon: '❄️' },
+  ],
+  STYLES: [
+    { id: 'warm',  label: 'חם ואישי' },
+    { id: 'pro',   label: 'מקצועי' },
+    { id: 'short', label: 'קצר' },
+  ],
+
+  // ניסוחים לפי תחום. ממלאים את {about}, {update} ו-{referral} בתבניות.
+  _IND: {
+    realestate: {
+      about: area => area ? `החיפוש באזור ${area}` : 'החיפוש שלך',
+      update: 'אם החיפוש עדיין פעיל, אשמח לעדכן על אפשרויות חדשות.',
+      referral: 'ואם יש היכרות עם מישהו שמחפש לקנות או למכור, אשמח להמלצה 🙏',
+    },
+    interior: {
+      about: area => area ? `הפרויקט ב${area}` : 'הפרויקט שלך',
+      update: 'אם הפרויקט עדיין על הפרק, אשמח לשתף כמה רעיונות.',
+      referral: 'ואם יש היכרות עם מישהו שמתכנן שיפוץ או עיצוב, אשמח להמלצה 🙏',
+    },
+    realestate_lawyer: {
+      about: () => 'הפנייה שלך',
+      update: 'אם עלו שאלות חדשות, אפשר לכתוב לי כאן.',
+      referral: 'ואם יש היכרות עם מישהו שזקוק לליווי משפטי, אשמח להמלצה 🙏',
+    },
+    other: {
+      about: () => 'הפנייה שלך',
+      update: 'אם יש משהו שאפשר לעזור בו, אני כאן.',
+      referral: 'ואם יש היכרות עם מישהו שיכול להיעזר בשירות שלנו, אשמח להמלצה 🙏',
+    },
+  },
+
+  // c: hi, intro (משפט היכרות או ריק), about, update, referral. שורות ריקות מסוננות, ולכן משפט חסר לא משאיר רווח.
+  WA: {
+    intro: {
+      warm: [
+        c => [`${c.hi} 😊`, c.intro, `ראיתי שפנית לגבי ${c.about}, ואשמח לעזור.`, 'מתי נוח לך לדבר כמה דקות?'],
+        c => [`${c.hi},`, c.intro, 'תודה שפנית. כדי להתאים בדיוק את מה שנכון לך, יש לי כמה שאלות קצרות.', 'מתי זמן טוב לשיחה?'],
+      ],
+      pro: [
+        c => [`${c.hi},`, c.intro, `קיבלתי את הפנייה לגבי ${c.about}.`, 'אשמח לתאם שיחה קצרה כדי להבין את הצרכים ולהציג את האפשרויות המתאימות. מה הזמן הנוח לך?'],
+        c => [`${c.hi},`, c.intro, 'תודה על הפנייה. אשמח לעבור איתך על הפרטים ולתת תמונה מלאה.', 'נוח לדבר היום או מחר?'],
+      ],
+      short: [
+        c => [`${c.hi}, ${c.introShort}תודה על הפנייה 🙂 מתי נוח לדבר?`],
+        c => [`${c.hi}, קיבלתי את הפנייה לגבי ${c.about}. אפשר להתקשר היום?`],
+      ],
+    },
+    followup: {
+      warm: [
+        c => [`${c.hi} 😊`, 'רק רציתי לוודא שההודעה הקודמת שלי הגיעה.', 'אם הנושא עדיין רלוונטי, אשמח לעזור. מתי נוח לך?'],
+        c => [`${c.hi}, מה שלומך?`, `חזרתי לבדוק אם יש משהו חדש לגבי ${c.about}.`, 'אני כאן לכל שאלה 🙂'],
+      ],
+      pro: [
+        c => [`${c.hi},`, `רציתי לחזור לגבי ${c.about}.`, 'יש עדכון מהצד שלך, או שאלה שאפשר לעזור בה?'],
+        c => [`${c.hi},`, 'בהמשך לשיחה הקודמת, אשמח לדעת איך מתקדמים.', 'אם נוח, אפשר לקבוע שיחה קצרה השבוע.'],
+      ],
+      short: [
+        c => [`${c.hi}, ההודעה הקודמת הגיעה? 🙂`],
+        c => [`${c.hi}, יש עדכון לגבי ${c.about}?`],
+      ],
+    },
+    meeting: {
+      warm: [
+        c => [`${c.hi} 😊`, 'אשמח להיפגש ולהכיר כמו שצריך.', 'מה מתאים לך יותר השבוע, בוקר או אחר הצהריים?'],
+        c => [`${c.hi},`, `כדי להתקדם לגבי ${c.about}, הכי טוב לדבר כמה דקות.`, 'יש לי זמן מחר ומחרתיים, מה נוח לך?'],
+      ],
+      pro: [
+        c => [`${c.hi},`, 'אשמח לתאם פגישה קצרה כדי לעבור על הפרטים ולהציג את האפשרויות.', 'מה המועד הנוח לך השבוע?'],
+        c => [`${c.hi},`, `כדי להתקדם לגבי ${c.about}, כדאי לקבוע שיחה מסודרת.`, 'אפשר לשלוח שני מועדים שנוחים לך?'],
+      ],
+      short: [
+        c => [`${c.hi}, מתי נוח לך לשיחה קצרה השבוע?`],
+        c => [`${c.hi}, אפשר לקבוע פגישה קצרה? מה מתאים לך?`],
+      ],
+    },
+    proposal: {
+      warm: [
+        c => [`${c.hi} 😊`, 'רציתי לבדוק שההצעה ששלחתי הגיעה ושהכול ברור.', 'אם יש שאלה או משהו שכדאי לשנות, אני כאן.'],
+        c => [`${c.hi},`, 'מקווה שהיה זמן לעבור על ההצעה.', 'אשמח לשמוע מה דעתך, גם אם יש הסתייגויות. ככה אפשר להתאים אותה בדיוק.'],
+      ],
+      pro: [
+        c => [`${c.hi},`, 'בהמשך להצעה ששלחתי, אשמח לדעת אם יש שאלות או נקודות שכדאי להבהיר.', 'אפשר גם לקבוע שיחה קצרה ולעבור עליה יחד.'],
+        c => [`${c.hi},`, 'רציתי לוודא שההצעה התקבלה.', 'אם הכול מתאים, אפשר להתקדם לשלב הבא כבר השבוע.'],
+      ],
+      short: [
+        c => [`${c.hi}, ההצעה הגיעה? יש שאלות?`],
+        c => [`${c.hi}, מה דעתך על ההצעה? 🙂`],
+      ],
+    },
+    closing: {
+      warm: [
+        c => [`${c.hi}, תודה על הפגישה, היה ממש נעים 😊`, 'כמו שסיכמנו, אשלח את הפרטים בהקדם.', 'מה עוד צריך מהצד שלי כדי להתקדם?'],
+        c => [`${c.hi},`, 'תודה על הזמן היום, נהניתי מהשיחה.', 'יש לי תחושה טובה לגבי ההמשך. אם עלו שאלות, אפשר לכתוב לי כאן בכל שלב 🤝'],
+      ],
+      pro: [
+        c => [`${c.hi},`, 'תודה על הפגישה.', 'בהמשך למה שסיכמנו, אשמח לדעת מתי נוח לך להתקדם לשלב הבא.'],
+        c => [`${c.hi},`, 'תודה על הפגישה היום.', 'אם עלו שאלות נוספות, אפשר לכתוב לי כאן בכל שלב.'],
+      ],
+      short: [
+        c => [`${c.hi}, תודה על הפגישה 🙏 מתי מתקדמים?`],
+        c => [`${c.hi}, תודה על הזמן היום. אשמח לשמוע מה ההחלטה 🙂`],
+      ],
+    },
+    cold_referral: {
+      warm: [
+        c => [`${c.hi} 😊`, 'זמן מה לא דיברנו, רציתי לבדוק מה שלומך.', c.update],
+        c => [`${c.hi},`, `נזכרתי בשיחה שלנו לגבי ${c.about}.`, 'זה עדיין על הפרק? אם כן, יש לי כמה רעיונות שיכולים לעזור.'],
+      ],
+      pro: [
+        c => [`${c.hi},`, `רציתי לבדוק אם יש התקדמות לגבי ${c.about}.`, c.update],
+        c => [`${c.hi},`, 'מקווה שהכול טוב.', `${c.update}\n\n${c.referral}`],
+      ],
+      short: [
+        c => [`${c.hi}, מה שלומך? הנושא עדיין רלוונטי?`],
+        c => [`${c.hi}, הרבה זמן לא דיברנו 🙂 אפשר לעזור במשהו?`],
+      ],
+    },
+  },
+
+  // שם פרטי לפנייה. שם שאין בו אותיות (למשל מספר טלפון שנשמר כשם) לא נכנס להודעה.
+  _firstName(name) {
+    const first = String(name || '').trim().split(/\s+/)[0] || '';
+    if (!/[A-Za-z֐-׿]/.test(first) || first.length > 20) return '';
+    return first;
+  },
+
+  _clean(s, max) {
+    return String(s || '').replace(/\s+/g, ' ').trim().slice(0, max);
+  },
+
+  _ctx(lead, style) {
+    const ind = this._IND[_getInd()] || this._IND.other;
+    const name = this._firstName(lead?.name);
+    const me   = this._firstName(State.agent?.name);
+    const biz  = this._clean(State.tenant?.name, 40);
+    // "מ" צמוד לשם בעברית, ועם מקף לפני שם באותיות לועזיות או מספרים
+    const fromBiz = biz ? (/^[֐-׿]/.test(biz) ? `מ${biz}` : `מ-${biz}`) : '';
+    const who = me ? `${me}${fromBiz ? ' ' + fromBiz : ''}` : biz;
+    const greet = style === 'pro' ? 'שלום' : 'היי';
+    return {
+      hi: name ? `${greet} ${name}` : greet,
+      intro: who ? `כאן ${who}.` : '',
+      introShort: who ? `כאן ${who}, ` : '',
+      about: ind.about(this._clean(lead?.desired_area, 40)),
+      update: ind.update,
+      referral: ind.referral,
+    };
+  },
+
+  count(purpose, style) {
+    return this.WA[purpose]?.[style]?.length || 0;
+  },
+
+  // מחזיר טקסט מוכן. variant מסתובב בין הגרסאות הקיימות, כך שכל מספר תקין.
+  build({ purpose = 'followup', style = 'warm', variant = 0, lead = {}, channel = 'whatsapp' } = {}) {
+    if (channel !== 'whatsapp') return '';
+    const list = this.WA[purpose]?.[style] || this.WA[purpose]?.warm || this.WA.followup.warm;
+    const tpl = list[((variant % list.length) + list.length) % list.length];
+    const lines = tpl(this._ctx(lead, style));
+    return lines.filter(Boolean).join('\n').trim();
+  },
+
+  // מטרה מומלצת לפי מצב הליד. המשתמש תמיד יכול לבחור אחרת.
+  suggest(lead) {
+    if (!lead) return 'followup';
+    if (isWonStage(lead.stage)) return 'cold_referral';
+    if (!lead.last_contact) return 'intro';
+    if (diffDays(lead.last_contact) < -14) return 'cold_referral';
+    const stage = State.stages.find(s => s.id === lead.stage);
+    if (/הצע/.test(stage?.name || '')) return 'proposal';
+    return 'followup';
+  },
+};
+
+/* ═══════════════════════════════════════════
    TOOLS MODULE, מרכז כלים
 ═══════════════════════════════════════════ */
 const Tools = {
@@ -10080,31 +10274,10 @@ const Tools = {
     res.classList.add('visible');
   },
 
-  // ── WhatsApp Templates ──
-  _waTemplates: {
-    intro:    n => `היי ${n||'שם'}! 😊\nשמי [שם שלך] ואני [תפקיד].\nראיתי שיש עניין ב[נושא] ורציתי להציג בפניך כמה אפשרויות שיכולות להתאים לך בול.\nמתי נוח לך ל-10 דקות שיחה?`,
-    followup: n => `היי ${n||'שם'} 😊\nרק רציתי לוודא שקיבלת את מה ששלחתי.\nיש לי כמה עדכונים קטנים שחשבתי שיעניינו אותך, מתי יהיה נוח לך לדקה?`,
-    proposal: n => `היי ${n||'שם'},\nשלחתי לך קצת קודם את ההצעה, הכל מגיע בסדר?\nאם יש לך שאלות או רוצה לשנות משהו, אני כאן 🙌`,
-    closing:  n => `היי ${n||'שם'}, תודה על הפגישה, ממש נהניתי!\nכמו שדיברנו, אני שולח לך עכשיו את הפרטים הסופיים.\nאשמח לדעת, מה עוד צריך ממני כדי להתקדם? 🤝`,
-    cold_referral: n => {
-      const _i = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
-      const update = _i === 'realestate_lawyer'
-        ? 'יש עדכון משפטי רלוונטי שעשוי לעניין, אשמח לשתף.'
-        : _i === 'interior'
-        ? 'יש כמה טרנדים חדשים בעיצוב שרציתי לשתף איתכם.'
-        : 'יש עדכונים מעניינים באזור שביקשת, אשמח לעדכן.';
-      const referral = _i === 'realestate_lawyer'
-        ? 'אם יש היכרות עם מישהו שזקוק לייעוץ משפטי, אשמח שתיצרו קשר 🙏'
-        : _i === 'interior'
-        ? 'אם יש היכרות עם מישהו שמתכנן פרויקט עיצוב, אשמח שתיצרו קשר 🙏'
-        : 'אם יש היכרות עם מישהו שמחפש לקנות או למכור, אשמח שתיצרו קשר 🙏';
-      return `היי ${n||'שם'}! 😊\nזמן מה לא דיברנו, רציתי לבדוק שלומך.\n${update}\n\n${referral}`;
-    },
-  },
-
+  // ── WhatsApp Templates (MsgTemplates) ──
   waTemplate(type) {
     const name = (document.getElementById('wa-client-name')?.value || '').trim();
-    const text = this._waTemplates[type]?.(name) || '';
+    const text = MsgTemplates.build({ purpose: type, style: 'warm', lead: { name } });
     const el = document.getElementById('wa-preview');
     const actions = document.getElementById('wa-actions');
     if (!el) return;
@@ -11625,58 +11798,101 @@ const CallLog = {
 };
 
 /* ═══════════════════════════════════════════
-   SMART WHATSAPP, AI-generated messages (Marketing Addon)
+   SMART WHATSAPP, הודעה מותאמת מתבניות (MsgTemplates), בלי AI ובלי עלות
 ═══════════════════════════════════════════ */
 const SmartWA = {
-  async open(leadId) {
-    if (State.isDemo) { DemoLock.showPrompt('הצטרפו לנסיון חינמי ותוכלו לשלוח הודעות WhatsApp חכמות שנכתבות ע"י AI ✨'); return; }
-    if (!Marketing.hasMktgAccess()) {
-      toast('✨ כלי זה זמין בתוספת השיווק', 'warning');
-      return;
-    }
+  _leadId: null, _purpose: 'followup', _style: 'warm', _variant: 0,
+
+  open(leadId) {
+    const lead = State.leads.find(l => l.id === leadId);
+    if (!lead) { toast('ליד לא נמצא', 'error'); return; }
     State.currentLeadId = leadId;
+    this._leadId = leadId;
+    this._purpose = MsgTemplates.suggest(lead);
+    let style = 'warm';
+    try { style = localStorage.getItem('plto_wa_style') || 'warm'; } catch (_) {}
+    this._style = MsgTemplates.STYLES.some(s => s.id === style) ? style : 'warm';
+    this._variant = 0;
     openModal('modal-smart-wa');
+    this.render();
+  },
+
+  render() {
     const container = document.getElementById('smart-wa-content');
-    container.innerHTML = '<div class="ai-thinking" style="padding:20px;text-align:center;">✨ מייצר הודעה מותאמת אישית...</div>';
-    try {
-      const lead = State.leads.find(l => l.id === leadId);
-      if (!lead) throw new Error('ליד לא נמצא');
-      const stage = State.stages.find(s => s.id === lead.stage);
-      const safeName = String(lead.name || '').slice(0, 50);
-      const safeNotes = String(lead.notes || '').slice(0, 300);
-      const safeArea  = String(lead.desired_area || '').slice(0, 80);
-      const msg = await AI.call([{
-        role: 'user',
-        content: `אתה ${AI._industryRole()} ישראלי.
-כתוב הודעת WhatsApp קצרה (3-4 שורות) ללקוח בשם ${safeName}.
-שלב נוכחי בפייפליין: ${stage?.name || 'פנייה נכנסה'}.
-${safeNotes ? 'הערות על הלקוח: ' + safeNotes : ''}
-${safeArea ? 'אזור/פרויקט: ' + safeArea : ''}
-ההודעה תהיה אישית, חמה וטבעית. ללא emoji מיותרים. מזמינה לתגובה.
-אל תכלול כותרת (כמו "הודעה ל${safeName}"), סימני markdown (כמו ** או ---), או כל משפט לפני/אחרי ההודעה. החזר אך ורק את גוף ההודעה עצמה, מילה ראשונה עד אחרונה, מוכן להעתקה ושליחה ישירה ללקוח בלי שום עריכה.`,
-      }], 200, { type: 'marketing', system: AI._clientLangSystem() });
-      const cleanMsg = stripAiMessageArtifacts(msg);
-      const phone = waNumber(lead.phone);
-      const waUrl = 'https://wa.me/972' + phone + '?text=' + encodeURIComponent(cleanMsg);
-      const usageLabel = AiLimits.limitLabel('marketing');
-      container.innerHTML = `
-        <div style="background:var(--gray-50);border-radius:12px;padding:14px;font-size:14px;line-height:1.7;color:var(--gray-800);white-space:pre-wrap;direction:rtl;text-align:right;margin-bottom:14px;">${escapeHtml(cleanMsg)}</div>
-        <div style="font-size:0.8rem;color:var(--gray-500);text-align:center;margin-bottom:10px;">✨ <span class="mktg-usage-counter">${usageLabel}</span> · אותה מכסה של כלי השיווק</div>
-        <p style="font-size:11px;color:var(--gray-400);margin:0 0 10px;text-align:center;">✏️ סוכן השיווק יכול לפעמים לא לדייק, אפשר לערוך את ההודעה ב-WhatsApp לפני השליחה</p>
-        <div style="display:flex;gap:8px;margin-bottom:8px;">
-          <button class="btn" style="flex:1;border:1px solid var(--border);" onclick="navigator.clipboard.writeText(this.dataset.msg);toast('✅ הועתק','success')" data-msg="${escapeHtml(cleanMsg)}">📋 העתקה</button>
-          <button class="btn" style="flex:1;background:#25D366;color:white;border:none;" onclick="window.open('${escapeHtml(waUrl)}')">📤 שליחה ב-WA</button>
-        </div>
-        <button class="btn btn-ghost" style="width:100%;font-size:13px;" onclick="SmartWA.open('${leadId}')">🔄 ייצר הודעה אחרת</button>
-        <div class="spam-law-notice" style="margin-top:10px;">
-          <span class="sln-icon">⚖️</span>
-          <span>שליחת ההודעות מבוצעת ישירות ממכשירך האישי ובאחריותך הבלעדית. באחריות המשתמש לוודא כי הנמענים אינם מתנגדים לקבלת הודעות, בהתאם להוראות חוק התקשורת (חוק הספאם).</span>
-        </div>
-      `;
-      Marketing._updateUsageLabels();
-    } catch(e) {
-      container.innerHTML = `<div style="text-align:center;padding:20px;color:var(--gray-500);">⚠️ ${escapeHtml(e.message)}</div>`;
-    }
+    if (!container) return;
+    const chip = (group, item, active) =>
+      `<button type="button" class="qe-chip swa-chip${active ? ' active' : ''}" aria-pressed="${active}" onclick="SmartWA.pick('${group}','${item.id}')">${item.icon ? item.icon + ' ' : ''}${escapeHtml(item.label)}</button>`;
+    const nonHe = Settings.getClientLang() !== 'he';
+    const many = MsgTemplates.count(this._purpose, this._style) > 1;
+    container.innerHTML = `
+      <div class="swa-label">מטרת ההודעה</div>
+      <div class="qe-chips swa-chips">${MsgTemplates.PURPOSES.map(p => chip('purpose', p, p.id === this._purpose)).join('')}</div>
+      <div class="swa-label">סגנון</div>
+      <div class="qe-chips swa-chips">${MsgTemplates.STYLES.map(s => chip('style', s, s.id === this._style)).join('')}</div>
+      <textarea id="swa-text" class="form-input swa-text" rows="7" dir="rtl" aria-label="נוסח ההודעה"></textarea>
+      <p class="swa-note">ההודעה נבנתה מתבנית לפי פרטי הליד. אפשר לערוך אותה לפני השליחה.${nonHe ? ' התבניות זמינות כרגע בעברית בלבד.' : ''}</p>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button type="button" class="btn" style="flex:1;border:1px solid var(--border);" onclick="SmartWA.copy()">📋 העתקה</button>
+        <button type="button" class="btn" style="flex:1;background:#25D366;color:white;border:none;" onclick="SmartWA.send()">📤 שליחה ב-WhatsApp</button>
+      </div>
+      ${many ? '<button type="button" class="btn btn-ghost" style="width:100%;font-size:13px;" onclick="SmartWA.another()">🔄 גרסה אחרת</button>' : ''}
+      <div class="spam-law-notice" style="margin-top:10px;">
+        <span class="sln-icon">⚖️</span>
+        <span>שליחת ההודעות מבוצעת ישירות ממכשירך האישי ובאחריותך הבלעדית. באחריות המשתמש לוודא כי הנמענים אינם מתנגדים לקבלת הודעות, בהתאם להוראות חוק התקשורת (חוק הספאם).</span>
+      </div>
+    `;
+    this._fill();
+  },
+
+  // הטקסט נכנס דרך value ולא דרך innerHTML, כי שם הליד הוא קלט לא מהימן
+  _fill() {
+    const lead = State.leads.find(l => l.id === this._leadId);
+    const el = document.getElementById('swa-text');
+    if (el) el.value = MsgTemplates.build({ purpose: this._purpose, style: this._style, variant: this._variant, lead });
+  },
+
+  pick(group, id) {
+    if (group === 'purpose' && MsgTemplates.PURPOSES.some(p => p.id === id)) this._purpose = id;
+    else if (group === 'style' && MsgTemplates.STYLES.some(s => s.id === id)) {
+      this._style = id;
+      try { localStorage.setItem('plto_wa_style', id); } catch (_) {}
+    } else return;
+    this._variant = 0;
+    this.render();
+  },
+
+  another() {
+    this._variant++;
+    this._fill();
+  },
+
+  _text() {
+    return (document.getElementById('swa-text')?.value || '').trim();
+  },
+
+  copy() {
+    const text = this._text();
+    if (!text) { toast('ההודעה ריקה', 'warning'); return; }
+    navigator.clipboard.writeText(text)
+      .then(() => toast('📋 הועתק, מוכן לשליחה ב-WhatsApp', 'success'))
+      .catch(() => toast('לא הצלחנו להעתיק, אפשר לסמן את הטקסט ולהעתיק ידנית', 'error'));
+  },
+
+  // לליד בלי קשר קודם עוברים דרך אישור ההסכמה הקיים, כמו בשליחה ישירה מהכרטיס
+  send() {
+    const lead = State.leads.find(l => l.id === this._leadId);
+    const text = this._text();
+    if (!lead) return;
+    if (!text) { toast('ההודעה ריקה', 'warning'); return; }
+    if (!waNumber(lead.phone)) { toast('אין מספר טלפון לשליחה', 'error'); return; }
+    if (State.isDemo) { toast('⚡ מצב דמו, בגרסה האמיתית תיפתח שיחת WhatsApp עם ההודעה', 'warning'); return; }
+    if (lead.last_contact) { LeadDetail._doWA(lead.phone, text); return; }
+    LeadDetail._waLeadId = lead.id;
+    LeadDetail._waPending = lead.phone;
+    LeadDetail._waText = text;
+    const targetEl = document.getElementById('wa-consent-target');
+    if (targetEl) targetEl.textContent = `${lead.name}: ${lead.phone}`;
+    openModal('modal-wa-consent');
   },
 };
 
@@ -15286,7 +15502,7 @@ const Dashboard = {
     if (!cold.length) { el.closest('.dash-section')?.classList.add('hidden'); return; }
     el.closest('.dash-section')?.classList.remove('hidden');
     el.innerHTML = `
-      <div class="cold-lead-tip">💡 ליד קר שמרגיש מכובד הופך למפרסם, שמרו על קשר חם, הסוכן ינסח אוטומטית</div>
+      <div class="cold-lead-tip">💡 ליד קר שמרגיש מכובד הופך לממליץ. שמרו על קשר חם, ההודעה מוכנה בלחיצה</div>
       <div style="background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border-radius:14px;padding:4px 2px;overflow:hidden;">
         ${cold.map(l => {
           const daysNum = l.last_contact ? Math.abs(diffDays(l.last_contact)) : 15;
@@ -16602,7 +16818,7 @@ const LeadDetail = {
     if (!lead) return;
     const items = [{ header: 'תקשורת' }];
     if (lead.phone2) items.push({ icon: '📞', label: 'שיחה לטלפון השני', run: () => { if (State.isDemo) toast('⚡ מצב דמו, בגרסה האמיתית ייחייג ללקוח', 'warning'); else CallLog.show(leadId, lead.phone2); } });
-    if (Marketing.hasMktgAccess()) items.push({ icon: '✨', label: 'WhatsApp חכם', run: () => SmartWA.open(leadId) });
+    items.push({ icon: '💬', label: 'הודעת WhatsApp מוכנה', run: () => SmartWA.open(leadId) });
     if (State.tenant?.industry === 'realestate') items.push({ icon: '🏠', label: 'שליפת טלפון ממדלן', run: () => LeadDetail.openMadlanModal(leadId) });
     items.push({ icon: '🔔', label: 'קביעת צעד הבא', run: () => NextStep.ask(leadId) });
     items.push({ sep: true }, { header: 'ניהול' });
@@ -16859,6 +17075,7 @@ const LeadDetail = {
     if (!lead || !lead.phone) { toast('אין מספר טלפון לשליחה', 'error'); return; }
     this._waLeadId = leadId;
     this._waPending = lead.phone;
+    this._waText = null;
     if (lead.last_contact) {
       this._doWA(lead.phone);
     } else {
@@ -16868,21 +17085,20 @@ const LeadDetail = {
     }
   },
 
-  _doWA(phone) {
+  _doWA(phone, text) {
     const num = waNumber(phone);
-    window.open('https://wa.me/972' + num, '_blank');
+    window.open('https://wa.me/972' + num + (text ? '?text=' + encodeURIComponent(text) : ''), '_blank');
   },
 
   confirmDirectWA() {
     closeModal('modal-wa-consent');
-    if (this._waPending) this._doWA(this._waPending);
+    if (this._waPending) this._doWA(this._waPending, this._waText);
   },
 
   _quickReply(leadId, type) {
     const lead = State.leads.find(l => l.id === leadId);
     if (!lead) return;
-    const firstName = (lead.name || '').split(' ')[0] || 'לקוח';
-    const text = Tools._waTemplates[type]?.(firstName) || '';
+    const text = MsgTemplates.build({ purpose: type, style: 'warm', lead });
     const phone = waNumber(lead.phone);
     if (!phone) { toast('אין מספר טלפון לשליחה', 'error'); return; }
     window.open('https://wa.me/972' + phone + '?text=' + encodeURIComponent(text), '_blank');
