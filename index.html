@@ -1829,6 +1829,25 @@
     .lr-card:hover { transform: none; box-shadow: none; }
     .lr-card:focus-visible { outline: 2px solid var(--blue-500); outline-offset: -2px; }
     .lr-score { width: 34px; height: 34px; font-size: 12px; flex-shrink: 0; }
+    /* ── היום ── */
+    .today-wrap { margin: 0 20px 16px; }
+    .today-status { font-size: 13px; color: var(--gray-600); background: var(--surface, #fff); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; margin-bottom: 10px; line-height: 1.6; }
+    .today-group { margin-bottom: 12px; }
+    .today-group-title { font-size: 14px; font-weight: 800; color: var(--navy-500); margin: 4px 2px 6px; }
+    .today-count { display: inline-block; min-width: 20px; padding: 0 6px; border-radius: 10px; background: var(--navy-500); color: #fff; font-size: 11px; text-align: center; margin-inline-start: 4px; }
+    .today-row { display: flex; align-items: center; gap: 6px; background: var(--surface, #fff); border: 1px solid var(--border); border-radius: 12px; padding: 6px 6px 6px 10px; margin-bottom: 6px; }
+    .today-main { flex: 1; min-width: 0; cursor: pointer; padding: 4px 6px; border-radius: 8px; }
+    .today-name { font-weight: 800; font-size: 14px; color: var(--navy-500); overflow-wrap: anywhere; }
+    .today-why { font-size: 12px; color: var(--gray-500); line-height: 1.5; }
+    .today-acts { display: flex; flex-shrink: 0; }
+    .today-btn { width: 44px; height: 44px; border: none; background: transparent; font-size: 18px; cursor: pointer; border-radius: 10px; font-family: inherit; }
+    .today-btn:hover { background: var(--gray-100); }
+    .today-done { color: var(--green-600, #15803D); font-weight: 900; font-size: 20px; }
+    .today-more, .today-old { width: 100%; min-height: 44px; border: 1px dashed var(--border); background: transparent; border-radius: 12px; color: var(--gray-600); font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; margin-bottom: 6px; }
+    .today-note { font-size: 12.5px; color: var(--gray-600); padding: 4px 4px 8px; line-height: 1.6; }
+    .today-empty { text-align: center; color: var(--gray-500); font-size: 13px; padding: 14px 8px; line-height: 1.6; }
+    .lr-avatar { width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%; background: var(--navy-50, #EAF2FA); color: var(--navy-500); font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+
     .lr-main { flex: 1; min-width: 0; align-self: stretch; display: flex; flex-direction: column; justify-content: center; }
     .lr-main:focus-visible { outline: 2px solid var(--blue-500); outline-offset: 2px; border-radius: 6px; }
     .lr-name { font-size: 14px; font-weight: 800; color: var(--gray-900); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -4520,7 +4539,7 @@
     </div>
     <div class="sidebar-nav">
       <a class="nav-item active" data-screen="dashboard" onclick="App.go('dashboard')">
-        <span class="nav-icon">📊</span> לוח מחוונים
+        <span class="nav-icon">📊</span> היום
       </a>
       <a class="nav-item" data-screen="pipeline" onclick="App.go('pipeline')">
         <span class="nav-icon">📋</span> <span id="label-pipeline">פייפליין לידים</span>
@@ -4624,6 +4643,9 @@
 
       <div id="dash-trial-card"></div>
 
+      <!-- היום: מה דורש טיפול ומה הצעד הבא -->
+      <div id="dash-today"></div>
+
       <!-- GETTING STARTED - shown only while the tenant has zero leads -->
       <div class="card" id="dash-getting-started" style="margin:0 20px 16px; display:none;">
         <div style="text-align:center; padding:6px 4px;">
@@ -4641,10 +4663,10 @@
               <span>1️⃣</span><span>הוספת לידים, ידנית אחד-אחד, או בבת אחת מקובץ קיים</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px; background:var(--bg-app); padding:10px 14px; border-radius:8px; font-size:13px;">
-              <span>2️⃣</span><span>גרירה בין שלבי הפייפליין במסך "פייפליין לידים", למעקב אחרי כל עסקה</span>
+              <span>2️⃣</span><span>גרירה בין שלבי הפייפליין, למעקב אחרי כל עסקה</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px; background:var(--bg-app); padding:10px 14px; border-radius:8px; font-size:13px;">
-              <span>3️⃣</span><span>תזכורות אוטומטיות וניתוח AI שיעזרו לך לסגור עוד עסקאות</span>
+              <span>3️⃣</span><span>מסך "היום" מראה למי לחזור, ו-AI עוזר לנסח את ההודעה</span>
             </div>
           </div>
         </div>
@@ -4662,7 +4684,7 @@
       <div class="kpi-row" id="kpi-row"></div>
 
       <!-- HOT LEADS -->
-      <div class="section-header" style="margin-top:16px;">
+      <div class="section-header" style="margin-top:16px;" id="dash-hot-header">
         <div class="section-title">🔥 לידים חמים</div>
         <div class="section-link" onclick="App.go('pipeline')">כל הפייפליין</div>
       </div>
@@ -4781,7 +4803,7 @@
           <div class="dash-feat-tile-icon">🤖</div>
           <div class="dash-feat-tile-label">כלי AI</div>
         </div>
-        <div class="dash-feat-tile" onclick="App.go('properties')">
+        <div class="dash-feat-tile" id="dash-tile-properties" onclick="App.go('properties')">
           <div class="dash-feat-tile-icon">🏠</div>
           <div class="dash-feat-tile-label">נכסים</div>
         </div>
@@ -5757,9 +5779,9 @@
 
   <!-- BOTTOM NAV (mobile) -->
   <nav id="bottom-nav" role="navigation" aria-label="ניווט מהיר">
-    <div class="bottom-nav-item active" role="button" tabindex="0" data-screen="dashboard" onclick="navRipple(this);App.go('dashboard')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" aria-label="בית">
+    <div class="bottom-nav-item active" role="button" tabindex="0" data-screen="dashboard" onclick="navRipple(this);App.go('dashboard')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" aria-label="היום">
       <div class="bni-icon">📊</div>
-      <div>בית</div>
+      <div>היום</div>
     </div>
     <div class="bottom-nav-item" role="button" tabindex="0" data-screen="pipeline" onclick="navRipple(this);App.go('pipeline')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
       <div class="bni-icon">📋</div>
@@ -6746,12 +6768,12 @@
             <option value="other">אחר</option>
           </select>
         </div>
-        <div class="form-group">
-          <label class="form-label">תקציב (₪)</label>
+        <div class="form-group" id="fg-new-budget">
+          <label class="form-label" id="lbl-new-budget">תקציב (₪)</label>
           <input type="text" id="new-lead-budget" class="form-input" placeholder="1,500,000">
         </div>
       </div>
-      <div class="form-group">
+      <div class="form-group" id="fg-new-area">
         <label class="form-label">אזור מבוקש</label>
         <input type="text" id="new-lead-area" class="form-input" placeholder="תל אביב, גבעתיים...">
       </div>
@@ -7136,17 +7158,17 @@
         <label class="form-label">אימייל</label>
         <input type="email" id="edit-lead-email" class="form-input" placeholder="כתובת אימייל" style="direction:ltr;">
       </div>
-      <div class="form-row">
-        <div class="form-group">
+      <div class="form-row" id="fg-edit-budget-row">
+        <div class="form-group" id="fg-edit-budget-min">
           <label class="form-label">תקציב מינימום (₪)</label>
           <input type="number" id="edit-lead-budget-min" class="form-input" placeholder="1000000" min="0">
         </div>
         <div class="form-group">
-          <label class="form-label">תקציב מקסימום (₪)</label>
+          <label class="form-label" id="lbl-edit-budget-max">תקציב מקסימום (₪)</label>
           <input type="number" id="edit-lead-budget-max" class="form-input" placeholder="2000000" min="0">
         </div>
       </div>
-      <div class="form-group">
+      <div class="form-group" id="fg-edit-area">
         <label class="form-label">אזור מבוקש</label>
         <input type="text" id="edit-lead-area" class="form-input" placeholder="תל אביב, גבעתיים...">
       </div>
@@ -7765,7 +7787,7 @@ function roleBadgeHtml(r) {
 // Role picker hidden for interior design (buying/selling/renting not relevant).
 function showsBuyerSellerRole() {
   const ind = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
-  return ind !== 'interior';
+  return ind !== 'interior' && ind !== 'other';
 }
 // שלב הסגירה נקבע לפי is_won של השלב, ובהיעדרו לפי השלב האחרון. מספר השלבים משתנה
 // (2 עד 8), ולכן אסור להניח ש-s5 הוא שלב הסגירה.
@@ -7844,10 +7866,10 @@ function roleMatchesFilter(leadRole, filter) {
   return role === filter || role === 'both';
 }
 function sourceLabel(s) {
-  const m = { yad2:'יד2', madlan:'מדלן', facebook:'פייסבוק', instagram:'אינסטגרם', pinterest:'פינטרסט', agent:'הפניית סוכן נדל"ן', bank:'בנק / עו"ד שותף', referral:'הפניה', website:'אתר', call:'שיחה', other:'אחר' };
+  const m = { yad2:'יד2', madlan:'מדלן', facebook:'פייסבוק', instagram:'אינסטגרם', pinterest:'פינטרסט', whatsapp:'WhatsApp', email:'אימייל', ad:'מודעה', agent:'הפניית סוכן נדל"ן', bank:'בנק / עו"ד שותף', referral:'הפניה', website:'אתר', call:'שיחה', other:'אחר' };
   return m[s] || s;
 }
-const VALID_SOURCES = ['yad2','madlan','facebook','instagram','pinterest','agent','bank','referral','website','call','other'];
+const VALID_SOURCES = ['yad2','madlan','facebook','instagram','pinterest','agent','bank','referral','website','call','whatsapp','email','ad','other'];
 function safeSource(s) { return VALID_SOURCES.includes(s) ? s : 'other'; }
 function typeEmoji(t) {
   const m = { call:'📞', whatsapp:'💬', email:'📧', showing:'🏠', meeting:'🤝', note:'📝', stage_change:'🔄', task_done:'✅', other:'⚡' };
@@ -8091,12 +8113,26 @@ const DB = {
     AuditLog.log('settings.updated', 'agent', this.agentId, { fields: ['name'] });
   },
 
-  async updateIndustry(ind) {
-    if (State.isDemo || !this.tenantId) return;
-    try {
-      await sbClient.from('tenants').update({ industry: ind }).eq('id', this.tenantId);
-      if (State.tenant) State.tenant.industry = ind;
-    } catch(_e) { /* non-fatal, localStorage is source of truth */ }
+  // שמירת התחום בשרת דרך RPC צר (מיגרציה 126). אין עדכון ישיר של tenants: ל-authenticated אין מדיניות UPDATE.
+  // כל עוד המיגרציה לא הוחלה בסביבה, הפונקציה לא קיימת והתחום נשאר בדפדפן בלבד, כמו עד היום.
+  async updateIndustry(ind, completeOnboarding = false) {
+    if (State.isDemo || !this.tenantId) return { ok: true, local: true };
+    const { data, error } = await sbClient.rpc('set_tenant_industry', { p_industry: ind, p_complete_onboarding: !!completeOnboarding });
+    if (error) {
+      const msg = error.message || '';
+      if (error.code === 'PGRST202' || /could not find the function/i.test(msg)) return { ok: true, local: true };
+      if (/industry_change_locked/.test(msg)) {
+        toast('שינוי תחום בחשבון של משרד עו"ד מתבצע דרך התמיכה', 'warning', 6000);
+        return { ok: false, locked: true };
+      }
+      toast('התחום לא נשמר בשרת, נא לנסות שוב', 'error');
+      return { ok: false };
+    }
+    if (State.tenant) {
+      State.tenant.industry = data?.industry || ind;
+      if (data?.onboarding_completed) State.tenant.onboarding_completed = true;
+    }
+    return { ok: true };
   },
 
   updateCustomLabels(labels) {
@@ -8208,7 +8244,7 @@ const DB = {
       sbClient.from('tasks').select('*').eq('tenant_id', this.tenantId).order('due_date'),
       sbClient.from('properties').select('*').eq('tenant_id', this.tenantId).order('created_at'),
       sbClient.from('activities').select('*').eq('tenant_id', this.tenantId).order('created_at', { ascending: false }).limit(50),
-      sbClient.from('tenants').select('id,name,slug,plan,trial_ends_at,make_webhook_url,whatsapp_number,industry,phone,city,region,created_at').eq('id', this.tenantId).single(),
+      sbClient.from('tenants').select('id,name,slug,plan,trial_ends_at,make_webhook_url,whatsapp_number,industry,onboarding_completed,phone,city,region,created_at').eq('id', this.tenantId).single(),
       this.agentId ? sbClient.from('agent_users').select('id,name,email,role').eq('id', this.agentId).maybeSingle() : Promise.resolve({ data: null }),
     ]);
     // שגיאת רשת או הרשאה לא אמורה להיראות כמו "אין לידים עדיין"
@@ -8227,8 +8263,8 @@ const DB = {
         id: 's' + s.order_idx, name: s.name, color: s.color,
         order: s.order_idx, is_terminal: s.is_terminal, is_won: !!s.is_won, _uuid: s.id,
       })),
-      leads: (leadsR.data || []).map(l => ({
-        id: l.id, name: l.name, phone: l.phone, phone2: l.phone2 || '', email: l.email || '',
+      leads: (leadsR.data || []).filter(l => l.status !== 'closed_lost').map(l => ({
+        id: l.id, name: l.name, phone: l.phone, phone2: l.phone2 || '', email: l.email || '', status: l.status || 'new',
         stage: this.stageMap[l.pipeline_stage_id] || 's1',
         source: l.source, budget_min: Number(l.budget_min) || 0,
         budget_max: Number(l.budget_max) || 0,
@@ -8241,6 +8277,14 @@ const DB = {
         commission_renewal_date: l.commission_renewal_date || null,
         commission_renewal_notes: l.commission_renewal_notes || '',
         created_at: l.created_at?.split('T')[0] || today(),
+      })),
+      // "לא נסגר" נשמר כ-status = 'closed_lost' ויוצא מהפייפליין ומכל החישובים. הרשימה כאן רק לתצוגה ולפתיחה מחדש.
+      lostLeads: (leadsR.data || []).filter(l => l.status === 'closed_lost').map(l => ({
+        id: l.id, name: l.name, phone: l.phone, email: l.email || '', status: 'closed_lost',
+        notes: l.notes || '', budget_max: Number(l.budget_max) || 0,
+        last_contact: l.last_contact?.split('T')[0] || null,
+        closed_lost_reason: (l.notes || '').match(/\[לא נסגר: ([^\]]*)\]/)?.[1] || '',
+        updated_at: l.updated_at?.split('T')[0] || null,
       })),
       tasks: (tasksR.data || []).map(t => ({
         id: t.id, title: t.title, type: t.type, priority: t.priority,
@@ -8279,7 +8323,8 @@ const DB = {
       lead_role: lead.lead_role || 'buyer',
       inspiration_url: lead.inspiration_url || null,
       pipeline_stage_id: firstStageId,
-      score: 50, next_followup: addDays(1),
+      // בלי תאריך מעקב אוטומטי: ליד חדש מופיע בקבוצה חדשים בלי מענה, ואת הצעד הבא קובע המשתמש
+      score: 50, next_followup: null,
     }).select().single();
     if (error) throw error;
     AuditLog.log('lead.created', 'lead', data.id, { name: data.name });
@@ -8291,7 +8336,7 @@ const DB = {
       lead_role: data.lead_role || 'buyer',
       notes: data.notes || '', tags: [],
       inspiration_url: data.inspiration_url || null,
-      last_contact: null, next_followup: addDays(1), created_at: today(),
+      last_contact: null, next_followup: null, created_at: today(),
     };
   },
 
@@ -8304,6 +8349,7 @@ const DB = {
       budget_max: l.budget_max || null,
       desired_area: l.desired_area || null,
       notes: l.notes || '',
+      tags: ['יובא מקובץ'],
       pipeline_stage_id: firstStageId,
       score: 50,
     }));
@@ -8315,7 +8361,7 @@ const DB = {
       budget_max: Number(d.budget_max) || 0,
       desired_area: d.desired_area || '', score: d.score,
       lead_role: d.lead_role || 'buyer',
-      notes: d.notes || '', tags: [],
+      notes: d.notes || '', tags: d.tags || [],
       last_contact: null, next_followup: d.next_followup ? d.next_followup.split('T')[0] : null,
       created_at: d.created_at ? d.created_at.split('T')[0] : today(),
     }));
@@ -8696,6 +8742,7 @@ const State = {
   tasksFilter: 'all',
   isDemo: false,
   leads: [...DEMO.leads],
+  lostLeads: [],
   properties: [...DEMO.properties],
   tasks: [...DEMO.tasks],
   activities: [...DEMO.activities],
@@ -9057,7 +9104,7 @@ const Onboarding = {
           { id: 'realestate',        icon: '🏠', label: 'סוכן נדל"ן' },
           { id: 'realestate_lawyer', icon: '⚖️', label: 'עו"ד' },
           { id: 'interior',          icon: '🎨', label: 'עיצוב פנים ואדריכלות' },
-          { id: 'other',             icon: '🎯', label: 'אחר' },
+          { id: 'other',             icon: '💼', label: 'שירותים ועסקים' },
         ];
         const current = localStorage.getItem('plto_industry') || '';
         const existingCopy = current ? (Onboarding._VERTICAL_COPY[current] || Onboarding._VERTICAL_COPY.other) : null;
@@ -9139,8 +9186,15 @@ const Onboarding = {
         const existing = (State.stages || []).map(s => s.name).filter(Boolean);
         // If industry changed → show new defaults. Otherwise → keep existing stages.
         const names = (!industryChanged && existing.length) ? existing : defaults;
+        const tpl = ind === 'other' ? `
+          <div style="margin-bottom:12px;">
+            <div style="font-size:12.5px;color:var(--gray-600);margin-bottom:6px;">איך העסק שלך מוכר? אפשר לבחור תבנית ולשנות אחר כך:</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              ${Object.entries(Onboarding._STAGE_TEMPLATES).map(([k, t]) => `<button type="button" class="btn btn-ghost btn-sm" style="min-height:44px;" onclick="Onboarding._applyStageTemplate('${k}')">${t.label}</button>`).join('')}
+            </div>
+          </div>` : '';
         return `
-          <div>
+          <div>${tpl}
             <div style="display:flex;flex-direction:column;gap:6px;" id="ob-stages-list">
               ${names.map((name, i) => Onboarding._stageRow(name, i, names.length)).join('')}
             </div>
@@ -9165,10 +9219,10 @@ const Onboarding = {
         const firstName = (Onboarding._data.agentName || 'יזם').split(' ')[0];
         const ind = localStorage.getItem('plto_industry') || 'other';
         const AGENT_TIPS = {
-          realestate:        'רוב הקונים בוחרים סוכן תוך 72 שעות מהפנייה הראשונה. אני אזהיר אותך על כל ליד שלא קיבל מענה תוך יום.',
+          realestate:        'אני מסמנת לידים חדשים שעוד לא חזרו אליהם, כדי שאף פנייה לא תחכה יותר מדי.',
           interior:          'לקוח עיצוב מחליט אחרי ראיית Portfolio. אני אזכיר לך מתי לשלוח דוגמאות עבודה לכל ליד.',
           realestate_lawyer: 'כל תיק דורש מעקב צמוד אחרי מועדים ומסמכים. אני אעקוב אחרי כל תיק ואזהיר על עיכובים.',
-          other:             'לידים שלא מקבלים מענה תוך 24 שעות, 80% הולכים למתחרה. אני אשמור אותך על כדור.',
+          other:             'אני מסמנת לידים חדשים שעוד לא חזרו אליהם, ולידים שהתקררו, כדי שתדע למי לחזור.',
         };
         const tip = AGENT_TIPS[ind] || AGENT_TIPS.other;
         return `
@@ -9197,6 +9251,20 @@ const Onboarding = {
     },
   ],
   _data: {},
+
+  // תבניות תהליך מכירה לעסק כללי. התבנית רק ממלאת את השלבים, ואפשר לערוך אותם.
+  _STAGE_TEMPLATES: {
+    quote:   { label: 'שיחה והצעת מחיר', stages: ['פנייה נכנסה','שיחה ראשונה','הצעת מחיר נשלחה','מעקב על ההצעה','נסגר ✓'] },
+    meeting: { label: 'פגישה',            stages: ['פנייה נכנסה','נקבעה פגישה','הפגישה התקיימה','הצעה','נסגר ✓'] },
+    project: { label: 'פרויקט',           stages: ['פנייה נכנסה','אפיון צרכים','הצעת מחיר','אישור הלקוח','נסגר ✓'] },
+    short:   { label: 'קצר',              stages: ['פנייה נכנסה','בקשר','נסגר ✓'] },
+  },
+  _applyStageTemplate(key) {
+    const t = this._STAGE_TEMPLATES[key];
+    const list = document.getElementById('ob-stages-list');
+    if (!t || !list) return;
+    list.innerHTML = t.stages.map((n, i) => this._stageRow(n, i, t.stages.length)).join('');
+  },
 
   _stageRow(name, i, total) {
     const canDel = total > 2;
@@ -9245,9 +9313,9 @@ const Onboarding = {
       step1hint: 'כל לקוח הוא פרויקט עם פוטנציאל ל-Pinterest שלם.',
     },
     other: {
-      greeting:  'מעולה! מגדירים את המערכת בשבילך 🎯',
-      step1sub:  'כמה פרטים ו-PLTO מתחיל לעבוד בשבילך',
-      step1hint: '',
+      greeting:  'מעולה! נגדיר סביבה כללית לעסק שלך 💼',
+      step1sub:  'כמה פרטים ו-PLTO מתחילה לעבוד בשבילך',
+      step1hint: 'קבלנים, יועצים, סטודיו, קליניקה ועוד: בשלב הבא בוחרים תהליך מכירה שמתאים לעסק.',
     },
   },
 
@@ -9293,6 +9361,8 @@ const Onboarding = {
     FunnelTracker.track('onboarding_abandoned', { step: this._step + 1, industry: localStorage.getItem('plto_industry') || null });
     document.getElementById('modal-onboarding').classList.add('hidden');
     localStorage.setItem('onboarding_done', '1');
+    // סימון ההצטרפות בשרת, כדי שהאשף לא ייפתח שוב בכל כניסה
+    DB.updateIndustry(localStorage.getItem('plto_industry') || State.tenant?.industry || 'other', true);
   },
 
   _renderStep() {
@@ -9347,7 +9417,7 @@ const Onboarding = {
 
       // Run all saves
       const ind = localStorage.getItem('plto_industry') || 'other';
-      DB.updateIndustry(ind);
+      DB.updateIndustry(ind, true);
       const industryChanged = this._data.prevIndustry !== ind;
       if (this._data.stageNames?.length && (!State.stages?.length || this._data.stagesEdited || industryChanged)) {
         DB.updateStageNames(this._data.stageNames).catch(() => toast('שמות השלבים לא נשמרו, אפשר לעדכן אותם בהמשך מהפייפליין', 'warning'));
@@ -9477,12 +9547,13 @@ const INDUSTRY_LABELS = {
     stages:['פנייה נכנסה','ייעוץ ראשוני','טיפול בתיק','הכנת מסמכים','תיק נסגר ✓'],
     notesPlaceholder:'הערות, סוג התיק, שמות הצדדים, מסמכים רלוונטיים, מועד חזוי לסיום הטיפול...',
   },
+  // פרופיל "שירותים ועסקים": ללא מונחי נדל"ן. מודול הנכסים כבוי כברירת מחדל (ראו hasPropertiesModule)
   other: {
-    lead:'ליד', leads:'לידים', property:'נכס', properties:'נכסים', deal:'עסקה', client:'לקוח', meeting:'פגישה', agent:'סוכן',
-    addLead:'ליד חדש', allLeads:'כל הלידים', pipeline:'פייפליין לידים', propertiesIcon:'🎯',
-    matchTab:'נכסים מתאימים', docLabel:'מסמכים',
-    stages:['פנייה נכנסה','יצרנו קשר','הצעה נשלחה','במשא ומתן','עסקה נסגרה ✓'],
-    notesPlaceholder:'הערות על הליד...',
+    lead:'ליד', leads:'לידים', property:'פריט', properties:'פריטים', deal:'עסקה', client:'לקוח', meeting:'פגישה', agent:'משתמש',
+    addLead:'ליד חדש', allLeads:'כל הלידים', pipeline:'פייפליין מכירות', propertiesIcon:'📦',
+    matchTab:'פריטים מתאימים', docLabel:'מסמכים',
+    stages:['פנייה נכנסה','שיחה ראשונה','הצעת מחיר נשלחה','מעקב על ההצעה','נסגר ✓'],
+    notesPlaceholder:'הערות על הליד: מה ביקש, מה סוכם, מה הצעד הבא...',
   },
 };
 function getLabel(key) {
@@ -9490,6 +9561,11 @@ function getLabel(key) {
   if (custom[key]) return custom[key];
   const ind = localStorage.getItem('plto_industry') || 'other';
   return (INDUSTRY_LABELS[ind] || INDUSTRY_LABELS.other)[key] || key;
+}
+
+// מודול הנכסים (ונלווים) כבוי בפרופיל שירותים ועסקים, אלא אם כבר יש לעסק נתונים בו
+function hasPropertiesModule() {
+  return _getInd() !== 'other' || (State.properties || []).length > 0;
 }
 
 function _getInd() { return localStorage.getItem('plto_industry') || State.tenant?.industry || 'other'; }
@@ -9525,11 +9601,20 @@ const INDUSTRY_SOURCES = {
   realestate:        [{v:'yad2',l:'יד2'},{v:'madlan',l:'מדלן'},{v:'facebook',l:'פייסבוק'},{v:'instagram',l:'אינסטגרם'},{v:'referral',l:'הפניה'},{v:'website',l:'אתר'},{v:'call',l:'שיחה'},{v:'other',l:'אחר'}],
   interior:          [{v:'instagram',l:'אינסטגרם'},{v:'pinterest',l:'פינטרסט'},{v:'facebook',l:'פייסבוק'},{v:'referral',l:'הפניה'},{v:'agent',l:'הפניית סוכן נדל"ן'},{v:'website',l:'אתר'},{v:'call',l:'שיחה'},{v:'other',l:'אחר'}],
   realestate_lawyer: [{v:'referral',l:'הפניה'},{v:'agent',l:'הפניית סוכן נדל"ן'},{v:'bank',l:'בנק / עו"ד שותף'},{v:'website',l:'אתר'},{v:'call',l:'שיחה'},{v:'other',l:'אחר'}],
-  other:             [{v:'facebook',l:'פייסבוק'},{v:'referral',l:'הפניה'},{v:'website',l:'אתר'},{v:'call',l:'שיחה'},{v:'other',l:'אחר'}],
+  other:             [{v:'whatsapp',l:'WhatsApp'},{v:'call',l:'שיחה'},{v:'referral',l:'הפניה'},{v:'website',l:'אתר'},{v:'facebook',l:'פייסבוק'},{v:'instagram',l:'אינסטגרם'},{v:'ad',l:'מודעה'},{v:'email',l:'אימייל'},{v:'other',l:'אחר'}],
 };
 
 function applyIndustryToLeadForm(prefix) {
   const ind = localStorage.getItem('plto_industry') || State.tenant?.industry || 'other';
+
+  // פרופיל שירותים ועסקים: בלי אזור ובלי טווח תקציב, והערך נקרא "ערך משוער"
+  const generic = ind === 'other';
+  const fgArea = document.getElementById(`fg-${prefix}-area`);
+  if (fgArea) fgArea.style.display = generic ? 'none' : '';
+  const fgMin = document.getElementById('fg-edit-budget-min');
+  if (fgMin && prefix === 'edit') fgMin.style.display = generic ? 'none' : '';
+  const lblBudget = document.getElementById(prefix === 'new' ? 'lbl-new-budget' : 'lbl-edit-budget-max');
+  if (lblBudget) lblBudget.textContent = generic ? 'ערך משוער (₪)' : (prefix === 'new' ? 'תקציב (₪)' : 'תקציב מקסימום (₪)');
 
   // Inspiration URL field - only relevant for interior designers
   const fg = document.getElementById(`fg-${prefix}-inspiration`);
@@ -11543,6 +11628,7 @@ const CallLog = {
       toast('📞 ' + content, 'success');
       Gamify.event('log_activity');
       if (State.screen === 'lead-detail') LeadDetail.render(leadId);
+      if (type !== 'no_answer' || !NextStep.dateOf(lead || {})) setTimeout(() => NextStep.ask(leadId), 400);
     } catch(e) { toast('שגיאה: ' + e.message, 'error'); }
   },
 };
@@ -13535,6 +13621,7 @@ const LeadReferral = {
       closeModal('modal-lead-referral-accept');
       const loaded = await DB.loadAll();
       State.leads      = loaded.leads;
+      State.lostLeads  = loaded.lostLeads || [];
       State.activities = loaded.activities;
       toast(`🎉 הליד ${data?.lead_name || ''} נוסף לפייפליין שלך! מקור: הפניה מ־${data?.referrer_name || 'קולגה'}`, 'success', 6000);
       App.go('pipeline');
@@ -13592,6 +13679,7 @@ const LeadReferral = {
       closeModal('modal-referral-agreement');
       const loaded = await DB.loadAll();
       State.leads      = loaded.leads;
+      State.lostLeads  = loaded.lostLeads || [];
       State.activities = loaded.activities;
       toast(`🎉 נחתם! הליד ${data?.lead_name || ''} נוסף לפייפליין שלך (עמלה: ${data?.commission_label||''})`, 'success', 6000);
       App.go('pipeline');
@@ -14248,7 +14336,7 @@ const FunnelTracker = {
           p_event_name: eventName,
           p_event_data: data,
           p_tenant_id:  tid,
-        }).catch(() => {});
+        }).then(() => {}, () => {});
       }
     } catch (_) {}
   },
@@ -14395,6 +14483,7 @@ const App = {
       const loaded = await DB.loadAll();
       State.stages     = loaded.stages;
       State.leads      = loaded.leads;
+      State.lostLeads  = loaded.lostLeads || [];
       State.tasks      = loaded.tasks;
       State.properties = loaded.properties;
       State.activities = loaded.activities;
@@ -14406,7 +14495,7 @@ const App = {
       State.tenant = t
         ? { id: t.id, name: t.name, slug: t.slug, plan: t.plan, trial_ends_at: t.trial_ends_at,
             make_webhook_url: t.make_webhook_url || null, whatsapp_number: t.whatsapp_number || null,
-            marketing_addon: t.marketing_addon || false, industry: t.industry || null,
+            marketing_addon: t.marketing_addon || false, industry: t.industry || null, onboarding_completed: t.onboarding_completed === true,
             phone: t.phone || null, city: t.city || null, region: t.region || null }
         : { name: 'העסק שלי', plan: 'trial' };
       // Seed localStorage from DB so Make.getWebhook() works offline too
@@ -14444,12 +14533,12 @@ const App = {
     Billing.renderTrialBanner();
     // Restore industry from Supabase so it survives logout
     const savedInd = State.tenant?.industry || '';
-    if (savedInd && INDUSTRY_LABELS[savedInd]) {
+    if (savedInd && INDUSTRY_LABELS[savedInd] && (State.tenant?.onboarding_completed !== false || savedInd !== 'other')) {
       localStorage.setItem('plto_industry', savedInd);
     }
-    // Skip onboarding only if industry was already chosen (saved in Supabase).
-    // New users with no industry set will always see the wizard, regardless of account age.
-    if (savedInd) {
+    // האשף נקבע לפי השרת (tenants.onboarding_completed), ולא לפי קיום תחום: לכל עסק חדש יש תחום ברירת מחדל,
+    // ולכן הבדיקה הישנה דילגה על האשף. כשהשרת עדיין לא מתעד את ההצטרפות (לפני מיגרציה 126), הדגל בדפדפן מכריע.
+    if (State.tenant?.onboarding_completed === true) {
       localStorage.setItem('onboarding_done', '1');
     }
     // Restore custom label overrides from localStorage
@@ -14551,7 +14640,10 @@ const App = {
     if (interiorShortcuts) interiorShortcuts.classList.toggle('hidden', ind !== 'interior');
     // Mortgage calculator: relevant to agents and lawyers (client financing), not interior designers
     const mortgageCard = document.getElementById('tool-card-mortgage');
-    if (mortgageCard) mortgageCard.classList.toggle('hidden', ind === 'interior');
+    if (mortgageCard) mortgageCard.classList.toggle('hidden', ind === 'interior' || ind === 'other');
+    const propsOn = hasPropertiesModule();
+    document.getElementById('nav-properties-label')?.classList.toggle('hidden', !propsOn);
+    document.getElementById('dash-tile-properties')?.classList.toggle('hidden', !propsOn);
     // Property comparison: rooms/area/floor/price side-by-side only makes sense for properties
     const compareBtn = document.getElementById('properties-compare-btn');
     if (compareBtn) compareBtn.classList.toggle('hidden', ind !== 'realestate');
@@ -14561,28 +14653,9 @@ const App = {
     const portfolioBtn = document.getElementById('properties-portfolio-btn');
     if (portfolioBtn) portfolioBtn.classList.toggle('hidden', ind !== 'realestate' && ind !== 'interior');
   },
+  // אין שאלה לפני יציאה: תחום העסק שייך לעסק ולא למכשיר, ולכן אין מה "לשמור" או "לא לשמור".
+  // היציאה מנקה את המצב המקומי (_performLogout), והתחום נטען מחדש מהעסק בכניסה הבאה.
   async logout() {
-    const curInd = localStorage.getItem('plto_industry');
-    if (curInd && !State.isDemo) {
-      const save = await new Promise(resolve => {
-        const el = document.createElement('div');
-        el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:flex-end;justify-content:center;';
-        el.innerHTML = `
-          <div style="background:white;border-radius:20px 20px 0 0;padding:28px 24px 44px;width:100%;max-width:480px;text-align:center;">
-            <div style="font-size:32px;margin-bottom:12px;">💾</div>
-            <div style="font-size:18px;font-weight:700;color:var(--navy-500);margin-bottom:8px;">לפני יציאה</div>
-            <div style="font-size:14px;color:var(--gray-500);margin-bottom:24px;line-height:1.6;">האם לשמור את הגדרות העסק לכניסה הבאה?</div>
-            <div style="display:flex;flex-direction:column;gap:10px;">
-              <button id="_ls_yes" style="padding:15px;background:var(--blue-500);color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">כן, שמור הגדרות</button>
-              <button id="_ls_no"  style="padding:15px;background:var(--gray-100);color:var(--navy-500);border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">לא, בכניסה הבאה אבחר מחדש</button>
-            </div>
-          </div>`;
-        document.body.appendChild(el);
-        el.querySelector('#_ls_yes').onclick = () => { document.body.removeChild(el); resolve(true); };
-        el.querySelector('#_ls_no').onclick  = () => { document.body.removeChild(el); resolve(false); };
-      });
-      if (!save) await DB.updateIndustry(null);
-    }
     await this._performLogout();
   },
   async _performLogout() {
@@ -14599,6 +14672,7 @@ const App = {
      'plto_custom_labels','plto_client_lang'].forEach(k => localStorage.removeItem(k));
     State.customLabels = {};
     State.leads       = [...DEMO.leads];
+    State.lostLeads   = [];
     State.properties  = [...DEMO.properties];
     State.tasks       = [...DEMO.tasks];
     State.activities  = [...DEMO.activities];
@@ -14687,7 +14761,7 @@ const App = {
     const go = scr => () => App.go(scr);
     ActionSheet.open('עוד', [
       { header: 'עבודה יומית' },
-      { icon: getLabel('propertiesIcon'), label: getLabel('properties'), run: go('properties') },
+      ...(hasPropertiesModule() ? [{ icon: getLabel('propertiesIcon'), label: getLabel('properties'), run: go('properties') }] : []),
       { icon: '📅', label: 'לוח שנה', run: go('calendar') },
       { icon: '🤝', label: 'שיתופי פעולה', run: go('partners') },
       { icon: '🕐', label: 'פעילות אחרונה', run: go('recent-activity') },
@@ -14718,6 +14792,256 @@ const App = {
 /* ═══════════════════════════════════════════
    DASHBOARD
 ═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════════
+   SALES CORE: מסך "היום", צעד הבא, "לא נסגר"
+   הכל מחושב בדפדפן מהנתונים שכבר נטענו. בלי שרת, בלי AI ובלי כתיבה אוטומטית.
+═══════════════════════════════════════════ */
+// קשר אחרון כעובדה (ולא ציון): תווית טקסט, ועם הדגשה רק מ-14 יום
+function contactFact(lead) {
+  if (!lead.last_contact) return { text: 'אין קשר מתועד', cold: false };
+  const d = Math.abs(diffDays(lead.last_contact));
+  const text = d === 0 ? 'קשר: היום' : d === 1 ? 'קשר: אתמול' : d === 2 ? 'קשר: לפני יומיים' : `קשר: לפני ${d} ימים`;
+  return { text, cold: d >= 14 };
+}
+
+const NextStep = {
+  _id: null,
+  // תאריך הצעד הבא: מה שנקבע בליד, ואם אין, המשימה הפתוחה הקרובה
+  dateOf(lead) {
+    if (lead.next_followup) return lead.next_followup;
+    const due = (State.tasks || []).filter(t => !t.done && t.lead_id === lead.id && t.due).map(t => t.due).sort();
+    return due[0] || null;
+  },
+  taskTitleOf(lead) {
+    const t = (State.tasks || []).filter(t => !t.done && t.lead_id === lead.id).sort((a, b) => String(a.due).localeCompare(String(b.due)))[0];
+    return t ? t.title : '';
+  },
+  ask(leadId) {
+    const lead = State.leads.find(l => l.id === leadId);
+    if (!lead) return;
+    this._id = leadId;
+    document.getElementById('qe-title').textContent = `מה הצעד הבא עם ${lead.name || ''}?`;
+    document.getElementById('qe-body').innerHTML = `
+      <div class="qe-chips">${[['מחר', 1], ['בעוד 3 ימים', 3], ['בעוד שבוע', 7], ['בעוד שבועיים', 14]].map(([l, d]) =>
+        `<button type="button" class="qe-chip" onclick="NextStep.pick(${d})">${l}</button>`).join('')}</div>
+      <div class="form-group" style="margin-top:16px;">
+        <label class="form-label" for="ns-date">תאריך אחר</label>
+        <div style="display:flex;gap:8px;">
+          <input type="date" id="ns-date" class="form-input" min="${today()}" style="flex:1;">
+          <button type="button" class="btn btn-primary" onclick="NextStep.pickDate()">שמירה</button>
+        </div>
+      </div>
+      <button type="button" class="btn btn-ghost w-full" style="margin-top:8px;min-height:44px;" onclick="NextStep.none()">אין צעד הבא כרגע</button>`;
+    openModal('modal-quick-edit');
+  },
+  pick(days) { return this._save(addDays(days)); },
+  pickDate() {
+    const v = (document.getElementById('ns-date') || {}).value;
+    if (!v) { toast('יש לבחור תאריך', 'warning'); return; }
+    return this._save(v);
+  },
+  async none() {
+    closeModal('modal-quick-edit');
+    const lead = State.leads.find(l => l.id === this._id);
+    if (!lead || demoGuard()) return;
+    try { await DB.updateLead(lead.id, { next_followup: null }); lead.next_followup = null; }
+    catch (_e) { toast('העדכון לא נשמר, אפשר לנסות שוב', 'error'); return; }
+    LeadRow.refresh();
+  },
+  async _save(due) {
+    if (demoGuard()) return;
+    const lead = State.leads.find(l => l.id === this._id);
+    if (!lead) return;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(due) || due < today()) { toast('יש לבחור תאריך מהיום והלאה', 'warning'); return; }
+    closeModal('modal-quick-edit');
+    try {
+      await DB.updateLead(lead.id, { next_followup: due });
+      lead.next_followup = due;
+      const t = await DB.addTask({ lead_id: lead.id, title: `מעקב: ${lead.name}`, type: 'call', priority: 'medium', due });
+      State.tasks.push(t);
+    } catch (_e) {
+      toast('הצעד הבא לא נשמר, אפשר לנסות שוב', 'error');
+      return;
+    }
+    FunnelTracker.track('first_followup_set', {});
+    App.updateBadges();
+    LeadRow.refresh();
+    toast(`הצעד הבא נקבע: ${formatRelDate(due)}`, 'success');
+  },
+};
+
+const LostDeal = {
+  _id: null,
+  REASONS: ['המחיר', 'בחרו במישהו אחר', 'לא רלוונטי כרגע', 'אין מענה', 'אחר'],
+  ask(leadId) {
+    const lead = State.leads.find(l => l.id === leadId);
+    if (!lead) return;
+    this._id = leadId;
+    document.getElementById('qe-title').textContent = `למה ${lead.name || 'הליד'} לא נסגר?`;
+    document.getElementById('qe-body').innerHTML = `
+      <div class="qe-chips">${this.REASONS.map((r, i) => `<button type="button" class="qe-chip" onclick="LostDeal.save(${i})">${escapeHtml(r)}</button>`).join('')}</div>
+      <div style="font-size:12px;color:var(--gray-500);margin-top:12px;line-height:1.6;">הליד יוצא מהפייפליין ומהחישובים. אפשר לראות אותו ולפתוח אותו מחדש מהתפריט "⋯" במסך הלידים.</div>`;
+    openModal('modal-quick-edit');
+  },
+  async save(i) {
+    if (demoGuard()) return;
+    const lead = State.leads.find(l => l.id === this._id);
+    const reason = this.REASONS[i];
+    if (!lead || !reason) return;
+    closeModal('modal-quick-edit');
+    const notes = `${lead.notes ? lead.notes + '\n' : ''}[לא נסגר: ${reason}]`.slice(0, 4000);
+    try { await DB.updateLead(lead.id, { status: 'closed_lost', notes }); }
+    catch (_e) { toast('העדכון לא נשמר, אפשר לנסות שוב', 'error'); return; }
+    State.leads = State.leads.filter(l => l.id !== lead.id);
+    State.lostLeads.unshift({ id: lead.id, name: lead.name, phone: lead.phone, status: 'closed_lost', closed_lost_reason: reason, budget_max: lead.budget_max || 0 });
+    if (State.screen === 'lead-detail') App.go('dashboard'); else LeadRow.refresh();
+    toast('הליד סומן כלא נסגר', 'success');
+  },
+  list(anchor) {
+    const items = (State.lostLeads || []).map(l => ({
+      icon: '↩️', label: `${l.name}${l.closed_lost_reason ? ' · ' + l.closed_lost_reason : ''}`, run: () => this.reopen(l.id),
+    }));
+    if (!items.length) { toast('אין לידים שסומנו כלא נסגרו', 'info'); return; }
+    ActionSheet.open('לא נסגרו: בחירה פותחת מחדש', items, anchor);
+  },
+  async reopen(id) {
+    if (demoGuard()) return;
+    const l = (State.lostLeads || []).find(x => x.id === id);
+    if (!l) return;
+    if (!confirm(`לפתוח מחדש את ${l.name}? הוא יחזור לפייפליין.`)) return;
+    try {
+      const row = await DB.updateLead(id, { status: 'new' });
+      const clean = String(row?.notes || '').replace(/\n?\[לא נסגר: [^\]]*\]/g, '');
+      if (clean !== (row?.notes || '')) await DB.updateLead(id, { notes: clean });
+      const loaded = await DB.loadAll();
+      State.leads = loaded.leads; State.lostLeads = loaded.lostLeads || [];
+    } catch (_e) { toast('הפתיחה מחדש נכשלה, אפשר לנסות שוב', 'error'); return; }
+    LeadRow.refresh();
+    toast('הליד חזר לפייפליין', 'success');
+  },
+};
+
+const Today = {
+  _more: {}, _old: false,
+  GROUPS: [
+    ['overdue',   'באיחור'],
+    ['today',     'להיום'],
+    ['fresh',     'חדשים בלי מענה'],
+    ['attention', 'דורשים תשומת לב'],
+    ['clients',   'שמירת קשר עם לקוחות'],
+  ],
+  compute() {
+    const g = { overdue: [], today: [], fresh: [], attention: [], clients: [], oldOverdue: [] };
+    let imported = 0;
+    const stages = (State.stages || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+    const firstStage = stages[0] && stages[0].id;
+    for (const lead of State.leads || []) {
+      const due = NextStep.dateOf(lead);
+      const d = due ? diffDays(due) : null;
+      if (isWonStage(lead.stage)) {
+        if (due && d <= 0) g.clients.push({ lead, why: d === 0 ? 'מועד לחזור היום' : `מועד לחזור עבר ${formatRelDate(due)}` });
+        continue;
+      }
+      const taskTitle = NextStep.taskTitleOf(lead);
+      if (d !== null && d < 0) {
+        const row = { lead, due, why: `${taskTitle || 'מעקב'}: ${formatRelDate(due)}` };
+        (d < -7 ? g.oldOverdue : g.overdue).push(row);
+        continue;
+      }
+      if (d === 0) { g.today.push({ lead, due, why: taskTitle || 'מעקב להיום' }); continue; }
+      const isImported = (lead.tags || []).includes('יובא מקובץ') && !lead.last_contact;
+      if (isImported && d === null) { imported++; continue; }
+      const created = lead.created_at ? Math.abs(diffDays(lead.created_at)) : 99;
+      if (lead.stage === firstStage && !lead.last_contact && d === null && created <= 7) {
+        g.fresh.push({ lead, why: created === 0 ? 'נכנס היום' : created === 1 ? 'נכנס אתמול' : created === 2 ? 'נכנס לפני יומיים' : `נכנס לפני ${created} ימים` });
+        continue;
+      }
+      if (d !== null) continue; // יש צעד עתידי
+      const reasons = [];
+      reasons.push('בלי צעד הבא');
+      const fact = contactFact(lead);
+      if (fact.cold) reasons.push(fact.text.replace('קשר: ', '').replace(/^/, 'ללא קשר '));
+      else if (!lead.last_contact && created >= 14) reasons.push('בלי קשר מתועד');
+      if (isLeadStale(lead)) reasons.push('ממתין בשלב');
+      g.attention.push({ lead, why: reasons.join(' · ') });
+    }
+    g.overdue.sort((a, b) => String(a.due).localeCompare(String(b.due)));
+    return { g, imported };
+  },
+  _row(r) {
+    const l = r.lead, id = escapeHtml(l.id);
+    const val = l.budget_max ? ` · ${escapeHtml(formatMoney(l.budget_max))}` : '';
+    return `<div class="today-row">
+      <div class="today-main" role="button" tabindex="0" onclick="App.go('lead-detail',{currentLeadId:'${id}'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
+        <div class="today-name">${escapeHtml(l.name)}</div>
+        <div class="today-why">${escapeHtml(r.why)}${val}</div>
+      </div>
+      <div class="today-acts">
+        ${l.phone ? `<button type="button" class="today-btn" aria-label="שיחה עם ${escapeHtml(l.name)}" onclick="LeadRow.call('${id}')">📞</button>
+        <button type="button" class="today-btn" aria-label="WhatsApp ל${escapeHtml(l.name)}" onclick="LeadDetail.openDirectWA('${id}')">💬</button>` : ''}
+        <button type="button" class="today-btn today-done" aria-label="סימון ${escapeHtml(l.name)} כטופל" onclick="Today.done('${id}')">✓</button>
+        <button type="button" class="today-btn" aria-haspopup="menu" aria-label="עוד פעולות על ${escapeHtml(l.name)}" onclick="Today.menu('${id}',this)">⋯</button>
+      </div>
+    </div>`;
+  },
+  render() {
+    const el = document.getElementById('dash-today');
+    if (!el) return;
+    if (!(State.leads || []).length) { el.innerHTML = ''; return; }
+    const { g, imported } = this.compute();
+    const open = State.leads.filter(l => !isWonStage(l.stage));
+    const withVal = open.filter(l => Number(l.budget_max) > 0);
+    const sum = withVal.reduce((s, l) => s + Number(l.budget_max), 0);
+    const need = g.overdue.length + g.today.length + g.fresh.length + g.attention.length + g.clients.length + g.oldOverdue.length;
+    const valPart = sum ? ` · שווי פתוח ${formatMoney(sum)}${withVal.length < open.length ? ` (ל-${withVal.length} מתוך ${open.length} לידים)` : ''}` : '';
+    let html = `<div class="today-wrap">
+      <div class="today-status" aria-live="polite"><strong>${open.length}</strong> לידים פתוחים${valPart} · <strong>${need}</strong> דורשים טיפול</div>`;
+    for (const [key, title] of this.GROUPS) {
+      const rows = g[key];
+      if (!rows.length) continue;
+      const lim = this._more[key] ? rows.length : 5;
+      html += `<div class="today-group"><div class="today-group-title">${title} <span class="today-count">${rows.length}</span></div>${rows.slice(0, lim).map(r => this._row(r)).join('')}`;
+      if (rows.length > lim) html += `<button type="button" class="today-more" onclick="Today.more('${key}')">הצגת עוד (${rows.length - lim})</button>`;
+      html += '</div>';
+      if (key === 'overdue' && g.oldOverdue.length) {
+        html += `<div class="today-group"><button type="button" class="today-old" aria-expanded="${this._old}" onclick="Today.toggleOld()">${g.oldOverdue.length === 1 ? 'מעקב ישן אחד' : g.oldOverdue.length + ' מעקבים ישנים'} (יותר משבוע) ${this._old ? '▲' : '▼'}</button>${this._old ? g.oldOverdue.map(r => this._row(r)).join('') : ''}</div>`;
+      }
+    }
+    if (!g.overdue.length && g.oldOverdue.length && !html.includes('today-old')) {
+      html += `<div class="today-group"><button type="button" class="today-old" aria-expanded="${this._old}" onclick="Today.toggleOld()">${g.oldOverdue.length === 1 ? 'מעקב ישן אחד' : g.oldOverdue.length + ' מעקבים ישנים'} (יותר משבוע) ${this._old ? '▲' : '▼'}</button>${this._old ? g.oldOverdue.map(r => this._row(r)).join('') : ''}</div>`;
+    }
+    if (imported) html += `<div class="today-note">${imported} לידים מיובאים שעוד לא טופלו. <a href="#" onclick="App.go('leads');return false;">לרשימת הלידים</a></div>`;
+    if (!need) html += `<div class="today-empty">אין משהו דחוף. זה זמן טוב להוסיף לידים או לחזור ללקוחות ותיקים.</div>`;
+    html += '</div>';
+    el.innerHTML = html;
+  },
+  more(key) { this._more[key] = true; this.render(); },
+  toggleOld() { this._old = !this._old; this.render(); },
+  async done(id) {
+    if (demoGuard()) return;
+    const lead = State.leads.find(l => l.id === id);
+    if (!lead) return;
+    try {
+      await DB.updateLead(id, { last_contact: today(), next_followup: null });
+      lead.last_contact = today(); lead.next_followup = null;
+    } catch (_e) { toast('העדכון לא נשמר, אפשר לנסות שוב', 'error'); return; }
+    for (const t of (State.tasks || []).filter(t => !t.done && t.lead_id === id && t.due && diffDays(t.due) <= 0)) await toggleTask(t.id);
+    this.render();
+    NextStep.ask(id);
+  },
+  menu(id, anchor) {
+    const lead = State.leads.find(l => l.id === id);
+    if (!lead) return;
+    ActionSheet.open(lead.name || 'ליד', [
+      { icon: '🔔', label: 'קביעת צעד הבא', run: () => NextStep.ask(id) },
+      { icon: '⏭️', label: 'דחייה למחר', run: async () => { if (demoGuard()) return; NextStep._id = id; await NextStep._save(addDays(1)); } },
+      { icon: '📂', label: 'פתיחת הכרטיס', run: () => App.go('lead-detail', { currentLeadId: id }) },
+      { sep: true },
+      { icon: '🚫', label: 'לא נסגר', danger: true, run: () => LostDeal.ask(id) },
+    ], anchor);
+  },
+};
+
 const Dashboard = {
   render() {
     this._activityExpanded = false;
@@ -14728,6 +15052,7 @@ const Dashboard = {
     document.getElementById('dash-date').textContent = hebrewDate();
     const gs = document.getElementById('dash-getting-started');
     if (gs) gs.style.display = State.leads.length === 0 ? '' : 'none';
+    Today.render();
     this.renderKPIs();
     this.renderTasks();
     this.renderHotLeads();
@@ -14776,7 +15101,7 @@ const Dashboard = {
       const gamifyOn = Gamify.isEnabled();
       const sub = gamifyOn
         ? 'חבר שמצטרף = +250 XP לך<br>הוא מקבל +100 XP + 20% הנחה'
-        : 'חבר שמצטרף מקבל 20% הנחה<br>ואת/ה מצטרפים לתוכנית ההפניות';
+        : 'חבר שמצטרף מקבל 20% הנחה<br>ומצטרפים יחד לתוכנית ההפניות';
       const secBtn = gamifyOn
         ? `<button class="dash-growth-btn-sec"  onclick="App.go('xp-store')">🏆 חנות XP</button>`
         : '';
@@ -14805,10 +15130,13 @@ const Dashboard = {
   renderHotLeads() {
     const el = document.getElementById('dash-hot-leads');
     if (!el) return;
+    // ציון 50 הוא ברירת המחדל של כל ליד חדש ולא מידע. הקטע מוצג רק לידים שקיבלו ציון מניתוח AI
     const hot = State.leads
-      .filter(l => !isWonStage(l.stage))
+      .filter(l => !isWonStage(l.stage) && l.score != null && l.score !== 50)
       .sort((a,b) => (b.score||0) - (a.score||0))
       .slice(0, 5);
+    const hotHeader = document.getElementById('dash-hot-header');
+    if (hotHeader) hotHeader.style.display = hot.length ? '' : 'none';
     if (!hot.length) { el.style.display = 'none'; return; }
     el.style.display = '';
     if (this._hotTimer) clearInterval(this._hotTimer);
@@ -15477,7 +15805,9 @@ const LeadRow = {
       due = `<span class="lr-due ${d < 0 ? 'lr-due-overdue' : d === 0 ? 'lr-due-today' : ''}">${typeEmoji(task.type)} ${escapeHtml(formatRelDate(task.due))}</span>`;
     }
     const unread = TrackerUnread.get(lead.id);
-    const chips = tags.slice(0, 2).join('') + due + (unread ? `<span class="lr-due" style="color:var(--blue-500)">💬 ${Number(unread) || ''}</span>` : '');
+    const cf = contactFact(lead);
+    const contactChip = `<span class="lr-due${cf.cold ? ' lr-due-overdue' : ''}">${escapeHtml(cf.text)}</span>`;
+    const chips = tags.slice(0, 2).join('') + due + contactChip + (unread ? `<span class="lr-due" style="color:var(--blue-500)">💬 ${Number(unread) || ''}</span>` : '');
     const phone = waNumber(lead.phone);
     const idx2 = State.stages.findIndex(s => s.id === lead.stage);
     const canNext = idx2 >= 0 && idx2 < State.stages.length - 1 && !isWonStage(lead.stage);
@@ -15496,7 +15826,7 @@ const LeadRow = {
         </div>
         <div class="sw-content">
           <div class="lead-card lr-card" onclick="App.go('lead-detail',{currentLeadId:'${id}'})">
-            <div class="score-badge ${scoreClass(lead.score)} lr-score">${lead.score ?? ''}</div>
+            ${lead.score != null && lead.score !== 50 ? `<div class="score-badge ${scoreClass(lead.score)} lr-score">${lead.score}</div>` : `<div class="lr-avatar" aria-hidden="true">${escapeHtml(calcInitials(name))}</div>`}
             <div class="lr-main" role="button" tabindex="0" aria-label="${escapeHtml(name)}, פתיחת כרטיס"
                  onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
               <div class="lr-name">${escapeHtml(name)}</div>
@@ -15533,10 +15863,11 @@ const LeadRow = {
       { icon: '📞', label: 'שיחה', disabled: !hasPhone, run: () => this.call(id) },
       { sep: true },
       { icon: '🔄', label: 'שינוי שלב', run: () => QuickEdit.open(id, 'stage') },
-      { icon: '🔔', label: 'קביעת מעקב', run: () => QuickEdit.open(id, 'followup') },
+      { icon: '🔔', label: 'קביעת צעד הבא', run: () => NextStep.ask(id) },
       { icon: '📝', label: 'הוספת הערה', run: () => QuickEdit.open(id, 'note') },
       { icon: '✏️', label: 'עריכת פרטים', run: () => openEditLead(id) },
       { sep: true },
+      { icon: '🚫', label: 'לא נסגר', run: () => LostDeal.ask(id) },
       { icon: '🗑', label: 'מחיקה', danger: true, run: () => quickDeleteLead(id) },
     ], anchor);
   },
@@ -15608,6 +15939,8 @@ const QuickEdit = {
     try {
       const t = await DB.addTask({ lead_id: lead.id, title: `מעקב: ${lead.name}`, type: 'call', priority: 'medium', due });
       State.tasks.push(t);
+      await DB.updateLead(lead.id, { next_followup: due });
+      lead.next_followup = due;
     } catch (e) {
       toast('המעקב לא נשמר, יש לנסות שוב', 'error');
       return;
@@ -15946,6 +16279,7 @@ const Leads = {
   headerMenu(anchor) {
     ActionSheet.open('לידים', [
       { icon: '📋', label: 'ייבוא לידים מקובץ', run: () => LeadImport.open() },
+      { icon: '🚫', label: `לא נסגרו (${(State.lostLeads || []).length})`, run: () => LostDeal.list(anchor) },
     ], anchor);
   },
   renderRow(lead, idx = 0) {
@@ -16114,7 +16448,7 @@ const LeadDetail = {
               ['אזור מבוקש', lead.desired_area || ''],
               ['מקור', sourceLabel(lead.source)],
               ['קשר אחרון', lead.last_contact ? formatRelDate(lead.last_contact) : ''],
-              ['מעקב הבא', lead.next_followup ? formatRelDate(lead.next_followup) : ''],
+              ['צעד הבא', NextStep.dateOf(lead) ? formatRelDate(NextStep.dateOf(lead)) : 'לא נקבע'],
             ].filter(([, v]) => v).map(([k, v]) => `<div class="info-item"><div class="info-label">${k}</div><div class="info-value">${escapeHtml(String(v))}</div></div>`).join('')}
             ${lead.commission_renewal_date ? (() => {
               const rd = lead.commission_renewal_date;
@@ -16280,8 +16614,9 @@ const LeadDetail = {
     if (lead.phone2) items.push({ icon: '📞', label: 'שיחה לטלפון השני', run: () => { if (State.isDemo) toast('⚡ מצב דמו, בגרסה האמיתית ייחייג ללקוח', 'warning'); else CallLog.show(leadId, lead.phone2); } });
     if (Marketing.hasMktgAccess()) items.push({ icon: '✨', label: 'WhatsApp חכם', run: () => SmartWA.open(leadId) });
     if (State.tenant?.industry === 'realestate') items.push({ icon: '🏠', label: 'שליפת טלפון ממדלן', run: () => LeadDetail.openMadlanModal(leadId) });
-    items.push({ icon: '🔔', label: 'קביעת מעקב', run: () => QuickEdit.open(leadId, 'followup') });
+    items.push({ icon: '🔔', label: 'קביעת צעד הבא', run: () => NextStep.ask(leadId) });
     items.push({ sep: true }, { header: 'ניהול' });
+    items.push({ icon: '🚫', label: 'לא נסגר', danger: true, run: () => LostDeal.ask(leadId) });
     items.push({ icon: '🔄', label: 'שינוי שלב', run: () => QuickEdit.open(leadId, 'stage') });
     items.push({ icon: '📝', label: 'הוספת פעילות', run: () => { State.currentLeadId = leadId; openModal('modal-add-activity'); } });
     items.push({ icon: '✏️', label: 'עריכת פרטים', run: () => openEditLead(leadId) });
@@ -17793,8 +18128,6 @@ const Settings = {
   },
   async resetOnboarding() {
     if (demoGuard()) return;
-    await DB.updateIndustry(null);
-    localStorage.removeItem('plto_industry');
     localStorage.removeItem('onboarding_done');
     State.customLabels = {};
     localStorage.removeItem('plto_custom_labels');
@@ -17827,15 +18160,16 @@ const Settings = {
   },
 
   async confirmChangeIndustry(ind) {
-    const IND_NAMES = { realestate: 'סוכן נדל"ן', realestate_lawyer: 'עו"ד', interior: 'עיצוב פנים ואדריכלות', other: 'אחר' };
+    const IND_NAMES = { realestate: 'סוכן נדל"ן', realestate_lawyer: 'עו"ד', interior: 'עיצוב פנים ואדריכלות', other: 'שירותים ועסקים' };
     if (!confirm(`לשנות את תחום העסק ל${IND_NAMES[ind] || ind}? התוויות המותאמות אישית יתאפסו לברירת המחדל של התחום החדש.`)) return;
     await this.setIndustry(ind);
   },
 
   async setIndustry(ind) {
     if (!INDUSTRY_LABELS[ind]) return;
+    const saved = await DB.updateIndustry(ind);
+    if (!saved.ok) return;
     localStorage.setItem('plto_industry', ind);
-    await DB.updateIndustry(ind);
     // Switching industry resets custom labels so defaults feel fresh
     DB.updateCustomLabels({});
     App._applyIndustryLabels();
@@ -18898,6 +19232,7 @@ async function addActivity() {
     SaveAnim.success(() => {
       toast('📝 פעילות נרשמה', 'success');
       if (State.screen === 'lead-detail') LeadDetail.render(State.currentLeadId);
+      if (State.currentLeadId && !wasFromChallenge) setTimeout(() => NextStep.ask(State.currentLeadId), 500);
     });
   } catch(e) {
     SaveAnim.hide();
@@ -19668,7 +20003,7 @@ const LeadTracker = {
       if (this._messagingEnabled && data.write_pin) {
         document.getElementById('lt-pin-display').textContent = data.write_pin;
       }
-      await sbClient.rpc('mark_lead_tracker_messages_read', { p_lead_id: leadId }).catch(() => {});
+      await sbClient.rpc('mark_lead_tracker_messages_read', { p_lead_id: leadId }).then(() => {}, () => {});
       await this.loadUpdates();
     } catch (e) {
       document.getElementById('lt-link-loading').classList.add('hidden');
@@ -20008,6 +20343,7 @@ sbClient.auth.onAuthStateChange((event, session) => {
           const loaded = await DB.loadAll();
           State.stages     = loaded.stages;
           State.leads      = loaded.leads;
+          State.lostLeads  = loaded.lostLeads || [];
           State.tasks      = loaded.tasks;
           State.properties = loaded.properties;
           State.activities = loaded.activities;
@@ -20019,7 +20355,7 @@ sbClient.auth.onAuthStateChange((event, session) => {
           State.tenant = t
             ? { id: t.id, name: t.name, slug: t.slug, plan: t.plan, trial_ends_at: t.trial_ends_at,
                 make_webhook_url: t.make_webhook_url || null, whatsapp_number: t.whatsapp_number || null,
-                marketing_addon: t.marketing_addon || false, industry: t.industry || null,
+                marketing_addon: t.marketing_addon || false, industry: t.industry || null, onboarding_completed: t.onboarding_completed === true,
                 phone: t.phone || null, city: t.city || null, region: t.region || null }
             : { name: 'העסק שלי', plan: 'trial', marketing_addon: false };
           if (t?.make_webhook_url) localStorage.setItem('make_webhook_url', t.make_webhook_url);
