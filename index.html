@@ -7962,6 +7962,7 @@ async function aiQuotaMessage(error) {
   try {
     if (error?.context && typeof error.context.json === 'function') {
       const body = await error.context.json();
+      if (body?.error === 'ai_disabled') return 'שירותי ה-AI מושבתים כרגע';
       if (body?.error === 'quota_exceeded') {
         if (body?.reason === 'cooling_down') {
           return 'הסוכן עדיין בקירור, נסה שוב בעוד כמה רגעים';
