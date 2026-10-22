@@ -46,6 +46,13 @@ serve(async (req) => {
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
 
+  // Kill switch: paid AI calls stay blocked unless the secret AI_ENABLED is exactly 'true'.
+  // Checked before auth, quota and the provider call, so a blocked request never reaches
+  // Anthropic and is not counted. Fail closed: a missing secret keeps AI off.
+  if (Deno.env.get('AI_ENABLED') !== 'true') {
+    return Response.json({ error: 'ai_disabled' }, { status: 503, headers: cors });
+  }
+
   try {
     // ── 1. Verify caller is an authenticated Supabase user ──────────────
     const authHeader = req.headers.get('Authorization');
