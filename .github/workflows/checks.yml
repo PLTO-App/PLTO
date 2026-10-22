@@ -43,3 +43,5 @@ jobs:
         run: node scripts/test-today.mjs
       - name: Industry persistence and general-business wizard
         run: node scripts/test-industry.mjs
+      - name: WhatsApp templates without AI
+        run: node scripts/test-wa-templates.mjs
