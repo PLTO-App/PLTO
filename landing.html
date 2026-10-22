@@ -959,11 +959,11 @@
       margin-top: 28px; position: relative; z-index: 1;
     }
     @media (max-width: 700px) {
-      .agents-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; max-width: 100%; }
-      .agent-card { flex-basis: auto; padding: 12px 10px; border-radius: var(--radius-sm); }
-      .agent-icon { font-size: 19px; margin-bottom: 5px; }
-      .agent-title { font-size: 12.5px; margin-bottom: 3px; line-height: 1.3; }
-      .agent-desc { font-size: 10.5px; line-height: 1.4; }
+      .agents-grid { display: grid; grid-template-columns: 1fr; gap: 10px; max-width: 100%; }
+      .agent-card { flex-basis: auto; padding: 14px 14px; border-radius: var(--radius-sm); }
+      .agent-icon { font-size: 22px; margin-bottom: 6px; }
+      .agent-title { font-size: 15px; margin-bottom: 4px; line-height: 1.3; }
+      .agent-desc { font-size: 13px; line-height: 1.55; }
     }
 
     /* ══════════════════════════════
@@ -2819,7 +2819,7 @@
     <a href="https://realestate.plto.app" class="nav-cta">מתחילים בחינם</a>
   </div>
   <div class="nav-menu-panel" id="navMenuPanel" aria-hidden="true">
-    <a href="#agents">5 הסוכנים שלנו</a>
+    <a href="#agents">מה עושים כל יום</a>
     <a href="#industries">התחומים שלנו</a>
     <a href="#features">מה מקבלים בפנים</a>
     <a href="#how">איך זה עובד</a>
@@ -2978,36 +2978,36 @@
 <!-- מעבר מבהיר לכהה -->
 <div class="sect-blend-dark" aria-hidden="true"></div>
 
-<!-- 5 הסוכנים -->
+<!-- מה עושים כל יום -->
 <section class="agents-section" id="agents">
   <div class="section-inner">
-    <h2 class="section-title fade-up">5 סוכנים חכמים שעובדים בשבילך, בלי לקחת משכורת</h2>
-    <p class="section-sub fade-up">לכל סוכן תפקיד ברור, שמבוצע במקצועיות.</p>
+    <h2 class="section-title fade-up">5 כלים שעוזרים לסגור יותר עסקאות</h2>
+    <p class="section-sub fade-up">כל כלי עונה על שאלה אחת ביום העבודה: למי לחזור, מה לכתוב ומה לתעד.</p>
     <div class="agents-grid fade-up">
       <div class="agent-card">
-        <span class="agent-icon">🎯</span>
-        <div class="agent-title">הסוכן שמנתח לידים</div>
-        <div class="agent-desc">בלחיצה בכרטיס הליד: <strong>ציון, הסבר קצר והצעד הבא שכדאי לעשות.</strong> עוזר להחליט עם מי לדבר קודם.</div>
+        <span class="agent-icon">📅</span>
+        <div class="agent-title">מסך "היום"</div>
+        <div class="agent-desc">לידים באיחור, מעקבים להיום, חדשים בלי מענה ולקוחות לשמירת קשר, <strong>במקום אחד, עם שיחה, WhatsApp וסימון כטופל בלחיצה.</strong></div>
       </div>
       <div class="agent-card">
-        <span class="agent-icon">✍️</span>
-        <div class="agent-title">סוכן השיווק</div>
-        <div class="agent-desc"><strong>כותב הצעות, פוסטים לסושיאל וקמפיינים תוך שניות.</strong> מאשרים, שולחים, וזהו.</div>
+        <span class="agent-icon">🔔</span>
+        <div class="agent-title">צעד הבא לכל ליד</div>
+        <div class="agent-desc">אחרי כל שיחה קובעים מתי חוזרים, <strong>והליד מופיע במסך "היום" בזמן.</strong> בלי לזכור לבד.</div>
+      </div>
+      <div class="agent-card">
+        <span class="agent-icon">💬</span>
+        <div class="agent-title">הודעות WhatsApp מוכנות</div>
+        <div class="agent-desc">פנייה ראשונה, פולואפ, אחרי הצעת מחיר ועוד, בשלושה סגנונות. <strong>הנוסח מתמלא בשם הלקוח ובפרטי העסק, ואפשר לערוך לפני שליחה.</strong></div>
+      </div>
+      <div class="agent-card">
+        <span class="agent-icon">📞</span>
+        <div class="agent-title">אימיילים ותסריטי שיחה</div>
+        <div class="agent-desc">מייל היכרות, שליחת הצעה ומעקב, ותסריט לשיחת היכרות, בירור צרכים והתנגדות למחיר. <strong>המייל נפתח בתוכנת המייל שלך, ושום דבר לא נשלח בלי שבדקת.</strong></div>
       </div>
       <div class="agent-card">
         <span class="agent-icon">⚡</span>
-        <div class="agent-title">הסוכן שמתעד בשבילך</div>
-        <div class="agent-desc">מסכמים בקול או בכתב מה היה בשיחה, <strong>והמערכת כותבת משפט ברור ישר לכרטיס הליד.</strong></div>
-      </div>
-      <div class="agent-card">
-        <span class="agent-icon">🎧</span>
-        <div class="agent-title">סוכן התמיכה</div>
-        <div class="agent-desc"><strong>עונה על שאלות לגבי המערכת בכל שעה,</strong> כולל ב-2 בלילה כשעוד ערים עם ההצעה הבאה.</div>
-      </div>
-      <div class="agent-card">
-        <span class="agent-icon">🔥</span>
-        <div class="agent-title">סוכן המוטיבציה</div>
-        <div class="agent-desc"><strong>מזכיר לך למה התחלת,</strong> בלחיצה, ביום שזה הכי נדרש.</div>
+        <div class="agent-title">יומן מהיר</div>
+        <div class="agent-desc">כותבים בחופשיות מה היה בשיחה, <strong>והרשומה נשמרת בכרטיס הליד שמופיע בטקסט, אחרי אישור שלך.</strong></div>
       </div>
     </div>
   </div>
@@ -3122,7 +3122,7 @@
       <div class="ap-card">
         <div class="ap-emoji">⏰</div>
         <p class="ap-pain">"שעות על לידים שלעולם לא יסגרו, ובסוף גם הלקוח הלך."</p>
-        <p class="ap-solution">זיהוי אוטומטי של לידים קרים, הודעת חיזור חכמה שמשמרת את הקשר. ליד קר שמרגיש מכובד הופך למפרסם הכי טוב שלכם.</p>
+        <p class="ap-solution">זיהוי אוטומטי של לידים קרים, והודעת חיזור מוכנה לעריכה ולשליחה שמשמרת את הקשר. ליד קר שמרגיש מכובד הופך למפרסם הכי טוב שלכם.</p>
       </div>
       <div class="ap-card">
         <div class="ap-emoji">🏠</div>
@@ -3176,8 +3176,8 @@
           <!-- שקף 1: דשבורד -->
           <div class="reel-slide active">
             <div class="mock-ai-card">
-              <span class="mock-ai-icon">🤖</span>
-              <span class="mock-ai-text">נחמן עוד לא ענה, כדאי לשלוח WhatsApp לפני הערב</span>
+              <span class="mock-ai-icon">🔔</span>
+              <span class="mock-ai-text">נחמן כהן מחכה למענה, כדאי לחזור אליו היום</span>
             </div>
             <div class="mock-kpi-row">
               <div class="mock-kpi"><div class="mock-kpi-val">₪3.3M</div><div class="mock-kpi-label">שווי צינור</div></div>
@@ -3235,7 +3235,7 @@
 
           <!-- שקף 4: כלים -->
           <div class="reel-slide">
-            <div class="mock-tools-header">כלים חכמים לסגירת עסקאות</div>
+            <div class="mock-tools-header">כלים לסגירת עסקאות</div>
             <div class="mock-tools-grid">
               <div class="mock-tool"><span class="mock-tool-icon">📞</span><span class="mock-tool-name">תסריטי שיחה</span></div>
               <div class="mock-tool"><span class="mock-tool-icon">💬</span><span class="mock-tool-name">הודעות מוכנות</span></div>
@@ -3251,7 +3251,7 @@
       </div>
 
       <div class="reel-dots">
-        <button class="reel-pip active" aria-label="דשבורד">🤖</button>
+        <button class="reel-pip active" aria-label="דשבורד">📊</button>
         <button class="reel-pip" aria-label="פייפליין">📋</button>
         <button class="reel-pip" aria-label="לוח שנה">📅</button>
         <button class="reel-pip" aria-label="כלים">⚡</button>
@@ -3276,7 +3276,7 @@
           <div class="feature-card">
             <span class="fc-icon">🎯</span>
             <div class="fc-title">ציון ליד</div>
-            <div class="fc-desc">דירוג אוטומטי לכל ליד, כדי לדעת על מי כדאי להתמקד</div>
+            <div class="fc-desc">דירוג הלידים הפעילים לפי שלב, שווי ופעילות אחרונה, כדי לדעת על מי כדאי להתמקד</div>
           </div>
           <div class="feature-card">
             <span class="fc-icon">⏰</span>
@@ -3555,7 +3555,7 @@
 <section class="section faq-section" id="faq">
   <div class="section-inner">
     <h2 class="section-title fade-up">יש תשובה לכל השאלות שלך</h2>
-    <p class="section-sub fade-up">ואם לא ראית כאן את התשובה שלך, תמיד אפשר לפנות אלינו לתמיכה (גם מתוך הסוכן במערכת).</p>
+    <p class="section-sub fade-up">ואם לא ראית כאן את התשובה שלך, תמיד אפשר לפנות אלינו לתמיכה (גם מתוך המערכת).</p>
 
     <div class="faq-list fade-up">
       <details class="faq-item">
@@ -3587,8 +3587,8 @@
         <div class="faq-answer">כן. ייבוא מ-CSV בלחיצה אחת, כל הלידים עולים למערכת בלי להקליד שורה אחת ידנית.</div>
       </details>
       <details class="faq-item">
-        <summary>מה זה בעצם 5 הסוכנים? זה AI אמיתי או עוד באזז שיווקי?</summary>
-        <div class="faq-answer">AI אמיתי, בנוי על אחת הטכנולוגיות המתקדמות בעולם, מותאם אישית לכל משימה. <strong>לא צ'אטבוט אחד שמנסה לעשות הכל, אלא חמישה כלים ממוקדים שכל אחד עושה דבר אחד טוב.</strong></div>
+        <summary>ההודעות והתסריטים נכתבים אוטומטית על ידי בינה מלאכותית?</summary>
+        <div class="faq-answer">לא. ההודעות, האימיילים והתסריטים הם תבניות שנכתבו מראש, לפי מטרה וסגנון. הן מתמלאות בשם הלקוח ובפרטי העסק, ואפשר לערוך אותן לפני שימוש. <strong>שום דבר לא נשלח בלי שבדקת אותו.</strong></div>
       </details>
     </div>
   </div>
@@ -3681,7 +3681,7 @@
       'הדשבורד. כל מה שחשוב, במבט אחד.',
       'הפייפליין. גוררים, לא מתעדכנים ידנית.',
       'לוח השנה. שום פגישה לא נשכחת.',
-      'כלים חכמים. עובדים בשבילך.'
+      'הכלים. מוכנים לשימוש.'
     ];
     let cur = 0, timer = null;
     function goTo(n) {
@@ -4025,7 +4025,7 @@
       title: 'אף ליד לא מתקרר',
       items: [
         'זיהוי אוטומטי של לידים שדורשים חזרה, לפני שהם מתקררים',
-        'ציון אוטומטי לכל ליד, כדי לדעת על מי להתמקד',
+        'דירוג לידים לפי שלב, שווי ופעילות אחרונה, כדי לדעת על מי להתמקד',
         'משימות ותאריכי מעקב לכל ליד, במקום אחד'
       ]
     },
