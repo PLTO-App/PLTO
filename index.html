@@ -4270,7 +4270,6 @@
     /* Constrain gamify widget so it doesn't dominate the page */
     .gamify-widget { max-width: 720px; margin: 0 auto 14px; }
     .motivation-card { max-width: 720px; margin: 0 auto 14px; }
-    #dash-ai-briefing.ai-card { max-width: 720px; margin: 0 auto 14px; }
     #realestate-shortcuts.re-shortcuts { max-width: 720px; margin: 0 auto 14px !important; }
     #dash-getting-started.card { max-width: 720px; margin: 0 auto 16px; }
 
@@ -4689,15 +4688,6 @@
         <div class="section-link" onclick="App.go('pipeline')">כל הפייפליין</div>
       </div>
       <div id="dash-hot-leads" style="padding:0 20px 4px;display:flex;flex-direction:column;gap:8px;"></div>
-
-      <!-- AI BRIEFING - first thing the agent sees -->
-      <div class="ai-card dash-smart-card" id="dash-ai-briefing" style="margin: 0 20px 14px;">
-        <div class="ai-card-title" style="font-size:13px; gap:8px;">
-          <span class="dash-smart-card-badge">✨</span>
-          <span>הסוכן החכם תמיד כאן לתת לך תדרוך יומי, ואיזה פינות צריך לסגור לעבר העסקה הבאה</span>
-        </div>
-        <div id="dash-ai-briefing-body" style="min-height:40px;"></div>
-      </div>
 
       <!-- REAL ESTATE SHORTCUTS - Yad2 & Madlan quick links (realestate agents only) -->
       <div id="realestate-shortcuts" class="re-shortcuts hidden" style="margin:0 20px 14px;">
@@ -15060,7 +15050,6 @@ const Dashboard = {
     this.renderRenewalAlerts();
     this._runDailyWaAutomation();
     this.renderActivity();
-    this.renderAIBriefing();
     this.renderGrowthCard();
     Billing.renderDashTrialCard();
     Gamify.renderWidget();
