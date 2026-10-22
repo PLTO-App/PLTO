@@ -45,3 +45,5 @@ jobs:
         run: node scripts/test-industry.mjs
       - name: WhatsApp templates without AI
         run: node scripts/test-wa-templates.mjs
+      - name: AI off, no dead AI controls in tools and lead card
+        run: node scripts/test-ai-off.mjs
