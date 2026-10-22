@@ -3359,6 +3359,7 @@
   .swa-label { font-size:13px; font-weight:700; color:var(--gray-600); margin:4px 0 8px; }
   .swa-chips { margin-bottom:14px; }
   .swa-chip { font-size:13px; padding:0 12px; }
+  html.ai-off [data-ai] { display:none !important; }
   .swa-service { margin-bottom:12px; }
   .swa-text { width:100%; min-height:150px; max-height:50dvh; overflow-y:auto; resize:none; font-size:15px; line-height:1.7; text-align:right; }
   .swa-note { font-size:12px; color:var(--gray-500); margin:8px 0 12px; text-align:center; line-height:1.6; }
@@ -4671,7 +4672,7 @@
               <span>2️⃣</span><span>גרירה בין שלבי הפייפליין, למעקב אחרי כל עסקה</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px; background:var(--bg-app); padding:10px 14px; border-radius:8px; font-size:13px;">
-              <span>3️⃣</span><span>מסך "היום" מראה למי לחזור, ו-AI עוזר לנסח את ההודעה</span>
+              <span>3️⃣</span><span>מסך "היום" מראה למי לחזור, ומחכה לך הודעה מוכנה לשליחה</span>
             </div>
           </div>
         </div>
@@ -4796,8 +4797,8 @@
           <div class="dash-feat-tile-label">מחשבון<br>משכנתא</div>
         </div>
         <div class="dash-feat-tile" onclick="App.go('tools')">
-          <div class="dash-feat-tile-icon">🤖</div>
-          <div class="dash-feat-tile-label">כלי AI</div>
+          <div class="dash-feat-tile-icon">🛠️</div>
+          <div class="dash-feat-tile-label">מרכז<br>כלים</div>
         </div>
         <div class="dash-feat-tile" id="dash-tile-properties" onclick="App.go('properties')">
           <div class="dash-feat-tile-icon">🏠</div>
@@ -4878,7 +4879,7 @@
           <!-- Marketing addon upsell teaser -->
           <div id="gamify-mktg-teaser" style="display:none;margin-top:10px;background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(37,99,235,0.08));border-radius:12px;padding:10px 12px;cursor:pointer;" onclick="App.go('marketing')">
             <div style="font-size:12px;font-weight:700;color:#7C3AED;margin-bottom:4px;">✨ תוסף AI, ₪100/חודש</div>
-            <div style="font-size:11px;color:var(--gray-500);">יומן מהיר · שיווק AI · WA חכם · תמיכה אוטומטית</div>
+            <div style="font-size:11px;color:var(--gray-500);">יומן מהיר · שיווק AI · תמיכה אוטומטית</div>
           </div>
           <div class="gamify-daily-challenge" id="gamify-daily" onclick="Gamify.dailyAction()">
             <div class="gamify-daily-icon">⚡</div>
@@ -5060,8 +5061,8 @@
     <div id="screen-tools" class="screen hidden">
       <div class="tools-header-strip">
         <h2>🛠️ מרכז כלים</h2>
-        <p>כלים חכמים שיעזרו לך לסגור יותר עסקאות, כלולים בכל החבילות</p>
-        <p style="font-size:0.78rem;margin-top:2px;">✏️ הסוכן יכול לפעמים לא לדייק, כל מה שהוא כותב ניתן לעריכה חופשית לפני שימוש</p>
+        <p>כלים שיעזרו לך לסגור יותר עסקאות, כלולים בכל החבילות</p>
+        <p style="font-size:0.78rem;margin-top:2px;">✏️ כל נוסח ניתן לעריכה חופשית לפני שימוש</p>
       </div>
       <div class="tools-grid">
 
@@ -5149,83 +5150,36 @@
           </div>
         </div>
 
-        <!-- TOOL 3: AI Call Script -->
+        <!-- TOOL 3: Call scripts (templates, SmartWA) -->
         <div class="tool-card">
           <div class="tool-card-head">
             <div class="tool-card-icon tool-icon-blue">📞</div>
             <div>
-              <div class="tool-card-title">מחולל תסריט שיחה</div>
-              <div class="tool-card-sub">AI מכין לך סקריפט לפני כל שיחה</div>
+              <div class="tool-card-title">תסריטי שיחה מוכנים</div>
+              <div class="tool-card-sub">תסריט לפני כל שיחה, מוכן לעריכה</div>
             </div>
           </div>
-          <div class="tool-card-body">
-            <div>
-              <label class="tool-label">שם הלקוח</label>
-              <input class="form-input" id="script-name" type="text" placeholder="שם הלקוח" />
-            </div>
-            <div>
-              <label class="tool-label">סוג השיחה</label>
-              <select class="form-input" id="script-type">
-                <option value="intro">שיחה ראשונה, היכרות</option>
-                <option value="followup">פולואפ, אחרי פגישה</option>
-                <option value="proposal">הצגת הצעה</option>
-                <option value="objection">טיפול בהתנגדות</option>
-                <option value="closing">סגירת עסקה</option>
-              </select>
-            </div>
-            <div>
-              <label class="tool-label">הערה קצרה (אופציונלי)</label>
-              <input class="form-input" id="script-note" type="text" placeholder="למשל: מתלבט על המחיר..." />
-            </div>
-            <button class="btn btn-primary btn-sm" onclick="Tools.generateCallScript()" id="script-btn">✨ יצירת תסריט</button>
-            <div class="tool-ai-result" id="script-result"></div>
-            <div class="tool-actions" id="script-actions" style="display:none;">
-              <button class="tool-btn-copy" onclick="Tools.copyResult('script-result')">📋 העתקה</button>
-            </div>
+          <div class="tool-card-body" style="display:flex;align-items:center;justify-content:center;padding:8px 0;">
+            <button class="btn btn-primary btn-sm" onclick="SmartWA.openFree('script')">📞 פתיחת התסריטים</button>
           </div>
         </div>
 
-        <!-- TOOL 4: AI Professional Email -->
+        <!-- TOOL 4: Emails (templates, SmartWA) -->
         <div class="tool-card">
           <div class="tool-card-head">
             <div class="tool-card-icon tool-icon-purple">📧</div>
             <div>
-              <div class="tool-card-title">מחולל אימייל מקצועי</div>
-              <div class="tool-card-sub">AI כותב אימייל רשמי בשבילך</div>
+              <div class="tool-card-title">אימיילים מוכנים</div>
+              <div class="tool-card-sub">היכרות, הצעת מחיר ומעקב, מוכנים לעריכה</div>
             </div>
           </div>
-          <div class="tool-card-body">
-            <div>
-              <label class="tool-label">שם הנמען</label>
-              <input class="form-input" id="email-name" type="text" placeholder="שם הלקוח / גורם" />
-            </div>
-            <div>
-              <label class="tool-label">נושא האימייל</label>
-              <input class="form-input" id="email-subject" type="text" placeholder="למשל: הצעת מחיר לדירה ברחוב..." />
-            </div>
-            <div>
-              <label class="tool-label">טון</label>
-              <select class="form-input" id="email-tone">
-                <option value="formal">רשמי</option>
-                <option value="friendly">ידידותי ומקצועי</option>
-                <option value="urgent">דחוף</option>
-                <option value="followup">פולואפ עדין</option>
-              </select>
-            </div>
-            <div>
-              <label class="tool-label">תוכן עיקרי (ב-2-3 מילים)</label>
-              <input class="form-input" id="email-content" type="text" placeholder="למשל: אישור פגישה, הצעת מחיר, תודה..." />
-            </div>
-            <button class="btn btn-primary btn-sm" onclick="Tools.generateEmail()" id="email-btn">✨ יצירת אימייל</button>
-            <div class="tool-ai-result" id="email-result"></div>
-            <div class="tool-actions" id="email-actions" style="display:none;">
-              <button class="tool-btn-copy" onclick="Tools.copyResult('email-result')">📋 העתקה</button>
-            </div>
+          <div class="tool-card-body" style="display:flex;align-items:center;justify-content:center;padding:8px 0;">
+            <button class="btn btn-primary btn-sm" onclick="SmartWA.openFree('email')">📧 פתיחת האימיילים</button>
           </div>
         </div>
 
-        <!-- TOOL 5: AI Proposal Generator -->
-        <div class="tool-card" style="grid-column: 1 / -1;">
+        <!-- TOOL 5: AI Proposal Generator (מוסתר כל עוד ה-AI כבוי, אין לו תבנית מקבילה) -->
+        <div class="tool-card" data-ai style="grid-column: 1 / -1;">
           <div class="tool-card-head">
             <div class="tool-card-icon tool-icon-gold">📋</div>
             <div>
@@ -9875,6 +9829,10 @@ function flashScreen() {
    AI MODULE, Phase 3
 ═══════════════════════════════════════════ */
 const AI = {
+  // משקף את הסוד AI_ENABLED בשרת (ai-proxy). כל עוד הוא false, קריאות AI לא יוצאות מהדפדפן,
+  // וכל מה שתלוי ב-AI בלבד מוסתר (data-ai ו-AI.ENABLED). להפעלה מחדש יש לשנות את שניהם יחד.
+  ENABLED: false,
+
   // Baseline tone for every AI.call() that doesn't pass its own opts.system —
   // keeps output sharp and professional instead of generic/padded.
   _DEFAULT_SYSTEM: 'אתה עוזר AI מקצועי בתוך PLTO, מערכת לניהול לידים, לקוחות, משימות ותהליכי עבודה לבעלי מקצוע בישראל. כתוב תמיד בעברית בלבד, בגוף שני. היה חד, ענייני ומקצועי: בלי מילות מילוי ("בהחלט", "כמובן", "אשמח לעזור"), בלי הקדמות מיותרות, בלי קלישאות. תשובה ישירה שמובילה לפעולה הבאה.',
@@ -9887,6 +9845,7 @@ const AI = {
   },
 
   async call(messages, maxTokens = 400, opts = {}) {
+    if (!this.ENABLED) throw new Error('שירותי ה-AI מושבתים כרגע');
     if (State.isDemo) throw Object.assign(new Error('demo_locked'), { isDemo: true });
     if (!AiLimits.hasAiAccess()) throw new Error('⏰ תקופת הניסיון הסתיימה, יש לשדרג לתוסף ה-AI (₪100/חודש)');
     const type = opts.type || 'general';
@@ -10054,6 +10013,7 @@ ${cold.map(fmtCold).join('\n') || 'אין לידים קפואים'}
     return this.call([{ role: 'user', content: prompt }], 550);
   },
 };
+document.documentElement.classList.toggle('ai-off', !AI.ENABLED);
 
 function copyAIText(elId) {
   const box = document.getElementById(elId)?.querySelector('.ai-message-box');
@@ -10422,102 +10382,6 @@ const Tools = {
     if (!el) return;
     navigator.clipboard.writeText(el.textContent)
       .then(() => toast('📋 הועתק, מוכן לשליחה ב-WhatsApp', 'success'));
-  },
-
-  // ── AI Call Script ──
-  async generateCallScript() {
-    const name  = document.getElementById('script-name')?.value?.trim() || 'הלקוח';
-    const type  = document.getElementById('script-type')?.value || 'intro';
-    const note  = document.getElementById('script-note')?.value?.trim() || '';
-    const res   = document.getElementById('script-result');
-    const btn   = document.getElementById('script-btn');
-    const acts  = document.getElementById('script-actions');
-    const typeLabels = {
-      intro: 'שיחת היכרות ראשונה', followup: 'פולואפ אחרי פגישה',
-      proposal: 'הצגת הצעת מחיר', objection: 'טיפול בהתנגדות',
-      closing: 'סגירת עסקה'
-    };
-    if (!res || !btn) return;
-    if (State.isDemo) { DemoLock.showPrompt('הצטרפו לנסיון חינמי ותוכלו להשתמש בסוכן השיווק ליצירת תסריטי שיחה ✨'); return; }
-    btn.textContent = '⏳ מייצר תסריט...'; btn.disabled = true;
-    res.classList.remove('visible'); if (acts) acts.style.display = 'none';
-    try {
-      const role = AI._industryRole();
-      const safeName = String(name).slice(0, 50);
-      const safeNote = String(note).slice(0, 200);
-      const prompt = `אתה ${role} ישראלי מנוסה.
-צור תסריט שיחה קצר ומעשי לשיחה מסוג: ${typeLabels[type]}
-שם הלקוח: ${safeName}
-${safeNote ? `הערה חשובה: ${safeNote}` : ''}
-
-הפורמט:
-**פתיחה (15 שניות):**
-[מה לומר)
-
-**גוף השיחה:**
-[3-4 נקודות מרכזיות לכסות]
-
-**שאלות פתיחה מומלצות:**
-[2-3 שאלות שיגרמו ללקוח לדבר]
-
-**סגירת השיחה:**
-[איך לסיים עם הצעד הבא]
-
-${type === 'objection' ? '**תשובות להתנגדויות נפוצות:**\n[2-3 התנגדויות + תשובות]' : ''}
-
-שמור על טון חם, מקצועי ואנושי. עברית בלבד.`;
-      const text = await AI.call([{ role: 'user', content: prompt }], 600);
-      res.textContent = text || 'לא הצלחתי לייצר תסריט, אפשר לנסות שוב';
-      res.classList.add('visible');
-      if (acts) acts.style.display = 'flex';
-    } catch(e) {
-      res.textContent = 'שגיאה: ' + e.message;
-      res.classList.add('visible');
-    }
-    btn.textContent = '✨ יצירת תסריט'; btn.disabled = false;
-  },
-
-  // ── AI Professional Email ──
-  async generateEmail() {
-    const name    = document.getElementById('email-name')?.value?.trim() || 'לקוח';
-    const subject = document.getElementById('email-subject')?.value?.trim() || '';
-    const tone    = document.getElementById('email-tone')?.value || 'formal';
-    const content = document.getElementById('email-content')?.value?.trim() || '';
-    const res     = document.getElementById('email-result');
-    const btn     = document.getElementById('email-btn');
-    const acts    = document.getElementById('email-actions');
-    const toneLabel = { formal:'רשמי ומקצועי', friendly:'ידידותי ומקצועי', urgent:'דחוף אך מנומס', followup:'עדין ולא פולשני' };
-    if (!res || !btn) return;
-    if (State.isDemo) { DemoLock.showPrompt('הצטרפו לנסיון חינמי ותוכלו להשתמש בסוכן החכם ליצירת אימיילים מקצועיים ✨'); return; }
-    btn.textContent = '⏳ כותב אימייל...'; btn.disabled = true;
-    res.classList.remove('visible'); if (acts) acts.style.display = 'none';
-    try {
-      const role = AI._industryRole();
-      const safeName    = String(name).slice(0, 50);
-      const safeSubject = String(subject).slice(0, 100);
-      const safeContent = String(content).slice(0, 500);
-      const prompt = `אתה ${role} ישראלי. כתוב אימייל מקצועי.
-נמען: ${safeName}
-נושא: ${safeSubject || 'לא צוין'}
-תוכן עיקרי: ${safeContent || 'לא צוין'}
-טון: ${toneLabel[tone]}
-
-כתוב אימייל שלם כולל: שורת נושא, פנייה, גוף, סיום וחתימה.
-פורמט:
-**נושא:** [כתוב כאן]
-
-[גוף האימייל]
-
-טון ${toneLabel[tone]}, לא יותר מ-150 מילה.`;
-      const text = await AI.call([{ role: 'user', content: prompt }], 500, { system: AI._clientLangSystem() });
-      res.textContent = text || 'לא הצלחתי לייצר אימייל';
-      res.classList.add('visible');
-      if (acts) acts.style.display = 'flex';
-    } catch(e) {
-      res.textContent = 'שגיאה: ' + e.message;
-      res.classList.add('visible');
-    }
-    btn.textContent = '✨ יצירת אימייל'; btn.disabled = false;
   },
 
   // ── AI Proposal Generator ──
@@ -11931,13 +11795,34 @@ const CallLog = {
    משמש את שלושת הערוצים: WhatsApp, אימייל ותסריט שיחה. השם נשאר בגלל הקריאות הקיימות אליו.
 ═══════════════════════════════════════════ */
 const SmartWA = {
-  _leadId: null, _channel: 'whatsapp', _purpose: 'followup', _style: 'warm', _variant: 0, _service: '',
+  _leadId: null, _freeName: '', _channel: 'whatsapp', _purpose: 'followup', _style: 'warm', _variant: 0, _service: '',
+
+  // ליד מהמערכת, או ליד ריק עם שם שהוקלד כשהחלון נפתח ממרכז הכלים
+  _lead() {
+    return State.leads.find(l => l.id === this._leadId) || { name: this._freeName };
+  },
+
+  // פתיחה בלי ליד, ממרכז הכלים. הנמען נבחר ידנית בערוץ עצמו
+  openFree(channel) {
+    this._leadId = null;
+    this._freeName = '';
+    this._channel = MsgTemplates.CHANNELS.some(c => c.id === channel) ? channel : 'whatsapp';
+    this._purpose = MsgTemplates.suggest(null, this._channel);
+    let style = 'warm';
+    try { style = localStorage.getItem('plto_wa_style') || 'warm'; } catch (_) {}
+    this._style = style;
+    this._variant = 0;
+    this._service = '';
+    openModal('modal-smart-wa');
+    this.render();
+  },
 
   open(leadId, channel = 'whatsapp') {
     const lead = State.leads.find(l => l.id === leadId);
     if (!lead) { toast('ליד לא נמצא', 'error'); return; }
     State.currentLeadId = leadId;
     this._leadId = leadId;
+    this._freeName = '';
     this._channel = MsgTemplates.CHANNELS.some(c => c.id === channel) ? channel : 'whatsapp';
     this._purpose = MsgTemplates.suggest(lead, this._channel);
     let style = 'warm';
@@ -11964,7 +11849,7 @@ const SmartWA = {
     const styles = MsgTemplates.styles(ch, this._purpose);
     const chip = (group, item, active, label) =>
       `<button type="button" class="qe-chip swa-chip${active ? ' active' : ''}" aria-pressed="${active}" onclick="SmartWA.pick('${group}','${item.id}')">${item.icon ? item.icon + ' ' : ''}${escapeHtml(label || item.label)}</button>`;
-    const lead = State.leads.find(l => l.id === this._leadId);
+    const lead = this._leadId ? State.leads.find(l => l.id === this._leadId) : null;
     const dial = waNumber(lead?.phone);
     const note = MsgTemplates.note(ch, this._purpose);
     const nonHe = Settings.getClientLang() !== 'he';
@@ -11980,6 +11865,8 @@ const SmartWA = {
       <div class="qe-chips swa-chips">${MsgTemplates.scenarios(ch).map(p => chip('purpose', p, p.id === this._purpose)).join('')}</div>
       ${styles.length > 1 ? `<div class="swa-label">סגנון</div>
       <div class="qe-chips swa-chips">${styles.map(s => chip('style', { id: s }, s === style, MsgTemplates.STYLE_LABELS[s] || s)).join('')}</div>` : ''}
+      ${lead ? '' : `<label class="swa-label" for="swa-name">שם הלקוח, לא חובה</label>
+      <input id="swa-name" class="form-input swa-service" type="text" maxlength="40" placeholder="למשל: יוסי" oninput="SmartWA.setName(this.value)">`}
       ${MsgTemplates.usesService(ch, this._purpose, style) ? `<label class="swa-label" for="swa-service">השירות או הנושא, לא חובה</label>
       <input id="swa-service" class="form-input swa-service" type="text" maxlength="60" placeholder="למשל: ייעוץ ראשוני" oninput="SmartWA.setService(this.value)">` : ''}
       <textarea id="swa-text" class="form-input swa-text" dir="rtl" aria-label="הנוסח" oninput="SmartWA.grow()"></textarea>
@@ -11997,12 +11884,14 @@ const SmartWA = {
     // ערכי משתמש נכנסים דרך value ולא דרך innerHTML
     const svc = document.getElementById('swa-service');
     if (svc) svc.value = this._service;
+    const nm = document.getElementById('swa-name');
+    if (nm) nm.value = this._freeName;
     this._fill();
   },
 
   // הטקסט נכנס דרך value ולא דרך innerHTML, כי שם הליד הוא קלט לא מהימן
   _fill() {
-    const lead = State.leads.find(l => l.id === this._leadId);
+    const lead = this._lead();
     const el = document.getElementById('swa-text');
     if (el) el.value = MsgTemplates.build({
       channel: this._channel, purpose: this._purpose, style: this._styleFor(),
@@ -12022,7 +11911,7 @@ const SmartWA = {
   pick(group, id) {
     if (group === 'channel' && MsgTemplates.CHANNELS.some(c => c.id === id)) {
       this._channel = id;
-      this._purpose = MsgTemplates.suggest(State.leads.find(l => l.id === this._leadId), id);
+      this._purpose = MsgTemplates.suggest(this._leadId ? this._lead() : null, id);
     } else if (group === 'purpose' && MsgTemplates.scenarios(this._channel).some(p => p.id === id)) {
       this._purpose = id;
     } else if (group === 'style' && MsgTemplates.styles(this._channel, this._purpose).includes(id)) {
@@ -12031,6 +11920,11 @@ const SmartWA = {
     } else return;
     this._variant = 0;
     this.render();
+  },
+
+  setName(v) {
+    this._freeName = String(v || '').slice(0, 40);
+    this._fill();
   },
 
   // עדכון השירות בונה את הנוסח מחדש, ולכן שדה השירות ממוקם לפני תיבת העריכה
@@ -12058,12 +11952,14 @@ const SmartWA = {
 
   // לליד בלי קשר קודם עוברים דרך אישור ההסכמה הקיים, כמו בשליחה ישירה מהכרטיס
   send() {
-    const lead = State.leads.find(l => l.id === this._leadId);
+    const lead = this._leadId ? State.leads.find(l => l.id === this._leadId) : null;
     const text = this._text();
-    if (!lead) return;
+    if (this._leadId && !lead) return;
     if (!text) { toast('ההודעה ריקה', 'warning'); return; }
-    if (!waNumber(lead.phone)) { toast('אין מספר טלפון לשליחה', 'error'); return; }
     if (State.isDemo) { toast('⚡ מצב דמו, בגרסה האמיתית תיפתח שיחת WhatsApp עם ההודעה', 'warning'); return; }
+    // בלי ליד אין נמען: WhatsApp נפתח עם הנוסח והנמען נבחר שם
+    if (!lead) { window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank'); return; }
+    if (!waNumber(lead.phone)) { toast('אין מספר טלפון לשליחה', 'error'); return; }
     if (lead.last_contact) { LeadDetail._doWA(lead.phone, text); return; }
     LeadDetail._waLeadId = lead.id;
     LeadDetail._waPending = lead.phone;
@@ -12081,11 +11977,12 @@ const SmartWA = {
   },
 
   mail() {
-    const lead = State.leads.find(l => l.id === this._leadId);
-    if (!lead) return;
+    const lead = this._leadId ? State.leads.find(l => l.id === this._leadId) : null;
+    if (this._leadId && !lead) return;
     if (!this._text()) { toast('ההודעה ריקה', 'warning'); return; }
-    const email = String(lead.email || '').trim();
-    if (!/^[\w.+\-]+@[\w\-]+(\.[\w\-]+)+$/.test(email)) {
+    // בלי ליד אין נמען, ותוכנת המייל נפתחת בלי כתובת
+    const email = lead ? String(lead.email || '').trim() : '';
+    if (lead && !/^[\w.+\-]+@[\w\-]+(\.[\w\-]+)+$/.test(email)) {
       toast('לליד אין כתובת אימייל תקינה. אפשר להעתיק את הנוסח או להוסיף אימייל בעריכת הליד', 'warning');
       return;
     }
@@ -12141,7 +12038,7 @@ const Gamify = {
     'נעדכן את השלב של ליד אחד לפחות',
     'נוסיף ליד חדש למערכת',
     'נסגור 2 משימות פתוחות היום',
-    'נכתוב הודעת פולואפ חכמה בעזרת ה-AI',
+    'נכתוב הודעת פולואפ מוכנה מהתבניות',
     'נבדוק לידים קפואים ונחזיר אותם לפעולה',
     'נתעד את הפגישה האחרונה, נוסיף הערה ב-CRM',
     'נתכנן 3 פולואפים לשבוע הבא',
@@ -12634,7 +12531,7 @@ const Gamify = {
     'נעדכן את השלב של ליד אחד לפחות':               () => App.go('pipeline'),
     'נוסיף ליד חדש למערכת':                          () => openModal('modal-add-lead'),
     'נסגור 2 משימות פתוחות היום':                    () => App.go('tasks'),
-    'נכתוב הודעת פולואפ חכמה בעזרת ה-AI':           () => App.go('tools'),
+    'נכתוב הודעת פולואפ מוכנה מהתבניות':            () => App.go('tools'),
     'נבדוק לידים קפואים ונחזיר אותם לפעולה':         () => App.go('pipeline'),
     'נתעד את הפגישה האחרונה, נוסיף הערה ב-CRM':    () => Gamify.openQuickNote(),
     'נתכנן 3 פולואפים לשבוע הבא':                    () => App.go('pipeline'),
@@ -16845,7 +16742,7 @@ const LeadDetail = {
           <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-tasks" onclick="switchTab(this,'tab-tasks')">משימות (${tasks.filter(t=>!t.done).length})</button>
           <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-match" onclick="switchTab(this,'tab-match')">${getLabel('matchTab')} (${matchProps.length})</button>
           <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-docs" onclick="switchTab(this,'tab-docs'); LeadDocs.load('${lead.id}')">📄 ${getLabel('docLabel')}</button>
-          <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-ai" onclick="switchTab(this,'tab-ai')">🤖 AI</button>
+          <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-ai" onclick="switchTab(this,'tab-ai')" data-ai>🤖 AI</button>
         </div>
 
         <!-- INFO TAB -->
@@ -16967,7 +16864,7 @@ const LeadDetail = {
         </div>
 
         <!-- AI TAB -->
-        <div class="tab-content" id="tab-ai">
+        <div class="tab-content" id="tab-ai" data-ai>
           ${State.isDemo ? `
             <div style="text-align:center;padding:24px 12px 20px;">
               <div style="font-size:52px;margin-bottom:10px;">🤖</div>
