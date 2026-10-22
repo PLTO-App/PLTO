@@ -53,9 +53,12 @@ check(!/AI אמיתי/.test(faq) && /תבניות שנכתבו מראש/.test(fa
 // רשימות החבילות: רק יכולות פעילות, ובלי שינוי במבנה (3 חבילות, 5, 5 ו-4 שורות)
 const plans = [...body.matchAll(/<ul class="plan-features">([\s\S]*?)<\/ul>/g)].map(m => [...m[1].matchAll(/<li>([^<]*)<\/li>/g)].map(x => x[1]));
 check(plans.length === 3 && plans.every(l => !l.some(x => /AI/.test(x))), 'רשימות החבילות לא מבטיחות AI');
-check(JSON.stringify(plans.map(l => l.length)) === JSON.stringify([5, 4, 4]), 'מבנה החבילות נשמר (מספר השורות בכל חבילה)');
+check(JSON.stringify(plans.map(l => l.length)) === JSON.stringify([5, 4, 3]), 'מבנה החבילות נשמר (5, 4 ו-3 שורות, אחרי הסרת תמיכה בעדיפות)');
 check(/הודעות, אימיילים ותסריטי שיחה מוכנים/.test(plans[0].join('|')) && /יומן מהיר/.test(plans[0].join('|')), 'חבילת Solo מציגה את היכולות הקיימות שהחליפו את שתי ההבטחות');
-const aiLeft = [...body.matchAll(/AI|בינה מלאכותית/g)].length;
+const app = readFileSync(join(root, 'index.html'), 'utf-8');
+check(!/עדיפות/.test(body) && !/20% הנחה/.test(body + app), 'אין הבטחה לתמיכה בעדיפות או ל-20% הנחה בהפניות, בדף ובאפליקציה');
+check(/<title>PLTO Sales: /.test(html) && /<title>PLTO Sales: /.test(app) && /PLTO Sales · מערכת המכירות לעסקים/.test(app), 'המיתוג הגלוי PLTO Sales בכותרות הדף והאפליקציה ובמסך הכניסה');
+const aiLeft = [...body.replace(/<!--[\s\S]*?-->/g, '').matchAll(/AI|בינה מלאכותית/g)].length;
 check(aiLeft === 1 && /בינה מלאכותית/.test(faq), 'האזכור היחיד שנשאר בגוף הדף הוא השאלה הנפוצה שמסבירה שאין AI');
 
 for (const [w, h, label] of [[390, 844, 'נייד 390px'], [1280, 800, 'דסקטופ 1280px']]) {
@@ -74,6 +77,25 @@ for (const [w, h, label] of [[390, 844, 'נייד 390px'], [1280, 800, 'דסקט
   check(r.dir === 'rtl', `${label}: כיוון RTL`);
   check(r.ctas.length >= 6 && r.ctas.every(h => h && h.startsWith('https://realestate.plto.app')), `${label}: כל כפתורי ההרשמה מצביעים למערכת (${r.ctas.length})`);
   check(r.navLinks.length === 6 && r.navLinks.every(n => n.ok) && r.navLinks.some(n => n.text === 'מה עושים כל יום'), `${label}: קישורי התפריט מצביעים לסעיפים קיימים`);
+  const hero = await page.evaluate(() => {
+    const h = document.querySelector('.hero');
+    const cta = document.getElementById('hero-cta-btn');
+    const r = cta.getBoundingClientRect();
+    const ctas = h.querySelectorAll('a[href^="https://realestate.plto.app"]').length;
+    const vis = el => !!el && el.getClientRects().length > 0 && getComputedStyle(el).display !== 'none';
+    return {
+      ctaAboveFold: r.top >= 0 && r.bottom <= innerHeight, ctaText: cta.textContent.trim(), ctas,
+      h1: h.querySelector('h1').innerText.replace(/\s+/g, ' ').trim(),
+      points: h.querySelectorAll('.hero-points li').length,
+      pointsAboveFold: [...h.querySelectorAll('.hero-points li')].every(li => li.getBoundingClientRect().bottom <= innerHeight),
+      noPreviews: !h.querySelector('.vertical-previews, .vp-value'),
+      addonHidden: [...document.querySelectorAll('.plan-addon, .marketing-section')].every(el => !vis(el)),
+      plans: document.querySelectorAll('.plan-card').length,
+    };
+  });
+  check(hero.ctaAboveFold && hero.ctas === 1 && hero.ctaText === 'מתחילים בחינם', `${label}: במסך הראשון כפתור אחד, גלוי בלי גלילה`);
+  check(/הלידים כבר אצלך/.test(hero.h1) && hero.points === 3 && hero.pointsAboveFold && hero.noPreviews, `${label}: המסך הראשון קצר: כותרת, משפט, כפתור ושלוש נקודות`);
+  check(hero.addonHidden && hero.plans >= 3, `${label}: תוסף השיווק מוסתר והחבילות עצמן נשארו`);
   if (w === 390) {
     await page.click('.nav-menu-btn');
     await page.click('#navMenuPanel a[href="#agents"]');
@@ -82,10 +104,6 @@ for (const [w, h, label] of [[390, 844, 'נייד 390px'], [1280, 800, 'דסקט
     check(Math.abs(y - 76) < 60, `${label}: הקישור "מה עושים כל יום" גולל לסעיף (top=${y})`);
     await page.locator('#agents').scrollIntoViewIfNeeded();
     await page.screenshot({ path: (process.env.SHOT || '/dev/null').replace('.png', '-m.png') }).catch(() => {});
-    // חלוניות התחום ושאלה נפוצה
-    await page.evaluate(() => openVpModal('realestate'));
-    const items = await page.evaluate(() => [...document.querySelectorAll('#vpModalList li')].map(l => l.textContent));
-    check(items.length === 3 && !items.some(t => /AI/.test(t)), `${label}: חלונית התחום תקינה ובלי AI`);
   } else {
     await page.locator('#agents').scrollIntoViewIfNeeded();
     await page.screenshot({ path: (process.env.SHOT || '/dev/null').replace('.png', '-d.png') }).catch(() => {});

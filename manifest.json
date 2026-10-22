@@ -1,7 +1,7 @@
 {
-  "name": "PLTO",
+  "name": "PLTO Sales",
   "short_name": "PLTO",
-  "description": "הפלטפורמה שהופכת לידים לעסקאות",
+  "description": "הופכים לידים ללקוחות משלמים",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

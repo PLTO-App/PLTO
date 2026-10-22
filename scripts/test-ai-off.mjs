@@ -145,13 +145,17 @@ const o = await page.evaluate(async () => {
   await PageBuilder.generateFromReferral();
   out.page = rpc.find(r => r.fn === 'create_client_page')?.a;
 
-  // פרסים: פרס AI לא נרשם כמומש
-  const ms = Gamify.MILESTONES.find(m => m.action);
-  const d = Gamify.get(); const claimedBefore = (d.milestoneClaimed || []).length;
+  // פרסים: ערכות תוכן מכירה במקום תוצרי AI
+  out.packs = { all: Gamify.MILESTONES.every(m => m.pack && RewardPack.PACKS[m.pack] && !m.action && !m.value), noAiText: Gamify.MILESTONES.every(m => !/AI/.test(m.name + m.desc)) };
+  const ms = Gamify.MILESTONES[0];
+  const d = Gamify.get(); d.milestoneClaimed = []; d.xp = 99999;
   Gamify._pendingMilestone = ms; Gamify.claimMilestone();
-  out.reward = { claimedAfter: (Gamify.get().milestoneClaimed || []).length - claimedBefore, toast: toasts.some(m => /אינו זמין כרגע/.test(m)) };
-  d.xp = 99999; Gamify.save?.(); Gamify.renderStore();
-  out.storeNoBtn = [...document.querySelectorAll('#xps-grid .xps-card.xps-unlocked')].some(c => /AI/.test(c.querySelector('.xps-card-desc')?.textContent || '') && c.querySelector('.xps-claim-btn')) === false;
+  const outEl = document.getElementById('reward-gen-out');
+  out.reward = { claimed: (Gamify.get().milestoneClaimed || []).includes(ms.xp), open: !document.getElementById('modal-reward-gen').classList.contains('hidden'), text: outEl.textContent, genBtnHidden: document.getElementById('reward-gen-btn').style.display === 'none', inputs: document.getElementById('reward-gen-inputs').children.length };
+  closeModal('modal-reward-gen');
+  Gamify.renderStore();
+  out.store = { values: document.querySelectorAll('#xps-grid .xps-value-badge').length, reopen: [...document.querySelectorAll('#xps-grid .xps-claim-btn')].some(b => /פתיחה/.test(b.textContent)), claimBtns: [...document.querySelectorAll('#xps-grid .xps-claim-btn')].filter(b => /מימוש/.test(b.textContent)).length, ai: /AI/.test(document.getElementById('xps-grid').innerText) };
+  out.packTexts = Object.values(RewardPack.PACKS).map(p => p.lines.join('\n'));
 
   // ייבוא
   LeadImport.open();
@@ -163,6 +167,7 @@ const o = await page.evaluate(async () => {
   App.go('marketing');
   const mk = document.getElementById('screen-marketing');
   const gens = [...mk.querySelectorAll('.mktg-card .tool-btn-primary')];
+  out.mkSell = /₪100|רכוש גישה|הפעלה עכשיו|שדרוג/.test(mk.innerText);
   out.mk = { n: gens.length, allDisabled: gens.every(b => b.disabled && /מושבת/.test(b.textContent)), banner: /מושבתים זמנית/.test(mk.innerText), fullService: !!mk.querySelector('.mktg-fs-btn'), usage: !!mk.querySelector('.mktg-usage-counter') };
   await Marketing.genOffer(); await Marketing.genPost(); await Marketing.genCampaign();
 
@@ -170,6 +175,11 @@ const o = await page.evaluate(async () => {
   Roadmap.fetch = async () => [{ title: 'ייצוא לידים לקובץ אקסל', description: 'הורדת כל הלידים לקובץ' }];
   out.dup = [await Roadmap.checkDuplicate('אפשרות ייצוא לידים לקובץ אקסל'), await Roadmap.checkDuplicate('חיבור ליומן גוגל לתיאום פגישות אוטומטי')];
 
+  // פרסומת תוסף ה-AI בווידג'ט ההתקדמות לא מוצגת
+  const origAccess = Marketing.hasMktgAccess; Marketing.hasMktgAccess = () => false; // מצב שבו הפרסומת הייתה מוצגת
+  Gamify.renderWidget();
+  out.teaser = document.getElementById('gamify-mktg-teaser')?.style.display;
+  Marketing.hasMktgAccess = origAccess;
   // כותרות ותוויות
   out.proHub = document.getElementById('screen-pro').innerText;
   window.toast = origToast;
@@ -186,11 +196,16 @@ check(o.qlPrefix === 'a', 'יומן מהיר: שם עם אות קידומת מז
 check(o.qlNone.toast && o.qlNone.input, 'יומן מהיר: בלי שם ליד בטקסט מתקבלת הודעה ברורה והטקסט נשמר');
 check(o.motiv.n >= 3 && o.motiv.sample.every(m => m && !/מייצר|המשך כך/.test(m)) && o.motiv.coolHidden && o.motiv.btnEnabled, 'מוטיבציה: מסרים מקומיים משתנים, ניטרליים, בלי קירור ובלי מכסה');
 check(o.page && /^הזמנה ל-PLTO מאת/.test(o.page.p_headline) && !/[\/]ה|[\/]י/.test(o.page.p_headline + o.page.p_body_text) && o.page.p_cta_label === 'הצטרפות ל-PLTO', 'עמוד הזמנה נוצר מתבנית קבועה וניטרלית, בלי AI');
-check(o.reward.claimedAfter === 0 && o.reward.toast && o.storeNoBtn, 'פרס שנוצר ב-AI לא נרשם כמומש וחנות הפרסים לא מציגה כפתור מימוש');
+check(o.packs.all && o.packs.noAiText, 'כל תשעת פרסי ה-XP הם ערכות תוכן, בלי AI ובלי "שווי" בשקלים');
+check(o.reward.claimed && o.reward.open && /פתיחה טובה/.test(o.reward.text) && o.reward.genBtnHidden && o.reward.inputs === 0, 'מימוש פרס פותח את הערכה לקריאה ולהעתקה, בלי שדות ובלי כפתור יצירה');
+check(o.store.values === 0 && o.store.reopen && o.store.claimBtns === 8 && !o.store.ai, 'חנות הפרסים: אין תגי שווי, פרס שמומש נפתח שוב, והשאר זמינים למימוש');
+check(o.packTexts.every(t => !/\[|\]|\/ת|\/י|אתה |שולח |מבין\.|AI/.test(t)), 'טקסט הערכות ניטרלי, בלי סוגריים ובלי AI');
 check(!/AI|בינה מלאכותית/.test(o.importText) && /מושבת זמנית/.test(o.importText) && !o.importImgBtn, 'ייבוא לידים: זיהוי מתמונה מוצג כמושבת, וייבוא מקובץ נשאר');
 check(o.mk.n === 3 && o.mk.allDisabled && o.mk.banner && o.mk.fullService && !o.mk.usage, 'שיווק: שלושת הכלים מושבתים בבירור, בקשת שירות מלא נשארת פעילה');
+check(!o.mkSell, 'מסך השיווק לא מציע לרכוש או לשדרג את התוסף כשה-AI כבוי');
 check(o.dup[0] === true && o.dup[1] === false, 'בדיקת רעיון כפול עובדת מקומית ושמרנית');
 check(!/בינה מלאכותית/.test(o.proHub) && /ניתוח וחיזוי/.test(o.proHub), 'מרכז ה-PRO לא מציג כותרת בינה מלאכותית');
+check(o.teaser === 'none', 'פרסומת "תוסף AI" בווידג\'ט ההתקדמות לא מוצגת כשה-AI כבוי');
 check(o.aiInvokes === 0, 'אף אחת מהפעולות לא שלחה בקשה ל-ai-proxy');
 
 check(errors.length === 0, 'אין שגיאות בקונסולה' + (errors.length ? ': ' + errors.join(' | ') : ''));
