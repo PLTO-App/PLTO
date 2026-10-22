@@ -53,8 +53,11 @@ check(!/AI אמיתי/.test(faq) && /תבניות שנכתבו מראש/.test(fa
 // רשימות החבילות: רק יכולות פעילות, ובלי שינוי במבנה (3 חבילות, 5, 5 ו-4 שורות)
 const plans = [...body.matchAll(/<ul class="plan-features">([\s\S]*?)<\/ul>/g)].map(m => [...m[1].matchAll(/<li>([^<]*)<\/li>/g)].map(x => x[1]));
 check(plans.length === 3 && plans.every(l => !l.some(x => /AI/.test(x))), 'רשימות החבילות לא מבטיחות AI');
-check(JSON.stringify(plans.map(l => l.length)) === JSON.stringify([5, 4, 4]), 'מבנה החבילות נשמר (מספר השורות בכל חבילה)');
+check(JSON.stringify(plans.map(l => l.length)) === JSON.stringify([5, 4, 3]), 'מבנה החבילות נשמר (5, 4 ו-3 שורות, אחרי הסרת תמיכה בעדיפות)');
 check(/הודעות, אימיילים ותסריטי שיחה מוכנים/.test(plans[0].join('|')) && /יומן מהיר/.test(plans[0].join('|')), 'חבילת Solo מציגה את היכולות הקיימות שהחליפו את שתי ההבטחות');
+const app = readFileSync(join(root, 'index.html'), 'utf-8');
+check(!/עדיפות/.test(body) && !/20% הנחה/.test(body + app), 'אין הבטחה לתמיכה בעדיפות או ל-20% הנחה בהפניות, בדף ובאפליקציה');
+check(/<title>PLTO Sales: /.test(html) && /<title>PLTO Sales: /.test(app) && /PLTO Sales · מערכת המכירות לעסקים/.test(app), 'המיתוג הגלוי PLTO Sales בכותרות הדף והאפליקציה ובמסך הכניסה');
 const aiLeft = [...body.replace(/<!--[\s\S]*?-->/g, '').matchAll(/AI|בינה מלאכותית/g)].length;
 check(aiLeft === 1 && /בינה מלאכותית/.test(faq), 'האזכור היחיד שנשאר בגוף הדף הוא השאלה הנפוצה שמסבירה שאין AI');
 
