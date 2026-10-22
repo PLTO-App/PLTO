@@ -1,0 +1,20 @@
+--- a/index.html
++++ b/index.html
+@@ -14248,7 +14248,7 @@
+           p_event_name: eventName,
+           p_event_data: data,
+           p_tenant_id:  tid,
+-        }).catch(() => {});
++        }).then(() => {}, () => {});
+       }
+     } catch (_) {}
+   },
+@@ -19668,7 +19668,7 @@
+       if (this._messagingEnabled && data.write_pin) {
+         document.getElementById('lt-pin-display').textContent = data.write_pin;
+       }
+-      await sbClient.rpc('mark_lead_tracker_messages_read', { p_lead_id: leadId }).catch(() => {});
++      await sbClient.rpc('mark_lead_tracker_messages_read', { p_lead_id: leadId }).then(() => {}, () => {});
+       await this.loadUpdates();
+     } catch (e) {
+       document.getElementById('lt-link-loading').classList.add('hidden');
