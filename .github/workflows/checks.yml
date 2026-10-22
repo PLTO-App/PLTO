@@ -47,3 +47,5 @@ jobs:
         run: node scripts/test-wa-templates.mjs
       - name: AI off, no dead AI controls in tools and lead card
         run: node scripts/test-ai-off.mjs
+      - name: Landing page claims and layout
+        run: node scripts/test-landing.mjs
