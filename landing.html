@@ -2801,6 +2801,26 @@
     .section-cta-wrap { text-align: center; margin-top: 36px; }
     .section-pre-cta { font-size: 1rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.6; }
     .cta-trust-line { font-size: 0.8rem; color: var(--text-muted); margin-top: 10px; }
+    [hidden] { display: none !important; }
+
+    /* ══ מסך ראשון: מסר אחד, כפתור אחד ══ */
+    .hero { min-height: 100svh; padding-top: 96px; }
+    .hero h1 { max-width: 980px; }
+    .hero .hero-sub { margin-bottom: 32px; }
+    .hero-points {
+      list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 10px;
+      margin-top: 26px; position: relative; z-index: 1; padding: 0;
+    }
+    .hero-points li {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 99px; padding: 8px 14px; font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.86);
+    }
+    @media (max-width: 480px) {
+      .hero { padding: 88px 18px 32px; }
+      .hero h1 { font-size: 27px; }
+      .hero-sub { font-size: 17px; }
+      .hero-points li { font-size: 13px; padding: 7px 12px; }
+    }
     .plan-cta-reassure { font-size: 0.76rem; color: var(--text-muted); margin-top: 8px; text-align: center; }
 
   </style>
@@ -2832,62 +2852,20 @@
 <section class="hero">
   <div class="hero-badge">
     <span class="badge-dot"></span>
-    נדל״ן · עיצוב ואדריכלות · עריכת דין · ועוד
+    PLTO Sales · מערכת המכירות לעסקים
   </div>
-
-  <h1>כמה עסקאות <span class="highlight">הולכות לאיבוד</span><br>בגלל חוסר סדר בעסק?</h1>
-
-  <p class="hero-sub">
-    כל הלקוחות, המשימות והעסקאות מרוכזים במקום אחד עם PLTO, כדי להתמקד במה שבאמת חשוב: <strong>לסגור יותר עסקאות</strong>.
-  </p>
-
+  <h1>הלידים כבר אצלך.<br><span class="highlight">עכשיו הופכים אותם ללקוחות משלמים.</span></h1>
+  <p class="hero-sub">PLTO מראה למי לחזור היום, נותנת הודעה מוכנה לשליחה, ודואגת <strong>שאף ליד לא ייפול בין הכיסאות.</strong></p>
   <div class="hero-actions">
-    <span class="cta-stage">
-      <span class="cta-crane" aria-hidden="true">
-        <span class="crane-cable"></span>
-        <span class="crane-load">עסקה</span>
-      </span>
-      <a href="https://realestate.plto.app" id="hero-cta-btn" class="btn-primary pulse-cta cta-drop-target">כניסה ישירה למערכת</a>
-    </span>
+    <a href="https://realestate.plto.app" id="hero-cta-btn" class="btn-primary pulse-cta">מתחילים בחינם</a>
   </div>
-  <p class="hero-micro hero-trust">30 ימים ניסיון &bull; ללא כרטיס אשראי &bull; ללא התחייבות</p>
-
-  <!-- 3 תצוגות מותאמות לתחום -->
-  <div class="vertical-previews">
-
-    <!-- סוכן נדל"ן -->
-    <div class="vp-wrap fade-up">
-      <div class="vp-label">🏠 סוכן נדל&quot;ן</div>
-      <button type="button" class="vp-value vp-clickable" onclick="openVpModal('realestate')">
-        <span class="vp-tap-hint" aria-hidden="true">👆</span>
-        <div class="vp-value-headline">אף ליד לא מתקרר</div>
-        <div class="vp-value-sub">זיהוי אוטומטי של לידים שדורשים חזרה, בזמן</div>
-      </button>
-    </div>
-
-    <!-- עיצוב פנים -->
-    <div class="vp-wrap fade-up">
-      <div class="vp-label">🛋 עיצוב ואדריכלות</div>
-      <button type="button" class="vp-value vp-clickable" onclick="openVpModal('interior')">
-        <span class="vp-tap-hint" aria-hidden="true">👆</span>
-        <div class="vp-value-headline">השראה שהופכת לפרויקט</div>
-        <div class="vp-value-sub">קישור ללוח השראה (Pinterest, Houzz) בכרטיס הלקוח</div>
-      </button>
-    </div>
-
-    <!-- עו"ד -->
-    <div class="vp-wrap fade-up">
-      <div class="vp-label">⚖️ עו&quot;ד</div>
-      <button type="button" class="vp-value vp-clickable" onclick="openVpModal('lawyer')">
-        <span class="vp-tap-hint" aria-hidden="true">👆</span>
-        <div class="vp-value-headline">כל תיק במעקב מלא</div>
-        <div class="vp-value-sub">מפנייה ראשונית ועד סגירת התיק, בלי לאבד פרט</div>
-      </button>
-    </div>
-
-  </div>
+  <p class="hero-micro hero-trust">30 יום חינם &bull; בלי כרטיס אשראי &bull; מוכן תוך דקה</p>
+  <ul class="hero-points" aria-label="מה מקבלים">
+    <li><span aria-hidden="true">📅</span> למי לחזור היום</li>
+    <li><span aria-hidden="true">💬</span> הודעה מוכנה בלחיצה</li>
+    <li><span aria-hidden="true">🔔</span> אף ליד לא נשכח</li>
+  </ul>
 </section>
-
 <!-- מעבר מכהה לבהיר -->
 <!-- רצועת מספרים -->
 <div class="stats-bar">
@@ -3446,7 +3424,7 @@
           <li>אפליקציה למובייל</li>
           <li>מסך "היום" ויומן מהיר</li>
         </ul>
-        <div class="plan-addon"><span class="star-live">✨</span> <span>+ <strong>₪100/חודש</strong> לשירותי שיווק מלאים</span></div>
+        <div class="plan-addon" hidden><span class="star-live">✨</span> <span>+ <strong>₪100/חודש</strong> לשירותי שיווק מלאים</span></div>
         <a href="https://realestate.plto.app" class="plan-btn outline" data-cta-section="pricing_solo">מתחילים בחינם</a>
         <p class="plan-cta-reassure">ניסיון 30 ימים בחינם · ללא כרטיס אשראי · ביטול בכל עת</p>
       </div>
@@ -3465,7 +3443,7 @@
           <li>אנליטיקס צוות</li>
           <li>דוחות ביצועים</li>
         </ul>
-        <div class="plan-addon"><span class="star-live">✨</span> <span>+ <strong>₪100/חודש</strong> לשירותי שיווק מלאים</span></div>
+        <div class="plan-addon" hidden><span class="star-live">✨</span> <span>+ <strong>₪100/חודש</strong> לשירותי שיווק מלאים</span></div>
         <a href="https://realestate.plto.app" class="plan-btn primary tractor-btn">בוחרים בצוות</a>
         <p class="plan-cta-reassure">הצוות מתחיל ביחד · ביטול בכל עת</p>
       </div>
@@ -3483,7 +3461,7 @@
           <li>לידים ללא הגבלה</li>
           <li>תמיכה בעדיפות גבוהה</li>
         </ul>
-        <div class="plan-addon"><span class="star-live">✨</span> <span>+ <strong>₪100/חודש</strong> לשירותי שיווק מלאים</span></div>
+        <div class="plan-addon" hidden><span class="star-live">✨</span> <span>+ <strong>₪100/חודש</strong> לשירותי שיווק מלאים</span></div>
         <a href="https://realestate.plto.app" class="plan-btn outline" data-cta-section="pricing_agency">בוחרים בסוכנות</a>
         <p class="plan-cta-reassure">תמיכה בעדיפות · ביטול ללא קנסות</p>
       </div>
@@ -3501,8 +3479,8 @@
   </div>
 </section>
 
-<!-- שירותי שיווק -->
-<section class="section marketing-section">
+<!-- שירותי שיווק: מוסתר כל עוד ה-AI כבוי (החלטת דוד, 22.10.2026). להחזרה: להסיר hidden כאן ובשורות plan-addon -->
+<section class="section marketing-section" hidden>
   <div class="section-inner">
     <h2 class="section-title fade-up" style="color:var(--navy);"><span class="star-live">✨</span> תוספת פרימיום<br><small style="font-size:0.52em;font-weight:700;color:var(--gold-600);display:block;margin-top:6px;">100 ₪ לחודש על כל חבילה</small></h2>
     <p class="section-subtitle fade-up" style="font-size:clamp(18px,2.6vw,24px);font-weight:800;color:#B45309;text-align:center;margin-bottom:10px;">כלי שיווק מקצועיים</p>
@@ -3965,17 +3943,6 @@
 })();
 </script>
 
-<!-- חלונית מורחבת לתצוגות תחום (hero) -->
-<div class="vp-modal-overlay" id="vpModalOverlay" onclick="closeVpModal()">
-  <div class="vp-modal" role="dialog" aria-modal="true" aria-labelledby="vpModalTitle" onclick="event.stopPropagation()">
-    <button type="button" class="vp-modal-close" onclick="closeVpModal()" aria-label="סגירה">✕</button>
-    <div class="vp-modal-icon" id="vpModalIcon" aria-hidden="true"></div>
-    <h3 class="vp-modal-title" id="vpModalTitle"></h3>
-    <ul class="vp-modal-list" id="vpModalList"></ul>
-    <a href="https://realestate.plto.app" class="btn-primary" data-cta-section="value_prop_modal">התחלה בחינם</a>
-  </div>
-</div>
-
 <script>
 /* תפריט ניווט עליון — קפיצה לכל סקשן בדף */
 (function() {
@@ -4017,63 +3984,6 @@
   });
 })();
 
-/* חלוניות מורחבות לתצוגות תחום בהירו */
-(function() {
-  var VP_DATA = {
-    realestate: {
-      icon: '🏠',
-      title: 'אף ליד לא מתקרר',
-      items: [
-        'זיהוי אוטומטי של לידים שדורשים חזרה, לפני שהם מתקררים',
-        'דירוג לידים לפי שלב, שווי ופעילות אחרונה, כדי לדעת על מי להתמקד',
-        'משימות ותאריכי מעקב לכל ליד, במקום אחד'
-      ]
-    },
-    interior: {
-      icon: '🛋',
-      title: 'השראה שהופכת לפרויקט',
-      items: [
-        'קישור ללוח השראה (Pinterest, Houzz) בכרטיס הלקוח',
-        'מעקב מקונספט ראשוני ועד לביצוע בפועל',
-        'כל פרויקט מאורגן במקום אחד, בלי לאבד קבצים'
-      ]
-    },
-    lawyer: {
-      icon: '⚖️',
-      title: 'כל תיק במעקב מלא',
-      items: [
-        'מפנייה ראשונית ועד סגירת התיק, בלי לאבד פרט',
-        'משימות עם תאריכים לכל תיק, וצ\'קליסט מסמכים',
-        'מסמכים וחוזים מאורגנים ומאובטחים במקום אחד'
-      ]
-    }
-  };
-  var overlay = document.getElementById('vpModalOverlay');
-  var iconEl = document.getElementById('vpModalIcon');
-  var titleEl = document.getElementById('vpModalTitle');
-  var listEl = document.getElementById('vpModalList');
-  if (!overlay) return;
-
-  window.openVpModal = function(key) {
-    var d = VP_DATA[key];
-    if (!d) return;
-    iconEl.textContent = d.icon;
-    titleEl.textContent = d.title;
-    listEl.innerHTML = '';
-    d.items.forEach(function(t) {
-      var li = document.createElement('li');
-      li.textContent = t;
-      listEl.appendChild(li);
-    });
-    overlay.classList.add('open');
-  };
-  window.closeVpModal = function() {
-    overlay.classList.remove('open');
-  };
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeVpModal();
-  });
-})();
 </script>
 
 </body>
