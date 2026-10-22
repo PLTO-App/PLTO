@@ -37,3 +37,5 @@ jobs:
         run: node scripts/smoke-390.mjs
       - name: UX interactions (touch)
         run: node scripts/test-ux-interactions.mjs
+      - name: Tracking requests are really sent
+        run: node scripts/test-tracking-requests.mjs

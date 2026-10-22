@@ -28,7 +28,6 @@ const SUPABASE_MOCK = `
       delete:function(){return c;}, upsert:function(){return c;},
       url:{href:''},
       then:function(r,j){ return Promise.resolve({data:[],error:null}).then(r,j); },
-      catch:function(j){ return Promise.resolve({data:[],error:null}).catch(j); },
     };
     return c;
   };
@@ -42,7 +41,7 @@ const SUPABASE_MOCK = `
       signOut: function(){ return Promise.resolve({error:null}); },
     },
     from: function(){ return chain(); },
-    rpc: function(){ return chain(); },
+    rpc: function(name,args){ var c = chain(); var t = c.then; c.then = function(r,j){ (window.__sbCalls = window.__sbCalls || []).push({fn:name,args:args}); return t(r,j); }; return c; },
     storage:{ from: function(){ return { upload:function(){ return Promise.resolve({data:{},error:null}); }, getPublicUrl:function(){ return {data:{publicUrl:''}}; } }; } },
     functions:{ invoke: function(){ return Promise.resolve({data:{},error:null}); } },
     channel: function(){ var ch={on:function(){return ch;},subscribe:function(){return ch;}}; return ch; },
