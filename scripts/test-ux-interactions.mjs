@@ -226,14 +226,10 @@ check('מקש Enter פותח קבוצה', await page.locator('#settings-body .se
 await page.evaluate(() => Settings.render());
 check('מצב הפתיחה נשמר אחרי רענון המסך', await page.locator('#settings-body .settings-section.sc-open').count() === 2);
 
-// דשבורד: משימות לפני כרטיס ה-AI, והכלים מקופלים במובייל
+// דשבורד: כרטיס תדרוך ה-AI הוסר (קריאות AI בתשלום מושבתות), והכלים מקופלים במובייל
 await page.evaluate(() => { Dashboard._moreInit = false; App.go('dashboard'); });
 await page.waitForTimeout(300);
-const order = await page.evaluate(() => {
-  const y = id => document.getElementById(id).getBoundingClientRect().top + scrollY;
-  return { tasks: y('dash-tasks'), kpi: y('kpi-row'), ai: y('dash-ai-briefing') };
-});
-check('בדשבורד המשימות הדחופות מעל כרטיס ה-AI', order.tasks < order.ai && order.kpi < order.ai, JSON.stringify(order));
+check('בדשבורד אין כרטיס תדרוך AI וכפתור הפעלה שלו', await page.evaluate(() => !document.getElementById('dash-ai-briefing') && !document.querySelector('.briefing-fire-btn')));
 check('כלים והישגים מקופלים במובייל', await page.evaluate(() => !document.getElementById('dash-more').open));
 check('סיור מודרך פותח את הקבוצה המקופלת כשהיעד בתוכה', await page.evaluate(() => {
   const w = document.getElementById('gamify-widget'); const det = w.closest('details');
