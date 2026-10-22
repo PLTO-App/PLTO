@@ -39,7 +39,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 check(eq(r.fresh, ['fresh']), 'ליד חדש בלי מענה מופיע ב"חדשים"');
 check(r.imported === 1 && !r.fresh.includes('imported'), 'ליד מיובא לא מציף: נספר בשורה מסכמת בלבד');
 check(eq(r.overdue, ['overdue3']), 'באיחור של עד שבוע מוצג כשורה');
-check(eq(r.oldOverdue, ['overdue10']) && /1 מעקבים ישנים/.test(r.html), 'באיחור של יותר משבוע מוצג כשורה מסכמת');
+check(eq(r.oldOverdue, ['overdue10']) && /מעקב ישן אחד/.test(r.html), 'באיחור של יותר משבוע מוצג כשורה מסכמת');
 check(eq(r.today, ['due_today', 'task_only']), 'מעקב להיום, וגם משימה פתוחה להיום, מופיעים ב"להיום"');
 check(r.taskStep === r.todayIso, 'הצעד הבא נגזר ממשימה פתוחה כשאין תאריך בליד');
 check(eq(r.attention, ['nostep_old']), 'ליד בלי צעד הבא וקר מופיע ב"דורשים תשומת לב"');

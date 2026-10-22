@@ -14800,7 +14800,7 @@ const App = {
 function contactFact(lead) {
   if (!lead.last_contact) return { text: 'אין קשר מתועד', cold: false };
   const d = Math.abs(diffDays(lead.last_contact));
-  const text = d === 0 ? 'קשר: היום' : d === 1 ? 'קשר: אתמול' : `קשר: לפני ${d} ימים`;
+  const text = d === 0 ? 'קשר: היום' : d === 1 ? 'קשר: אתמול' : d === 2 ? 'קשר: לפני יומיים' : `קשר: לפני ${d} ימים`;
   return { text, cold: d >= 14 };
 }
 
@@ -14953,7 +14953,7 @@ const Today = {
       if (isImported && d === null) { imported++; continue; }
       const created = lead.created_at ? Math.abs(diffDays(lead.created_at)) : 99;
       if (lead.stage === firstStage && !lead.last_contact && d === null && created <= 7) {
-        g.fresh.push({ lead, why: created === 0 ? 'נכנס היום' : `נכנס לפני ${created} ימים` });
+        g.fresh.push({ lead, why: created === 0 ? 'נכנס היום' : created === 1 ? 'נכנס אתמול' : created === 2 ? 'נכנס לפני יומיים' : `נכנס לפני ${created} ימים` });
         continue;
       }
       if (d !== null) continue; // יש צעד עתידי
@@ -15004,11 +15004,11 @@ const Today = {
       if (rows.length > lim) html += `<button type="button" class="today-more" onclick="Today.more('${key}')">הצגת עוד (${rows.length - lim})</button>`;
       html += '</div>';
       if (key === 'overdue' && g.oldOverdue.length) {
-        html += `<div class="today-group"><button type="button" class="today-old" aria-expanded="${this._old}" onclick="Today.toggleOld()">${g.oldOverdue.length} מעקבים ישנים (יותר משבוע) ${this._old ? '▲' : '▼'}</button>${this._old ? g.oldOverdue.map(r => this._row(r)).join('') : ''}</div>`;
+        html += `<div class="today-group"><button type="button" class="today-old" aria-expanded="${this._old}" onclick="Today.toggleOld()">${g.oldOverdue.length === 1 ? 'מעקב ישן אחד' : g.oldOverdue.length + ' מעקבים ישנים'} (יותר משבוע) ${this._old ? '▲' : '▼'}</button>${this._old ? g.oldOverdue.map(r => this._row(r)).join('') : ''}</div>`;
       }
     }
     if (!g.overdue.length && g.oldOverdue.length && !html.includes('today-old')) {
-      html += `<div class="today-group"><button type="button" class="today-old" aria-expanded="${this._old}" onclick="Today.toggleOld()">${g.oldOverdue.length} מעקבים ישנים (יותר משבוע) ${this._old ? '▲' : '▼'}</button>${this._old ? g.oldOverdue.map(r => this._row(r)).join('') : ''}</div>`;
+      html += `<div class="today-group"><button type="button" class="today-old" aria-expanded="${this._old}" onclick="Today.toggleOld()">${g.oldOverdue.length === 1 ? 'מעקב ישן אחד' : g.oldOverdue.length + ' מעקבים ישנים'} (יותר משבוע) ${this._old ? '▲' : '▼'}</button>${this._old ? g.oldOverdue.map(r => this._row(r)).join('') : ''}</div>`;
     }
     if (imported) html += `<div class="today-note">${imported} לידים מיובאים שעוד לא טופלו. <a href="#" onclick="App.go('leads');return false;">לרשימת הלידים</a></div>`;
     if (!need) html += `<div class="today-empty">אין משהו דחוף. זה זמן טוב להוסיף לידים או לחזור ללקוחות ותיקים.</div>`;
