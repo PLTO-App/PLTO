@@ -14561,28 +14561,9 @@ const App = {
     const portfolioBtn = document.getElementById('properties-portfolio-btn');
     if (portfolioBtn) portfolioBtn.classList.toggle('hidden', ind !== 'realestate' && ind !== 'interior');
   },
+  // אין שאלה לפני יציאה: תחום העסק שייך לעסק ולא למכשיר, ולכן אין מה "לשמור" או "לא לשמור".
+  // היציאה מנקה את המצב המקומי (_performLogout), והתחום נטען מחדש מהעסק בכניסה הבאה.
   async logout() {
-    const curInd = localStorage.getItem('plto_industry');
-    if (curInd && !State.isDemo) {
-      const save = await new Promise(resolve => {
-        const el = document.createElement('div');
-        el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:flex-end;justify-content:center;';
-        el.innerHTML = `
-          <div style="background:white;border-radius:20px 20px 0 0;padding:28px 24px 44px;width:100%;max-width:480px;text-align:center;">
-            <div style="font-size:32px;margin-bottom:12px;">💾</div>
-            <div style="font-size:18px;font-weight:700;color:var(--navy-500);margin-bottom:8px;">לפני יציאה</div>
-            <div style="font-size:14px;color:var(--gray-500);margin-bottom:24px;line-height:1.6;">האם לשמור את הגדרות העסק לכניסה הבאה?</div>
-            <div style="display:flex;flex-direction:column;gap:10px;">
-              <button id="_ls_yes" style="padding:15px;background:var(--blue-500);color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">כן, שמור הגדרות</button>
-              <button id="_ls_no"  style="padding:15px;background:var(--gray-100);color:var(--navy-500);border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">לא, בכניסה הבאה אבחר מחדש</button>
-            </div>
-          </div>`;
-        document.body.appendChild(el);
-        el.querySelector('#_ls_yes').onclick = () => { document.body.removeChild(el); resolve(true); };
-        el.querySelector('#_ls_no').onclick  = () => { document.body.removeChild(el); resolve(false); };
-      });
-      if (!save) await DB.updateIndustry(null);
-    }
     await this._performLogout();
   },
   async _performLogout() {
