@@ -50,9 +50,13 @@ const head = html.slice(0, html.indexOf('</head>'));
 check(!/עוזר AI|AI/.test(head.replace(/<style[\s\S]*?<\/style>/g, '').replace(/<script[\s\S]*?<\/script>/g, '')), 'תיאורי ה-SEO וה-OG לא מזכירים AI');
 const faq = body.slice(body.indexOf('id="faq"'), body.indexOf('id="trust-section"'));
 check(!/AI אמיתי/.test(faq) && /תבניות שנכתבו מראש/.test(faq), 'השאלה הנפוצה על AI הוחלפה בתשובה מדויקת');
-// מה שנשאר בכוונה (החלטה נפרדת): רשימות החבילות ותוסף השיווק
-const left = [...body.matchAll(/AI|בינה מלאכותית/g)].length;
-console.log(`ℹ️ ${left} אזכורי AI/בינה מלאכותית בגוף הדף: שניים ברשימות החבילות (שנשארו להחלטה נפרדת) ואחד בשאלה הנפוצה שמסבירה שאין AI`);
+// רשימות החבילות: רק יכולות פעילות, ובלי שינוי במבנה (3 חבילות, 5, 5 ו-4 שורות)
+const plans = [...body.matchAll(/<ul class="plan-features">([\s\S]*?)<\/ul>/g)].map(m => [...m[1].matchAll(/<li>([^<]*)<\/li>/g)].map(x => x[1]));
+check(plans.length === 3 && plans.every(l => !l.some(x => /AI/.test(x))), 'רשימות החבילות לא מבטיחות AI');
+check(JSON.stringify(plans.map(l => l.length)) === JSON.stringify([5, 4, 4]), 'מבנה החבילות נשמר (מספר השורות בכל חבילה)');
+check(/הודעות, אימיילים ותסריטי שיחה מוכנים/.test(plans[0].join('|')) && /יומן מהיר/.test(plans[0].join('|')), 'חבילת Solo מציגה את היכולות הקיימות שהחליפו את שתי ההבטחות');
+const aiLeft = [...body.matchAll(/AI|בינה מלאכותית/g)].length;
+check(aiLeft === 1 && /בינה מלאכותית/.test(faq), 'האזכור היחיד שנשאר בגוף הדף הוא השאלה הנפוצה שמסבירה שאין AI');
 
 for (const [w, h, label] of [[390, 844, 'נייד 390px'], [1280, 800, 'דסקטופ 1280px']]) {
   const { page, ctx, errors } = await open(w, h);
