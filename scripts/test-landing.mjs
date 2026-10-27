@@ -76,7 +76,7 @@ for (const [w, h, label] of [[390, 844, 'נייד 390px'], [1280, 800, 'דסקט
   check(r.cards === 5 && r.overflowing === 0 && r.small === 0, `${label}: חמשת הכרטיסים נקראים בלי חיתוך וגודל הטקסט תקין`);
   check(r.dir === 'rtl', `${label}: כיוון RTL`);
   check(r.ctas.length >= 6 && r.ctas.every(h => h && h.startsWith('https://realestate.plto.app')), `${label}: כל כפתורי ההרשמה מצביעים למערכת (${r.ctas.length})`);
-  check(r.navLinks.length === 6 && r.navLinks.every(n => n.ok) && r.navLinks.some(n => n.text === 'מה עושים כל יום'), `${label}: קישורי התפריט מצביעים לסעיפים קיימים`);
+  check(r.navLinks.length === 5 && !r.navLinks.some(n => n.href === '#pricing') && r.navLinks.every(n => n.ok) && r.navLinks.some(n => n.text === 'מה עושים כל יום'), `${label}: קישורי התפריט מצביעים לסעיפים קיימים`);
   const hero = await page.evaluate(() => {
     const h = document.querySelector('.hero');
     const cta = document.getElementById('hero-cta-btn');
@@ -91,11 +91,15 @@ for (const [w, h, label] of [[390, 844, 'נייד 390px'], [1280, 800, 'דסקט
       noPreviews: !h.querySelector('.vertical-previews, .vp-value'),
       addonHidden: [...document.querySelectorAll('.plan-addon, .marketing-section')].every(el => !vis(el)),
       plans: document.querySelectorAll('.plan-card').length,
+      pricingHidden: !vis(document.getElementById('pricing')),
+      // תקופת צמיחה חינמית: בטקסט הגלוי אין ניסיון, חבילות או מחיר חודשי
+      paidText: (document.body.innerText.match(/ניסיון חינם|ימי ניסיון|\/חודש|לשדרג|חבילה בתשלום/g) || []),
     };
   });
   check(hero.ctaAboveFold && hero.ctas === 1 && hero.ctaText === 'מתחילים בחינם', `${label}: במסך הראשון כפתור אחד, גלוי בלי גלילה`);
   check(/הלידים כבר אצלך/.test(hero.h1) && hero.points === 3 && hero.pointsAboveFold && hero.noPreviews, `${label}: המסך הראשון קצר: כותרת, משפט, כפתור ושלוש נקודות`);
-  check(hero.addonHidden && hero.plans >= 3, `${label}: תוסף השיווק מוסתר והחבילות עצמן נשארו`);
+  check(hero.addonHidden && hero.plans >= 3 && hero.pricingHidden, `${label}: תוסף השיווק וסעיף התמחור מוסתרים, והחבילות נשארו בקוד לעתיד`);
+  check(hero.paidText.length === 0, `${label}: אין בטקסט הגלוי ניסיון, מחיר חודשי או שדרוג` + (hero.paidText.length ? ': ' + hero.paidText.join(', ') : ''));
   if (w === 390) {
     await page.click('.nav-menu-btn');
     await page.click('#navMenuPanel a[href="#agents"]');

@@ -49,3 +49,5 @@ jobs:
         run: node scripts/test-ai-off.mjs
       - name: Landing page claims and layout
         run: node scripts/test-landing.mjs
+      - name: Free growth, sales XP, daily challenges and per-user progress
+        run: node scripts/test-gamify.mjs

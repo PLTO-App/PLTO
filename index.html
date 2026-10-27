@@ -12,11 +12,11 @@
   <!-- הגנת clickjacking: GitHub Pages לא תומך ב-headers, ו-frame-ancestors לא נאכף מ-meta -->
   <style id="antiCJ">html{display:none !important}</style>
   <script>if (self === top) { document.getElementById('antiCJ').remove(); } else { top.location = self.location; }</script>
-  <meta name="description" content="PLTO Sales, מערכת המכירות לעסקים: לידים, פולואפים ותהליך מכירה במקום אחד. ניסיון חינמי 30 יום.">
+  <meta name="description" content="PLTO Sales, מערכת המכירות לעסקים: לידים, פולואפים ותהליך מכירה במקום אחד. חינם, בלי כרטיס אשראי.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://realestate.plto.app/">
   <meta property="og:title" content="PLTO Sales: הופכים לידים ללקוחות משלמים">
-  <meta property="og:description" content="PLTO Sales, מערכת המכירות לעסקים: לידים, פולואפים ותהליך מכירה במקום אחד. ניסיון חינמי 30 יום.">
+  <meta property="og:description" content="PLTO Sales, מערכת המכירות לעסקים: לידים, פולואפים ותהליך מכירה במקום אחד. חינם, בלי כרטיס אשראי.">
   <meta property="og:image" content="https://realestate.plto.app/icons/og-image.jpg">
   <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1200">
@@ -24,7 +24,7 @@
   <meta property="og:locale" content="he_IL">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="PLTO Sales: הופכים לידים ללקוחות משלמים">
-  <meta name="twitter:description" content="PLTO Sales, מערכת המכירות לעסקים: לידים, פולואפים ותהליך מכירה במקום אחד. ניסיון חינמי 30 יום.">
+  <meta name="twitter:description" content="PLTO Sales, מערכת המכירות לעסקים: לידים, פולואפים ותהליך מכירה במקום אחד. חינם, בלי כרטיס אשראי.">
   <meta name="twitter:image" content="https://realestate.plto.app/icons/og-image.jpg">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -1846,6 +1846,15 @@
     .today-more, .today-old { width: 100%; min-height: 44px; border: 1px dashed var(--border); background: transparent; border-radius: 12px; color: var(--gray-600); font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; margin-bottom: 6px; }
     .today-note { font-size: 12.5px; color: var(--gray-600); padding: 4px 4px 8px; line-height: 1.6; }
     .today-empty { text-align: center; color: var(--gray-500); font-size: 13px; padding: 14px 8px; line-height: 1.6; }
+    /* שורת ההתקדמות במשחק במסך היום (מצב משחק בלבד) */
+    .today-xp { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; background: var(--surface, #fff); border: 1px solid var(--border); border-radius: 12px; padding: 6px 8px; margin-bottom: 10px; }
+    .today-xp-lv { min-height: 44px; flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 8px; border: none; background: transparent; font-family: inherit; cursor: pointer; padding: 0 4px; color: var(--navy-500); font-weight: 800; font-size: 13px; text-align: start; border-radius: 8px; }
+    .today-xp-lv:hover, .today-xp-ch:hover { background: var(--gray-100); }
+    .today-xp-track { flex: 1 1 60px; min-width: 60px; height: 6px; background: var(--gray-100); border-radius: 99px; overflow: hidden; }
+    .today-xp-fill { height: 100%; background: linear-gradient(90deg, var(--blue-500), var(--gold-500)); border-radius: 99px; }
+    .today-xp-num { font-size: 12px; color: var(--gray-500); font-weight: 700; white-space: nowrap; padding-inline-end: 4px; }
+    .today-xp-ch { min-height: 44px; flex: 1 1 100%; display: flex; align-items: center; gap: 8px; border: 1px dashed var(--border); background: transparent; border-radius: 10px; padding: 4px 10px; font-family: inherit; font-size: 12.5px; color: var(--gray-700); cursor: pointer; text-align: start; line-height: 1.5; }
+    .today-xp-ch.done { border-style: solid; color: var(--green-600, #15803D); }
     .lr-avatar { width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%; background: var(--navy-50, #EAF2FA); color: var(--navy-500); font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
 
     .lr-main { flex: 1; min-width: 0; align-self: stretch; display: flex; flex-direction: column; justify-content: center; }
@@ -3360,6 +3369,8 @@
   .swa-chips { margin-bottom:14px; }
   .swa-chip { font-size:13px; padding:0 12px; }
   html.ai-off [data-ai] { display:none !important; }
+  /* תקופת צמיחה חינמית: מוצרים בתשלום לא מוצגים (Billing.FREE_GROWTH) */
+  html.free-growth [data-paid] { display:none !important; }
   html:not(.ai-off) [data-noai] { display:none !important; }
   .swa-service { margin-bottom:12px; }
   .swa-text { width:100%; min-height:150px; max-height:50dvh; overflow-y:auto; resize:none; font-size:15px; line-height:1.7; text-align:right; }
@@ -4449,7 +4460,7 @@
     <p class="login-card-title">ברוכים הבאים ל-PLTO</p>
     <div style="text-align:center;margin-bottom:12px;">
       <div class="login-trial-badge">
-        🎁 30 יום ניסיון בחינם, ללא כרטיס אשראי
+        🎁 חינם, בלי כרטיס אשראי
       </div>
     </div>
     <div class="login-form">
@@ -4578,7 +4589,7 @@
       <a class="nav-item" data-screen="tools" onclick="App.go('tools')">
         <span class="nav-icon">🛠️</span> מרכז כלים
       </a>
-      <a class="nav-item" data-screen="marketing" onclick="App.go('marketing')">
+      <a class="nav-item" data-screen="marketing" data-paid onclick="App.go('marketing')">
         <span class="nav-icon">📣</span> שירותי שיווק
       </a>
       <a class="nav-item" data-screen="pro" onclick="App.go('pro')" style="background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(37,99,235,0.12));border:1px solid rgba(124,58,237,0.2);border-radius:8px;margin-top:4px;">
@@ -4789,7 +4800,7 @@
           <div class="dash-feat-tile-icon">✨</div>
           <div class="dash-feat-tile-label">פיצ'רים<br>PRO</div>
         </div>
-        <div class="dash-feat-tile" style="background:linear-gradient(135deg,#5b21b6,#7c3aed);color:#fff;border-color:transparent;" onclick="App.go('marketing')">
+        <div class="dash-feat-tile" data-paid style="background:linear-gradient(135deg,#5b21b6,#7c3aed);color:#fff;border-color:transparent;" onclick="App.go('marketing')">
           <div class="dash-feat-tile-icon">🎯</div>
           <div class="dash-feat-tile-label" style="color:#fff;">שיווק<span data-ai><br>AI</span></div>
         </div>
@@ -5591,7 +5602,7 @@
       <div class="ref-header">
         <div class="ref-header-icon">🎁</div>
         <div class="ref-header-title">הזמנת חבר, שניכם מרוויחים</div>
-        <div class="ref-header-sub">הקוד האישי שלך<br>הנחה לחבר, ובונוס בשבילך</div>
+        <div class="ref-header-sub">הקוד האישי שלך<br>הצטרפות חינמית לחבר, ובונוס XP בשבילך</div>
       </div>
       <div class="ref-code-card">
         <div class="ref-code-label">הקוד האישי שלך</div>
@@ -5610,7 +5621,7 @@
         <div class="ref-reward-title">מה כל אחד מקבל?</div>
         <div class="ref-reward-row">
           <span class="ref-reward-badge">החבר שלך</span>
-          <span>+100 XP בונוס ו-30 יום ניסיון חינם 🎁</span>
+          <span>+100 XP בונוס בהצטרפות 🎁</span>
         </div>
         <div class="ref-reward-row">
           <span class="ref-reward-badge">לך</span>
@@ -5626,7 +5637,7 @@
         </div>
         <div class="ref-how-step">
           <div class="ref-how-num">2</div>
-          <div class="ref-how-text"><strong>הרשמה עם הקוד שלך</strong>, עם 30 יום ניסיון חינם</div>
+          <div class="ref-how-text"><strong>הרשמה עם הקוד שלך</strong>, בחינם</div>
         </div>
         <div class="ref-how-step" style="margin-bottom:0">
           <div class="ref-how-num">3</div>
@@ -6478,7 +6489,7 @@
     <button class="modal-close" onclick="DemoLock.hide()" aria-label="סגור" style="position:absolute;top:12px;left:12px;">✕</button>
     <div style="font-size:52px;margin-bottom:10px;">🔒</div>
     <div style="font-size:19px;font-weight:900;color:var(--navy);margin-bottom:8px;">פיצ'ר זה נעול בדמו</div>
-    <div id="demo-lock-lead-msg" style="font-size:13px;color:var(--gray-500);margin-bottom:4px;line-height:1.6;">חשבון ניסיון חינמי ל-30 יום<br>עם גישה מלאה לכל הכלים</div>
+    <div id="demo-lock-lead-msg" style="font-size:13px;color:var(--gray-500);margin-bottom:4px;line-height:1.6;">חשבון חינמי<br>עם גישה מלאה לכל הכלים</div>
     <ul class="demo-lock-features">
       <li>✅ ניהול לידים ופייפליין מלא</li>
       <li>✅ משימות, לוח שנה ואנליטיקה</li>
@@ -8757,6 +8768,10 @@ const Billing = {
   // ─── GROW/PAYME CONFIG - יוגדר ברגע שיפתחו מפתחות API ───
   // כשמוכן: החלף PAYMENTS_LIVE ל-true ועדכן CHECKOUT_URLS מ-Grow Dashboard
   PAYMENTS_LIVE: false,
+  // תקופת צמיחה חינמית (החלטת דוד, 27.10.2026): בלי מסך תשלום, בלי ספירה לאחור, בלי מחירים והצעות שדרוג.
+  // תואם ל-free_growth_period() בשרת (מיגרציה 129). להחזרת מודל ניסיון יש לשנות את שני המקומות יחד,
+  // ולהריץ את 129 לפני פריסת הקוד הזה, אחרת ה-RLS חוסם עסק שהניסיון שלו פג.
+  FREE_GROWTH: true,
   CHECKOUT_URLS: {
     basic:   'REPLACE_WITH_GROW_LINK_BASIC',
     pro:     'REPLACE_WITH_GROW_LINK_PRO',
@@ -8778,6 +8793,10 @@ const Billing = {
   // countdown is meaningless and the trial banners are hidden. The plan stays 'trial'.
   isExtendedTrial() {
     return State.tenant?.plan === 'trial' && this.daysLeft() > 365;
+  },
+  // בתקופת הצמיחה כל עסק שלא בוטל משתמש בחינם, ולא מוצגים לו ניסיון, מחירים או שדרוג
+  isFree() {
+    return this.FREE_GROWTH && !this.isPaid() && State.tenant?.plan !== 'cancelled';
   },
   // תקופת שימור נתונים - 30 יום נוספים בחינם אחרי תום הניסיון, בלי גישה לשימוש במערכת
   RETENTION_DAYS: 30,
@@ -8801,6 +8820,7 @@ const Billing = {
     if (['info@plto.app','elgrablidudu@gmail.com'].includes(email)) return false;
     if (plan === 'internal' || plan === 'lifetime') return false;
     if (this.isPaid()) return false;
+    if (this.FREE_GROWTH && plan !== 'cancelled') return false;
     if (plan === 'cancelled') return true;
     if (plan === 'trial') return this.daysLeft() <= 0;
     return false;
@@ -8838,6 +8858,11 @@ const Billing = {
   },
   renderTrialBanner() {
     if (this.isPaid()) return;
+    if (this.isFree()) {
+      const b = document.getElementById('trial-banner');
+      if (b) { b.innerHTML = ''; b.classList.add('hidden'); }
+      return;
+    }
     if (this.isExpired()) return;
     const days = this.daysLeft();
     const banner = document.getElementById('trial-banner');
@@ -8899,6 +8924,7 @@ const Billing = {
     `;
   },
   showDailyReminder() {
+    if (this.isFree()) return;
     const days = this.daysLeft();
     if (days > 7 || days <= 0 || this.isPaid()) return;
     const key = 'billing_reminder_' + new Date().toISOString().split('T')[0];
@@ -8958,6 +8984,7 @@ const Billing = {
   },
 
   openCheckout(planId = 'pro') {
+    if (this.FREE_GROWTH) return;
     const _daysLeft = this.isActiveTrial() ? Math.ceil((new Date(State.tenant?.trial_ends_at) - Date.now()) / 86400000) : 0;
     FunnelTracker.track('upgrade_intent', { plan: planId, days_left: _daysLeft, is_expired: !this.isActiveTrial() }, State.tenant?.id || null);
     if (this.isActiveTrial()) {
@@ -9009,7 +9036,9 @@ const Billing = {
     if (p === 'premium') return { text:'Premium ✓', color:'var(--purple-500)', bg:'var(--purple-100)' };
     if (p === 'pro')     return { text:'Pro ✓',     color:'var(--blue-500)',   bg:'var(--blue-100)'   };
     if (p === 'basic')   return { text:'Basic ✓',   color:'var(--green-600)',  bg:'var(--green-100)'  };
-    if (p === 'trial')    return { text:'ניסיון חינם 30 יום', color:'var(--gold-600)', bg:'var(--gold-100)' };
+    if (p === 'trial')    return this.FREE_GROWTH
+      ? { text:'חינם', color:'var(--green-600)', bg:'var(--green-100)' }
+      : { text:'ניסיון חינם 30 יום', color:'var(--gold-600)', bg:'var(--gold-100)' };
     if (p === 'lifetime') return { text:'Lifetime ♾️', color:'var(--blue-500)', bg:'var(--blue-100)' };
     return { text:'לא פעיל', color:'var(--red-600)', bg:'var(--red-100)' };
   },
@@ -10019,6 +10048,7 @@ ${cold.map(fmtCold).join('\n') || 'אין לידים קפואים'}
   },
 };
 document.documentElement.classList.toggle('ai-off', !AI.ENABLED);
+document.documentElement.classList.toggle('free-growth', !!Billing.FREE_GROWTH);
 
 function copyAIText(elId) {
   const box = document.getElementById(elId)?.querySelector('.ai-message-box');
@@ -11799,10 +11829,11 @@ const CallLog = {
       const act = await DB.addActivity({ content, lead_id: leadId, type: 'call' });
       State.activities.unshift(act);
       const lead = State.leads.find(l => l.id === leadId);
+      const prevContact = lead?.last_contact || null;
       if (lead) lead.last_contact = today();
       DB.updateLead(leadId, { last_contact: today() }).catch(()=>{});
       toast('📞 ' + content, 'success');
-      Gamify.event('log_activity');
+      if (lead) Gamify.contact('log_activity', lead, prevContact); else Gamify.event('log_activity');
       if (State.screen === 'lead-detail') LeadDetail.render(leadId);
       if (type !== 'no_answer' || !NextStep.dateOf(lead || {})) setTimeout(() => NextStep.ask(leadId), 400);
     } catch(e) { toast('שגיאה: ' + e.message, 'error'); }
@@ -11961,11 +11992,19 @@ const SmartWA = {
     return (document.getElementById('swa-text')?.value || '').trim();
   },
 
+  // שימוש בנוסח מוכן הוא פעולת מכירה: XP לכל ליד פעם ביום. בלי ליד נספר פעם ביום לכל ערוץ
+  _award() {
+    if (State.isDemo) return;
+    const lead = this._leadId ? State.leads.find(l => l.id === this._leadId) : null;
+    if (lead) Gamify.contact('send_message', lead, lead.last_contact || null);
+    else Gamify.event('send_message', { id: 'free:' + this._channel });
+  },
+
   copy() {
     const text = this._text();
     if (!text) { toast('ההודעה ריקה', 'warning'); return; }
     navigator.clipboard.writeText(text)
-      .then(() => toast(this._channel === 'whatsapp' ? '📋 הועתק, מוכן לשליחה ב-WhatsApp' : '📋 הועתק', 'success'))
+      .then(() => { toast(this._channel === 'whatsapp' ? '📋 הועתק, מוכן לשליחה ב-WhatsApp' : '📋 הועתק', 'success'); this._award(); })
       .catch(() => toast('לא הצלחנו להעתיק, אפשר לסמן את הטקסט ולהעתיק ידנית', 'error'));
   },
 
@@ -11977,9 +12016,9 @@ const SmartWA = {
     if (!text) { toast('ההודעה ריקה', 'warning'); return; }
     if (State.isDemo) { toast('⚡ מצב דמו, בגרסה האמיתית תיפתח שיחת WhatsApp עם ההודעה', 'warning'); return; }
     // בלי ליד אין נמען: WhatsApp נפתח עם הנוסח והנמען נבחר שם
-    if (!lead) { window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank'); return; }
+    if (!lead) { window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank'); this._award(); return; }
     if (!waNumber(lead.phone)) { toast('אין מספר טלפון לשליחה', 'error'); return; }
-    if (lead.last_contact) { LeadDetail._doWA(lead.phone, text); return; }
+    if (lead.last_contact) { LeadDetail._doWA(lead.phone, text); this._award(); return; }
     LeadDetail._waLeadId = lead.id;
     LeadDetail._waPending = lead.phone;
     LeadDetail._waText = text;
@@ -12012,6 +12051,7 @@ const SmartWA = {
     document.body.appendChild(a);
     a.click();
     a.remove();
+    this._award();
   },
 };
 
@@ -12038,7 +12078,14 @@ const Gamify = {
     refer_joined:  120,
     import_leads_small: 50,
     import_leads_large: 100,
+    // פעולות מכירה (27.10.2026): פולואפ שטופל, צעד הבא, הודעה או תסריט מהתבניות, וסיבת "לא נסגר"
+    followup_done: 12,
+    next_step:      6,
+    send_message:   8,
+    lost_reason:    5,
   },
+  // מגבלות יומיות לפעולות המכירה. כל פעולה נספרת פעם אחת ביום לכל ליד
+  DAILY_CAPS: { followup_done: 15, next_step: 15, send_message: 10, rescue_cold: 5, lost_reason: 5 },
   ACHIEVEMENTS: [
     { id:'first_lead',   icon:'🎯', name:'ליד ראשון',        desc:'הליד הראשון נוסף למערכת',            xp:12,  check: d => d.leadsAdded >= 1   },
     { id:'leads_5',      icon:'📊', name:'5 לידים',           desc:'5 לידים פעילים במערכת',              xp:18,  check: d => d.leadsAdded >= 5   },
@@ -12062,6 +12109,18 @@ const Gamify = {
     'נתעד את הפגישה האחרונה, נוסיף הערה ב-CRM',
     'נתכנן 3 פולואפים לשבוע הבא',
   ],
+  // מתי אתגר נחשב כהושלם: כמה פעולות מאילו סוגים, היום. contact נספר לפי לידים שונים
+  CHALLENGE_GOALS: {
+    'ניצור קשר עם 3 לידים שלא קיבלו מענה השבוע': { count: 3, types: ['contact'] },
+    'נעדכן את השלב של ליד אחד לפחות':           { count: 1, types: ['advance_stage', 'close_deal'] },
+    'נוסיף ליד חדש למערכת':                      { count: 1, types: ['add_lead', 'import_leads'] },
+    'נסגור 2 משימות פתוחות היום':                { count: 2, types: ['complete_task'] },
+    'נכתוב הודעת פולואפ מוכנה מהתבניות':        { count: 1, types: ['send_message'] },
+    'נבדוק לידים קפואים ונחזיר אותם לפעולה':     { count: 1, types: ['rescue_cold'] },
+    'נתעד את הפגישה האחרונה, נוסיף הערה ב-CRM': { count: 1, types: ['log_activity'] },
+    'נתכנן 3 פולואפים לשבוע הבא':                { count: 3, types: ['next_step'] },
+  },
+  CONTACT_TYPES: ['log_activity', 'followup_done', 'send_message'],
 
   // פרסי XP: ערכות תוכן מכירה כתובות (RewardPack), במקום תוצרי AI. בלי "שווי" בשקלים
   MILESTONES: [
@@ -12087,22 +12146,90 @@ const Gamify = {
     return State.tenant?.industry !== 'realestate_lawyer';
   },
 
+  // שמירה לפי משתמש: מפתח לכל agent_id, וגיבוי בשרת כשמיגרציה 130 קיימת.
+  // עד 27.10.2026 הכל נשמר במפתח אחד לכל הדפדפן. המשתמש הראשון שמתחבר אחרי העדכון מקבל אותו.
+  _LEGACY_KEY: 'plto_gamify_v2',
+  _dKey: null,
+  _srv: null,        // 'on' כשהשרת זמין, 'off' כשהפונקציות לא קיימות, null עד הבדיקה
+  _pushTimer: null,
+
+  _key() { return DB.agentId ? `${this._LEGACY_KEY}:${DB.agentId}` : this._LEGACY_KEY; },
+
+  _fresh() {
+    return {
+      xp: 0, achievements: [], streak: 0,
+      lastLogin: null, aiUses: 0, tasksCompleted: 0,
+      dealsClosed: 0, leadsAdded: 0, dailyDone: null,
+      acDate: '', acAdvanced: [], acClosed: [],
+      acTasks: 0, acLeads: 0, acAi: 0,
+      milestoneClaimed: [],
+    };
+  },
+
   get() {
-    if (!this._d) {
-      const raw = localStorage.getItem('plto_gamify_v2');
-      this._d = raw ? JSON.parse(raw) : {
-        xp: 0, achievements: [], streak: 0,
-        lastLogin: null, aiUses: 0, tasksCompleted: 0,
-        dealsClosed: 0, leadsAdded: 0, dailyDone: null,
-        acDate: '', acAdvanced: [], acClosed: [],
-        acTasks: 0, acLeads: 0, acAi: 0,
-        milestoneClaimed: [],
-      };
+    const key = this._key();
+    if (!this._d || this._dKey !== key) {
+      clearTimeout(this._pushTimer);
+      let raw = null;
+      try {
+        raw = localStorage.getItem(key);
+        if (!raw && key !== this._LEGACY_KEY) {
+          raw = localStorage.getItem(this._LEGACY_KEY);
+          if (raw) { localStorage.setItem(key, raw); localStorage.removeItem(this._LEGACY_KEY); }
+        }
+      } catch (_) {}
+      let parsed = null;
+      try { parsed = raw ? JSON.parse(raw) : null; } catch (_) {}
+      this._d = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : this._fresh();
+      if (!Number.isFinite(this._d.xp)) this._d.xp = 0;
+      this._dKey = key;
+      this._srv = null;
     }
     return this._d;
   },
 
-  save() { localStorage.setItem('plto_gamify_v2', JSON.stringify(this._d)); },
+  save() {
+    if (!this._d) return;
+    try { localStorage.setItem(this._dKey || this._key(), JSON.stringify(this._d)); } catch (_) {}
+    this._pushSoon();
+  },
+
+  // גיבוי בשרת (get_my_progress / save_my_progress). בלי המיגרציה ההתקדמות נשארת מקומית, כמו קודם
+  _isMissingFn(error) {
+    return error && (error.code === 'PGRST202' || /could not find the function/i.test(error.message || ''));
+  },
+  async syncFromServer() {
+    if (State.isDemo || !DB.agentId || this._srv === 'off') return;
+    const key = this._key();
+    try {
+      const { data, error } = await sbClient.rpc('get_my_progress');
+      if (key !== this._key()) return; // המשתמש התחלף בזמן הבקשה
+      if (error) { if (this._isMissingFn(error)) this._srv = 'off'; return; }
+      this._srv = 'on';
+      const remote = data && typeof data === 'object' && !Array.isArray(data) ? data.data : null;
+      const local = this.get();
+      const remoteXp = remote && Number.isInteger(remote.xp) ? remote.xp : -1;
+      if (remoteXp > (local.xp || 0)) {
+        // מכשיר אחר התקדם יותר: ההתקדמות מהשרת מחליפה את המקומית
+        this._d = { ...local, ...remote };
+        try { localStorage.setItem(this._dKey, JSON.stringify(this._d)); } catch (_) {}
+      } else if ((local.xp || 0) > remoteXp) {
+        this._pushSoon(0);
+      }
+    } catch (_) {}
+  },
+  _pushSoon(ms = 2000) {
+    if (State.isDemo || this._srv !== 'on' || !this._d) return;
+    clearTimeout(this._pushTimer);
+    const key = this._dKey;
+    this._pushTimer = setTimeout(() => {
+      if (key !== this._key() || !this._d) return;
+      const payload = { ...this._d, xp: Math.max(0, Math.round(Number(this._d.xp) || 0)) };
+      sbClient.rpc('save_my_progress', { p_data: payload }).then(({ error }) => {
+        if (this._isMissingFn(error)) this._srv = 'off';
+      }, () => {});
+    }, ms);
+  },
 
   getLevel(xp) {
     let lv = this.LEVELS[0];
@@ -12128,6 +12255,9 @@ const Gamify = {
     if (d.acAi     === undefined) d.acAi     = 0;
     if (d.acImports === undefined) d.acImports = 0;
     if (!d.milestoneClaimed) d.milestoneClaimed = [];
+    if (!d.acKeys || typeof d.acKeys !== 'object') d.acKeys = {};
+    if (!d.acCount || typeof d.acCount !== 'object') d.acCount = {};
+    if (!Array.isArray(d.acContactLeads)) d.acContactLeads = [];
     if (d.acDate !== today_) {
       d.acDate = today_;
       d.acAdvanced = [];
@@ -12135,6 +12265,9 @@ const Gamify = {
       d.acLeads = 0;
       d.acAi    = 0;
       d.acImports = 0;
+      d.acKeys = {};
+      d.acCount = {};
+      d.acContactLeads = [];
     }
   },
 
@@ -12152,9 +12285,34 @@ const Gamify = {
         return d.acAi < 3;
       case 'import_leads':
         return d.acImports < 3;
+      case 'followup_done':
+      case 'next_step':
+      case 'send_message':
+      case 'rescue_cold':
+      case 'lost_reason': {
+        const keys = d.acKeys[type] || [];
+        return !!leadId && !keys.includes(leadId) && keys.length < this.DAILY_CAPS[type];
+      }
       default:
         return true;
     }
+  },
+
+  // ספירת ההתקדמות באתגר היומי. רץ גם כשהמשחק כבוי, כמו שאר הרישום
+  _trackChallenge(d, type, leadId, count = 1) {
+    d.acCount[type] = (d.acCount[type] || 0) + count;
+    if (this.CONTACT_TYPES.includes(type) && leadId && !String(leadId).startsWith('free:') && !d.acContactLeads.includes(leadId)) {
+      d.acContactLeads.push(leadId);
+    }
+    const ch = this.getDailyChallenge();
+    if (!ch.done && ch.goal && ch.progress >= ch.goal.count) this.completeDailyChallenge();
+  },
+
+  // פעולת קשר עם ליד: XP לפעולה, ותוספת "ליד קפוא חזר לפעולה" כשהקשר הקודם היה לפני 14 ימים ומעלה
+  contact(type, lead, prevLastContact) {
+    if (!lead || !lead.id) return;
+    this.event(type, { id: lead.id });
+    if (prevLastContact && Math.abs(diffDays(prevLastContact)) >= 14) this.event('rescue_cold', { id: lead.id });
   },
 
   _deductXP(pts) {
@@ -12191,11 +12349,16 @@ const Gamify = {
     d.xp += pts;
     if (type === 'add_lead')      { d.leadsAdded++;      d.acLeads++;  }
     if (type === 'import_leads')  { d.leadsAdded += (extra?.count || 0); d.acImports++; }
-    if (type === 'close_deal')    { d.dealsClosed++;      if (leadId) d.acClosed.push(leadId);   this.confetti(); setTimeout(() => toast(MICRO_COPY.dealClosed[_getInd()] || MICRO_COPY.dealClosed.other, 'success', 5000), 600); if (d.dealsClosed === 1) { setTimeout(() => AnnualUpsell.tryShow('first_deal'), 4000); setTimeout(() => ReferralCTA.tryShow('first_deal'), 4000); } }
-    if (type === 'advance_stage') { if (leadId) d.acAdvanced.push(leadId); this.targetHit(); }
+    // קונפטי ואנימציות הם חלק מהמשחק, ולכן רק כשהוא פעיל. הודעת הסגירה נשארת בשני המצבים
+    if (type === 'close_deal')    { d.dealsClosed++;      if (leadId) d.acClosed.push(leadId);   if (enabled) this.confetti(); setTimeout(() => toast(MICRO_COPY.dealClosed[_getInd()] || MICRO_COPY.dealClosed.other, 'success', 5000), 600); if (d.dealsClosed === 1) { setTimeout(() => AnnualUpsell.tryShow('first_deal'), 4000); setTimeout(() => ReferralCTA.tryShow('first_deal'), 4000); } }
+    if (type === 'advance_stage') { if (leadId) d.acAdvanced.push(leadId); if (enabled) this.targetHit(); }
     if (type === 'complete_task') { d.tasksCompleted++;   d.acTasks++;  }
     if (type === 'use_ai')        { d.aiUses++;           d.acAi++;     }
+    if (this.DAILY_CAPS[type])    { (d.acKeys[type] = d.acKeys[type] || []).push(leadId); }
+    if (type === 'followup_done') d.followupsDone = (d.followupsDone || 0) + 1;
+    if (type === 'send_message')  d.messagesSent  = (d.messagesSent  || 0) + 1;
     this.save();
+    this._trackChallenge(d, type, leadId);
     if (!enabled) return;
     const newLevel = this.getLevel(d.xp);
     if (newLevel.min > prevLevel.min) this.showLevelUp(newLevel);
@@ -12353,18 +12516,29 @@ const Gamify = {
 
   getDailyChallenge() {
     const d = this.get();
+    this._resetDaily(d);
     const today_ = new Date().toISOString().split('T')[0];
     const idx = (new Date().getDate() + new Date().getMonth()) % this.DAILY_CHALLENGES.length;
-    return { text: this.DAILY_CHALLENGES[idx], done: d.dailyDone === today_ };
+    const text = this.DAILY_CHALLENGES[idx];
+    const goal = this.CHALLENGE_GOALS[text] || null;
+    const progress = !goal ? 0 : goal.types.includes('contact')
+      ? d.acContactLeads.length
+      : goal.types.reduce((s, t) => s + (d.acCount[t] || 0), 0);
+    return { text, done: d.dailyDone === today_, goal, progress: goal ? Math.min(progress, goal.count) : 0 };
   },
 
   completeDailyChallenge() {
     const d = this.get();
     const today_ = new Date().toISOString().split('T')[0];
     if (d.dailyDone === today_) return;
+    const prevLevel = this.getLevel(d.xp);
     d.dailyDone = today_;
     d.xp += 80;
     this.save();
+    if (!this.isEnabled()) return;
+    const newLevel = this.getLevel(d.xp);
+    if (newLevel.min > prevLevel.min) setTimeout(() => this.showLevelUp(newLevel), 1200);
+    this.renderSidebar();
     this.renderWidget();
     this.checkMilestones();
     floatXP(80);
@@ -12387,6 +12561,7 @@ const Gamify = {
   },
 
   renderWidget() {
+    if (typeof Today !== 'undefined') Today.refreshXp();
     const widgetEl = document.getElementById('gamify-widget');
     if (!this.isEnabled()) { if (widgetEl) widgetEl.style.display = 'none'; return; }
     if (widgetEl) widgetEl.style.display = '';
@@ -12475,7 +12650,7 @@ const Gamify = {
 
     // Daily challenge
     const ch = this.getDailyChallenge();
-    set('gamify-daily-text', ch.text);
+    set('gamify-daily-text', ch.goal && ch.goal.count > 1 && !ch.done ? `${ch.text} (${ch.progress}/${ch.goal.count})` : ch.text);
     const dailyEl = document.getElementById('gamify-daily');
     if (dailyEl) {
       if (ch.done) {
@@ -12666,7 +12841,7 @@ const Gamify = {
     }
     this.save();
     this.closeMilestone();
-    toast('🎯 שמרנו! תוכל לממש מהחנות בכל עת, המשך לצבור XP לפרס גדול יותר!', 'success', 4000);
+    toast('🎯 שמרנו! אפשר לממש מהחנות בכל עת, וממשיכים לצבור XP לפרס גדול יותר', 'success', 4000);
   },
 
   renderStore() {
@@ -12734,9 +12909,15 @@ const Gamify = {
 
   init() {
     if (State.isDemo) return;
-    this.checkDailyLogin();
     this.renderSidebar();
     this.renderWidget();
+    // קודם מסנכרנים מהשרת (אם קיים), ורק אז כניסה יומית, כדי שה-XP של היום לא יידרס
+    this.syncFromServer().finally(() => {
+      this.checkDailyLogin();
+      this.renderSidebar();
+      this.renderWidget();
+      if (State.screen === 'dashboard') Today.render();
+    });
   },
 };
 
@@ -13681,7 +13862,7 @@ const DemoLock = {
       } else if (n > 0) {
         msgEl.innerHTML = `יש לך <strong style="color:var(--navy)">${n} לידים בדמו</strong> שיאבדו כשיוצאים.<br>הרשמה תשמור אותם לצמיתות.`;
       } else {
-        msgEl.innerHTML = 'חשבון ניסיון חינמי ל-30 יום<br>עם גישה מלאה לכל הכלים';
+        msgEl.innerHTML = 'חשבון חינמי<br>עם גישה מלאה לכל הכלים';
       }
     }
     FunnelTracker.track('demo_lock_hit', { feature_name: customMsg ? customMsg.slice(0, 60) : 'generic' });
@@ -13759,7 +13940,7 @@ const Referral = {
 
   _waMessage() {
     const code = this._code || this._data().code || '';
-    return `היי! PLTO הוא הכלי שניהל לי את כל הפייפליין ועזר לסגור יותר עסקאות 🚀\n\n30 יום ניסיון חינם עם קוד ההמלצה שלי:\n\n🔑 קוד: *${code}*\n🔗 כניסה: ${this._link()}`;
+    return `היי! PLTO הוא הכלי שניהל לי את כל הפייפליין ועזר לסגור יותר עסקאות 🚀\n\nההצטרפות חינמית, עם קוד ההמלצה שלי:\n\n🔑 קוד: *${code}*\n🔗 כניסה: ${this._link()}`;
   },
 
   shareWhatsApp() {
@@ -14570,7 +14751,7 @@ const AnnualUpsell = {
   _save(obj) { localStorage.setItem(this._KEY, JSON.stringify(obj)); },
 
   _isEligible() {
-    if (State.isDemo) return false;
+    if (State.isDemo || Billing.FREE_GROWTH) return false;
     const gd = Gamify.get();
     // Only surface after at least 10 days of actual usage
     return (gd.streak || 0) >= 10 || (gd.dayCount || 0) >= 10;
@@ -14970,7 +15151,7 @@ const App = {
       redirectTo: 'https://realestate.plto.app/',
     });
     if (error) { toast('שגיאה: ' + error.message, 'error'); return; }
-    toast('📧 נשלח אימייל לאיפוס סיסמה, בדוק את תיבת הדואר שלך', 'success');
+    toast('📧 נשלח אימייל לאיפוס סיסמה, כדאי לבדוק את תיבת הדואר', 'success');
   },
   loginDemo() {
     State.isDemo = true;
@@ -15249,6 +15430,8 @@ const App = {
     FunnelTracker.track('login_screen_view', { source: 'logout' });
   },
   go(screen, params = {}) {
+    // תוסף השיווק בתשלום לא נגיש בתקופת הצמיחה, גם לא משחזור מסך שמור
+    if (screen === 'marketing' && Billing.FREE_GROWTH) screen = 'dashboard';
     // Demo: allow only dashboard, pipeline and marketing (as teasers); block all else
     if (State.isDemo) {
       const DEMO_PASS = new Set(['dashboard', 'pipeline', 'marketing', 'login', 'pro', 'analytics', 'properties', 'tools']);
@@ -15326,7 +15509,7 @@ const App = {
       { sep: true }, { header: 'כלים' },
       { icon: '📈', label: 'אנליטיקס', run: go('analytics') },
       { icon: '🛠️', label: 'מרכז כלים', run: go('tools') },
-      { icon: '📣', label: 'שירותי שיווק', run: go('marketing') },
+      ...(Billing.FREE_GROWTH ? [] : [{ icon: '📣', label: 'שירותי שיווק', run: go('marketing') }]),
       { icon: '📧', label: 'תיבת דואר', run: go('email') },
       { sep: true }, { header: 'עוד' },
       { icon: '✨', label: 'פיצ\'רים PRO', run: go('pro') },
@@ -15422,6 +15605,7 @@ const NextStep = {
       return;
     }
     FunnelTracker.track('first_followup_set', {});
+    Gamify.event('next_step', { id: lead.id });
     App.updateBadges();
     LeadRow.refresh();
     toast(`הצעד הבא נקבע: ${formatRelDate(due)}`, 'success');
@@ -15454,6 +15638,8 @@ const LostDeal = {
     State.lostLeads.unshift({ id: lead.id, name: lead.name, phone: lead.phone, status: 'closed_lost', closed_lost_reason: reason, budget_max: lead.budget_max || 0 });
     if (State.screen === 'lead-detail') App.go('dashboard'); else LeadRow.refresh();
     toast('הליד סומן כלא נסגר', 'success');
+    // תיעוד הסיבה עוזר ללמוד מה לשפר, ולכן הוא מזכה ב-XP קטן (פעם ביום לכל ליד)
+    Gamify.event('lost_reason', { id: lead.id });
   },
   list(anchor) {
     const items = (State.lostLeads || []).map(l => ({
@@ -15542,6 +15728,39 @@ const Today = {
       </div>
     </div>`;
   },
+  // שורת התקדמות במשחק: דרגה, XP ואתגר היום. במצב משחק בלבד ולא בדמו.
+  // לפני 5 לידים המשחק עדיין נעול (כמו בווידג'ט), ולכן מוצג כמה חסר לפתיחה
+  _xpStrip() {
+    if (State.isDemo || typeof Gamify === 'undefined' || !Gamify.isEnabled()) return '';
+    const n = (State.leads || []).length;
+    if (n < 5) {
+      const left = 5 - n;
+      return `<div class="today-xp" id="today-xp">
+        <button type="button" class="today-xp-lv" onclick="openModal('modal-add-lead')">🔓 <span>עוד ${left === 1 ? 'ליד אחד' : left + ' לידים'} ונפתח המשחק: דרגות, אתגרים ופרסים</span></button>
+        <div class="today-xp-track" role="progressbar" aria-label="פתיחת המשחק" aria-valuemin="0" aria-valuemax="5" aria-valuenow="${n}"><div class="today-xp-fill" style="width:${Math.round(n / 5 * 100)}%"></div></div>
+        <span class="today-xp-num">${n}/5</span>
+      </div>`;
+    }
+    const d = Gamify.get();
+    const lv = Gamify.getLevel(d.xp);
+    const prog = Gamify.getProgress(d.xp);
+    const ch = Gamify.getDailyChallenge();
+    const chText = ch.done ? `אתגר היום הושלם: ${ch.text}`
+      : `אתגר היום: ${ch.text}${ch.goal && ch.goal.count > 1 ? ` (${ch.progress}/${ch.goal.count})` : ''} · +80 XP`;
+    return `<div class="today-xp" id="today-xp">
+      <button type="button" class="today-xp-lv" aria-label="חנות XP, דרגה ${escapeHtml(lv.name)}" onclick="App.go('xp-store')"><span aria-hidden="true">${lv.icon}</span><span>${escapeHtml(lv.name)}</span></button>
+      <div class="today-xp-track" role="progressbar" aria-label="התקדמות לדרגה הבאה" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(prog.pct)}"><div class="today-xp-fill" style="width:${Math.round(prog.pct)}%"></div></div>
+      <span class="today-xp-num">${Number(d.xp || 0).toLocaleString('he-IL')} XP</span>
+      <button type="button" class="today-xp-ch${ch.done ? ' done' : ''}" onclick="Gamify.dailyAction()"><span aria-hidden="true">${ch.done ? '✅' : '🎯'}</span><span>${escapeHtml(chText)}</span></button>
+    </div>`;
+  },
+  // רענון השורה בלבד אחרי צבירת XP, בלי לבנות מחדש את כל מסך היום
+  refreshXp() {
+    const el = document.getElementById('today-xp');
+    if (!el) return;
+    const html = this._xpStrip();
+    if (html) el.outerHTML = html; else el.remove();
+  },
   render() {
     const el = document.getElementById('dash-today');
     if (!el) return;
@@ -15553,7 +15772,7 @@ const Today = {
     const need = g.overdue.length + g.today.length + g.fresh.length + g.attention.length + g.clients.length + g.oldOverdue.length;
     const valPart = sum ? ` · שווי פתוח ${formatMoney(sum)}${withVal.length < open.length ? ` (ל-${withVal.length} מתוך ${open.length} לידים)` : ''}` : '';
     let html = `<div class="today-wrap">
-      <div class="today-status" aria-live="polite"><strong>${open.length}</strong> לידים פתוחים${valPart} · <strong>${need}</strong> דורשים טיפול</div>`;
+      <div class="today-status" aria-live="polite"><strong>${open.length}</strong> לידים פתוחים${valPart} · <strong>${need}</strong> דורשים טיפול</div>${this._xpStrip()}`;
     for (const [key, title] of this.GROUPS) {
       const rows = g[key];
       if (!rows.length) continue;
@@ -15579,10 +15798,12 @@ const Today = {
     if (demoGuard()) return;
     const lead = State.leads.find(l => l.id === id);
     if (!lead) return;
+    const prevContact = lead.last_contact || null;
     try {
       await DB.updateLead(id, { last_contact: today(), next_followup: null });
       lead.last_contact = today(); lead.next_followup = null;
     } catch (_e) { toast('העדכון לא נשמר, אפשר לנסות שוב', 'error'); return; }
+    Gamify.contact('followup_done', lead, prevContact);
     for (const t of (State.tasks || []).filter(t => !t.done && t.lead_id === id && t.due && diffDays(t.due) <= 0)) await toggleTask(t.id);
     this.render();
     NextStep.ask(id);
@@ -15634,7 +15855,7 @@ const Dashboard = {
     const streak  = xpData.streak || 0;
     const refCount= refData.referrals || 0;
     // Rotate between referral pitch and annual pitch based on streak
-    const showAnnual = streak >= 10 && !AnnualUpsell._data().interest;
+    const showAnnual = !Billing.FREE_GROWTH && streak >= 10 && !AnnualUpsell._data().interest;
     if (showAnnual) {
       wrap.innerHTML = `
         <div class="dash-growth-card">
@@ -15658,7 +15879,7 @@ const Dashboard = {
       const gamifyOn = Gamify.isEnabled();
       const sub = gamifyOn
         ? 'חבר שמצטרף = +250 XP לך<br>ולחבר +100 XP בהצטרפות'
-        : 'הזמנת חברים ל-PLTO<br>עם 30 יום ניסיון חינם';
+        : 'הזמנת חברים ל-PLTO<br>בחינם, בלי כרטיס אשראי';
       const secBtn = gamifyOn
         ? `<button class="dash-growth-btn-sec"  onclick="App.go('xp-store')">🏆 חנות XP</button>`
         : '';
@@ -17446,6 +17667,11 @@ const LeadDetail = {
   confirmDirectWA() {
     closeModal('modal-wa-consent');
     if (this._waPending) this._doWA(this._waPending, this._waText);
+    // נוסח מוכן שנשלח לליד חדש אחרי אישור ההסכמה נספר כמו שליחה רגילה מהתבניות
+    if (this._waPending && this._waText && this._waLeadId) {
+      const lead = State.leads.find(l => l.id === this._waLeadId);
+      if (lead && !State.isDemo) Gamify.contact('send_message', lead, lead.last_contact || null);
+    }
   },
 
   _quickReply(leadId, type) {
@@ -18558,13 +18784,21 @@ const Settings = {
           <div class="settings-row-icon">🤖</div>
           <div class="settings-row-body">
             <div class="settings-row-label">AI, Claude</div>
-            <div class="settings-row-sub" style="color:var(--green-600);">✅ פעיל ומאובטח בצד השרת</div>
+            ${AI.ENABLED ? '<div class="settings-row-sub" style="color:var(--green-600);">✅ פעיל ומאובטח בצד השרת</div>' : '<div class="settings-row-sub">⏸ מושבת זמנית. ההודעות והתסריטים נבנים מתבניות</div>'}
           </div>
         </div>
       </div>
       <div class="settings-section">
-        <div class="settings-section-title">💳 חיוב ומנוי</div>
-        ${Billing.isPaid() ? `
+        <div class="settings-section-title">${Billing.isFree() ? '🎁 החשבון שלך' : '💳 חיוב ומנוי'}</div>
+        ${Billing.isFree() ? `
+        <div class="settings-row">
+          <div class="settings-row-icon">🎁</div>
+          <div class="settings-row-body">
+            <div class="settings-row-label">השימוש ב-PLTO Sales חינמי</div>
+            <div class="settings-row-sub">אין צורך בכרטיס אשראי</div>
+          </div>
+        </div>
+        ` : Billing.isPaid() ? `
         <div class="settings-row" onclick="Billing.openPortal()">
           <div class="settings-row-icon">💳</div>
           <div class="settings-row-body">
@@ -19784,8 +20018,10 @@ async function addActivity() {
     });
     State.activities.unshift(act);
     const lead = State.leads.find(l => l.id === State.currentLeadId);
+    const prevContact = lead?.last_contact || null;
     if (lead) lead.last_contact = today();
     DB.updateLead(State.currentLeadId, { last_contact: today() }).catch(()=>{});
+    if (lead) Gamify.contact('log_activity', lead, prevContact);
     const wasFromChallenge = !!document.getElementById('gamify-lead-sel-group');
     closeModal('modal-add-activity');
     document.getElementById('new-activity-content').value = '';
@@ -22546,7 +22782,9 @@ const GuidedTour = {
     ];
     // Gamification (XP widget) is hidden for the lawyer vertical, so its tour
     // step would point at a hidden element - skip the step entirely.
-    return ind === 'realestate_lawyer' ? steps.filter(s => s.target !== '#gamify-widget') : steps;
+    // תוסף השיווק בתשלום לא מוצג בתקופת הצמיחה, ולכן גם לא בסיור
+    const shown = Billing.FREE_GROWTH ? steps.filter(s => s.target !== '[data-screen="marketing"]') : steps;
+    return ind === 'realestate_lawyer' ? shown.filter(s => s.target !== '#gamify-widget') : shown;
   },
 
   shouldShow() {
@@ -22912,12 +23150,12 @@ const Team = {
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--gray-700);margin-bottom:4px;">
         <span>${d.seats_active}/${d.seats_max} מושבים בשימוש</span>
-        <span style="color:var(--gray-500);font-weight:600;">${d.seats_included} כלולים${d.seat_price ? ' · ₪' + d.seat_price + '/מושב נוסף' : ''}</span>
+        <span style="color:var(--gray-500);font-weight:600;">${d.seats_included} כלולים${d.seat_price && !Billing.isFree() ? ' · ₪' + d.seat_price + '/מושב נוסף' : ''}</span>
       </div>
       <div style="height:8px;background:var(--gray-100);border-radius:99px;overflow:hidden;">
         <div style="height:100%;width:${pct}%;background:${overIncluded > 0 ? 'var(--gold-500)' : 'var(--blue-500)'};border-radius:99px;"></div>
       </div>
-      ${overIncluded > 0 ? `<div style="font-size:11px;color:var(--gold-600);margin-top:4px;">🔸 ${overIncluded} מושבים מעבר לכלול בחבילה, תוספת ₪${overIncluded * d.seat_price}/חודש</div>` : ''}
+      ${overIncluded > 0 && !Billing.isFree() ? `<div style="font-size:11px;color:var(--gold-600);margin-top:4px;">🔸 ${overIncluded} מושבים מעבר לכלול בחבילה, תוספת ₪${overIncluded * d.seat_price}/חודש</div>` : ''}
     `;
   },
 
@@ -22999,7 +23237,10 @@ const Team = {
     } catch(e) {
       const msg = e.message || '';
       if (msg.includes('seat_limit_reached')) {
-        if (State.tenant?.plan === 'pro') {
+        if (Billing.isFree()) {
+          // בתקופת הצמיחה אין שדרוג. חשבון חינמי כולל כרגע משתמש אחד (_seat_config בשרת)
+          toast('בשלב זה חשבון חינמי כולל משתמש אחד. לצירוף צוות אפשר לפנות אלינו דרך התמיכה', 'info', 7000);
+        } else if (State.tenant?.plan === 'pro') {
           toast('הגעת למקסימום המושבים בחבילת צוות, בחבילת סוכנות מקבלים 10 מושבים כלולים במחיר דומה, שדרוג משתלם', 'warning', 7000);
         } else {
           closeModal('modal-team');
@@ -23051,7 +23292,7 @@ const Team = {
     } catch(e) {
       const msg = e.message || '';
       if (msg.includes('seat_limit_reached')) {
-        toast('הגעת למקסימום המושבים בחבילה הנוכחית', 'warning', 5000);
+        toast(Billing.isFree() ? 'בשלב זה חשבון חינמי כולל משתמש אחד. לצירוף צוות אפשר לפנות אלינו דרך התמיכה' : 'הגעת למקסימום המושבים בחבילה הנוכחית', Billing.isFree() ? 'info' : 'warning', 6000);
       } else {
         toast('שגיאה: ' + msg, 'error');
       }

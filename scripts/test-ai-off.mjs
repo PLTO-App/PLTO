@@ -164,7 +164,12 @@ const o = await page.evaluate(async () => {
   out.importImgBtn = !!document.getElementById('import-image-input');
 
   // שיווק
+  // בתקופת הצמיחה החינמית מסך השיווק (מוצר בתשלום) לא נגיש. הבדיקה של מצב ה-AI הכבוי בו נעשית עם המתג כבוי
   App.go('marketing');
+  out.mkBlockedFree = State.screen !== 'marketing';
+  const freeGrowth = Billing.FREE_GROWTH; Billing.FREE_GROWTH = false;
+  App.go('marketing');
+  Billing.FREE_GROWTH = freeGrowth;
   const mk = document.getElementById('screen-marketing');
   const gens = [...mk.querySelectorAll('.mktg-card .tool-btn-primary')];
   out.mkSell = /₪100|רכוש גישה|הפעלה עכשיו|שדרוג/.test(mk.innerText);
@@ -201,6 +206,7 @@ check(o.reward.claimed && o.reward.open && /פתיחה טובה/.test(o.reward.t
 check(o.store.values === 0 && o.store.reopen && o.store.claimBtns === 8 && !o.store.ai, 'חנות הפרסים: אין תגי שווי, פרס שמומש נפתח שוב, והשאר זמינים למימוש');
 check(o.packTexts.every(t => !/\[|\]|\/ת|\/י|אתה |שולח |מבין\.|AI/.test(t)), 'טקסט הערכות ניטרלי, בלי סוגריים ובלי AI');
 check(!/AI|בינה מלאכותית/.test(o.importText) && /מושבת זמנית/.test(o.importText) && !o.importImgBtn, 'ייבוא לידים: זיהוי מתמונה מוצג כמושבת, וייבוא מקובץ נשאר');
+check(o.mkBlockedFree, 'תקופת צמיחה חינמית: מסך השיווק בתשלום לא נגיש');
 check(o.mk.n === 3 && o.mk.allDisabled && o.mk.banner && o.mk.fullService && !o.mk.usage, 'שיווק: שלושת הכלים מושבתים בבירור, בקשת שירות מלא נשארת פעילה');
 check(!o.mkSell, 'מסך השיווק לא מציע לרכוש או לשדרג את התוסף כשה-AI כבוי');
 check(o.dup[0] === true && o.dup[1] === false, 'בדיקת רעיון כפול עובדת מקומית ושמרנית');

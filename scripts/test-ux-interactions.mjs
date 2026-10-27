@@ -212,7 +212,9 @@ check('בניווט התחתון חמישה פריטים', (await page.locator('
 check('הפריטים בניווט בגובה 44px לפחות', await page.locator('#bottom-nav .bottom-nav-item').evaluateAll(els => els.every(e => e.getBoundingClientRect().height >= 44)));
 await page.click('#bottom-nav .bottom-nav-item[data-screen="more"]');
 const moreLabels = await page.locator('#action-sheet .as-item').allTextContents();
-check('תפריט "עוד" כולל את כל המסכים שירדו מהניווט', ['לוח שנה', 'שיתופי פעולה', 'אנליטיקס', 'מרכז כלים', 'שירותי שיווק', 'תיבת דואר', 'הגדרות'].every(l => moreLabels.some(t => t.includes(l))), moreLabels.join('|'));
+check('תפריט "עוד" כולל את כל המסכים שירדו מהניווט', ['לוח שנה', 'שיתופי פעולה', 'אנליטיקס', 'מרכז כלים', 'תיבת דואר', 'הגדרות'].every(l => moreLabels.some(t => t.includes(l))), moreLabels.join('|'));
+// תקופת צמיחה חינמית: תוסף השיווק בתשלום לא מוצג
+check('תפריט "עוד" לא כולל את שירותי השיווק בתשלום', !moreLabels.some(t => t.includes('שירותי שיווק')));
 await page.locator('#action-sheet .as-item', { hasText: 'הגדרות' }).click();
 await page.waitForTimeout(300);
 check('בחירה בתפריט "עוד" מנווטת למסך', await page.evaluate(() => State.screen === 'settings'));
