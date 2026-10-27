@@ -8829,6 +8829,21 @@ const Billing = {
     document.getElementById('app-shell').classList.add('hidden');
     const pw = document.getElementById('screen-paywall');
     pw.classList.remove('hidden');
+    // בתקופת הצמיחה המסך מגיע רק לעסק שבוטל, ולכן בלי חבילות, מחירים או "תשלום מאובטח"
+    if (this.FREE_GROWTH) {
+      const q = sel => pw.querySelector(sel);
+      if (q('.paywall-hero-icon')) q('.paywall-hero-icon').textContent = '🔒';
+      if (q('.paywall-hero-title')) q('.paywall-hero-title').textContent = 'החשבון הזה לא פעיל';
+      const sub = document.getElementById('paywall-sub-text');
+      if (sub) sub.textContent = 'לפרטים על החשבון אפשר לפנות אלינו בכתובת info@plto.app';
+      const plans = document.getElementById('paywall-plans-container');
+      if (plans) plans.innerHTML = '';
+      const trust = q('.paywall-trust');
+      if (trust) trust.style.display = 'none';
+      const note = document.getElementById('paywall-trial-note');
+      if (note) note.textContent = '';
+      return;
+    }
     // render 3 plans dynamically
     const container = document.getElementById('paywall-plans-container');
     if (container) container.innerHTML = this.renderPlansHTML();
@@ -12166,6 +12181,36 @@ const Gamify = {
     };
   },
 
+  // הנתונים מגיעים מ-localStorage או מהשרת, ולכן לא מהימנים: כל שדה עובר לטיפוס הצפוי.
+  // חלק מהשדות נכנסים ל-innerHTML (למשל streak), ולכן אין להשאיר בהם מחרוזת חופשית
+  _sanitize(raw) {
+    const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+    const d = this._fresh();
+    const num = v => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? Math.min(Math.floor(n), 99999999) : 0; };
+    const day = v => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null);
+    const strs = v => (Array.isArray(v) ? v.filter(x => typeof x === 'string' && x.length <= 80).slice(0, 300) : []);
+    const ints = v => (Array.isArray(v) ? v.map(Number).filter(n => Number.isInteger(n) && n >= 0).slice(0, 50) : []);
+    for (const k of ['xp', 'streak', 'aiUses', 'tasksCompleted', 'dealsClosed', 'leadsAdded', 'acTasks', 'acLeads', 'acAi', 'acImports', 'followupsDone', 'messagesSent', 'dayCount']) {
+      if (k in src) d[k] = num(src[k]);
+    }
+    d.lastLogin = day(src.lastLogin);
+    d.dailyDone = day(src.dailyDone);
+    d.acDate = day(src.acDate) || '';
+    for (const k of ['achievements', 'acAdvanced', 'acClosed', 'acContactLeads']) d[k] = strs(src[k]);
+    d.milestoneClaimed = ints(src.milestoneClaimed);
+    if ('milestoneDeferred' in src) d.milestoneDeferred = ints(src.milestoneDeferred);
+    const types = Object.keys(this.XP).concat('contact');
+    if (src.acKeys && typeof src.acKeys === 'object') {
+      d.acKeys = {};
+      for (const t of types) if (Array.isArray(src.acKeys[t])) d.acKeys[t] = strs(src.acKeys[t]);
+    }
+    if (src.acCount && typeof src.acCount === 'object') {
+      d.acCount = {};
+      for (const t of types) if (t in src.acCount) d.acCount[t] = num(src.acCount[t]);
+    }
+    return d;
+  },
+
   get() {
     const key = this._key();
     if (!this._d || this._dKey !== key) {
@@ -12180,8 +12225,7 @@ const Gamify = {
       } catch (_) {}
       let parsed = null;
       try { parsed = raw ? JSON.parse(raw) : null; } catch (_) {}
-      this._d = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : this._fresh();
-      if (!Number.isFinite(this._d.xp)) this._d.xp = 0;
+      this._d = this._sanitize(parsed);
       this._dKey = key;
       this._srv = null;
     }
@@ -12211,7 +12255,7 @@ const Gamify = {
       const remoteXp = remote && Number.isInteger(remote.xp) ? remote.xp : -1;
       if (remoteXp > (local.xp || 0)) {
         // מכשיר אחר התקדם יותר: ההתקדמות מהשרת מחליפה את המקומית
-        this._d = { ...local, ...remote };
+        this._d = this._sanitize({ ...local, ...remote });
         try { localStorage.setItem(this._dKey, JSON.stringify(this._d)); } catch (_) {}
       } else if ((local.xp || 0) > remoteXp) {
         this._pushSoon(0);
@@ -18673,7 +18717,7 @@ const Settings = {
               <span style="background:${Billing.planLabel().bg};color:${Billing.planLabel().color};padding:2px 8px;border-radius:99px;font-weight:700;font-size:11px;">
                 ${Billing.planLabel().text}
               </span>
-              ${State.tenant?.plan === 'trial' && !Billing.isExtendedTrial() ? ` · ${Billing.daysLeft()} ימים נותרו בניסיון` : ''}
+              ${State.tenant?.plan === 'trial' && !Billing.isExtendedTrial() && !Billing.isFree() ? ` · ${Billing.daysLeft()} ימים נותרו בניסיון` : ''}
             </div>
           </div>
         </div>
@@ -23192,6 +23236,14 @@ const Team = {
       return;
     }
 
+    // תקופת צמיחה: חשבון חינמי כולל משתמש אחד (_seat_config), ולכן בלי ספירה לאחור לקישור שלא יעבוד
+    if (Billing.isFree()) {
+      btn.style.display    = 'none';
+      locked.style.display = '';
+      locked.textContent   = 'בשלב זה חשבון חינמי כולל משתמש אחד. לצירוף צוות אפשר לפנות אלינו דרך התמיכה';
+      return;
+    }
+
     // ניסיון — נפתח אחרי 20 ימי שימוש
     const trialEnds = State.tenant?.trial_ends_at;
     const trialStart = trialEnds ? new Date(trialEnds).getTime() - 30 * 86400000 : null;
@@ -23352,6 +23404,12 @@ const AgencyLeaderboard = {
   },
 
   _lockedHTML() {
+    if (Billing.isFree()) return `
+      <div style="text-align:center;padding:18px 12px;">
+        <div style="font-size:28px;margin-bottom:8px;">👥</div>
+        <div style="font-weight:700;color:var(--gray-700);font-size:13.5px;margin-bottom:4px;">השוואה בין חברי צוות</div>
+        <div style="font-size:12px;color:var(--gray-500);">זמינה בחשבון עם כמה משתמשים. לצירוף צוות אפשר לפנות אלינו דרך התמיכה</div>
+      </div>`;
     return `
       <div style="text-align:center;padding:18px 12px;">
         <div style="font-size:28px;margin-bottom:8px;">🔒</div>

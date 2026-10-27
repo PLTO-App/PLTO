@@ -1,6 +1,6 @@
 // הרצה מקומית (לא ב-CI): בתיקייה זמנית מחוץ לריפו: npm i @electric-sql/pglite@0.2.17
-// ואז: node <path>/supabase/tests/migrations-129-130.pglite.mjs <repo-root> מתוך אותה תיקייה
-// בדיקת מיגרציות 129 ו-130 מול PGlite (Postgres ב-WASM), עם הדמיה של auth ותפקידי Supabase.
+// ואז: node <path>/supabase/tests/migrations-129-131.pglite.mjs <repo-root> מתוך אותה תיקייה
+// בדיקת מיגרציות 129, 130 ו-131 מול PGlite (Postgres ב-WASM), עם הדמיה של auth ותפקידי Supabase.
 import { PGlite } from '@electric-sql/pglite';
 import { readFileSync } from 'node:fs';
 
@@ -12,6 +12,7 @@ const q = async (sql, p) => (await db.query(sql, p)).rows;
 const err = async (sql, p) => { try { await db.query(sql, p); return null; } catch (e) { return e.message; } };
 
 const A_T = '00000000-0000-0000-0000-0000000000a1', B_T = '00000000-0000-0000-0000-0000000000b1', C_T = '00000000-0000-0000-0000-0000000000c1';
+const A2_U = '10000000-0000-0000-0000-0000000000a2';
 const A_U = '10000000-0000-0000-0000-0000000000a1', B_U = '10000000-0000-0000-0000-0000000000b1', C_U = '10000000-0000-0000-0000-0000000000c1';
 
 await db.exec(`
@@ -25,7 +26,7 @@ await db.exec(`
   CREATE FUNCTION auth.email() RETURNS text LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.email', true), '') $$;
   GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA auth TO anon, authenticated;
   CREATE TABLE public.tenants (id uuid PRIMARY KEY, plan text, trial_ends_at timestamptz);
-  CREATE TABLE public.agent_users (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id uuid REFERENCES tenants(id), auth_user_id uuid, is_active boolean DEFAULT true);
+  CREATE TABLE public.agent_users (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id uuid REFERENCES tenants(id), auth_user_id uuid UNIQUE, is_active boolean DEFAULT true, role text DEFAULT 'agent', name text, phone text, avatar_url text, email text);
   CREATE TABLE public.leads (id serial PRIMARY KEY, tenant_id uuid, name text);
   CREATE FUNCTION public.get_my_tenant_id() RETURNS uuid LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public'
     AS $$ SELECT tenant_id FROM agent_users WHERE auth_user_id = auth.uid() LIMIT 1; $$;
@@ -38,10 +39,12 @@ await db.exec(`
     SELECT CASE WHEN t.id IS NULL THEN false WHEN t.plan='cancelled' THEN false
       WHEN t.plan='trial' THEN (t.trial_ends_at IS NULL OR now() <= t.trial_ends_at) ELSE true END
     FROM (SELECT 1) x LEFT JOIN tenants t ON t.id = p_tenant_id; $$;
+  ALTER TABLE public.agent_users ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY "agents in same tenant" ON public.agent_users USING (tenant_id = get_my_tenant_id() AND tenant_access_active()) WITH CHECK (tenant_id = get_my_tenant_id() AND tenant_access_active());
   ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
   CREATE POLICY tenant_iso ON public.leads FOR ALL USING (tenant_id = get_my_tenant_id() AND tenant_access_active());
   INSERT INTO tenants VALUES ('${A_T}','trial', now() - interval '40 days'), ('${B_T}','basic', null), ('${C_T}','cancelled', null);
-  INSERT INTO agent_users (id, tenant_id, auth_user_id) VALUES (gen_random_uuid(),'${A_T}','${A_U}'), (gen_random_uuid(),'${B_T}','${B_U}'), (gen_random_uuid(),'${C_T}','${C_U}');
+  INSERT INTO agent_users (id, tenant_id, auth_user_id, role, name) VALUES (gen_random_uuid(),'${A_T}','${A_U}','owner','בעלים'), (gen_random_uuid(),'${A_T}','${A2_U}','agent','סוכן'), (gen_random_uuid(),'${B_T}','${B_U}','owner','b'), (gen_random_uuid(),'${C_T}','${C_U}','owner','c');
   INSERT INTO leads (tenant_id, name) VALUES ('${A_T}','a1'), ('${B_T}','b1');
 `);
 
@@ -96,9 +99,41 @@ ok(!!(await err(`SELECT save_my_progress('{"xp":1}'::jsonb)`)), 'anon לא מר�
 await as('authenticated', '');
 ok(/not authenticated|42501|28000/.test(await err('SELECT get_my_progress()') || ''), 'בלי משתמש מחובר נדחה');
 
+await as('authenticated', A2_U);
+ok((await q('SELECT get_my_progress() v'))[0].v === null, 'משתמש שני באותו עסק לא רואה את ההתקדמות של הראשון');
+
 await as(null);
 const rls = (await q(`SELECT relrowsecurity v FROM pg_class WHERE oid='public.agent_progress'::regclass`))[0].v;
 ok(rls === true, 'RLS פעיל על agent_progress');
+
+// ── 131: הקשחת agent_users ──
+await as('authenticated', A2_U);
+const esc = await err(`UPDATE agent_users SET role = 'owner' WHERE auth_user_id = '${A2_U}'`);
+ok(!esc && (await q(`SELECT role FROM agent_users WHERE auth_user_id = '${A2_U}'`))[0].role === 'owner', 'לפני 131: סוכן יכול להפוך את עצמו ל-owner (הבעיה, משוחזרת)');
+await as(null);
+await db.exec(`UPDATE agent_users SET role = 'agent' WHERE auth_user_id = '${A2_U}'`);
+await db.exec(readFileSync(`${repo}/supabase/migrations/131_agent_users_least_privilege.sql`, 'utf8'));
+
+await as('authenticated', A2_U);
+ok(!!(await err(`UPDATE agent_users SET role = 'owner' WHERE auth_user_id = '${A2_U}'`)), 'אחרי 131: אי אפשר לשנות role');
+ok(!!(await err(`UPDATE agent_users SET is_active = false WHERE auth_user_id = '${A_U}'`)), 'אחרי 131: אי אפשר לשנות is_active');
+ok(!!(await err(`UPDATE agent_users SET auth_user_id = '${A2_U}' WHERE auth_user_id = '${A_U}'`)), 'אחרי 131: אי אפשר לשנות auth_user_id');
+await q(`UPDATE agent_users SET name = 'שם חדש' WHERE auth_user_id = '${A2_U}'`);
+await q(`UPDATE agent_users SET name = 'נפרץ' WHERE auth_user_id = '${A_U}'`);
+await as(null);
+const names = Object.fromEntries((await q('SELECT auth_user_id::text u, name FROM agent_users')).map(r => [r.u, r.name]));
+ok(names[A2_U] === 'שם חדש', 'אחרי 131: משתמש משנה את השם של עצמו (כמו בהגדרות)');
+ok(names[A_U] === 'בעלים', 'אחרי 131: אי אפשר לשנות שם של משתמש אחר בעסק');
+await as('authenticated', A2_U);
+ok(!!(await err(`DELETE FROM agent_users WHERE auth_user_id = '${A_U}'`)), 'אחרי 131: אי אפשר למחוק משתמש אחר');
+ok(!!(await err(`INSERT INTO agent_users (tenant_id, role) VALUES ('${A_T}', 'owner')`)), 'אחרי 131: אי אפשר להוסיף משתמש ישירות');
+const seen = (await q('SELECT tenant_id::text t FROM agent_users')).map(r => r.t);
+ok(seen.length === 2 && seen.every(t => t === A_T), 'אחרי 131: רואים רק את המשתמשים של העסק שלך');
+ok((await q('SELECT count(*)::int n FROM leads'))[0].n === 1, 'אחרי 131: ההרשאות על לידים לא השתנו');
+await as('anon');
+ok(!!(await err('SELECT * FROM agent_users')), 'אחרי 131: anon לא קורא את agent_users');
+await as('authenticated', C_U);
+ok((await q('SELECT count(*)::int n FROM agent_users'))[0].n === 0, 'אחרי 131: עסק שבוטל לא רואה משתמשים');
 
 console.log(fails ? `\n${fails} בדיקות נכשלו` : '\nכל הבדיקות עברו');
 process.exit(fails ? 1 : 0);

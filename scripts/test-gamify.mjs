@@ -28,11 +28,24 @@ const free = await page.evaluate(() => {
   const afterMarketing = State.screen;
   State.tenant = { ...State.tenant, plan: 'cancelled' };
   const cancelled = Billing.isExpired();
+  // עסק שבוטל: מסך חסימה ניטרלי, בלי חבילות ומחירים
+  Billing.showPaywall();
+  const pw = document.getElementById('screen-paywall');
+  const paywallText = pw.innerText;
+  const paywallPlans = pw.querySelectorAll('.paywall-plan').length;
+  pw.classList.add('hidden'); document.getElementById('app-shell').classList.remove('hidden');
   State.tenant = { ...State.tenant, plan: 'trial', trial_ends_at: past };
-  return { expiredTrial, isFree, label, bannerHidden, annual, settingsText, mktgNav, afterMarketing, cancelled };
+  // שאר המקומות שהציגו ניסיון או שדרוג
+  App.go('settings');
+  const daysLeftShown = /ימים נותרו בניסיון/.test(document.getElementById('screen-settings')?.textContent || '');
+  const lb = AgencyLeaderboard._lockedHTML();
+  return { expiredTrial, isFree, label, bannerHidden, annual, settingsText, mktgNav, afterMarketing, cancelled, paywallText, paywallPlans, daysLeftShown, lb };
 });
 check(!free.expiredTrial && free.isFree, 'ניסיון שפג לא נחסם בדפדפן, והעסק מוגדר כחינמי');
 check(free.cancelled, 'עסק שבוטל נשאר חסום');
+check(free.paywallPlans === 0 && !/₪|חבילה|תשלום מאובטח|ניסיון/.test(free.paywallText) && /לא פעיל/.test(free.paywallText), 'עסק שבוטל רואה מסך חסימה ניטרלי, בלי חבילות ומחירים');
+check(!free.daysLeftShown, 'בהגדרות לא מוצגים "ימים נותרו בניסיון"');
+check(!/שדרוג|openCheckout|₪/.test(free.lb), 'השוואת הצוות הנעולה בלי כפתור שדרוג');
 check(free.label === 'חינם' && free.bannerHidden, 'אין באנר ספירה לאחור, והתוכנית מוצגת כ"חינם"');
 check(!free.annual, 'מודעת המנוי השנתי לא מוצגת');
 check(!/₪|ניסיון החינמי|מחירי השקה|בחירת תוכנית/.test(free.settingsText) && /חינמי/.test(free.settingsText), 'בהגדרות אין מחירים או ניסיון, יש שורת "השימוש חינמי"');
@@ -60,6 +73,28 @@ const store = await page.evaluate(() => {
 check(store.a === 500 && store.legacyGone && store.aSaved === 500, 'ה-XP מהמפתח הישן עובר למשתמש הראשון, והמפתח הישן נמחק');
 check(store.b === 0 && store.aAgain === 500, 'משתמש אחר באותו דפדפן מתחיל מאפס, ולא דורס את הראשון');
 check(store.broken === 0, 'נתון פגום ב-localStorage לא מפיל את המשחק');
+
+// נתוני התקדמות לא מהימנים (localStorage או שרת) לא נכנסים כ-HTML
+const xss = await page.evaluate(async () => {
+  window.__pwned = 0;
+  DB.agentId = 'agent-xss';
+  localStorage.setItem('plto_gamify_v2:agent-xss', JSON.stringify({ xp: '50<img src=x onerror="window.__pwned=1">', streak: '<img src=x onerror="window.__pwned=1">', achievements: ['first_lead', { bad: 1 }], lastLogin: '<b>', acKeys: { send_message: ['a', 5] }, evil: '<script>' }));
+  Gamify._d = null;
+  const d = Gamify.get();
+  const keys0 = JSON.stringify(d.acKeys?.send_message); // לפני האיפוס היומי שמתבצע ברינדור
+  State.leads = Array.from({ length: 6 }, (_, i) => ({ id: 'x' + i, name: 'x', stage: State.stages[0].id, tags: [], created_at: new Date().toISOString().slice(0, 10) }));
+  App.go('dashboard'); Gamify.renderWidget();
+  // ההתקדמות מהשרת עוברת את אותו סינון
+  const orig = sbClient.rpc;
+  sbClient.rpc = () => Promise.resolve({ data: { data: { xp: 999, streak: '<img src=x onerror="window.__pwned=1">' } }, error: null });
+  await Gamify.syncFromServer();
+  sbClient.rpc = orig;
+  Gamify.renderWidget();
+  await new Promise(r => setTimeout(r, 200));
+  return { xp: d.xp, streak: d.streak, ach: d.achievements, lastLogin: d.lastLogin, keys: keys0, evil: 'evil' in d, srvStreak: Gamify.get().streak, srvXp: Gamify.get().xp, pwned: window.__pwned, imgs: document.querySelectorAll('#gamify-streak img').length };
+});
+check(xss.streak === 0 && xss.srvStreak === 0 && xss.lastLogin === null && !xss.evil && JSON.stringify(xss.ach) === '["first_lead"]' && xss.keys === '["a"]', 'שדות ההתקדמות מסוננים לטיפוס הצפוי (מקומי ומהשרת)');
+check(xss.srvXp === 999 && xss.pwned === 0 && xss.imgs === 0, 'ערך זדוני ב-streak לא מורץ כ-HTML');
 
 // ── XP על פעולות מכירה, מגבלות וקונפטי ──
 const xp = await page.evaluate(() => {
