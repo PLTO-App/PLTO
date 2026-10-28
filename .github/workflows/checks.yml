@@ -57,3 +57,5 @@ jobs:
         run: node scripts/test-modes.mjs
       - name: No prices, upgrade offers or trial wording in any screen or mode
         run: node scripts/test-no-paid-surfaces.mjs
+      - name: Sales flows work in game and professional modes (silent XP in pro)
+        run: node scripts/test-sales-flows.mjs
