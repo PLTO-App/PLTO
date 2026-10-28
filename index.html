@@ -1855,6 +1855,13 @@
     .today-xp-num { font-size: 12px; color: var(--gray-500); font-weight: 700; white-space: nowrap; padding-inline-end: 4px; }
     .today-xp-ch { min-height: 44px; flex: 1 1 100%; display: flex; align-items: center; gap: 8px; border: 1px dashed var(--border); background: transparent; border-radius: 10px; padding: 4px 10px; font-family: inherit; font-size: 12.5px; color: var(--gray-700); cursor: pointer; text-align: start; line-height: 1.5; }
     .today-xp-ch.done { border-style: solid; color: var(--green-600, #15803D); }
+    /* מצב עבודה: במצב מקצועי נעלמת שכבת המשחק (data-game), ובמצב משחק נעלם הנוסח המקצועי החלופי (data-pro) */
+    html.pro-mode [data-game] { display: none !important; }
+    html:not(.pro-mode) [data-pro] { display: none !important; }
+    .sl-item { width: 100%; min-height: 44px; margin-bottom: 8px; font-family: inherit; text-align: start; cursor: pointer; color: inherit; }
+    .sl-item:hover { border-color: var(--blue-500); }
+    .sl-cap { font-size: 11px; font-weight: 700; color: var(--gray-500); margin-top: 4px; }
+    .gamify-mode-link { display: block; width: 100%; min-height: 44px; background: transparent; border: none; color: rgba(255,255,255,.6); font-family: inherit; font-size: 12px; font-weight: 700; text-decoration: underline; cursor: pointer; margin-top: 4px; }
     .lr-avatar { width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%; background: var(--navy-50, #EAF2FA); color: var(--navy-500); font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
 
     .lr-main { flex: 1; min-width: 0; align-self: stretch; display: flex; flex-direction: column; justify-content: center; }
@@ -3042,7 +3049,7 @@
     .xps-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; gap: 14px; align-items: flex-start; transition: all .2s; }
     .xps-card.xps-unlocked { border-color: rgba(245,158,11,.6); background: rgba(245,158,11,.04); box-shadow: 0 2px 12px rgba(245,158,11,.12); animation: xps-pulse 2.5s infinite; }
     .xps-card.xps-claimed { border-color: rgba(34,197,94,.5); background: rgba(34,197,94,.04); opacity: .8; }
-    .xps-card.xps-locked { opacity: .55; }
+    .xps-card.xps-locked { opacity: 1; } /* בלי נעילה לפי דרגה: הערכות פתוחות בספרייה, ואבני הדרך רק מסמנות התקדמות */
     @keyframes xps-pulse { 0%,100%{ box-shadow:0 2px 12px rgba(245,158,11,.12) } 50%{ box-shadow:0 4px 20px rgba(245,158,11,.28) } }
     .xps-card-icon { font-size: 36px; flex-shrink: 0; width: 48px; text-align: center; }
     .xps-card-body { flex: 1; }
@@ -4443,7 +4450,7 @@
   <div class="login-card">
     <div id="ref-welcome-banner" style="display:none;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border-radius:12px;padding:12px 16px;margin-bottom:16px;text-align:center;font-size:13px;font-weight:700;line-height:1.6;">
       🎁 הגעת עם קוד המלצה של חבר!<br>
-      <span style="font-weight:400;opacity:.9;">+100 XP בונוס ברוכים הבאים</span>
+      <span data-game style="font-weight:400;opacity:.9;">+100 XP בונוס ברוכים הבאים</span>
     </div>
     <!-- Agency invite banner — shown when arriving via ?ainvite= link -->
     <div id="agency-invite-banner" style="display:none;background:linear-gradient(135deg,var(--navy-800,#0F1F3D),#1e3a6e);color:#fff;border-radius:14px;padding:16px 18px;margin-bottom:16px;text-align:center;position:relative;overflow:hidden;">
@@ -4589,13 +4596,16 @@
       <a class="nav-item" data-screen="tools" onclick="App.go('tools')">
         <span class="nav-icon">🛠️</span> מרכז כלים
       </a>
+      <a class="nav-item" role="button" tabindex="0" onclick="SalesLibrary.open()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();SalesLibrary.open();}">
+        <span class="nav-icon">📚</span> ספריית מכירה
+      </a>
       <a class="nav-item" data-screen="marketing" data-paid onclick="App.go('marketing')">
         <span class="nav-icon">📣</span> שירותי שיווק
       </a>
       <a class="nav-item" data-screen="pro" onclick="App.go('pro')" style="background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(37,99,235,0.12));border:1px solid rgba(124,58,237,0.2);border-radius:8px;margin-top:4px;">
         <span class="nav-icon">✨</span> <span style="background:linear-gradient(135deg,#7C3AED,#2563EB);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;">פיצ'רים PRO</span>
       </a>
-      <a class="nav-item" data-screen="xp-store" onclick="App.go('xp-store')" style="background:linear-gradient(135deg,rgba(245,158,11,0.14),rgba(251,191,36,0.07));border:1px solid rgba(245,158,11,0.25);border-radius:8px;margin-top:4px;">
+      <a class="nav-item" data-screen="xp-store" data-game onclick="App.go('xp-store')" style="background:linear-gradient(135deg,rgba(245,158,11,0.14),rgba(251,191,36,0.07));border:1px solid rgba(245,158,11,0.25);border-radius:8px;margin-top:4px;">
         <span class="nav-icon">🏆</span> <span style="background:linear-gradient(135deg,#D97706,#F59E0B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;">חנות XP</span>
       </a>
       <a class="nav-item" id="nav-referral" data-screen="referral" onclick="App.go('referral');document.querySelector('.nav-new-badge')?.remove();" style="background:linear-gradient(135deg,rgba(22,163,74,0.12),rgba(16,185,129,0.06));border:1px solid rgba(22,163,74,0.22);border-radius:8px;margin-top:4px;">
@@ -4613,7 +4623,7 @@
           <div class="agent-role" id="sidebar-agent-role">מנהל</div>
         </div>
       </div>
-      <div class="level-badge" id="sidebar-level-badge">
+      <div class="level-badge" id="sidebar-level-badge" data-game>
         <div class="level-icon" id="sidebar-level-icon">🌱</div>
         <div class="level-info">
           <div class="level-name" id="sidebar-level-name">מתחיל</div>
@@ -4833,7 +4843,7 @@
       <!-- GAMIFICATION WIDGET - motivation & XP progress. Placed near the bottom
            of the dashboard on purpose so it reads as a bonus/reward layer,
            not the primary focus when the page first loads. -->
-      <div class="gamify-widget" id="gamify-widget" style="margin-top:16px;">
+      <div class="gamify-widget" id="gamify-widget" data-game style="margin-top:16px;">
         <!-- ── Activation gate: shown when < 5 leads ── -->
         <div id="gamify-activation-gate" style="display:none;text-align:center;padding:4px 0 8px;">
           <div style="font-size:38px;margin-bottom:8px;">📊</div>
@@ -4899,6 +4909,7 @@
             <div class="gamify-daily-done" id="gamify-daily-check"></div>
           </div>
         </div>
+        <button type="button" class="gamify-mode-link" onclick="Gamify.setMode('pro')">מעבר למצב מקצועי</button>
       </div>
 
       <!-- GROWTH CARD (referral + annual teaser, injected by Dashboard.renderGrowthCard).
@@ -4909,7 +4920,7 @@
       <!-- MOTIVATION AGENT - AI motivational boost, up to 5/day. Placed after the
            gamification widget on purpose (same reasoning as gamify-widget itself):
            a bonus/reward layer, not the first thing seen on dashboard load. -->
-      <div class="motivation-card" id="motivation-card" style="margin-top:16px;">
+      <div class="motivation-card" id="motivation-card" data-game style="margin-top:16px;">
         <button class="motivation-card-dismiss" onclick="document.getElementById('motivation-card').style.display='none'" title="הסתר">×</button>
         <div class="motivation-card-header">
           <div class="motivation-card-icon">🚀</div>
@@ -5077,6 +5088,21 @@
         <p style="font-size:0.78rem;margin-top:2px;">✏️ כל נוסח ניתן לעריכה חופשית לפני שימוש</p>
       </div>
       <div class="tools-grid">
+
+        <!-- ספריית מכירה: כל הערכות הכתובות, פתוחות לכולם בשני המצבים -->
+        <div class="tool-card">
+          <div class="tool-card-head">
+            <div class="tool-card-icon tool-icon-gold">📚</div>
+            <div>
+              <div class="tool-card-title">ספריית מכירה</div>
+              <div class="tool-card-sub">ערכות כתובות לכל שלב במכירה</div>
+            </div>
+          </div>
+          <div class="tool-card-body">
+            <div style="font-size:13px;color:var(--gray-600);line-height:1.6;">פתיחת שיחה, בירור צרכים, התנגדויות, פולואפ, אמון, הפניות וסגירה. הכול פתוח לשימוש.</div>
+            <button class="tool-btn tool-btn-primary" onclick="SalesLibrary.open()">📖 פתיחת הספרייה</button>
+          </div>
+        </div>
 
         <!-- TOOL 1: Commission Calculator -->
         <div class="tool-card">
@@ -5559,13 +5585,23 @@
 
     <!-- ── XP STORE ── -->
     <div id="screen-xp-store" class="screen hidden">
-      <div class="xps-header">
+      <div data-pro style="text-align:center;padding:60px 24px;color:var(--gray-500);">
+        <div style="font-size:38px;margin-bottom:10px;">💼</div>
+        <div style="font-weight:700;color:var(--navy);margin-bottom:6px;">מצב מקצועי פעיל</div>
+        <div style="font-size:13px;line-height:1.7;margin-bottom:16px;">חנות ה-XP שייכת למצב משחק. ההתקדמות שלך ממשיכה להישמר, וערכות המכירה פתוחות בספרייה.</div>
+        <div style="display:flex;flex-direction:column;gap:10px;max-width:280px;margin:0 auto;">
+          <button type="button" class="btn btn-primary" style="min-height:44px;" onclick="SalesLibrary.open()">📚 ספריית מכירה</button>
+          <button type="button" class="btn btn-ghost" style="min-height:44px;" onclick="Gamify.setMode('game')">🎮 מעבר למצב משחק</button>
+        </div>
+      </div>
+      <div class="xps-header" data-game>
         <div class="xps-header-top">
           <div>
             <div class="xps-title">🏆 חנות XP</div>
-            <div class="xps-subtitle">צבור XP משימוש אמיתי במערכת, ופדה פרסים שאנחנו מבצעים בפועל</div>
+            <div class="xps-subtitle">XP נצבר מפעולות אמיתיות במערכת. כל ערכות המכירה פתוחות בספרייה, ואבני הדרך חוגגות את ההתקדמות</div>
+            <button type="button" class="xps-claim-btn" style="margin-top:8px;min-height:44px;" onclick="SalesLibrary.open()">📚 ספריית מכירה</button>
           </div>
-          <div class="xps-launch-badge">🚀 מחירי השקה</div>
+          <div class="xps-launch-badge" data-paid>🚀 מחירי השקה</div>
         </div>
         <div class="xps-xp-row">
           <div class="xps-xp-block">
@@ -5573,26 +5609,26 @@
             <span class="xps-xp-label">XP נצבר</span>
           </div>
           <div class="xps-next-block" id="xps-next-block">
-            <div class="xps-next-label" id="xps-next-label">פרס הבא:</div>
+            <div class="xps-next-label" id="xps-next-label">אבן הדרך הבאה:</div>
             <div class="xps-next-name" id="xps-next-name">~~</div>
             <div class="xps-next-bar-wrap"><div class="xps-next-bar-fill" id="xps-next-bar-fill" style="width:0%"></div></div>
             <div class="xps-next-pct" id="xps-next-pct">0%</div>
           </div>
         </div>
-        <div class="xps-annual-teaser">
+        <div class="xps-annual-teaser" data-paid>
           <span style="font-weight:700;">📅 מינוי שנתי, בקרוב</span>
           <span style="opacity:.75;font-size:12px;margin-right:6px;">חיסכון של עד 20% לעומת חיוב חודשי</span>
         </div>
       </div>
-      <div class="xps-grid" id="xps-grid"></div>
-      <div style="text-align:center;padding:16px 0 8px;font-size:11px;color:var(--gray-400);">
-        המחירים הם מחירי השקה ועשויים לעלות בהמשך • XP נצבר ממימוש אמיתי במערכת בלבד
+      <div class="xps-grid" id="xps-grid" data-game></div>
+      <div data-game style="text-align:center;padding:16px 0 8px;font-size:11px;color:var(--gray-400);">
+        XP נצבר מפעולות אמיתיות במערכת בלבד
       </div>
       <!-- Ideas suggestion box -->
       <div style="margin:8px 16px 24px;background:linear-gradient(135deg,rgba(37,99,235,.07),rgba(124,58,237,.06));border:1px solid rgba(37,99,235,.18);border-radius:16px;padding:18px 20px;text-align:center;">
         <div style="font-size:22px;margin-bottom:8px;">💡</div>
         <div style="font-size:15px;font-weight:800;color:var(--navy-500);margin-bottom:4px;">יש לך רעיון לשיפור?</div>
-        <div style="font-size:13px;color:var(--gray-500);line-height:1.55;margin-bottom:14px;">רעיון טוב שיאושר = <strong>+300 XP</strong> אוטומטי ✨</div>
+        <div style="font-size:13px;color:var(--gray-500);line-height:1.55;margin-bottom:14px;"><span data-game>רעיון טוב שיאושר = <strong>+300 XP</strong> אוטומטי ✨</span><span data-pro>נשמח לשמוע כל רעיון שיעזור לך לעבוד טוב יותר</span></div>
         <button class="btn btn-primary btn-sm" onclick="IdeaBox.open()" style="font-size:14px;padding:10px 24px;">💡 הצע רעיון</button>
       </div>
     </div>
@@ -5602,7 +5638,7 @@
       <div class="ref-header">
         <div class="ref-header-icon">🎁</div>
         <div class="ref-header-title">הזמנת חבר, שניכם מרוויחים</div>
-        <div class="ref-header-sub">הקוד האישי שלך<br>הצטרפות חינמית לחבר, ובונוס XP בשבילך</div>
+        <div class="ref-header-sub">הקוד האישי שלך<br>הצטרפות חינמית לחבר<span data-game>, ובונוס XP בשבילך</span></div>
       </div>
       <div class="ref-code-card">
         <div class="ref-code-label">הקוד האישי שלך</div>
@@ -5619,15 +5655,14 @@
       </div>
       <div class="ref-reward-card">
         <div class="ref-reward-title">מה כל אחד מקבל?</div>
-        <div class="ref-reward-row">
+        <div class="ref-reward-row" data-game>
           <span class="ref-reward-badge">החבר שלך</span>
           <span>+100 XP בונוס בהצטרפות 🎁</span>
         </div>
-        <div class="ref-reward-row">
+        <div class="ref-reward-row" data-game>
           <span class="ref-reward-badge">לך</span>
-          <span>+250 XP לחנות הפרסים + חודש מתנה 🎯</span>
+          <span>+250 XP על כל חבר שמצטרף 🎯</span>
         </div>
-        <div style="font-size:11px;color:var(--gray-400);margin-top:8px;text-align:center;">חודש מתנה יופעל אוטומטית כשמערכת התשלומים תהיה זמינה</div>
       </div>
       <div class="ref-how-card">
         <div class="ref-how-title">איך זה עובד?</div>
@@ -6239,7 +6274,7 @@
     </div>
     <div style="padding:0 20px 16px;">
       <div style="background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(251,191,36,.04));border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--gray-700);line-height:1.6;">
-        🎁 <strong>רעיון שיאושר ויושם = +300 XP!</strong><br>
+        🎁 <strong><span data-game>רעיון שיאושר ויושם = +300 XP!</span><span data-pro>כל רעיון נקרא</span></strong><br>
         <span style="font-size:12px;color:var(--gray-500);">נשתדל לעדכן אם הרעיון שלך נבחר לפיתוח.</span>
       </div>
       <div style="margin-bottom:14px;">
@@ -6517,6 +6552,18 @@
 
 <!-- ═══ PRO: LEAD SCORE ═══ -->
 <!-- ═══ XP STORE: AI REWARD GENERATOR ═══ -->
+<div id="modal-sales-library" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-sales-library')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">📚 ספריית מכירה</div>
+      <button class="modal-close" onclick="closeModal('modal-sales-library')">×</button>
+    </div>
+    <p style="font-size:13px;color:var(--gray-500);line-height:1.6;margin:0 0 12px;">תשע ערכות כתובות שעוזרות בכל שלב של המכירה. כולן פתוחות: אפשר לקרוא, להעתיק ולהתאים לעסק שלך.</p>
+    <div id="sales-library-list"></div>
+  </div>
+</div>
+
 <div id="modal-reward-gen" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-reward-gen')">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -6528,7 +6575,7 @@
     <div id="reward-gen-inputs" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
     <button class="tool-btn tool-btn-primary" id="reward-gen-btn" onclick="RewardGen.generate()">✨ יצירה עבורי</button>
     <div class="mktg-output" id="reward-gen-out"></div>
-    <p style="font-size:11px;color:var(--gray-400);margin:4px 0 0;">✏️ הסוכן יכול לפעמים לא לדייק, כל תוצר כאן ניתן לעריכה חופשית לפני שימוש</p>
+    <p id="reward-gen-note" style="font-size:11px;color:var(--gray-400);margin:4px 0 0;">✏️ הסוכן יכול לפעמים לא לדייק, כל תוצר כאן ניתן לעריכה חופשית לפני שימוש</p>
     <div class="mktg-actions" id="reward-gen-act">
       <button class="mktg-btn-copy" onclick="RewardGen.copy()">📋 העתקה</button>
     </div>
@@ -8098,6 +8145,8 @@ const DB = {
     if (State.tenant) {
       State.tenant.industry = data?.industry || ind;
       if (data?.onboarding_completed) State.tenant.onboarding_completed = true;
+      // ברירת המחדל של מצב העבודה תלויה בתחום (עו"ד: מקצועי), ולכן מרעננים אחרי שינוי תחום
+      try { if (typeof Gamify !== 'undefined') Gamify.applyMode(); } catch (_) {}
     }
     return { ok: true };
   },
@@ -12153,12 +12202,59 @@ const Gamify = {
   _d: null,
   _pendingMilestone: null,
 
-  // Gamification (XP/levels/streaks/prizes) is hidden for the lawyer vertical
-  // by request, points/badges read as unprofessional for that persona.
-  // XP bookkeeping below still runs silently either way, so re-enabling this
-  // later (after consultation, per the decision) needs no data migration.
+  // מצב עבודה: 'game' (ברירת מחדל) או 'pro'. לעו"ד ברירת המחדל מקצועי, כמו שהוחלט קודם, עם אפשרות לעבור למשחק.
+  // הבחירה נשמרת עם ההתקדמות ועוברת בין מכשירים. במצב מקצועי נעלמת שכבת המשחק בלבד: ה-XP, ההישגים והאתגרים
+  // ממשיכים להירשם בשקט, והפונקציות והנתונים של המכירה זהים.
+  _defaultMode() {
+    return State.tenant?.industry === 'realestate_lawyer' ? 'pro' : 'game';
+  },
+
+  mode() {
+    if (State.isDemo) return this._defaultMode();
+    const m = this.get().mode;
+    return m === 'game' || m === 'pro' ? m : this._defaultMode();
+  },
+
   isEnabled() {
-    return State.tenant?.industry !== 'realestate_lawyer';
+    return this.mode() === 'game';
+  },
+
+  setMode(m) {
+    if ((m !== 'game' && m !== 'pro') || State.isDemo) return;
+    const d = this.get();
+    if (this.mode() === m && d.mode === m) return;
+    d.mode = m;
+    d.modeAt = Date.now();
+    this.save();
+    this.applyMode();
+    if (m === 'game') this._catchUp();
+    toast(m === 'game' ? '🎮 מצב משחק פעיל. ההתקדמות שלך נשמרה' : 'מצב מקצועי פעיל. ההתקדמות ממשיכה להישמר ברקע', 'success');
+  },
+
+  applyClass() {
+    document.documentElement.classList.toggle('pro-mode', !this.isEnabled());
+  },
+
+  // מרענן כל מקום שתלוי במצב, וסוגר חגיגות פתוחות כשעוברים למצב מקצועי
+  applyMode() {
+    this.applyClass();
+    const pro = !this.isEnabled();
+    if (pro) {
+      try { this.closeLevelUp(); this.closeMilestone(); } catch (_) {}
+      document.getElementById('achievement-toast')?.classList.remove('show');
+      document.getElementById('confetti-container')?.replaceChildren();
+    }
+    this.renderSidebar();
+    this.renderWidget();
+    if (State.screen === 'xp-store') this.renderStore();
+    if (State.screen === 'dashboard') { Today.render(); Dashboard.renderGrowthCard(); }
+    if (State.screen === 'settings') Settings.render();
+  },
+
+  // חזרה למצב משחק: הישגים ואבני דרך שהושגו ברקע מוצגים עכשיו
+  _catchUp() {
+    this.checkAchievements();
+    this.checkMilestones();
   },
 
   // שמירה לפי משתמש: מפתח לכל agent_id, וגיבוי בשרת כשמיגרציה 130 קיימת.
@@ -12193,6 +12289,9 @@ const Gamify = {
     for (const k of ['xp', 'streak', 'aiUses', 'tasksCompleted', 'dealsClosed', 'leadsAdded', 'acTasks', 'acLeads', 'acAi', 'acImports', 'followupsDone', 'messagesSent', 'dayCount']) {
       if (k in src) d[k] = num(src[k]);
     }
+    if (src.mode === 'game' || src.mode === 'pro') d.mode = src.mode;
+    const modeAt = Number(src.modeAt);
+    if (Number.isFinite(modeAt) && modeAt > 0 && modeAt < 4e12) d.modeAt = Math.floor(modeAt);
     d.lastLogin = day(src.lastLogin);
     d.dailyDone = day(src.dailyDone);
     d.acDate = day(src.acDate) || '';
@@ -12226,6 +12325,9 @@ const Gamify = {
       const v = Math.max(base[k] || 0, other[k] || 0);
       if (v || k in base) out[k] = v;
     }
+    // מצב עבודה: זה שנבחר אחרון, בלי קשר ל-XP
+    const modeSrc = (r.modeAt || 0) > (l.modeAt || 0) ? r : l;
+    if (modeSrc.mode) { out.mode = modeSrc.mode; out.modeAt = modeSrc.modeAt || 0; }
     return out;
   },
 
@@ -12382,6 +12484,7 @@ const Gamify = {
     const d = this.get();
     d.xp = Math.max(0, d.xp - pts);
     this.save();
+    if (!this.isEnabled()) return;
     this.renderSidebar();
     this.renderWidget();
     toast(`-${pts} XP ⚠️`, 'warning');
@@ -12832,7 +12935,7 @@ const Gamify = {
   },
 
   checkMilestones() {
-    if (State.isDemo) return;
+    if (State.isDemo || !this.isEnabled()) return;
     const d = this.get();
     const claimed  = new Set(d.milestoneClaimed  || []);
     const deferred = new Set(d.milestoneDeferred || []);
@@ -12907,15 +13010,8 @@ const Gamify = {
   },
 
   renderStore() {
-    if (!this.isEnabled()) {
-      const screenEl = document.getElementById('screen-xp-store');
-      if (screenEl) screenEl.innerHTML = `<div style="text-align:center;padding:60px 24px;color:var(--gray-500);">
-        <div style="font-size:38px;margin-bottom:10px;">🔒</div>
-        <div style="font-weight:700;color:var(--navy);margin-bottom:6px;">הפיצ'ר הזה לא זמין בתחום שלך כרגע</div>
-        <div style="font-size:13px;">אפשר לחזור לדשבורד ולהמשיך משם.</div>
-      </div>`;
-      return;
-    }
+    // במצב מקצועי המסך מציג רק את ההודעה שב-HTML (data-pro), ושאר המסך מוסתר (data-game)
+    if (!this.isEnabled()) return;
     const d = this.get();
     const claimed  = new Set(d.milestoneClaimed  || []);
     const deferred = new Set(d.milestoneDeferred || []);
@@ -12948,13 +13044,15 @@ const Gamify = {
       const cls = isClaimed ? 'xps-claimed' : isUnlocked ? 'xps-unlocked' : 'xps-locked';
       const fromXp = (() => { const idx = this.MILESTONES.indexOf(m); return idx > 0 ? this.MILESTONES[idx-1].xp : 0; })();
       const pct    = isLocked ? Math.min(100, Math.max(0, ((d.xp - fromXp) / (m.xp - fromXp)) * 100)).toFixed(1) : 0;
+      const readBtn = `<button type="button" class="xps-claim-btn" style="padding:4px 10px;min-height:44px;" onclick="RewardPack.openById('${m.pack}')">📖 קריאה</button>`;
       const footer = isClaimed
-        ? `<div style="display:flex;align-items:center;gap:8px;"><span class="xps-claimed-tag">✅ מומש</span>${m.pack ? `<button class="xps-claim-btn" style="padding:4px 10px;" onclick="RewardPack.open(${m.xp})">📖 פתיחה</button>` : m.action ? `<button class="xps-claim-btn" style="padding:4px 10px;" onclick="RewardGen.open(${m.xp})">🔄 יצירה נוספת</button>` : ''}</div>`
+        ? `<div style="display:flex;align-items:center;gap:8px;"><span class="xps-claimed-tag">✅ מומש</span>${readBtn}</div>`
         : isUnlocked
-        ? `<div style="display:flex;gap:8px;">${isDeferred ? '<span style="font-size:10px;color:var(--gold-400);font-weight:700;">🎯 שמירה לפרס גדול</span>' : ''}
-           ${m.action && !AI.ENABLED ? '<span style="font-size:11px;color:var(--gray-500);font-weight:700;">⏸ הפרס שמור, זמין כשה-AI יחזור</span>' : `<button class="xps-claim-btn" onclick="Gamify.showMilestone(Gamify.MILESTONES.find(x=>x.xp===${m.xp}))">🎁 מימוש הפרס</button>`}</div>`
+        ? `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">${isDeferred ? '<span style="font-size:10px;color:var(--gold-400);font-weight:700;">🎯 שמירה לאבן דרך גדולה</span>' : ''}
+           <button class="xps-claim-btn" style="min-height:44px;" onclick="Gamify.showMilestone(Gamify.MILESTONES.find(x=>x.xp===${m.xp}))">🎁 חגיגת אבן הדרך</button>${readBtn}</div>`
         : `<span class="xps-xp-req">${m.xp.toLocaleString('he-IL')} XP</span>
-           <div class="xps-locked-bar-wrap"><div class="xps-locked-bar" style="width:${pct}%"></div></div>`;
+           <div class="xps-locked-bar-wrap"><div class="xps-locked-bar" style="width:${pct}%"></div></div>
+           <div style="margin-top:8px;">${readBtn}</div>`;
       return `<div class="xps-card ${cls}">
         <div class="xps-card-icon">${m.icon}</div>
         <div class="xps-card-body">
@@ -12970,15 +13068,16 @@ const Gamify = {
   },
 
   init() {
+    this.applyClass();
     if (State.isDemo) return;
     this.renderSidebar();
     this.renderWidget();
     // קודם מסנכרנים מהשרת (אם קיים), ורק אז כניסה יומית, כדי שה-XP של היום לא יידרס
     this.syncFromServer().finally(() => {
+      this.applyMode();
       this.checkDailyLogin();
       this.renderSidebar();
       this.renderWidget();
-      if (State.screen === 'dashboard') Today.render();
     });
   },
 };
@@ -13182,9 +13281,15 @@ const RewardPack = {
   // נפתח בחלון הפרס הקיים, במצב קריאה: בלי שדות קלט ובלי כפתור יצירה
   open(xp) {
     const m = Gamify.MILESTONES.find(x => x.xp === xp);
-    const pack = m && this.PACKS[m.pack];
+    if (m) this.openById(m.pack);
+  },
+
+  openById(id) {
+    const pack = Object.prototype.hasOwnProperty.call(this.PACKS, id) ? this.PACKS[id] : null;
     if (!pack) return;
-    this._key = m.pack;
+    this._key = id;
+    const noteEl = document.getElementById('reward-gen-note');
+    if (noteEl) noteEl.style.display = 'none';
     const titleEl = document.getElementById('reward-gen-title');
     if (titleEl) titleEl.textContent = `${pack.icon} ${pack.title}`;
     const usageEl = document.getElementById('reward-gen-usage');
@@ -13197,6 +13302,32 @@ const RewardPack = {
     if (outEl) { outEl.textContent = pack.lines.join('\n'); outEl.classList.add('visible'); }
     document.getElementById('reward-gen-act')?.classList.add('visible');
     openModal('modal-reward-gen');
+  },
+};
+
+/* ═══════════════════════════════════════════
+   SALES LIBRARY, כל ערכות המכירה הכתובות, פתוחות לכולם בשני המצבים (החלטת דוד, 28.10.2026)
+   אותו מציג ערכות של חנות ה-XP (RewardPack). אין נעילה לפי דרגה: במצב משחק מוצגת רק שורת אבן דרך ליד כל ערכה
+═══════════════════════════════════════════ */
+const SalesLibrary = {
+  open() {
+    const list = document.getElementById('sales-library-list');
+    if (!list) return;
+    const game = Gamify.isEnabled() && !State.isDemo;
+    const claimed = new Set(game ? (Gamify.get().milestoneClaimed || []) : []);
+    list.innerHTML = Gamify.MILESTONES.filter(m => Object.prototype.hasOwnProperty.call(RewardPack.PACKS, m.pack)).map(m => {
+      const p = RewardPack.PACKS[m.pack];
+      const cap = !game ? '' : claimed.has(m.xp) ? '✅ נחגגה כאבן דרך' : `🏆 אבן דרך: ${m.xp.toLocaleString('he-IL')} XP`;
+      return `<button type="button" class="xps-card sl-item" onclick="RewardPack.openById('${escapeHtml(m.pack)}')">
+        <div class="xps-card-icon" aria-hidden="true">${p.icon}</div>
+        <div class="xps-card-body">
+          <div class="xps-card-name">${escapeHtml(p.title)}</div>
+          <div class="xps-card-desc">${escapeHtml(m.desc)}</div>
+          ${cap ? `<div class="sl-cap">${cap}</div>` : ''}
+        </div>
+      </button>`;
+    }).join('');
+    openModal('modal-sales-library');
   },
 };
 
@@ -13900,6 +14031,8 @@ function animateCount(el, toVal, duration = 720) {
   requestAnimationFrame(step);
 }
 function floatXP(pts) {
+  // במצב מקצועי אין אנימציות XP
+  if (typeof Gamify !== 'undefined' && !Gamify.isEnabled()) return;
   const el = document.createElement('div');
   el.className = 'xp-float';
   el.textContent = '+' + pts + ' XP ✨';
@@ -14069,7 +14202,7 @@ const Referral = {
     Gamify.renderSidebar();
     Gamify.renderWidget();
     setTimeout(() => {
-      toast('🎁 +100 XP, בונוס כניסה! הגעת עם המלצה ומתחילים עם יתרון 🚀', 'success', 5000);
+      if (Gamify.isEnabled()) toast('🎁 +100 XP, בונוס כניסה! הגעת עם המלצה ומתחילים עם יתרון 🚀', 'success', 5000);
     }, 2500);
   },
 
@@ -14105,7 +14238,7 @@ const Referral = {
       Gamify.renderWidget();
       Gamify.checkMilestones();
       floatXP(xpGained);
-      toast(`🎉 ${count > 1 ? `${count} חברים שהזמנת הצטרפו` : 'חבר שהזמנת הצטרף'}! +${xpGained} XP, ניתן לבדוק מה נפתח בחנות הפרסים 🏆`, 'success', 5000);
+      toast(`🎉 ${count > 1 ? `${count} חברים שהזמנת הצטרפו` : 'חבר שהזמנת הצטרף'}!${Gamify.isEnabled() ? ` +${xpGained} XP, אפשר לבדוק את אבני הדרך בחנות 🏆` : ''}`, 'success', 5000);
       this.renderScreen();
     } catch (_e) {}
   },
@@ -14530,7 +14663,7 @@ const LeadReferral = {
       Gamify.renderWidget();
       Gamify.checkMilestones();
       floatXP(xpGained);
-      toast(`🤝 ${count > 1 ? count + ' הפניות שלך התקבלו' : 'הפניה שלך התקבלה'} אצל קולגה! +${xpGained} XP`, 'success', 5000);
+      toast(`🤝 ${count > 1 ? count + ' הפניות שלך התקבלו' : 'הפניה שלך התקבלה'} אצל קולגה!${Gamify.isEnabled() ? ` +${xpGained} XP` : ''}`, 'success', 5000);
     } catch (_e) {}
   },
 };
@@ -15588,11 +15721,12 @@ const App = {
       { sep: true }, { header: 'כלים' },
       { icon: '📈', label: 'אנליטיקס', run: go('analytics') },
       { icon: '🛠️', label: 'מרכז כלים', run: go('tools') },
+      { icon: '📚', label: 'ספריית מכירה', run: () => SalesLibrary.open() },
       ...(Billing.FREE_GROWTH ? [] : [{ icon: '📣', label: 'שירותי שיווק', run: go('marketing') }]),
       { icon: '📧', label: 'תיבת דואר', run: go('email') },
       { sep: true }, { header: 'עוד' },
       { icon: '✨', label: 'פיצ\'רים PRO', run: go('pro') },
-      { icon: '🏆', label: 'חנות XP', run: go('xp-store') },
+      ...(Gamify.isEnabled() ? [{ icon: '🏆', label: 'חנות XP', run: go('xp-store') }] : []),
       { icon: '🎁', label: 'הזמנת חבר', run: go('referral') },
       { icon: '⚙️', label: 'הגדרות', run: go('settings') },
     ], anchor);
@@ -18694,6 +18828,22 @@ const Settings = {
           </div>
           <div class="settings-arrow">›</div>
         </div>
+        ${(() => {
+          const game = Gamify.isEnabled();
+          return `<div class="settings-row" id="settings-mode-row" style="flex-direction:column; align-items:stretch;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="settings-row-icon">🎮</div>
+            <div class="settings-row-body">
+              <div class="settings-row-label">מצב עבודה</div>
+              <div class="settings-row-sub">${game ? 'משחק: דרגות, XP, אתגרים וחגיגות' : 'מקצועי: בלי שכבת המשחק. ההתקדמות נשמרת ברקע'}</div>
+            </div>
+          </div>
+          <div class="qe-chips" role="group" aria-label="מצב עבודה" style="margin-top:10px;">
+            <button type="button" class="qe-chip${game ? ' active' : ''}" aria-pressed="${game}" onclick="Gamify.setMode('game')">🎮 משחק</button>
+            <button type="button" class="qe-chip${game ? '' : ' active'}" aria-pressed="${!game}" onclick="Gamify.setMode('pro')">💼 מקצועי</button>
+          </div>
+        </div>`;
+        })()}
       </div>
       <div class="settings-section">
         <div class="settings-section-title">🛡️ שירותי אבטחה</div>
@@ -18946,7 +19096,7 @@ const Settings = {
           <div class="settings-row-icon">💡</div>
           <div class="settings-row-body">
             <div class="settings-row-label">הצעת רעיון לשיפור</div>
-            <div class="settings-row-sub" style="color:var(--gold-500);">רעיון שיאושר = +300 XP אוטומטי ✨</div>
+            <div class="settings-row-sub" style="color:var(--gold-500);"><span data-game>רעיון שיאושר = +300 XP אוטומטי ✨</span><span data-pro>נשמח לשמוע כל רעיון לשיפור</span></div>
           </div>
           <div class="settings-arrow">›</div>
         </div>
@@ -20139,7 +20289,7 @@ async function moveLead(leadId, stageId) {
     if (d.acAdvanced.includes(leadId)) deduct += Gamify.XP.advance_stage;
     if (d.acClosed.includes(leadId))   deduct += Gamify.XP.close_deal;
     const prev = document.getElementById('regression-xp-preview');
-    if (prev) prev.textContent = deduct > 0 ? `ניכוי XP צפוי: -${deduct} XP` : '';
+    if (prev) prev.textContent = deduct > 0 && Gamify.isEnabled() ? `ניכוי XP צפוי: -${deduct} XP` : '';
     const noteEl = document.getElementById('regression-note-text');
     if (noteEl) noteEl.value = '';
     State._pendingRegression = { leadId, stageId };
@@ -22864,7 +23014,7 @@ const GuidedTour = {
     // step would point at a hidden element - skip the step entirely.
     // תוסף השיווק בתשלום לא מוצג בתקופת הצמיחה, ולכן גם לא בסיור
     const shown = Billing.FREE_GROWTH ? steps.filter(s => s.target !== '[data-screen="marketing"]') : steps;
-    return ind === 'realestate_lawyer' ? shown.filter(s => s.target !== '#gamify-widget') : shown;
+    return Gamify.isEnabled() ? shown : shown.filter(s => s.target !== '#gamify-widget');
   },
 
   shouldShow() {
@@ -23105,7 +23255,7 @@ const IdeaBox = {
       floatXP(300);
 
       closeModal('modal-idea-box');
-      toast('🎉 תודה! עובדים על הרעיון שלך, קיבלת 300 XP נוספים!', 'success', 5000);
+      toast(Gamify.isEnabled() ? '🎉 תודה! עובדים על הרעיון שלך, קיבלת 300 XP נוספים!' : '🎉 תודה! הרעיון שלך התקבל', 'success', 5000);
     } catch(e) {
       toast('שגיאה בשליחה: ' + e.message, 'error');
     } finally {

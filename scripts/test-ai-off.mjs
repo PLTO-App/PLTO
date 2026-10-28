@@ -154,7 +154,7 @@ const o = await page.evaluate(async () => {
   out.reward = { claimed: (Gamify.get().milestoneClaimed || []).includes(ms.xp), open: !document.getElementById('modal-reward-gen').classList.contains('hidden'), text: outEl.textContent, genBtnHidden: document.getElementById('reward-gen-btn').style.display === 'none', inputs: document.getElementById('reward-gen-inputs').children.length };
   closeModal('modal-reward-gen');
   Gamify.renderStore();
-  out.store = { values: document.querySelectorAll('#xps-grid .xps-value-badge').length, reopen: [...document.querySelectorAll('#xps-grid .xps-claim-btn')].some(b => /פתיחה/.test(b.textContent)), claimBtns: [...document.querySelectorAll('#xps-grid .xps-claim-btn')].filter(b => /מימוש/.test(b.textContent)).length, ai: /AI/.test(document.getElementById('xps-grid').innerText) };
+  out.store = { values: document.querySelectorAll('#xps-grid .xps-value-badge').length, reopen: [...document.querySelectorAll('#xps-grid .xps-claim-btn')].some(b => /קריאה/.test(b.textContent)), claimBtns: [...document.querySelectorAll('#xps-grid .xps-claim-btn')].filter(b => /חגיגת אבן הדרך/.test(b.textContent)).length, readBtns: [...document.querySelectorAll('#xps-grid .xps-claim-btn')].filter(b => /קריאה/.test(b.textContent)).length, ai: /AI/.test(document.getElementById('xps-grid').innerText) };
   out.packTexts = Object.values(RewardPack.PACKS).map(p => p.lines.join('\n'));
 
   // ייבוא
@@ -203,7 +203,7 @@ check(o.motiv.n >= 3 && o.motiv.sample.every(m => m && !/מייצר|המשך כ�
 check(o.page && /^הזמנה ל-PLTO מאת/.test(o.page.p_headline) && !/[\/]ה|[\/]י/.test(o.page.p_headline + o.page.p_body_text) && o.page.p_cta_label === 'הצטרפות ל-PLTO', 'עמוד הזמנה נוצר מתבנית קבועה וניטרלית, בלי AI');
 check(o.packs.all && o.packs.noAiText, 'כל תשעת פרסי ה-XP הם ערכות תוכן, בלי AI ובלי "שווי" בשקלים');
 check(o.reward.claimed && o.reward.open && /פתיחה טובה/.test(o.reward.text) && o.reward.genBtnHidden && o.reward.inputs === 0, 'מימוש פרס פותח את הערכה לקריאה ולהעתקה, בלי שדות ובלי כפתור יצירה');
-check(o.store.values === 0 && o.store.reopen && o.store.claimBtns === 8 && !o.store.ai, 'חנות הפרסים: אין תגי שווי, פרס שמומש נפתח שוב, והשאר זמינים למימוש');
+check(o.store.values === 0 && o.store.reopen && o.store.claimBtns === 8 && o.store.readBtns === 9 && !o.store.ai, 'חנות הפרסים: אין תגי שווי, לכל תשע הערכות כפתור קריאה (בלי נעילה), והשאר זמינים לחגיגת אבן הדרך');
 check(o.packTexts.every(t => !/\[|\]|\/ת|\/י|אתה |שולח |מבין\.|AI/.test(t)), 'טקסט הערכות ניטרלי, בלי סוגריים ובלי AI');
 check(!/AI|בינה מלאכותית/.test(o.importText) && /מושבת זמנית/.test(o.importText) && !o.importImgBtn, 'ייבוא לידים: זיהוי מתמונה מוצג כמושבת, וייבוא מקובץ נשאר');
 check(o.mkBlockedFree, 'תקופת צמיחה חינמית: מסך השיווק בתשלום לא נגיש');
