@@ -1,8 +1,8 @@
--- בדיקת מצב אחרי הרצת מיגרציות 129, 130 ו-131. קריאה בלבד: רק SELECT על קטלוג Postgres.
+-- בדיקת מצב אחרי הרצת מיגרציות 129, 130, 131 ו-132. קריאה בלבד: רק SELECT על קטלוג Postgres.
 -- מריצים ב-SQL Editor של Supabase. כל שורה צריכה להיות ok = true אחרי שלוש המיגרציות.
 -- לפני ההרצה (נבדק בחי ב-28.10.2026): שורות עם הקידומת base_ מחזירות true, ולפחות שורה אחת מכל קבוצה
--- (129_, 130_, 131_) מחזירה false. אם שורת base_ מחזירה false, עוצרים: המצב הקיים שונה ממה שנבדק.
--- אפשר להריץ אותו גם אחרי מיגרציה אחת בלבד, ולבדוק רק את השורות שלה (הקידומת 129_, 130_ או 131_).
+-- (129_, 130_, 131_, 132_) מחזירה false. אם שורת base_ מחזירה false, עוצרים: המצב הקיים שונה ממה שנבדק.
+-- אפשר להריץ אותו גם אחרי מיגרציה אחת בלבד, ולבדוק רק את השורות שלה (הקידומת 129_, 130_, 131_ או 132_).
 --
 -- הבדיקה לא מוכיחה התנהגות של משתמש אמיתי. את זה בודקים באפליקציה, לפי הרנבוק (plans/migrations-129-131-runbook.md).
 
@@ -61,6 +61,32 @@ WITH c(check_name, expected, actual) AS (
         FROM pg_attribute a
        WHERE a.attrelid = 'public.agent_users'::regclass AND a.attnum > 0 AND NOT a.attisdropped
          AND has_column_privilege('authenticated', 'public.agent_users', a.attnum, 'UPDATE'))),
+  -- ── 132: הגנות על שליחת WhatsApp ──
+  -- בלי קריאה לפונקציות או המרת regclass מפורשת לאובייקטים שעוד לא קיימים (שאילתה כזו נכשלת בפענוח לפני ההרצה)
+  ('132_normalize_il_mobile_exists', 'true',
+     (SELECT (count(*) = 1 AND bool_and(prosrc LIKE '%^9725[0-9]{8}$%'))::text
+        FROM pg_proc WHERE pronamespace = 'public'::regnamespace AND proname = 'normalize_il_mobile')),
+  ('132_log_table_rls_and_no_client_access', 'true',
+     (SELECT coalesce(((SELECT relrowsecurity FROM pg_class WHERE oid = to_regclass('public.whatsapp_send_log'))
+          AND NOT has_table_privilege('anon', to_regclass('public.whatsapp_send_log'), 'SELECT,INSERT,UPDATE,DELETE')
+          AND NOT has_table_privilege('authenticated', to_regclass('public.whatsapp_send_log'), 'SELECT,INSERT,UPDATE,DELETE')), false)::text)),
+  ('132_log_has_no_phone_or_text_columns', 'agent_id,created_at,event,id,tenant_id',
+     (SELECT string_agg(attname, ',' ORDER BY attname) FROM pg_attribute WHERE attrelid = to_regclass('public.whatsapp_send_log') AND attnum > 0 AND NOT attisdropped)),
+  ('132_reserve_callable_by_service_role_only', 'true',
+     (SELECT (count(*) = 1 AND bool_and(has_function_privilege('service_role', oid, 'EXECUTE')
+        AND NOT has_function_privilege('authenticated', oid, 'EXECUTE') AND NOT has_function_privilege('anon', oid, 'EXECUTE')))::text
+        FROM pg_proc WHERE pronamespace = 'public'::regnamespace AND proname = 'reserve_whatsapp_send')),
+  ('132_reserve_is_security_definer_with_fixed_search_path', 'true',
+     (SELECT (count(*) = 1 AND bool_and(prosecdef AND proconfig IS NOT NULL))::text
+        FROM pg_proc WHERE pronamespace = 'public'::regnamespace AND proname = 'reserve_whatsapp_send')),
+  ('132_default_limits', '20/200',
+     (SELECT substring(prosrc from '"tenant_daily": ([0-9]+)') || '/' || substring(prosrc from '"global_daily": ([0-9]+)')
+        FROM pg_proc WHERE pronamespace = 'public'::regnamespace AND proname = 'whatsapp_limits')),
+  ('132_number_setter_validates_and_checks_role', 'true',
+     (SELECT (pg_get_functiondef(oid) LIKE '%invalid_whatsapp_number%' AND pg_get_functiondef(oid) LIKE '%insufficient permissions%')::text
+        FROM pg_proc WHERE pronamespace = 'public'::regnamespace AND proname = 'update_tenant_integrations')),
+  ('base_number_setter_callable_by_authenticated', 'true',
+     (SELECT has_function_privilege('authenticated', oid, 'EXECUTE')::text FROM pg_proc WHERE pronamespace = 'public'::regnamespace AND proname = 'update_tenant_integrations')),
   ('base_agent_users_rls_enabled', 'true',
      (SELECT relrowsecurity::text FROM pg_class WHERE oid = 'public.agent_users'::regclass)),
   ('base_service_role_keeps_full_access', 'true',
@@ -68,7 +94,7 @@ WITH c(check_name, expected, actual) AS (
   ('base_leads_policy_unchanged', 'tenant isolation',
      (SELECT string_agg(policyname, ',' ORDER BY policyname) FROM pg_policies WHERE schemaname = 'public' AND tablename = 'leads' AND policyname = 'tenant isolation'))
 )
-SELECT check_name, expected, actual, (expected = actual) AS ok
+SELECT check_name, expected, coalesce(actual, 'missing') AS actual, (expected = coalesce(actual, 'missing')) AS ok
   FROM c
  ORDER BY check_name;
 

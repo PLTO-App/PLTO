@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { buildMessage, isEnabled, mapReserveFailure, MAX_BODY_BYTES } from './guard.ts';
 
 // Only allow production domain + local dev
 const ALLOWED_ORIGINS = [
@@ -18,177 +19,91 @@ function corsHeaders(origin: string | null) {
   };
 }
 
-const MAX_MESSAGE_LEN = 2000;
-
+// What this function does (rewritten 28.10.2026, see plans/sales-game-plan-2026-10-27.md, section 7):
+//   - OFF by default. Only the secret WHATSAPP_ENABLED=true turns it on. Checked before auth and before any call.
+//   - The browser sends an event name and small values. It never sends a phone number or free text.
+//   - The destination is always the tenant's own number, read in the database (reserve_whatsapp_send).
+//     Israeli mobile numbers only.
+//   - A slot is reserved in the database before every send: daily cap per tenant and a global daily cap.
+//   - The browser gets short error codes only. Twilio details stay in the server log.
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get('origin');
   const cors = corsHeaders(origin);
+  const json = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
+  if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
 
   try {
-    // ── Verify caller is an authenticated Supabase user ──────────────────
+    // Kill switch first: nothing else runs, no database read and no call to Twilio.
+    if (!isEnabled(Deno.env.get('WHATSAPP_ENABLED'))) return json({ error: 'whatsapp_disabled' }, 503);
+
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...cors, 'Content-Type': 'application/json' },
-      });
-    }
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return json({ error: 'unauthorized' }, 401);
 
-    const supabaseUrl  = Deno.env.get('SUPABASE_URL');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseAnon = Deno.env.get('SUPABASE_ANON_KEY');
-    if (!supabaseUrl || !supabaseAnon) {
-      return new Response(JSON.stringify({ error: 'Server misconfigured' }), {
-        status: 500, headers: { ...cors, 'Content-Type': 'application/json' },
-      });
-    }
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !supabaseAnon || !serviceKey) return json({ error: 'server_misconfigured' }, 500);
 
-    const sbClient = createClient(supabaseUrl, supabaseAnon, {
-      global: { headers: { Authorization: authHeader } },
+    const sb = createClient(supabaseUrl, supabaseAnon, { global: { headers: { Authorization: authHeader } } });
+    const { data: { user }, error: authErr } = await sb.auth.getUser();
+    if (authErr || !user) return json({ error: 'unauthorized' }, 401);
+
+    const raw = await req.text();
+    if (raw.length > MAX_BODY_BYTES) return json({ error: 'too_large' }, 413);
+    let body: { event?: unknown; data?: unknown };
+    try { body = JSON.parse(raw); } catch { return json({ error: 'invalid_json' }, 400); }
+    if (!body || typeof body !== 'object') return json({ error: 'invalid_json' }, 400);
+
+    const built = buildMessage(body.event, body.data);
+    if (!built.ok) return json({ error: built.error }, 400);
+
+    const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+    const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+    const from = Deno.env.get('TWILIO_WHATSAPP_FROM') ?? '+14155238886';
+    if (!accountSid || !authToken) return json({ error: 'server_misconfigured' }, 500);
+
+    // The reservation is made with the admin key, and only after the caller was verified above.
+    const admin = createClient(supabaseUrl, serviceKey);
+    const { data: slot, error: slotErr } = await admin.rpc('reserve_whatsapp_send', {
+      p_auth_user_id: user.id, p_event: body.event,
     });
-    const { data: { user }, error: authErr } = await sbClient.auth.getUser();
-    if (authErr || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...cors, 'Content-Type': 'application/json' },
-      });
+    if (slotErr || !slot) return json({ error: 'reserve_failed' }, 502);
+    if (!slot.ok) {
+      const f = mapReserveFailure(slot.reason);
+      return json(f.scope ? { error: f.error, scope: f.scope } : { error: f.error }, f.status);
     }
 
-    const ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID');
-    const AUTH_TOKEN  = Deno.env.get('TWILIO_AUTH_TOKEN');
-    const FROM        = Deno.env.get('TWILIO_WHATSAPP_FROM') ?? '+14155238886';
-
-    if (!ACCOUNT_SID || !AUTH_TOKEN) {
-      return new Response(
-        JSON.stringify({ error: 'Twilio credentials not configured' }),
-        { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const { to, message, checkStatus } = await req.json();
-    if (!to || typeof to !== 'string' || !message || typeof message !== 'string') {
-      return new Response(
-        JSON.stringify({ error: 'to and message are required' }),
-        { status: 400, headers: { ...cors, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Tenant isolation: verify the destination phone belongs to a lead in this user's tenant,
-    // OR matches the tenant's own configured self-notification number (Settings -> WhatsApp
-    // Business number). The self-notify exception was added 18/7/2026: Twilio.notifyNewLead/
-    // notifyStageChanged/notifyTaskDue/notifyColdLeads/test all send to the tenant's own number
-    // to alert the agent about their own CRM activity, not to a lead - without this exception
-    // every one of those calls was silently rejected as phone_not_in_leads, so the feature never
-    // actually delivered a message. Safe because the number came from the tenant itself via
-    // update_tenant_integrations(), not from attacker-controlled input.
-    // RLS on the leads/tenants tables automatically scopes both checks to the authenticated user's tenant.
-    const rawPhone = to.replace(/^whatsapp:/, '').trim();
-    if (!/^\+?[0-9]{7,15}$/.test(rawPhone)) {
-      return new Response(
-        JSON.stringify({ error: 'invalid phone format' }),
-        { status: 400, headers: { ...cors, 'Content-Type': 'application/json' } },
-      );
-    }
-
-    const toIntlDigits = (s: string) => {
-      const d = (s || '').replace(/\D/g, '');
-      return d.startsWith('0') ? '972' + d.slice(1) : d;
-    };
-
-    let selfNotifyAuthorized = false;
-    const { data: tenantId } = await sbClient.rpc('get_my_tenant_id');
-    if (tenantId) {
-      const { data: tenantRow } = await sbClient
-        .from('tenants')
-        .select('whatsapp_number')
-        .eq('id', tenantId)
-        .maybeSingle();
-      const tenantDigits = toIntlDigits(tenantRow?.whatsapp_number ?? '');
-      if (tenantDigits && tenantDigits === toIntlDigits(rawPhone)) selfNotifyAuthorized = true;
-    }
-
-    if (!selfNotifyAuthorized) {
-      const altPhone = rawPhone.startsWith('+972')
-        ? '0' + rawPhone.slice(4)
-        : rawPhone.startsWith('0')
-          ? '+972' + rawPhone.slice(1)
-          : null;
-      const candidates = altPhone ? [rawPhone, altPhone] : [rawPhone];
-      const { data: leadCheck } = await sbClient
-        .from('leads')
-        .select('id')
-        .in('phone', candidates)
-        .limit(1)
-        .maybeSingle();
-      if (!leadCheck) {
-        return new Response(
-          JSON.stringify({ error: 'phone_not_in_leads' }),
-          { status: 403, headers: { ...cors, 'Content-Type': 'application/json' } },
-        );
-      }
-    }
-
-    const safeMessage = message.slice(0, MAX_MESSAGE_LEN);
-
-    // Normalise WhatsApp prefix
-    const toFmt   = to.startsWith('whatsapp:')   ? to   : `whatsapp:${to}`;
-    const fromFmt = FROM.startsWith('whatsapp:') ? FROM : `whatsapp:${FROM}`;
-
-    const body = new URLSearchParams({
-      From: fromFmt,
-      To:   toFmt,
-      Body: safeMessage,
-    });
+    const to = String(slot.to || '');
+    if (!/^\+972[0-9]{9}$/.test(to)) return json({ error: 'invalid_number' }, 422);
 
     const res = await fetch(
-      `https://api.twilio.com/2010-04-01/Accounts/${ACCOUNT_SID}/Messages.json`,
+      `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
       {
-        method:  'POST',
+        method: 'POST',
         headers: {
-          Authorization:  `Basic ${btoa(`${ACCOUNT_SID}:${AUTH_TOKEN}`)}`,
+          Authorization: `Basic ${btoa(`${accountSid}:${authToken}`)}`,
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: body.toString(),
-      }
+        body: new URLSearchParams({
+          From: from.startsWith('whatsapp:') ? from : `whatsapp:${from}`,
+          To: `whatsapp:${to}`,
+          Body: built.text,
+        }).toString(),
+        signal: AbortSignal.timeout(8000),
+      },
     );
-
-    const data = await res.json();
 
     if (!res.ok) {
-      return new Response(
-        JSON.stringify({ error: data.message ?? 'Twilio error', code: data.code }),
-        { status: res.status, headers: { ...cors, 'Content-Type': 'application/json' } }
-      );
+      // The reserved slot stays counted. Only the status code is logged: no number, no text, no Twilio message.
+      console.error('twilio send failed', res.status);
+      return json({ error: 'send_failed' }, 502);
     }
-
-    // Optional (used by the "🔔 בדיקת Twilio" test button only, not real notifications,
-    // to avoid adding latency to lead alerts): poll Twilio once for the real delivery
-    // status, since a 200 from the send call above only means Twilio *accepted* the
-    // message, not that WhatsApp actually delivered it (Sandbox opt-in can be expired).
-    let deliveryStatus: string | undefined;
-    let deliveryError: string | undefined;
-    if (checkStatus && data.sid) {
-      try {
-        await new Promise((r) => setTimeout(r, 2500));
-        const statusRes = await fetch(
-          `https://api.twilio.com/2010-04-01/Accounts/${ACCOUNT_SID}/Messages/${data.sid}.json`,
-          { headers: { Authorization: `Basic ${btoa(`${ACCOUNT_SID}:${AUTH_TOKEN}`)}` } }
-        );
-        const statusData = await statusRes.json();
-        deliveryStatus = statusData.status;
-        if (statusData.error_code) deliveryError = `${statusData.error_code}: ${statusData.error_message ?? ''}`.trim();
-      } catch (_e) { /* best-effort only, never fail the send because of this */ }
-    }
-
-    return new Response(
-      JSON.stringify({ success: true, sid: data.sid, ...(deliveryStatus ? { deliveryStatus, deliveryError } : {}) }),
-      { headers: { ...cors, 'Content-Type': 'application/json' } }
-    );
-
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    return new Response(
-      JSON.stringify({ error: msg }),
-      { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } }
-    );
+    return json({ success: true });
+  } catch (_e) {
+    // Never echo upstream details back to the browser.
+    return json({ error: 'internal_error' }, 500);
   }
 });
