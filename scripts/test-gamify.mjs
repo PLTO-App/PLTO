@@ -182,6 +182,36 @@ check(srv.adopted === 900 && srv.srvState === 'on', 'התקדמות גבוהה �
 check(srv.savedXp === 910, 'שמירה נשלחת לשרת עם ה-XP העדכני');
 check(srv.offState === 'off' && srv.localKept === 30, 'בלי מיגרציה 130: נופל בשקט להתקדמות מקומית');
 
+// מיזוג בין שני מכשירים: לא מאבדים הישגים ותביעת פרס שנעשו רק במכשיר הזה
+const mrg = await page.evaluate(async () => {
+  const calls = [];
+  const orig = sbClient.rpc;
+  DB.agentId = 'agent-merge'; localStorage.removeItem('plto_gamify_v2:agent-merge'); Gamify._d = null; Gamify._srv = null;
+  const g = Gamify.get();
+  Object.assign(g, { xp: 100, achievements: ['first_lead'], milestoneClaimed: [3000], dealsClosed: 4, leadsAdded: 2 });
+  Gamify.save();
+  sbClient.rpc = (fn, args) => { calls.push({ fn, args }); return Promise.resolve(fn === 'get_my_progress'
+    ? { data: { data: { xp: 900, streak: 5, achievements: ['leads_5'], milestoneClaimed: [], dealsClosed: 1, leadsAdded: 9 } }, error: null }
+    : { data: null, error: null }); };
+  await Gamify.syncFromServer();
+  await new Promise(r => setTimeout(r, 60));
+  const m = Gamify.get();
+  const pushed = calls.find(c => c.fn === 'save_my_progress')?.args?.p_data;
+  // אותו מצב בשני הצדדים: אין שליחה מיותרת לשרת
+  calls.length = 0;
+  sbClient.rpc = (fn, args) => { calls.push({ fn }); return Promise.resolve(fn === 'get_my_progress' ? { data: { data: JSON.parse(JSON.stringify(Gamify.get())) }, error: null } : { data: null, error: null }); };
+  await Gamify.syncFromServer();
+  await new Promise(r => setTimeout(r, 60));
+  const idempotentPush = calls.some(c => c.fn === 'save_my_progress');
+  sbClient.rpc = orig;
+  return { xp: m.xp, ach: m.achievements.slice().sort(), claimed: m.milestoneClaimed, deals: m.dealsClosed, leads: m.leadsAdded, streak: m.streak, pushedAch: pushed && pushed.achievements.slice().sort(), idempotentPush };
+});
+check(mrg.xp === 900 && mrg.streak === 5, 'מיזוג: ה-XP והרצף נלקחים מהצד שהתקדם יותר');
+check(JSON.stringify(mrg.ach) === '["first_lead","leads_5"]' && JSON.stringify(mrg.claimed) === '[3000]', 'מיזוג: הישגים ותביעת פרס משני המכשירים נשמרים');
+check(mrg.deals === 4 && mrg.leads === 9, 'מיזוג: בספירות מצטברות נלקח הערך הגבוה');
+check(JSON.stringify(mrg.pushedAch) === '["first_lead","leads_5"]', 'המצב הממוזג נשלח חזרה לשרת');
+check(!mrg.idempotentPush, 'כשהמצב זהה בשני הצדדים לא נשלח כלום לשרת');
+
 // ── שורת ההתקדמות במסך היום, 390px ──
 const strip = await page.evaluate(() => {
   const iso = n => { const d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };

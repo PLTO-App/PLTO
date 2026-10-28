@@ -32,9 +32,10 @@ CREATE POLICY agent_users_update_own_row ON public.agent_users
   USING (auth_user_id = auth.uid() AND tenant_id = public.get_my_tenant_id() AND public.tenant_access_active())
   WITH CHECK (auth_user_id = auth.uid() AND tenant_id = public.get_my_tenant_id());
 
-REVOKE INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON public.agent_users FROM PUBLIC, anon, authenticated;
-REVOKE SELECT ON public.agent_users FROM anon;
-GRANT SELECT ON public.agent_users TO authenticated;
+-- REVOKE ALL (ולא רשימה) כדי לכלול גם הרשאות שנוספו בגרסאות Postgres חדשות, כמו MAINTAIN ב-17.
+-- ההרשאה ברמת הטבלה לפני המיגרציה: authenticated=arwdDxtm (נבדק בחי ב-28.10.2026)
+REVOKE ALL ON TABLE public.agent_users FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON TABLE public.agent_users TO authenticated;
 GRANT UPDATE (name, phone, avatar_url) ON public.agent_users TO authenticated;
 
 -- בדיקות אחרי הרצה (קריאה בלבד):
@@ -46,10 +47,4 @@ GRANT UPDATE (name, phone, avatar_url) ON public.agent_users TO authenticated;
 --                                                                             -- name, phone, avatar_url
 --   ואז באפליקציה: שינוי שם בהגדרות נשמר, הזמנת סוכן (חשבון עם מושבים) עובדת.
 --
--- חזרה לאחור (מחזיר את המצב הקודם, כולל הבעיה):
---   DROP POLICY agent_users_select_same_tenant ON public.agent_users;
---   DROP POLICY agent_users_update_own_row ON public.agent_users;
---   CREATE POLICY "agents in same tenant" ON public.agent_users
---     USING (tenant_id = get_my_tenant_id() AND tenant_access_active())
---     WITH CHECK (tenant_id = get_my_tenant_id() AND tenant_access_active());
---   GRANT INSERT, UPDATE, DELETE ON public.agent_users TO authenticated;
+-- חזרה לאחור (מחזיר את המצב הקודם, כולל הבעיה): supabase/rollback/131_agent_users_least_privilege.down.sql

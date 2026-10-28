@@ -12211,6 +12211,24 @@ const Gamify = {
     return d;
   },
 
+  // מיזוג התקדמות משני מכשירים: הצד שהתקדם יותר ב-XP הוא הבסיס (כולל הספירות היומיות והרצף),
+  // ועליו מאחדים הישגים ופרסים שנתבעו או נדחו, ולוקחים את הערך הגבוה בספירות מצטברות
+  _merge(a, b) {
+    const l = this._sanitize(a), r = this._sanitize(b);
+    const base = r.xp > l.xp ? r : l;
+    const other = base === r ? l : r;
+    const out = { ...base };
+    const union = (x, y) => [...new Set([...(x || []), ...(y || [])])];
+    out.achievements = union(base.achievements, other.achievements);
+    out.milestoneClaimed = union(base.milestoneClaimed, other.milestoneClaimed);
+    if (base.milestoneDeferred || other.milestoneDeferred) out.milestoneDeferred = union(base.milestoneDeferred, other.milestoneDeferred);
+    for (const k of ['aiUses', 'tasksCompleted', 'dealsClosed', 'leadsAdded', 'followupsDone', 'messagesSent', 'dayCount']) {
+      const v = Math.max(base[k] || 0, other[k] || 0);
+      if (v || k in base) out[k] = v;
+    }
+    return out;
+  },
+
   get() {
     const key = this._key();
     if (!this._d || this._dKey !== key) {
@@ -12252,14 +12270,14 @@ const Gamify = {
       this._srv = 'on';
       const remote = data && typeof data === 'object' && !Array.isArray(data) ? data.data : null;
       const local = this.get();
-      const remoteXp = remote && Number.isInteger(remote.xp) ? remote.xp : -1;
-      if (remoteXp > (local.xp || 0)) {
-        // מכשיר אחר התקדם יותר: ההתקדמות מהשרת מחליפה את המקומית
-        this._d = this._sanitize({ ...local, ...remote });
+      if (!remote || typeof remote !== 'object') { this._pushSoon(0); return; }
+      // מיזוג ולא החלפה: מכשיר אחד לא מוחק הישגים ופרסים שנרשמו במכשיר אחר
+      const merged = this._merge(local, remote);
+      if (JSON.stringify(merged) !== JSON.stringify(local)) {
+        this._d = merged;
         try { localStorage.setItem(this._dKey, JSON.stringify(this._d)); } catch (_) {}
-      } else if ((local.xp || 0) > remoteXp) {
-        this._pushSoon(0);
       }
+      if (JSON.stringify(merged) !== JSON.stringify(this._sanitize(remote))) this._pushSoon(0);
     } catch (_) {}
   },
   _pushSoon(ms = 2000) {

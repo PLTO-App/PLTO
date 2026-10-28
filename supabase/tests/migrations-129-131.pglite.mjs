@@ -42,7 +42,7 @@ await db.exec(`
   ALTER TABLE public.agent_users ENABLE ROW LEVEL SECURITY;
   CREATE POLICY "agents in same tenant" ON public.agent_users USING (tenant_id = get_my_tenant_id() AND tenant_access_active()) WITH CHECK (tenant_id = get_my_tenant_id() AND tenant_access_active());
   ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
-  CREATE POLICY tenant_iso ON public.leads FOR ALL USING (tenant_id = get_my_tenant_id() AND tenant_access_active());
+  CREATE POLICY "tenant isolation" ON public.leads FOR ALL USING (tenant_id = get_my_tenant_id() AND tenant_access_active());
   INSERT INTO tenants VALUES ('${A_T}','trial', now() - interval '40 days'), ('${B_T}','basic', null), ('${C_T}','cancelled', null);
   INSERT INTO agent_users (id, tenant_id, auth_user_id, role, name) VALUES (gen_random_uuid(),'${A_T}','${A_U}','owner','בעלים'), (gen_random_uuid(),'${A_T}','${A2_U}','agent','סוכן'), (gen_random_uuid(),'${B_T}','${B_U}','owner','b'), (gen_random_uuid(),'${C_T}','${C_U}','owner','c');
   INSERT INTO leads (tenant_id, name) VALUES ('${A_T}','a1'), ('${B_T}','b1');
@@ -134,6 +134,35 @@ await as('anon');
 ok(!!(await err('SELECT * FROM agent_users')), 'אחרי 131: anon לא קורא את agent_users');
 await as('authenticated', C_U);
 ok((await q('SELECT count(*)::int n FROM agent_users'))[0].n === 0, 'אחרי 131: עסק שבוטל לא רואה משתמשים');
+
+// ── סקריפט האימות (verify-129-131.sql): אחרי שלוש המיגרציות כל השורות ok ──
+await as(null);
+const verifySql = readFileSync(`${repo}/supabase/tests/verify-129-131.sql`, 'utf8');
+const checksSql = verifySql.slice(verifySql.indexOf('WITH c('), verifySql.indexOf(';', verifySql.indexOf('ORDER BY check_name')));
+const vr = await q(checksSql);
+const badRows = vr.filter(r => !r.ok);
+ok(vr.length >= 20 && badRows.length === 0, `verify-129-131.sql: ${vr.length} בדיקות, כולן ok אחרי המיגרציות` + (badRows.length ? ' | נכשלו: ' + badRows.map(r => `${r.check_name}=${r.actual}`).join(', ') : ''));
+
+// ── חזרה לאחור (supabase/rollback): מחזירה את המצב שהיה בחי ──
+// md5 של גוף הפונקציות כפי שנמדד בחי ב-28.10.2026, לפני כל מיגרציה
+const LIVE_SRC_MD5 = { tenant_access_active: '932ca3fa4b021c7180f7cc8fcd03cd0a', public_page_tenant_active: '2f41f33379f3f79a8ff299938625b8d2' };
+for (const f of ['131_agent_users_least_privilege', '130_agent_progress', '129_free_growth_access']) {
+  await db.exec(readFileSync(`${repo}/supabase/rollback/${f}.down.sql`, 'utf8'));
+}
+const bodies = Object.fromEntries((await q(`SELECT proname, md5(prosrc) m, provolatile, prosecdef, proconfig::text cfg FROM pg_proc WHERE pronamespace = 'public'::regnamespace AND proname IN ('tenant_access_active','public_page_tenant_active')`)).map(r => [r.proname, r]));
+ok(Object.entries(LIVE_SRC_MD5).every(([k, m]) => bodies[k]?.m === m && bodies[k].provolatile === 's' && bodies[k].prosecdef === true && bodies[k].cfg === '{search_path=public}'), 'אחרי הרולבק: גוף שתי הפונקציות זהה בייט לבייט למה שנמדד בחי, עם אותן הגדרות');
+ok((await q(`SELECT count(*)::int n FROM pg_proc WHERE pronamespace = 'public'::regnamespace AND proname IN ('free_growth_period','get_my_progress','save_my_progress')`))[0].n === 0 && (await q(`SELECT to_regclass('public.agent_progress') IS NULL v`))[0].v, 'אחרי הרולבק: free_growth_period, פונקציות ההתקדמות והטבלה הוסרו');
+const polAfter = await q(`SELECT policyname, cmd FROM pg_policies WHERE tablename = 'agent_users' ORDER BY 1`);
+ok(polAfter.length === 1 && polAfter[0].policyname === 'agents in same tenant' && polAfter[0].cmd === 'ALL', 'אחרי הרולבק: חזרה המדיניות המקורית של agent_users');
+const priv = (await q(`SELECT has_table_privilege('authenticated','public.agent_users','INSERT,UPDATE,DELETE') a, has_table_privilege('authenticated','public.agent_users','UPDATE') u, has_any_column_privilege('anon','public.agent_users','SELECT') an`))[0];
+ok(priv.a && priv.u, 'אחרי הרולבק: ההרשאות של authenticated על agent_users חזרו (הטבלה כולה)');
+const colAcl = (await q(`SELECT count(*)::int n FROM pg_attribute WHERE attrelid = 'public.agent_users'::regclass AND attnum > 0 AND attacl IS NOT NULL`))[0].n;
+ok(colAcl === 0, 'אחרי הרולבק: לא נשארו הרשאות ברמת עמודה');
+await as('authenticated', A_U);
+ok((await q('SELECT count(*)::int n FROM leads'))[0].n === 0, 'אחרי הרולבק: עסק בניסיון שפג ננעל שוב (המצב הקיים בחי)');
+await as('authenticated', A2_U);
+ok(!(await err(`UPDATE agent_users SET role = 'owner' WHERE auth_user_id = '${A2_U}'`)), 'אחרי הרולבק: חזרה גם היכולת של סוכן לשנות role (הבעיה המקורית, לכן הרולבק הוא מוצא אחרון)');
+await as(null);
 
 console.log(fails ? `\n${fails} בדיקות נכשלו` : '\nכל הבדיקות עברו');
 process.exit(fails ? 1 : 0);
