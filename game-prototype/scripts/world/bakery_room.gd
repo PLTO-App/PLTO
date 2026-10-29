@@ -10,10 +10,11 @@ var pickup_cake: Node3D = null    # the cake on the display counter that Noa can
 var table_tea: Node3D = null      # tea set on the customers' table
 var scene_cache := {}
 var bodies := Node3D.new()        # all collision bodies (layer 1)
+var box_nodes: Array = []         # static boxes (walls, cabinets, trims), merged by material at the end
 
 func build() -> void:
 	add_child(root); add_child(bodies)
-	build_env(); build_room(); build_bounds()
+	build_env(); build_room(); build_bounds(); merge_boxes()
 
 # ---------------------------------------------------------------- collision
 func add_collider(center: Vector3, size: Vector3) -> void:
@@ -95,6 +96,7 @@ func add_box(parent: Node3D, size: Vector3, mat: Material, pos: Vector3, ry := 0
 	if mat.has_meta("tile"): tile = mat.get_meta("tile")
 	var mi := MeshInstance3D.new(); mi.mesh = make_box(size, tile); mi.material_override = mat
 	mi.position = pos; mi.rotation.y = ry; parent.add_child(mi)
+	box_nodes.append(mi)
 	return mi
 
 func group(parent: Node3D, pos: Vector3, ry := 0.0) -> Node3D:
@@ -137,20 +139,21 @@ func tint_all(n: Node, tint: Color) -> void:
 # ---------------------------------------------------------------- scene
 func build_env() -> void:
 	var we := WorldEnvironment.new(); var e := Environment.new()
-	e.background_mode = Environment.BG_COLOR; e.background_color = Color("9bd27a")
+	e.background_mode = Environment.BG_COLOR; e.background_color = Color("4a3b31")
 	var sky := Sky.new(); var sm := PanoramaSkyMaterial.new(); sm.panorama = load("res://assets/shared/sky.hdr"); sky.sky_material = sm
-	e.sky = sky; e.ambient_light_source = Environment.AMBIENT_SOURCE_SKY; e.ambient_light_energy = 0.3
+	e.sky = sky; e.ambient_light_source = Environment.AMBIENT_SOURCE_SKY; e.ambient_light_energy = 0.36
 	e.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
-	e.tonemap_mode = Environment.TONE_MAPPER_ACES; e.tonemap_exposure = 0.62
-	e.glow_enabled = true; e.glow_intensity = 0.15; e.glow_hdr_threshold = 1.1
+	e.tonemap_mode = Environment.TONE_MAPPER_ACES; e.tonemap_exposure = 0.66
+	e.glow_enabled = true; e.glow_intensity = 0.2; e.glow_hdr_threshold = 1.0
+	e.adjustment_enabled = true; e.adjustment_brightness = 1.02; e.adjustment_contrast = 1.05; e.adjustment_saturation = 1.08   # warm, slightly punchy grade
 	we.environment = e; add_child(we)
-	var sun := DirectionalLight3D.new(); sun.light_color = Color("ffe2b8"); sun.light_energy = 0.7
+	var sun := DirectionalLight3D.new(); sun.light_color = Color("ffd9a6"); sun.light_energy = 0.78
 	sun.shadow_enabled = true; sun.directional_shadow_max_distance = 45.0
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
 	add_child(sun); sun.look_at_from_position(Vector3(11, 16, 12), Vector3.ZERO)
 	sun_light = sun
 	var g := MeshInstance3D.new(); var pm := PlaneMesh.new(); pm.size = Vector2(200, 200); g.mesh = pm
-	g.material_override = flat(Color("9bd27a"), 1.0); g.position.y = -0.32; add_child(g)
+	g.material_override = flat(Color("4a3b31"), 1.0); (g.material_override as StandardMaterial3D).shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED; g.position.y = -0.32; add_child(g)
 
 func build_room() -> void:
 	var W := root
@@ -246,5 +249,21 @@ func build_room() -> void:
 		var bulb := MeshInstance3D.new(); var bs := SphereMesh.new(); bs.radius = 0.14; bs.height = 0.28; bs.radial_segments = 16; bs.rings = 8; bulb.mesh = bs
 		var bm := StandardMaterial3D.new(); bm.albedo_color = Color("fff2c9"); bm.emission_enabled = true; bm.emission = Color("ffd889"); bm.emission_energy_multiplier = 3.0
 		bulb.material_override = bm; bulb.position.y = y - 0.1; g.add_child(bulb)
-		var ol := OmniLight3D.new(); ol.light_color = Color("ffc98a"); ol.light_energy = 0.3; ol.omni_range = 11.0; ol.position.y = y - 0.3; ol.add_to_group("pendant_lights"); g.add_child(ol)
+		var ol := OmniLight3D.new(); ol.light_color = Color("ffc98a"); ol.light_energy = 0.42; ol.omni_range = 11.0; ol.position.y = y - 0.3; ol.add_to_group("pendant_lights"); g.add_child(ol)
 
+
+# One mesh per material instead of one per box: far fewer draw calls (and far fewer in the shadow pass).
+func merge_boxes() -> void:
+	var groups := {}
+	for n in box_nodes:
+		var mi := n as MeshInstance3D
+		if mi == null or not is_instance_valid(mi) or mi.mesh == null: continue
+		var key := mi.material_override.get_rid()
+		if not groups.has(key):
+			var st := SurfaceTool.new(); st.begin(Mesh.PRIMITIVE_TRIANGLES)
+			groups[key] = {"mat": mi.material_override, "st": st}
+		(groups[key]["st"] as SurfaceTool).append_from(mi.mesh, 0, root.global_transform.affine_inverse() * mi.global_transform)
+		mi.get_parent().remove_child(mi); mi.queue_free()
+	for k in groups:
+		var out := MeshInstance3D.new(); out.mesh = (groups[k]["st"] as SurfaceTool).commit(); out.material_override = groups[k]["mat"]; root.add_child(out)
+	box_nodes.clear()

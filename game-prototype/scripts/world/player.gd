@@ -5,18 +5,20 @@ extends CharacterBody3D
 
 const SPEED := 3.6
 const ACCEL := 12.0
+const NOA_LOOK := {"skin": "light", "hair": "5b3a29", "hair_style": "bun", "top": "f7efe4", "bottom": "33415c", "apron": "ef6f8a"}
 
 var input_vec := Vector2.ZERO
 var cam_yaw := 0.0
 var locked := false
 var carrying := false
-var rig := NoaRig.new()
+var rig: CharacterRig
 
 func _ready() -> void:
+	rig = CharacterRig.make(NOA_LOOK)
 	motion_mode = CharacterBody3D.MOTION_MODE_FLOATING
 	var cs := CollisionShape3D.new(); var cap := CapsuleShape3D.new()
 	cap.radius = 0.4; cap.height = 2.0; cs.shape = cap; cs.position.y = 1.1
-	add_child(cs); add_child(rig)
+	add_child(cs); add_child(BlobShadow.make(1.15)); add_child(rig)
 
 func _physics_process(delta: float) -> void:
 	var want := Vector3.ZERO

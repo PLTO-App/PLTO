@@ -2,22 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bhpmpr4l6s6ie"
-path.s3tc="res://.godot/imported/noa_face.png-3fcfdd955dd4c7e101f3e8b657bd47a7.s3tc.ctex"
-path.etc2="res://.godot/imported/noa_face.png-3fcfdd955dd4c7e101f3e8b657bd47a7.etc2.ctex"
+uid="uid://dbrecpl01cq1n"
+path="res://.godot/imported/icon_carrot.png-87b13d84e2950dd7ea9d51d818a7f6ac.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/shared/noa_face.png"
-dest_files=["res://.godot/imported/noa_face.png-3fcfdd955dd4c7e101f3e8b657bd47a7.s3tc.ctex", "res://.godot/imported/noa_face.png-3fcfdd955dd4c7e101f3e8b657bd47a7.etc2.ctex"]
+source_file="res://assets/ui/icon_carrot.png"
+dest_files=["res://.godot/imported/icon_carrot.png-87b13d84e2950dd7ea9d51d818a7f6ac.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -25,7 +23,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=true
+mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

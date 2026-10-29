@@ -1,0 +1,20 @@
+{
+  "id": "bakery",
+  "name": "המאפייה של נועה",
+  "owner": "נועה",
+  "_comment": "Prices and costs are whole shekels, illustrative only. Customers and products are data, so another business type is a new file, not new code.",
+  "products": {
+    "strawberry_cake": {"name": "עוגת תות ושוקולד", "model": "strawberry_chocolate_cake", "scale": 1.5, "icon": "icon_cake", "price": 220, "cost": 70, "xp": 80},
+    "carrot_cake":     {"name": "עוגת גזר",         "model": "carrot_cake",                "scale": 1.5, "icon": "icon_carrot", "price": 180, "cost": 55, "xp": 60},
+    "croissant":       {"name": "קרואסון",          "model": "croissant",                  "scale": 2.4, "icon": "icon_croissant", "price": 35,  "cost": 10, "xp": 15}
+  },
+  "customers": [
+    {"id": "ronit", "name": "רונית", "look": {"skin": "light",  "hair": "6b3b22", "hair_style": "long",  "top": "9b2f4a", "bottom": "3d5a80", "apron": ""}},
+    {"id": "yael",  "name": "יעל",   "look": {"skin": "medium", "hair": "1f1612", "hair_style": "bun",   "top": "3a7ca5", "bottom": "2b2d42", "apron": ""}},
+    {"id": "omer",  "name": "עומר",  "look": {"skin": "light",  "hair": "2a1d14", "hair_style": "short", "top": "5c7a4a", "bottom": "3a3f4f", "apron": ""}},
+    {"id": "hila",  "name": "הילה",  "look": {"skin": "deep",   "hair": "17110d", "hair_style": "pony",  "top": "e0a030", "bottom": "5a3e36", "apron": ""}}
+  ],
+  "first_order": {"customer": "ronit", "product": "strawberry_cake"},
+  "order_cycle": ["carrot_cake", "croissant", "strawberry_cake", "croissant"],
+  "reputation_per_sale": 5
+}
