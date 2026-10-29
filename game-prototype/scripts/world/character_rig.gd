@@ -1,115 +1,120 @@
 class_name CharacterRig
 extends Node3D
-# A stylized character built from simple shapes and animated by code: idle, walk, carry, reach, expressions.
-# Noa and every customer use this one rig with a different "look" (skin tone, hair, clothes), so a new customer is data, not code.
-# It is a stand-in for a modeled character: the game only uses tick(), start_reach(), set_expression(), carry_anchor and the signals,
-# so a modeled version can replace this file. Faces -Z. Left is -X, right is +X. 1 unit = 1/1.43 m.
+# A modeled character (tools/blender/make_characters.py): a skinned body with a real skeleton, hair styles and accessories,
+# painted by the character shader from a "look" (skin, clothes, hair, accessories), with a toon light and an ink outline.
+# Every person in the game uses this one rig, so a new person is data, not code.
+# The game talks to it through tick(), start_reach(), hop(), set_expression(), set_pose(), carry_anchor and the signals.
+# Faces -Z. 1 unit = 1/1.43 m. About 2.45 units tall.
 
 signal action_peak   # the middle of a reach: the moment an object is picked up or put down
 signal action_done
 
-const HIP_Y := 1.22
-const ACTION_LEN := 0.7
-const EXPRESSIONS := ["smile", "happy", "surprised", "think", "blink", "neutral"]
-const DEFAULT_LOOK := {"skin": "light", "hair": "5b3a29", "hair_style": "bun", "top": "f7efe4", "bottom": "33415c", "apron": "", "shoes": "6b3f2a"}
+const FACE_CELLS := {"neutral": Vector2(0, 0), "smile": Vector2(1, 0), "happy": Vector2(2, 0), "surprised": Vector2(0, 1), "think": Vector2(1, 1),
+	"sad": Vector2(2, 1), "annoyed": Vector2(0, 2), "blink": Vector2(1, 2), "talk": Vector2(2, 2)}
+const EXPRESSIONS := ["neutral", "smile", "happy", "surprised", "think", "sad", "annoyed", "blink", "talk"]
+const SKINS := {"light": Color("f6cfb2"), "fair": Color("f3c09a"), "medium": Color("d9a17a"), "tan": Color("bf865c"), "deep": Color("8f5b3e")}
+const LOOPS := ["idle", "walk", "carry_idle", "carry_walk", "wave", "talk", "think", "sad", "work", "sit", "sit_type", "sit_drink"]
+const POSES := ["wave", "talk", "think", "sad", "work", "sit", "sit_type", "sit_drink"]
+const DEFAULT_LOOK := {"body": "f", "skin": "light", "hair": "5b3a29", "hair_style": "bun", "top": "f7efe4", "bottom": "33415c", "shoes": "6b3f2a",
+	"apron": "", "sleeve": 42, "pants": 100, "acc": [], "acc_color": "2f3b52", "height": 100, "build": 100}
 
-var look := DEFAULT_LOOK.duplicate()
-var hips := Node3D.new()
-var spine := Node3D.new()
-var neck := Node3D.new()
-var head := Node3D.new()
-var torso_mesh: MeshInstance3D
-var arm_l := Node3D.new()
-var arm_r := Node3D.new()
-var elbow_l := Node3D.new()
-var elbow_r := Node3D.new()
-var thigh_l := Node3D.new()
-var thigh_r := Node3D.new()
-var knee_l := Node3D.new()
-var knee_r := Node3D.new()
+static var _scenes := {}
+static var _outline: ShaderMaterial
+static var _faces := {}
+
+var look := DEFAULT_LOOK.duplicate(true)
+var model: Node3D
+var anim: AnimationPlayer
+var body_mat: ShaderMaterial
 var carry_anchor := Node3D.new()
-var face_mat: StandardMaterial3D
-
-var t := 0.0
-var walk_phase := 0.0
-var walk_w := 0.0
-var carry_w := 0.0
-var action_t := -1.0
-var _peak_fired := false
 var base_expression := "smile"
-var _shown_expression := ""
+var pose := ""                  # a looping pose (sit, work, talk...) that replaces idle and walk
+var _action := ""               # a one-shot: give or happy
+var _action_t := 0.0
+var _action_len := 0.0
+var _peak_fired := false
+var _current := ""
+var _shown := ""
 var _blink_in := 2.5
 var _blink_hold := 0.0
-var _hop := 0.0
+var _talk_t := 0.0
 
 static func make(p_look: Dictionary) -> CharacterRig:
 	var r := CharacterRig.new()
 	for k in p_look: r.look[k] = p_look[k]
 	return r
 
+static func _scene(kind: String) -> PackedScene:
+	if not _scenes.has(kind): _scenes[kind] = load("res://assets/characters/models/char_%s.glb" % kind)
+	return _scenes[kind]
+
+static func outline_material() -> ShaderMaterial:
+	if _outline == null:
+		_outline = ShaderMaterial.new(); _outline.shader = load("res://assets/shaders/outline.gdshader")
+	return _outline
+
+static func toon_material(c: Color, sheen := 0.0) -> ShaderMaterial:
+	var m := ShaderMaterial.new(); m.shader = load("res://assets/shaders/toon.gdshader")
+	m.set_shader_parameter("albedo", c); m.set_shader_parameter("sheen", sheen); m.next_pass = outline_material()
+	return m
+
 func _ready() -> void:
-	var skin_color := {"light": Color("f4c8a6"), "medium": Color("d6a076"), "deep": Color("966242")}.get(look["skin"], Color("f4c8a6")) as Color
-	var m_skin := _mat(skin_color, 0.7); var m_top := _mat(Color(look["top"])); var m_pants := _mat(Color(look["bottom"]))
-	var m_hair := _mat(Color(look["hair"]), 0.5); var m_shoes := _mat(Color(look["shoes"]), 0.6)
-	hips.position.y = HIP_Y; add_child(hips)
-	_sphere(hips, 0.25, m_pants, Vector3(0, 0.02, 0), Vector3(1.1, 0.72, 0.85))
-	spine.position = Vector3(0, 0.05, 0); hips.add_child(spine)
-	torso_mesh = _capsule(spine, 0.2, 0.72, m_top, Vector3(0, 0.3, 0), true); torso_mesh.scale = Vector3(1.1, 1.0, 0.8)
-	if look["apron"] != "": _apron(Color(look["apron"]))
-	neck.position = Vector3(0, 0.62, 0); spine.add_child(neck)
-	_capsule(neck, 0.055, 0.18, m_skin, Vector3(0, 0.05, 0))
-	head.position = Vector3(0, 0.1, 0); neck.add_child(head)
-	_build_head(skin_color, m_hair, m_skin)
-	_arm(arm_l, elbow_l, -0.3, m_top, m_skin)
-	_arm(arm_r, elbow_r, 0.3, m_top, m_skin)
-	_leg(thigh_l, knee_l, -0.13, m_pants, m_shoes)
-	_leg(thigh_r, knee_r, 0.13, m_pants, m_shoes)
-	carry_anchor.position = Vector3(0, 0.5, -0.62); spine.add_child(carry_anchor)
+	var kind: String = "m" if str(look.get("body", "f")) == "m" else "f"
+	model = _scene(kind).instantiate()
+	var hs := float(look["height"]) / 100.0; var bs := float(look["build"]) / 100.0
+	model.scale = Vector3(bs, hs, bs * 0.5 + 0.5)
+	add_child(model)
+	anim = _find_anim(model)
+	body_mat = ShaderMaterial.new(); body_mat.shader = load("res://assets/shaders/character.gdshader")
+	if not _faces.has(kind): _faces[kind] = load("res://assets/characters/face_%s.png" % kind)
+	body_mat.set_shader_parameter("face_tex", _faces[kind])
+	body_mat.set_shader_parameter("skin_color", SKINS.get(look["skin"], SKINS["light"]))
+	body_mat.set_shader_parameter("top_color", Color(look["top"]))
+	body_mat.set_shader_parameter("bottom_color", Color(look["bottom"]))
+	body_mat.set_shader_parameter("shoes_color", Color(look["shoes"]))
+	body_mat.set_shader_parameter("sleeve", float(look["sleeve"]) / 100.0)
+	body_mat.set_shader_parameter("pants", float(look["pants"]) / 100.0)
+	body_mat.set_shader_parameter("apron_on", 1.0 if str(look["apron"]) != "" else 0.0)
+	if str(look["apron"]) != "": body_mat.set_shader_parameter("apron_color", Color(look["apron"]))
+	body_mat.next_pass = outline_material()
+	var hair_c := Color(look["hair"])
+	var accs: Array = look["acc"]
+	for mi in _meshes(model):
+		var n := String(mi.name)
+		if n.begins_with("Hair_"):
+			mi.visible = n == "Hair_" + str(look["hair_style"])
+			mi.material_override = toon_material(hair_c, 1.0); mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		elif n.begins_with("Acc_"):
+			var a := n.substr(4); mi.visible = a in accs; mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			var c := hair_c.darkened(0.1) if a == "beard" else (Color("f7f4ef") if a == "toque" else (Color("2a2420") if a == "glasses" else Color(look["acc_color"])))
+			mi.material_override = toon_material(c, 0.3 if a != "glasses" else 0.0)
+		else:
+			mi.material_override = body_mat
+	carry_anchor.position = Vector3(0, 1.38 * hs, -0.42); add_child(carry_anchor)
+	if anim != null:
+		for an in LOOPS:
+			if anim.has_animation(an): anim.get_animation(an).loop_mode = Animation.LOOP_LINEAR
+	_blink_in = 1.5 + randf() * 2.0
 	set_expression(base_expression)
+	_play("idle", 0.0)
+	if anim != null: anim.seek(randf() * 2.0, true)
 
-func _apron(c: Color) -> void:
-	var m := _mat(c); var emblem := _mat(Color("fff6ea"))
-	var cm := CylinderMesh.new(); cm.top_radius = 0.22; cm.bottom_radius = 0.3; cm.height = 0.52; cm.radial_segments = 20; cm.rings = 1
-	var skirt := MeshInstance3D.new(); skirt.mesh = cm; skirt.material_override = m; skirt.position = Vector3(0, 0.08, 0); skirt.scale = Vector3(1.05, 1.0, 0.82); spine.add_child(skirt)
-	_sphere(spine, 0.17, m, Vector3(0, 0.5, -0.095), Vector3(1.0, 1.15, 0.5))                                    # rounded bib
-	_sphere(spine, 0.05, emblem, Vector3(0, 0.5, -0.178), Vector3(1, 1, 0.35))                                  # little cupcake badge
-	_box(spine, Vector3(0.17, 0.1, 0.03), emblem, Vector3(0, 0.02, -0.225))                                      # pocket
+func _find_anim(n: Node) -> AnimationPlayer:
+	if n is AnimationPlayer: return n
+	for c in n.get_children():
+		var a := _find_anim(c)
+		if a != null: return a
+	return null
 
-func _build_head(skin_color: Color, m_hair: Material, m_skin: Material) -> void:
-	face_mat = StandardMaterial3D.new(); face_mat.roughness = 0.65
-	face_mat.albedo_texture = load("res://assets/characters/face_%s.png" % look["skin"])
-	face_mat.uv1_scale = Vector3(1, 1.0 / EXPRESSIONS.size(), 1); face_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
-	face_mat.texture_repeat = false
-	var hm := MeshInstance3D.new(); hm.mesh = uv_sphere(0.2, 32, 18); hm.material_override = face_mat
-	hm.position = Vector3(0, 0.22, 0); hm.scale = Vector3(1.1, 1.22, 1.1); head.add_child(hm)
-	_sphere(head, 0.262, m_hair, Vector3(0, 0.25, 0.04), Vector3.ONE, true)                                   # hair cap over the top and back
-	for p in [[-0.07, 0.41, -0.2, 0.095], [0.07, 0.41, -0.2, 0.095]]:   # fringe, gives a clean hairline
-		_sphere(head, p[3], m_hair, Vector3(p[0], p[1], p[2]), Vector3(1.0, 0.72, 0.6))
-	match look["hair_style"]:
-		"bun":
-			_sphere(head, 0.12, m_hair, Vector3(0, 0.55, 0.07))
-		"long":
-			_capsule(head, 0.13, 0.56, m_hair, Vector3(0, 0.02, 0.19))
-			for sx in [-1, 1]: _capsule(head, 0.07, 0.4, m_hair, Vector3(sx * 0.21, 0.08, 0.03))
-		"pony":
-			var pony := _capsule(head, 0.08, 0.38, m_hair, Vector3(0, 0.22, 0.3)); pony.rotation.x = -0.55
-			_sphere(head, 0.06, _mat(Color("2fb3a2")), Vector3(0, 0.36, 0.27), Vector3(1, 0.7, 1))
-		_:
-			for sx in [-1, 1]: _sphere(head, 0.07, m_hair, Vector3(sx * 0.2, 0.3, -0.04))
+func _meshes(n: Node) -> Array:
+	var out: Array = []
+	if n is MeshInstance3D: out.append(n)
+	for c in n.get_children(): out.append_array(_meshes(c))
+	return out
 
-func _arm(shoulder: Node3D, elbow: Node3D, x: float, sleeve: Material, skin: Material) -> void:
-	shoulder.position = Vector3(x, 0.56, 0); spine.add_child(shoulder)
-	_capsule(shoulder, 0.07, 0.4, sleeve, Vector3(0, -0.19, 0))
-	elbow.position = Vector3(0, -0.4, 0); shoulder.add_child(elbow)
-	_capsule(elbow, 0.055, 0.42, skin, Vector3(0, -0.2, 0))
-	_sphere(elbow, 0.065, skin, Vector3(0, -0.43, 0), Vector3(0.9, 1.1, 0.7))
-
-func _leg(thigh: Node3D, knee: Node3D, x: float, pants: Material, shoe: Material) -> void:
-	thigh.position = Vector3(x, 0, 0); hips.add_child(thigh)
-	_capsule(thigh, 0.11, 0.6, pants, Vector3(0, -0.28, 0), true)
-	knee.position = Vector3(0, -0.55, 0); thigh.add_child(knee)
-	_capsule(knee, 0.085, 0.58, pants, Vector3(0, -0.27, 0), true)
-	_box(knee, Vector3(0.17, 0.12, 0.36), shoe, Vector3(0, -0.58, -0.07))
+func _play(name: String, blend := 0.2) -> void:
+	if anim == null or name == _current or not anim.has_animation(name): return
+	_current = name; anim.play(name, blend)
 
 # ---------------------------------------------------------------- expressions
 func set_expression(name: String) -> void:
@@ -117,97 +122,59 @@ func set_expression(name: String) -> void:
 	_show(name)
 
 func _show(name: String) -> void:
-	if name == _shown_expression or face_mat == null: return
-	_shown_expression = name
-	face_mat.uv1_offset = Vector3(0, float(EXPRESSIONS.find(name)) / EXPRESSIONS.size(), 0)
+	if name == _shown or body_mat == null: return
+	_shown = name
+	body_mat.set_shader_parameter("face_cell", FACE_CELLS.get(name, Vector2(1, 0)))
+
+# ---------------------------------------------------------------- actions and poses
+func start_reach() -> void:
+	_start_action("give")
 
 # A small happy jump (used when a customer is pleased).
 func hop() -> void:
-	_hop = 1.0
+	_start_action("happy")
 
-# ---------------------------------------------------------------- animation
-func start_reach() -> void:
-	action_t = 0.0; _peak_fired = false
+func _start_action(name: String) -> void:
+	if anim == null or not anim.has_animation(name):
+		action_peak.emit(); action_done.emit(); return
+	_action = name; _action_t = 0.0; _peak_fired = false
+	_action_len = anim.get_animation(name).length
+	_current = ""; anim.speed_scale = 1.0 if name == "give" else 1.0
+	_play(name, 0.12)
 
 func is_busy() -> bool:
-	return action_t >= 0.0
+	return _action != ""
+
+# A looping pose that replaces idle and walking: "sit", "work", "talk", "think", "wave", "sad", "sit_type", "sit_drink", or "" to clear.
+func set_pose(name: String) -> void:
+	pose = name if name in POSES else ""
 
 func tick(delta: float, speed01: float, carrying: bool) -> void:
-	t += delta
-	walk_w = move_toward(walk_w, clampf(speed01, 0.0, 1.0), delta * 7.0)
-	carry_w = move_toward(carry_w, 1.0 if carrying else 0.0, delta * 5.0)
-	var reach := 0.0
-	if action_t >= 0.0:
-		action_t += delta
-		reach = sin(PI * clampf(action_t / ACTION_LEN, 0.0, 1.0))
-		if not _peak_fired and action_t >= ACTION_LEN * 0.5:
-			_peak_fired = true; action_peak.emit()
-		if action_t >= ACTION_LEN:
-			action_t = -1.0; action_done.emit()
-	# blink every few seconds when the base expression has open eyes
+	if anim == null: return
+	if _action != "":
+		_action_t += delta
+		if not _peak_fired and _action_t >= _action_len * 0.5:
+			_peak_fired = true
+			if _action == "give": action_peak.emit()
+		if _action_t >= _action_len:
+			var was := _action; _action = ""
+			if was == "give": action_done.emit()
+	if _action == "":
+		var moving := speed01 > 0.08
+		if pose != "" and not moving:
+			anim.speed_scale = 1.0; _play(pose)
+		elif moving:
+			anim.speed_scale = 0.75 + 1.25 * clampf(speed01, 0.0, 1.0); _play("carry_walk" if carrying else "walk", 0.15)
+		else:
+			anim.speed_scale = 1.0; _play("carry_idle" if carrying else "idle", 0.25)
+	# blinking and talking
 	_blink_in -= delta
 	if _blink_in <= 0.0:
-		_blink_hold = 0.12; _blink_in = 2.6 + fmod(t * 1.7, 1.8)
+		_blink_hold = 0.13; _blink_in = 2.4 + randf() * 2.4
 	_blink_hold = maxf(0.0, _blink_hold - delta)
-	if base_expression in ["smile", "neutral", "think"]: _show("blink" if _blink_hold > 0.0 else base_expression)
-	walk_phase += delta * (7.5 + 2.5 * walk_w) * walk_w
-	var s := sin(walk_phase); var c := cos(walk_phase); var w := walk_w
-	thigh_l.rotation.x = 0.55 * s * w
-	thigh_r.rotation.x = -0.55 * s * w
-	knee_l.rotation.x = -(0.05 + 0.8 * maxf(0.0, c) * w)
-	knee_r.rotation.x = -(0.05 + 0.8 * maxf(0.0, -c) * w)
-	_hop = move_toward(_hop, 0.0, delta * 2.2)
-	hips.position.y = HIP_Y + 0.04 * absf(s) * w + 0.35 * sin(PI * (1.0 - _hop)) * (1.0 if _hop > 0.0 else 0.0)
-	spine.rotation.y = 0.14 * s * w
-	spine.rotation.x = 0.05 * w + 0.3 * reach
-	var breath := sin(t * 1.9)
-	torso_mesh.scale.y = 1.0 + 0.012 * breath
-	var swing := 0.45 * s * w
-	var free := 1.0 - carry_w
-	arm_r.rotation.x = lerpf(swing * free + 0.03 * breath, 0.85, carry_w) + 0.5 * reach
-	arm_l.rotation.x = lerpf(-swing * free - 0.03 * breath, 0.85, carry_w) + 0.5 * reach
-	elbow_r.rotation.x = lerpf(0.2 + 0.25 * w, 1.25, carry_w) - 0.5 * reach
-	elbow_l.rotation.x = lerpf(0.2 + 0.25 * w, 1.25, carry_w) - 0.5 * reach
-	arm_r.rotation.z = lerpf(-0.07, -0.3, carry_w)
-	arm_l.rotation.z = lerpf(0.07, 0.3, carry_w)
-	head.rotation.y = 0.12 * sin(t * 0.6) * (1.0 - w)
-	head.rotation.x = 0.03 * breath - 0.1 * reach
-
-# ---------------------------------------------------------------- mesh helpers
-func _mat(c: Color, rough := 0.85) -> StandardMaterial3D:
-	var m := StandardMaterial3D.new(); m.albedo_color = c; m.roughness = rough; return m
-
-func _capsule(parent: Node3D, r: float, h: float, m: Material, pos: Vector3, shadow := false) -> MeshInstance3D:
-	var cm := CapsuleMesh.new(); cm.radius = r; cm.height = h; cm.radial_segments = 12; cm.rings = 3
-	var mi := MeshInstance3D.new(); mi.mesh = cm; mi.material_override = m; mi.position = pos; _shadow(mi, shadow); parent.add_child(mi); return mi
-
-func _sphere(parent: Node3D, r: float, m: Material, pos: Vector3, sc := Vector3.ONE, shadow := false) -> MeshInstance3D:
-	var sm := SphereMesh.new(); sm.radius = r; sm.height = r * 2.0; sm.radial_segments = 14; sm.rings = 7
-	var mi := MeshInstance3D.new(); mi.mesh = sm; mi.material_override = m; mi.position = pos; mi.scale = sc; _shadow(mi, shadow); parent.add_child(mi); return mi
-
-func _box(parent: Node3D, size: Vector3, m: Material, pos: Vector3) -> MeshInstance3D:
-	var bm := BoxMesh.new(); bm.size = size
-	var mi := MeshInstance3D.new(); mi.mesh = bm; mi.material_override = m; mi.position = pos; _shadow(mi, false); parent.add_child(mi); return mi
-
-# Each mesh that casts a sun shadow is drawn twice, so only the big parts do (a character has ~25 parts, not ~50 draws).
-func _shadow(mi: MeshInstance3D, on: bool) -> void:
-	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if on else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-
-# UV sphere with the texture centre (u = 0.5, v = 0.5) on the -Z side, so a face texture lands on the front of the head.
-static func uv_sphere(radius: float, segs: int, rings: int) -> ArrayMesh:
-	var st := SurfaceTool.new(); st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for r in rings:
-		for s in segs:
-			var idx := [[r, s], [r, s + 1], [r + 1, s + 1], [r + 1, s]]
-			var pts: Array = []; var uvs: Array = []
-			for ij in idx:
-				var th := PI * float(ij[0]) / rings; var al := TAU * float(ij[1]) / segs
-				pts.append(Vector3(sin(th) * sin(al), cos(th), sin(th) * cos(al)))
-				uvs.append(Vector2(float(ij[1]) / segs, float(ij[0]) / rings))
-			for tri in [[0, 1, 2], [0, 2, 3]]:
-				var a: Vector3 = pts[tri[0]]; var b: Vector3 = pts[tri[1]]; var c: Vector3 = pts[tri[2]]
-				var order: Array = tri
-				if (b - a).cross(c - a).dot((a + b + c) / 3.0) > 0.0: order = [tri[0], tri[2], tri[1]]   # Godot front faces are clockwise
-				for k in order:
-					var p: Vector3 = pts[k]; st.set_normal(p); st.set_uv(uvs[k]); st.add_vertex(p * radius)
-	return st.commit()
+	var face := base_expression
+	if pose == "talk" and _action == "":
+		_talk_t += delta
+		face = "talk" if fmod(_talk_t, 0.32) < 0.16 else "smile"
+	if _blink_hold > 0.0 and face in ["neutral", "smile", "think", "talk", "sad", "surprised"]: face = "blink"
+	_show(face)
