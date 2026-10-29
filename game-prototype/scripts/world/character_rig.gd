@@ -12,7 +12,7 @@ signal action_done
 const FACE_CELLS := {"neutral": Vector2(0, 0), "smile": Vector2(1, 0), "happy": Vector2(2, 0), "surprised": Vector2(0, 1), "think": Vector2(1, 1),
 	"sad": Vector2(2, 1), "annoyed": Vector2(0, 2), "blink": Vector2(1, 2), "talk": Vector2(2, 2)}
 const EXPRESSIONS := ["neutral", "smile", "happy", "surprised", "think", "sad", "annoyed", "blink", "talk"]
-const SKINS := {"light": Color("f6cfb2"), "fair": Color("f3c09a"), "medium": Color("d9a17a"), "tan": Color("bf865c"), "deep": Color("8f5b3e")}
+const SKINS := {"light": Color("f1c09c"), "fair": Color("eab088"), "medium": Color("d0956a"), "tan": Color("b47a50"), "deep": Color("845236")}
 const LOOPS := ["idle", "walk", "carry_idle", "carry_walk", "wave", "talk", "think", "sad", "work", "sit", "sit_type", "sit_drink"]
 const POSES := ["wave", "talk", "think", "sad", "work", "sit", "sit_type", "sit_drink"]
 const DEFAULT_LOOK := {"body": "f", "skin": "light", "hair": "5b3a29", "hair_style": "bun", "top": "f7efe4", "bottom": "33415c", "shoes": "6b3f2a",
@@ -60,7 +60,7 @@ static func toon_material(c: Color, sheen := 0.0) -> ShaderMaterial:
 
 func _ready() -> void:
 	var kind: String = "m" if str(look.get("body", "f")) == "m" else "f"
-	model = _scene(kind).instantiate()
+	model = _scene(kind).instantiate(); model.rotation.y = PI      # the models look toward +Z; the game uses -Z as forward
 	var hs := float(look["height"]) / 100.0; var bs := float(look["build"]) / 100.0
 	model.scale = Vector3(bs, hs, bs * 0.5 + 0.5)
 	add_child(model)
@@ -76,6 +76,7 @@ func _ready() -> void:
 	body_mat.set_shader_parameter("pants", float(look["pants"]) / 100.0)
 	body_mat.set_shader_parameter("apron_on", 1.0 if str(look["apron"]) != "" else 0.0)
 	if str(look["apron"]) != "": body_mat.set_shader_parameter("apron_color", Color(look["apron"]))
+	body_mat.set_shader_parameter("rim_amount", 0.12)
 	body_mat.next_pass = outline_material()
 	var hair_c := Color(look["hair"])
 	var accs: Array = look["acc"]

@@ -27,7 +27,7 @@ func _ready() -> void:
 	var exprs := ["smile", "talk", "happy", "think", "neutral", "smile", "sad"]
 	for i in looks.size():
 		var r := CharacterRig.make(looks[i]); r.position = Vector3((i - 3) * 1.15, 0, 0); add_child(r)
-		r.set_expression(exprs[i]); r.set_pose(poses[i]); r.set_meta("i", i)
+		r.rotation.y = PI; r.set_expression(exprs[i]); r.set_pose(poses[i]); r.set_meta("i", i)
 	var cam := Camera3D.new(); cam.fov = 40; add_child(cam); cam.look_at_from_position(Vector3(0, 2.3, 7.8), Vector3(0, 1.4, 0))
 	await get_tree().create_timer(1.3).timeout
 	get_viewport().get_texture().get_image().save_png(out + "/lineup.png")

@@ -286,6 +286,9 @@ def hair_cap(name, kind, hairline, scale=1.07, thick=0.04):
     so = ob.modifiers.new('sol', 'SOLIDIFY'); so.thickness = thick; so.offset = 1.0; so.use_rim = True
     sub = ob.modifiers.new('sub', 'SUBSURF'); sub.levels = 1
     apply_mods(ob)
+    n = len(ob.data.polygons)
+    if n > 1800:
+        d = ob.modifiers.new('dec', 'DECIMATE'); d.ratio = 1800.0 / n; apply_mods(ob)
     return ob
 
 def blob(pos, scale, rot=(0, 0, 0), segs=20):
@@ -300,6 +303,9 @@ def join_all(main, parts, name):
     main.select_set(True); bpy.context.view_layer.objects.active = main
     if parts: bpy.ops.object.join()
     main.name = name
+    n = len(main.data.polygons)
+    if n > 1800:     # phones: keep hair light
+        d = main.modifiers.new('dec', 'DECIMATE'); d.ratio = 1800.0 / n; apply_mods(main)
     for poly in main.data.polygons: poly.use_smooth = True
     return main
 
