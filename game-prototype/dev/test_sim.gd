@@ -30,7 +30,7 @@ func _init() -> void:
 	content = ContentDb.new(); content.load_all()
 	check("content loads without errors", content.errors.is_empty(), str(content.errors))
 	check("translations are loaded (a key becomes Hebrew text)", Loc.t("biz.bakery") != "biz.bakery", Loc.t("biz.bakery"))
-	_test_basics(); _test_orders(); _test_contract(); _test_cafe(); _test_inspection(); _test_week(); _test_loan(); _test_save(); _test_events(); _test_goals()
+	_test_basics(); _test_orders(); _test_contract(); _test_cafe(); _test_inspection(); _test_week(); _test_loan(); _test_save(); _test_events(); _test_goals(); _test_stars()
 	if not "quick" in OS.get_cmdline_user_args(): _balance()
 	print("RESULT failures=%d" % fails)
 	quit(1 if fails > 0 else 0)
@@ -259,3 +259,19 @@ func _balance() -> void:
 	check("with the café open, the company earns clearly more per day (last two weeks)", res["full: café + upgrades"]["late_profit"] > res["contract + accountant"]["late_profit"] + 40, "%d vs %d" % [res["full: café + upgrades"]["late_profit"], res["contract + accountant"]["late_profit"]])
 	check("no strategy runs away (worth after 6 weeks under 60,000)", res["full: café + upgrades"]["cash"] < 60000, str(res["full: café + upgrades"]["cash"]))
 	check("a profitable business keeps its customers (reputation 45+)", res["balanced + orders ahead"]["rep"] >= 45, str(res["balanced + orders ahead"]["rep"]))
+
+func _test_stars() -> void:
+	var good := {"profit": 120, "units": {"bakery": {"closed": false, "served": 10, "customers": 11, "lost_stock": 0, "walkouts": 0}}}
+	check("a profitable day with everyone served and nobody lost has three stars", Coach.stars(good) == 3)
+	var loss := {"profit": -50, "units": {"bakery": {"closed": false, "served": 10, "customers": 11, "lost_stock": 0, "walkouts": 0}}}
+	check("a loss takes the profit star", Coach.stars(loss) == 2)
+	var lost := {"profit": 80, "units": {"bakery": {"closed": false, "served": 6, "customers": 11, "lost_stock": 3, "walkouts": 2}}}
+	check("losing customers takes the other two stars", Coach.stars(lost) == 1)
+	var closed := {"profit": -300, "units": {"bakery": {"closed": true, "served": 0, "customers": 0, "lost_stock": 0, "walkouts": 0}}}
+	check("a day with every business closed has no stars", Coach.stars(closed) == 0)
+	var two := {"profit": 90, "units": {"bakery": {"closed": false, "served": 8, "customers": 8, "lost_stock": 0, "walkouts": 0}, "cafe": {"closed": true, "served": 0, "customers": 0, "lost_stock": 0, "walkouts": 0}}}
+	check("a closed business does not count against the open one", Coach.stars(two) == 3)
+	# the real first day of the starter plan
+	var co := fresh(); co.start_morning(); co.commit_day({"bakery": starter_plan(co)}, "bakery")
+	var s := co.close_day()
+	check("a real first day has a rating between 0 and 3", Coach.stars(s) >= 0 and Coach.stars(s) <= 3, str(Coach.stars(s)))

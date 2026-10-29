@@ -151,6 +151,7 @@ func _flow(action: String, data: Dictionary) -> void:
 func _evening() -> void:
 	state = "evening"
 	ui.sheet.close()
+	if Game.co.day <= 3: ui.tip_once("tip_evening", 6.0)
 	town.set_time(0.88)
 	ui.show_town_bar(true, Loc.t("ui.cta_evening"))
 	ui.update_goals_badge(); ui.hud.sync()
@@ -297,7 +298,7 @@ func _walkout(o: Dictionary) -> void:
 	var npc: Npc = npcs.get(o["customer"]["id"])
 	if npc == null: return
 	npcs.erase(o["customer"]["id"])
-	npc.rig.set_expression("annoyed")
+	npc.rig.set_expression("annoyed"); Game.sfx.play("deny", 0.9, -10.0)
 	ui.show_hint(Loc.t("act.walkout", {"name_k": o["customer"].get("name", "")}), 2.5)
 	_send_out(npc)
 
@@ -396,6 +397,7 @@ func _hand_over(c: Dictionary, npc: Npc, pid: String) -> void:
 	_update_strip()
 	player.locked = false
 	await ui.fx.play_sale({"profit": int(out.get("revenue", 0)), "reputation": 0, "xp_total": int(out.get("xp", 0))}, origin, before)
+	ui.tip_once("first_sale")
 	if out.has("addon"): ui.show_hint(Loc.t("act.addon", {"product_k": Game.co.units[worker].db["products"][out["addon"]["product"]]["name"]}), 2.0)
 	npc.rig.set_expression("smile")
 	_after_purchase(npc, pid)
@@ -481,6 +483,7 @@ func _inspection_visit() -> void:
 # ---------------------------------------------------------------- closing
 func _close_day() -> void:
 	state = "closing"; ui.set_action(""); ui.set_objective(""); marker.visible = false; ui.stick_enabled = false
+	Game.sfx.play("close", 1.0, -4.0)
 	ui.show_hint(Loc.t("act.closing"), 2.0)
 	await get_tree().create_timer(1.0).timeout
 	var co := Game.co

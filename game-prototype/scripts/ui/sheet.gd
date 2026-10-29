@@ -45,6 +45,7 @@ func _ready() -> void:
 	var cc := CenterContainer.new(); cc.set_anchors_preset(Control.PRESET_FULL_RECT); cc.mouse_filter = Control.MOUSE_FILTER_IGNORE; close_b.add_child(cc)
 	cc.add_child(UiIcons.glyph("close", 22, UiStyle.MUTED))
 	close_b.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	UiStyle.press_fx(close_b)
 	close_b.pressed.connect(func(): Game.sfx.play("tap", 1.0, -6.0); close())
 	head.add_child(close_b)
 	tabs_box = UiStyle.hbox(6); col.add_child(tabs_box)
@@ -95,8 +96,10 @@ func refresh() -> void:
 func _rebuild_for_size() -> void:
 	if visible and compact != _built_compact: refresh()
 
+var _building := false
+
 func _build(reset_scroll: bool) -> void:
-	_built_compact = compact
+	_built_compact = compact; _building = true
 	for c in body.get_children(): c.queue_free()
 	for c in foot.get_children(): c.queue_free()
 	for c in tabs_box.get_children(): c.queue_free()
@@ -107,6 +110,7 @@ func _build(reset_scroll: bool) -> void:
 		tabs_box.add_child(b)
 	note_l.text = ""
 	if builder.is_valid(): builder.call(self)
+	_building = false
 	if reset_scroll: scroll.scroll_vertical = 0
 
 func set_title(t: String, sub := "") -> void:
@@ -114,6 +118,7 @@ func set_title(t: String, sub := "") -> void:
 
 func note(text: String, good := false) -> void:
 	note_l.text = text; note_l.add_theme_color_override("font_color", UiStyle.GOOD if good else UiStyle.BAD)
+	if text != "" and not good and not _building: Game.sfx.play("deny", 1.0, -6.0)      # a tap that did not work, not a note shown while building
 
 func add_footer(text: String, kind: String, cb: Callable, expand := true) -> Button:
 	var b := UiStyle.button(text, kind, 17, 46 if compact else 52)
@@ -163,6 +168,7 @@ func _round(text: String) -> Button:
 		if st == "disabled": c = Color("cfd3da")
 		b.add_theme_stylebox_override(st, UiStyle.panel(c, 24, 2, false))
 	b.add_theme_color_override("font_color", Color.WHITE); b.add_theme_color_override("font_pressed_color", Color.WHITE); b.add_theme_color_override("font_disabled_color", Color("f4f4f4"))
+	UiStyle.press_fx(b)
 	return b
 
 # "label .......... value" in one line (value at the end side, numbers left-to-right).

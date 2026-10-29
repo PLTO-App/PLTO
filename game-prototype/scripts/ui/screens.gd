@@ -42,6 +42,7 @@ func today(sh: Sheet) -> void:
 		var nc := sh.card()
 		nc.add_child(UiStyle.label(Loc.t("today.news"), 14, UiStyle.MUTED, true))
 		for n in news: nc.add_child(UiStyle.label("• " + n, 14))
+	if c.day <= 2: _tip_card(sh, _today_tip())
 	var list := sh.card()
 	list.add_child(UiStyle.label(Loc.t("today.checklist"), 14, UiStyle.MUTED, true))
 	for bid in plans:
@@ -77,6 +78,17 @@ func today(sh: Sheet) -> void:
 	var errs := c.validate_day(plans)
 	if not errs.is_empty(): sh.note(Loc.msg(errs[0]))
 	sh.add_footer(Loc.t("today.open"), "cta", func(): _open_day(sh))
+
+# The first mornings: one short sentence from Shira about the next step, following what was already done.
+func _today_tip() -> String:
+	if reviewed.is_empty(): return "tut.tip_plan"
+	if co().orders.is_empty(): return "tut.tip_orders"
+	return "tut.tip_open"
+
+func _tip_card(sh: Sheet, key: String) -> void:
+	var tc := sh.card(); var th := sh.row(tc)
+	th.add_child(UiStyle.portrait("shira", 44, UiStyle.TEAL))
+	var tl := UiStyle.label(Loc.t(key), 14); tl.size_flags_horizontal = Control.SIZE_EXPAND_FILL; th.add_child(tl)
 
 func _open_day(sh: Sheet) -> void:
 	var errs := co().validate_day(plans)
@@ -511,9 +523,14 @@ func summary(sh: Sheet, s: Dictionary) -> void:
 	sh.set_title(Loc.t("sum.title", {"day": s["day"], "weekday_k": s["weekday_k"]}), "")
 	match sh.tab:
 		0:
+			var first_view: bool = ui.stars_day != int(s["day"])         # the count-up and the stars play once per day
+			if int(s["day"]) <= 1: _tip_card(sh, "tut.tip_summary")
 			var big := sh.card(); var h := sh.row(big)
 			var t := UiStyle.label(Loc.t("sum.profit") if int(s["profit"]) >= 0 else Loc.t("sum.loss"), 18, UiStyle.INK, true); t.size_flags_horizontal = Control.SIZE_EXPAND_FILL; h.add_child(t)
 			var v := UiStyle.one_line(UiStyle.label(Loc.money(int(s["profit"]), true), 24, UiStyle.GOOD if int(s["profit"]) >= 0 else UiStyle.BAD, true)); v.text_direction = Control.TEXT_DIRECTION_LTR; h.add_child(v)
+			if first_view: _count_up(v, int(s["profit"]))
+			_stars_card(sh, Coach.stars(s), first_view)
+			ui.stars_day = int(s["day"])
 			for bid in s["units"]:
 				var u: Dictionary = s["units"][bid]
 				big.add_child(UiStyle.label(Loc.t("sum.unit_line", {"biz_k": c.units[bid].db["name"], "served": u["served"], "customers": u["customers"], "profit_m": u["profit"]}), 13, UiStyle.MUTED))
@@ -564,6 +581,24 @@ func summary(sh: Sheet, s: Dictionary) -> void:
 				card.add_child(UiStyle.label(Loc.t("sum.rep_up", {"n": rd}) if rd > 0 else (Loc.t("sum.rep_down", {"n": -rd}) if rd < 0 else Loc.t("sum.rep_same")), 13, UiStyle.MUTED))
 				sh.kv(card, Loc.t("sum.profit_line"), Loc.money(int(u["profit"]), true), true, UiStyle.GOOD if int(u["profit"]) >= 0 else UiStyle.BAD)
 	sh.add_footer(Loc.t("sum.next"), "cta", func(): flow.call("summary_done", {}))
+
+func _count_up(l: Label, target: int) -> void:
+	var tw := l.create_tween()
+	tw.tween_method(func(x: float): l.text = Loc.money(roundi(x), true), 0.0, float(target), 0.8).set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
+
+# Three stars for the day: they pop in one after the other, each earned one with a rising ping.
+func _stars_card(sh: Sheet, n: int, animate: bool) -> void:
+	var card := sh.card()
+	var row := UiStyle.hbox(10); row.alignment = BoxContainer.ALIGNMENT_CENTER; card.add_child(row)
+	for i in 3:
+		var st := UiIcons.rating_star(40, i < n); row.add_child(st)
+		if not animate: continue
+		st.scale = Vector2.ZERO
+		var tw := st.create_tween(); tw.tween_interval(0.35 + 0.3 * i)
+		if i < n: tw.tween_callback(func(): Game.sfx.play("star", 1.0 + 0.12 * i, -4.0))
+		tw.tween_property(st, "scale", Vector2.ONE, 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	card.add_child(UiStyle.label(Loc.t("sum.stars_%d" % n), 16, UiStyle.INK, true, HORIZONTAL_ALIGNMENT_CENTER))
+	card.add_child(UiStyle.label(Loc.t("sum.stars_legend"), 12, UiStyle.MUTED, false, HORIZONTAL_ALIGNMENT_CENTER))
 
 func week(sh: Sheet, w: Dictionary) -> void:
 	var c := co()

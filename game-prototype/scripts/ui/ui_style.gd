@@ -78,6 +78,7 @@ static func button(text: String, kind := "primary", size := 17, min_h := 50) -> 
 	b.add_theme_color_override("font_focus_color", fg); b.add_theme_color_override("font_disabled_color", Color("7b8494"))
 	b.custom_minimum_size = Vector2(0, min_h); b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	b.focus_mode = Control.FOCUS_NONE
+	press_fx(b)
 	return b
 
 static func chip(text: String, selected: bool, size := 14) -> Button:
@@ -92,7 +93,16 @@ static func chip(text: String, selected: bool, size := 14) -> Button:
 	b.add_theme_color_override("font_color", fg); b.add_theme_color_override("font_pressed_color", fg); b.add_theme_color_override("font_hover_color", fg)
 	b.add_theme_color_override("font_disabled_color", Color("9aa1ad"))
 	b.custom_minimum_size = Vector2(0, 44); b.focus_mode = Control.FOCUS_NONE; b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	press_fx(b)
 	return b
+
+# A small squeeze while a button is held, and a springy release. Works on any button (the pivot follows its size).
+static func press_fx(b: BaseButton) -> void:
+	b.resized.connect(func(): b.pivot_offset = b.size / 2.0)
+	b.button_down.connect(func():
+		b.create_tween().tween_property(b, "scale", Vector2(0.95, 0.95), 0.06))
+	b.button_up.connect(func():
+		b.create_tween().tween_property(b, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT))
 
 static func hbox(sep := 8) -> HBoxContainer:
 	var h := HBoxContainer.new(); h.add_theme_constant_override("separation", sep); return h

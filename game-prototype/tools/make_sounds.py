@@ -47,4 +47,10 @@ write('levelup.wav', mix([(0.11 * i, tone(f, 0.7 if i == 3 else 0.3, 5 if i == 3
 write('tap.wav', tone(720, 0.06, 40, (1.0, 0.2)), 0.4)
 # arrive: two soft notes, a customer came in
 write('arrive.wav', mix([(0.0, tone(659.25, 0.25, 9)), (0.14, tone(880, 0.4, 7))], 0.6), 0.45)
+# star: a bright ping for a star on the day's rating (the game raises the pitch for each star)
+write('star.wav', mix([(0.0, tone(1318.5, 0.55, 7, (1.0, 0.4, 0.15)))], 0.55), 0.5)
+# close: three soft descending notes, the shop closes for the day
+write('close.wav', mix([(0.0, tone(783.99, 0.6, 5)), (0.28, tone(659.25, 0.6, 5)), (0.56, tone(523.25, 1.0, 4))], 1.6), 0.5)
+# deny: two short low blips, a tap that cannot be done
+write('deny.wav', mix([(0.0, tone(233, 0.09, 28, (1.0, 0.3))), (0.1, tone(196, 0.14, 22, (1.0, 0.3)))], 0.3), 0.45)
 print('ok', sorted(os.listdir(out)))

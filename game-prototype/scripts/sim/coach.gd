@@ -46,6 +46,21 @@ static func lines(s: Dictionary, co: Company) -> Array:
 	for i in mini(SHOWN, out.size()): res.append(out[i][1])
 	return res
 
+# The day's rating, 0 to 3 stars: a profit, 80 percent of the customers served, and nobody lost (left or found the shelf empty).
+# A day with every business closed earns none.
+static func stars(s: Dictionary) -> int:
+	var served := 0; var customers := 0; var lost := 0; var open := false
+	for bid in s["units"]:
+		var u: Dictionary = s["units"][bid]
+		if u["closed"]: continue
+		open = true; served += int(u["served"]); customers += int(u["customers"]); lost += int(u["lost_stock"]) + int(u["walkouts"])
+	if not open: return 0
+	var n := 0
+	if int(s["profit"]) > 0: n += 1
+	if customers > 0 and served * 100 >= customers * 80: n += 1
+	if lost == 0 and served > 0: n += 1
+	return n
+
 static func week_lines(w: Dictionary, co: Company) -> Array:
 	var out: Array = []
 	var acc := co.services.has("accountant")

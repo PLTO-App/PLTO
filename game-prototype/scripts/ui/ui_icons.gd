@@ -20,6 +20,8 @@ class SmileyIcon extends Control:
 		draw_arc(c + Vector2(0, r * 0.05), r * 0.5, 0.35, PI - 0.35, 16, Color("4a2c10"), maxf(1.5, r * 0.12), true)
 
 class StarBadge extends Control:
+	var plain := false             # no number (a rating star)
+	var earned := true             # an unearned rating star is grey
 	var value := 1: set = _set_value
 	func _set_value(v: int) -> void:
 		value = v; queue_redraw()
@@ -29,10 +31,11 @@ class StarBadge extends Control:
 		for i in 10:
 			var a := -PI / 2.0 + i * PI / 5.0; var rr := r if i % 2 == 0 else r * 0.52
 			pts.append(c + Vector2(cos(a), sin(a)) * rr)
-		draw_colored_polygon(pts, UiStyle.GOLD_DEEP)
+		draw_colored_polygon(pts, UiStyle.GOLD_DEEP if earned else Color("b9bfca"))
 		var inner := PackedVector2Array()
 		for p in pts: inner.append(c + (p - c) * 0.84)
-		draw_colored_polygon(inner, UiStyle.GOLD)
+		draw_colored_polygon(inner, UiStyle.GOLD if earned else Color("dfe3ea"))
+		if plain: return
 		var f := UiStyle.bold(); var fs := int(r * 0.95); var s := str(value)
 		var w := f.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, fs)
 		draw_string(f, Vector2(c.x - w.x / 2.0, c.y + fs * 0.36), s, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, Color("7a3d0c"))
@@ -48,6 +51,9 @@ static func smiley(px: float) -> Control:
 static func star(px: float, level: int) -> StarBadge:
 	var c := StarBadge.new(); c.custom_minimum_size = Vector2(px, px); c.size = Vector2(px, px); c.pivot_offset = Vector2(px, px) / 2.0
 	c.value = level; c.mouse_filter = Control.MOUSE_FILTER_IGNORE; return c
+
+static func rating_star(px: float, earned: bool) -> StarBadge:
+	var c := star(px, 0); c.plain = true; c.earned = earned; return c
 
 # Simple line icons for buttons, drawn in code: plan, truck, people, upgrade, bank, goals, gear, store, close, check, dot.
 class Glyph extends Control:

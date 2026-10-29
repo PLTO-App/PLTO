@@ -9,6 +9,7 @@ signal cta_pressed
 signal card_choice(index: int)
 
 var move_vec := Vector2.ZERO
+var stars_day := 0                # the day whose summary already played its count-up and stars
 var override_vec := Vector2.ZERO
 var use_override := false
 var input_enabled := true
@@ -96,6 +97,7 @@ func _round_button(kind: String, tip: String) -> Button:
 	for st in ["normal", "hover", "pressed", "focus"]: b.add_theme_stylebox_override(st, UiStyle.panel(UiStyle.GLASS if st != "pressed" else UiStyle.INK, 28, 4))
 	var cc := CenterContainer.new(); cc.set_anchors_preset(Control.PRESET_FULL_RECT); cc.mouse_filter = Control.MOUSE_FILTER_IGNORE; b.add_child(cc)
 	cc.add_child(UiIcons.glyph(kind, 30, Color.WHITE))
+	UiStyle.press_fx(b)
 	return b
 
 func _build_side() -> void:
@@ -125,6 +127,7 @@ func _build_bottom() -> void:
 		v.add_child(UiStyle.one_line(UiStyle.label(Loc.t(spec[2]), 11, UiStyle.INK, true, HORIZONTAL_ALIGNMENT_CENTER)))
 		b.add_child(v)
 		var screen: String = spec[1]
+		UiStyle.press_fx(b)
 		b.pressed.connect(func(): _tap(); open_screen(screen))
 		row.add_child(b); nav_buttons[screen] = b
 	root.add_child(bottom)
@@ -235,6 +238,13 @@ func _notification(what: int) -> void:
 	if card_dim.visible: return
 	if sheet.visible and sheet.closable: sheet.close(); return
 	Game.save_game(); get_tree().quit()
+
+# A tip shown once per game (the flag is saved with the company), as a short hint at the bottom of the screen.
+func tip_once(key: String, seconds := 5.0) -> void:
+	var f := "tip_" + key
+	if Game.co.flags.has(f): return
+	Game.co.flags[f] = 1
+	show_hint(Loc.t("tut." + key), seconds)
 
 func _tap() -> void:
 	Game.sfx.play("tap", 1.0, -6.0)
