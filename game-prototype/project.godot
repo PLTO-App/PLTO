@@ -30,3 +30,8 @@ textures/vram_compression/import_etc2_astc=true
 textures/vram_compression/import_s3tc_bptc=true
 limits/opengl/max_lights_per_object=8
 environment/defaults/default_clear_color=Color(0.164, 0.129, 0.109, 1)
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://locale/strings.he.translation")
+locale/fallback="he"

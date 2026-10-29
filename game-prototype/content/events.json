@@ -1,0 +1,62 @@
+{
+  "_comment": "Morning events. Each one can fire when its conditions hold, with a weight, a cooldown in days and a limit. A choice has a cost (whole shekels, paid at once) and effects. Effects: rep {biz, delta}; mod {kind, biz, value, days}; equip {biz, set}; clean {biz, set}; order {biz, product, qty, price, terms_days, partner}; xp; flag. Kinds handled in code: inspection, contract_offer, staff_raise, staff_sick, payment_late. Texts are translation keys; {placeholders} are filled by the game.",
+
+  "events": [
+    {"id": "inspection", "kind": "inspection", "biz_kind": "food", "title": "ev.inspection.title", "body": "ev.inspection.body", "who": "inspector"},
+
+    {"id": "contract_minimarket", "kind": "contract_offer", "contract": "minimarket", "title": "ev.contract.title", "body": "ev.contract.body", "who": "avi", "min_day": 4, "min_level": 2, "weight": 100, "cooldown": 6, "max_times": 4},
+
+    {"id": "oven_breakdown", "biz": "bakery", "title": "ev.oven.title", "body": "ev.oven.body", "who": "", "trigger": "breakdown", "weight": 100, "cooldown": 5,
+     "choices": [
+       {"label": "ev.oven.fix_now", "cost": 450, "effects": [{"equip": {"biz": "bakery", "set": 100}}], "note": "ev.oven.fix_now.note"},
+       {"label": "ev.oven.cheap", "cost": 200, "effects": [{"equip": {"biz": "bakery", "set": 70}}, {"mod": {"kind": "capacity_pct", "biz": "bakery", "value": -50, "days": 1}}], "note": "ev.oven.cheap.note"}
+     ]},
+    {"id": "machine_breakdown", "biz": "cafe", "title": "ev.machine.title", "body": "ev.machine.body", "who": "", "trigger": "breakdown", "weight": 100, "cooldown": 5,
+     "choices": [
+       {"label": "ev.machine.fix_now", "cost": 380, "effects": [{"equip": {"biz": "cafe", "set": 100}}], "note": "ev.machine.fix_now.note"},
+       {"label": "ev.machine.cheap", "cost": 150, "effects": [{"equip": {"biz": "cafe", "set": 70}}, {"mod": {"kind": "capacity_pct", "biz": "cafe", "value": -50, "days": 1}}], "note": "ev.machine.cheap.note"}
+     ]},
+
+    {"id": "butter_price", "biz": "bakery", "title": "ev.butter.title", "body": "ev.butter.body", "who": "driver", "min_day": 6, "weight": 8, "cooldown": 14, "max_times": 3,
+     "choices": [
+       {"label": "ev.ok", "cost": 0, "effects": [{"mod": {"kind": "ingredient_price_pct", "biz": "dairy", "value": 25, "days": 6}}], "note": "ev.butter.note"}
+     ]},
+    {"id": "coffee_price", "biz": "cafe", "title": "ev.coffee.title", "body": "ev.coffee.body", "who": "driver", "min_day": 6, "weight": 8, "cooldown": 14, "max_times": 3,
+     "choices": [
+       {"label": "ev.ok", "cost": 0, "effects": [{"mod": {"kind": "ingredient_price_pct", "biz": "beans", "value": 30, "days": 6}}], "note": "ev.coffee.note"}
+     ]},
+
+    {"id": "holiday_eve", "biz": "bakery", "title": "ev.holiday.title", "body": "ev.holiday.body", "who": "shira", "min_day": 8, "weight": 7, "cooldown": 15, "weekdays": [0, 1, 2, 3, 4],
+     "choices": [
+       {"label": "ev.holiday.ready", "cost": 0, "effects": [{"mod": {"kind": "demand_pct", "biz": "bakery", "value": 45, "days": 1}}, {"mod": {"kind": "product_pref_pct", "biz": "carrot_cake", "value": 80, "days": 1}}, {"mod": {"kind": "product_pref_pct", "biz": "challah", "value": 60, "days": 1}}], "note": "ev.holiday.note"}
+     ]},
+
+    {"id": "catering", "biz": "bakery", "title": "ev.catering.title", "body": "ev.catering.body", "who": "", "min_day": 5, "min_level": 2, "weight": 9, "cooldown": 8, "weekdays": [0, 1, 2, 3],
+     "choices": [
+       {"label": "ev.catering.yes", "cost": 0, "effects": [{"order": {"biz": "bakery", "product": "croissant", "qty": 30, "price": 10, "terms_days": 14, "partner": "partner.lawyers"}}], "note": "ev.catering.yes.note"},
+       {"label": "ev.catering.no", "cost": 0, "effects": [], "note": "ev.catering.no.note"}
+     ]},
+
+    {"id": "influencer", "title": "ev.influencer.title", "body": "ev.influencer.body", "who": "", "min_day": 7, "min_rep": 60, "weight": 6, "cooldown": 12, "max_times": 3,
+     "choices": [
+       {"label": "ev.influencer.yes", "cost": 250, "effects": [{"mod": {"kind": "demand_pct", "biz": "*", "value": 30, "days": 2}}], "note": "ev.influencer.yes.note"},
+       {"label": "ev.influencer.no", "cost": 0, "effects": [], "note": "ev.influencer.no.note"}
+     ]},
+
+    {"id": "road_works", "title": "ev.roadworks.title", "body": "ev.roadworks.body", "who": "", "min_day": 10, "weight": 5, "cooldown": 20, "max_times": 2,
+     "choices": [
+       {"label": "ev.roadworks.post", "cost": 60, "effects": [{"mod": {"kind": "demand_pct", "biz": "*", "value": -10, "days": 2}}], "note": "ev.roadworks.post.note"},
+       {"label": "ev.ok", "cost": 0, "effects": [{"mod": {"kind": "demand_pct", "biz": "*", "value": -25, "days": 2}}], "note": "ev.roadworks.note"}
+     ]},
+
+    {"id": "neighbor_tasting", "biz": "bakery", "title": "ev.tasting.title", "body": "ev.tasting.body", "who": "shira", "min_day": 3, "max_day": 12, "weight": 8, "cooldown": 30, "max_times": 1,
+     "choices": [
+       {"label": "ev.tasting.yes", "cost": 80, "effects": [{"rep": {"biz": "bakery", "delta": 4}}, {"mod": {"kind": "demand_pct", "biz": "bakery", "value": 10, "days": 3}}], "note": "ev.tasting.yes.note"},
+       {"label": "ev.tasting.no", "cost": 0, "effects": [], "note": "ev.tasting.no.note"}
+     ]},
+
+    {"id": "staff_raise", "kind": "staff_raise", "title": "ev.raise.title", "body": "ev.raise.body", "who": "", "min_day": 8, "weight": 6, "cooldown": 14},
+    {"id": "staff_sick", "kind": "staff_sick", "title": "ev.sick.title", "body": "ev.sick.body", "who": "", "min_day": 6, "weight": 5, "cooldown": 10},
+    {"id": "payment_late", "kind": "payment_late", "title": "ev.late.title", "body": "ev.late.body", "who": "michal", "weight": 100, "cooldown": 3}
+  ]
+}

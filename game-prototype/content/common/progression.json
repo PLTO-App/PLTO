@@ -1,11 +1,27 @@
 {
   "_comment": "Experience needed in total to reach each level (index 0 = level 1). All numbers are whole. Illustrative values, not business advice.",
-  "levels": [0, 100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200],
+  "levels": [
+    0,
+    120,
+    300,
+    600,
+    1000,
+    1500,
+    2100,
+    2800,
+    3600,
+    4500,
+    5500,
+    6600,
+    7800,
+    9100,
+    10500
+  ],
   "bonuses": {
     "first_sale_xp": 25
   },
   "start": {
-    "cash": 0,
+    "cash": 3000,
     "reputation": 50
   },
   "reputation_min": 0,

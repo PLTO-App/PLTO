@@ -1,0 +1,5 @@
+{
+  "_comment": "Per-language formats. dir: rtl or ltr (the interface mirrors itself). currency_after: true puts the sign after the number.",
+  "he": {"dir": "rtl", "currency": "₪", "currency_after": true, "group": ",", "font": "rubik"},
+  "en": {"dir": "ltr", "currency": "₪", "currency_after": false, "group": ",", "font": "rubik"}
+}

@@ -1,0 +1,81 @@
+{
+  "_comment": "The town and the company around the businesses. All money is whole shekels, all rates whole percents. Every text is a translation key (locale/strings.csv). The numbers are illustrative for a game, not business, tax or legal advice.",
+
+  "start": {"cash": 3000, "businesses": ["bakery"], "worker": "bakery"},
+  "week": {"workdays": [0, 1, 2, 3, 4, 5], "rest_day": 6, "weekday_keys": ["day.sun", "day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat"]},
+
+  "openable": {
+    "cafe": {"cost": 6500, "unlock_level": 3, "setup_days": 1}
+  },
+
+  "suppliers": {
+    "wholesale": {"name": "sup.wholesale", "who": "sup.wholesale.who", "quality": 70, "delivery_days": 1, "unlock_level": 1, "credit_level": 4, "credit_days": 7,
+                  "prices": {"base": 2, "dairy": 3, "sweet": 5, "beans": 2, "milk": 1, "cookie": 3, "croissant": 9}},
+    "galil":     {"name": "sup.galil", "who": "sup.galil.who", "quality": 95, "delivery_days": 1, "unlock_level": 2, "credit_level": 99, "credit_days": 0,
+                  "prices": {"base": 3, "dairy": 4, "sweet": 7, "beans": 3, "milk": 2, "cookie": 4, "croissant": 11}},
+    "minimarket":{"name": "sup.minimarket", "who": "sup.minimarket.who", "quality": 75, "delivery_days": 0, "unlock_level": 1, "credit_level": 99, "credit_days": 0,
+                  "prices": {"base": 3, "dairy": 4, "sweet": 7, "beans": 3, "milk": 2, "cookie": 4, "croissant": 12}}
+  },
+
+  "contracts": {
+    "minimarket": {"partner": "partner.minimarket", "who": "partner.minimarket.who", "biz": "bakery", "unlock_level": 2, "min_day": 4,
+                   "items": {"challah": 6, "croissant": 6}, "prices": {"challah": 12, "croissant": 9}, "terms_days": 7, "max_misses": 3,
+                   "counter_pct": 15, "counter_rep": 60}
+  },
+
+  "internal": {"cafe": {"from": "bakery", "products": {"croissant": "croissant"}, "transfer_price": {"croissant": 7}}},
+
+  "services": {
+    "accountant": {"name": "svc.accountant", "who": "svc.accountant.who", "weekly": 150, "unlock_level": 2, "paperwork_pct": 15, "paperwork_fine": 300},
+    "cleaning":   {"name": "svc.cleaning",   "who": "svc.cleaning.who",   "weekly": 240, "unlock_level": 3}
+  },
+
+  "bank": {
+    "overdraft_limit": 2000, "overdraft_fee_pct": 1,
+    "loans": {
+      "small": {"amount": 5000,  "weeks": 10, "weekly": 540, "unlock_level": 2},
+      "large": {"amount": 10000, "weeks": 12, "weekly": 920, "unlock_level": 3}
+    }
+  },
+
+  "staff_pool": [
+    {"id": "yossi", "name": "staff.yossi", "role": "barista", "skill": 75, "wage": 310, "look": {"body": "m", "skin": "medium", "hair": "2a1d14", "hair_style": "short", "top": "2f4858", "bottom": "3a3f4f", "apron": "6b4a2b"}},
+    {"id": "maya",  "name": "staff.maya",  "role": "sales",   "skill": 65, "wage": 300, "look": {"body": "f", "skin": "fair", "hair": "a0522d", "hair_style": "pony", "top": "f7efe4", "bottom": "33415c", "apron": "ef6f8a"}},
+    {"id": "amit",  "name": "staff.amit",  "role": "barista", "skill": 90, "wage": 400, "look": {"body": "m", "skin": "tan", "hair": "1b1b1b", "hair_style": "curly", "top": "1f2a44", "bottom": "2b2d42", "apron": "6b4a2b"}},
+    {"id": "linoy", "name": "staff.linoy", "role": "sales",   "skill": 80, "wage": 350, "look": {"body": "f", "skin": "deep", "hair": "17110d", "hair_style": "bun", "top": "f7efe4", "bottom": "5a3e36", "apron": "ef6f8a"}},
+    {"id": "daniel","name": "staff.daniel","role": "sales",   "skill": 55, "wage": 280, "look": {"body": "m", "skin": "light", "hair": "6b4a2b", "hair_style": "buzz", "top": "f7efe4", "bottom": "3a3f4f", "apron": "ef6f8a"}}
+  ],
+
+  "weather": {
+    "kinds": {"sunny": {"name": "wx.sunny", "w": 50}, "hot": {"name": "wx.hot", "w": 20}, "rain": {"name": "wx.rain", "w": 18}, "cloudy": {"name": "wx.cloudy", "w": 12}}
+  },
+
+  "upkeep": {"clean_decay": 9, "clean_per_customers": 6, "deep_clean_cost": 60, "equip_decay": 4, "maintenance_cost": 150, "breakdown_below": 45},
+
+  "inspection": {"first_day": 9, "every_min": 8, "every_max": 14, "clean_min": 60, "equip_min": 50, "storage_units": 120, "old_on_shelf": 4,
+                 "fine_2": 500, "fine_3": 1000},
+
+  "townsfolk": [
+    {"id": "ronit", "name": "npc.ronit", "look": {"body": "f", "skin": "light",  "hair": "6b3b22", "hair_style": "long",  "top": "9b2f4a", "bottom": "3d5a80", "sleeve": 100}},
+    {"id": "yael",  "name": "npc.yael",  "look": {"body": "f", "skin": "medium", "hair": "1f1612", "hair_style": "bun",   "top": "3a7ca5", "bottom": "2b2d42"}},
+    {"id": "omer",  "name": "npc.omer",  "look": {"body": "m", "skin": "light",  "hair": "2a1d14", "hair_style": "short", "top": "5c7a4a", "bottom": "3a3f4f"}},
+    {"id": "hila",  "name": "npc.hila",  "look": {"body": "f", "skin": "deep",   "hair": "17110d", "hair_style": "curly", "top": "e0a030", "bottom": "5a3e36"}},
+    {"id": "moshe", "name": "npc.moshe", "look": {"body": "m", "skin": "fair",   "hair": "c8c4be", "hair_style": "buzz",  "top": "5a6f8c", "bottom": "3a3f4f", "acc": ["glasses", "beard"]}},
+    {"id": "tamar", "name": "npc.tamar", "look": {"body": "f", "skin": "tan",    "hair": "3b2416", "hair_style": "bob",   "top": "2fb3a2", "bottom": "1f2a44", "acc": ["glasses"]}},
+    {"id": "avi",   "name": "npc.avi",   "look": {"body": "m", "skin": "medium", "hair": "1b1b1b", "hair_style": "buzz",  "top": "c0392b", "bottom": "2b2d42", "acc": ["beard"]}},
+    {"id": "noam",  "name": "npc.noam",  "look": {"body": "m", "skin": "tan",    "hair": "2a1d14", "hair_style": "curly", "top": "f39c12", "bottom": "34495e", "sleeve": 40, "pants": 55}},
+    {"id": "shani", "name": "npc.shani", "look": {"body": "f", "skin": "fair",   "hair": "d4a24c", "hair_style": "pony",  "top": "8e44ad", "bottom": "2c3e50", "pants": 55}},
+    {"id": "eli",   "name": "npc.eli",   "look": {"body": "m", "skin": "deep",   "hair": "17110d", "hair_style": "short", "top": "16a085", "bottom": "2c3e50", "acc": ["cap"], "acc_color": "c0392b"}},
+    {"id": "rivka", "name": "npc.rivka", "look": {"body": "f", "skin": "light",  "hair": "d9d4cc", "hair_style": "bun",   "top": "6c5b7b", "bottom": "355c7d", "sleeve": 100, "acc": ["glasses"]}},
+    {"id": "gal",   "name": "npc.gal",   "look": {"body": "f", "skin": "medium", "hair": "5b3a29", "hair_style": "long",  "top": "ff7a59", "bottom": "34495e"}}
+  ],
+
+  "people": {
+    "noa":     {"name": "npc.noa", "look": {"body": "f", "skin": "light", "hair": "5b3a29", "hair_style": "bun", "top": "f7efe4", "bottom": "33415c", "apron": "ef6f8a"}},
+    "shira":   {"name": "npc.shira", "look": {"body": "f", "skin": "tan", "hair": "2a1d14", "hair_style": "long", "top": "1f2a44", "bottom": "1f2a44", "sleeve": 100}},
+    "michal":  {"name": "npc.michal", "look": {"body": "f", "skin": "fair", "hair": "3b2416", "hair_style": "bob", "top": "1f2a44", "bottom": "1f2a44", "sleeve": 100, "acc": ["glasses"]}},
+    "avi":     {"name": "npc.avi", "look": {"body": "m", "skin": "medium", "hair": "1b1b1b", "hair_style": "buzz", "top": "2e7d32", "bottom": "2b2d42", "acc": ["beard"]}},
+    "inspector": {"name": "npc.inspector", "look": {"body": "f", "skin": "medium", "hair": "1f1612", "hair_style": "pony", "top": "1f3a5f", "bottom": "1f2a44", "sleeve": 100, "acc": ["cap"], "acc_color": "1f2a44"}},
+    "driver":  {"name": "npc.driver", "look": {"body": "m", "skin": "tan", "hair": "2a1d14", "hair_style": "short", "top": "2d5f9e", "bottom": "2b2d42", "acc": ["cap"], "acc_color": "2d5f9e"}}
+  }
+}

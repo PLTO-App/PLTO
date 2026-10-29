@@ -1,98 +1,261 @@
 extends SceneTree
-# Development only: tests and balance simulations for the business simulation (no screen, no 3D).
-# godot --headless --path game-prototype --script dev/test_sim.gd
+# Development only: tests and balance simulations for the company simulation (no screen, no 3D).
+# godot --headless --path game-prototype --script dev/test_sim.gd [-- quick]
 var fails := 0
+var content: ContentDb
 
 func check(name: String, ok: bool, detail := "") -> void:
 	print("%s %s %s" % ["PASS" if ok else "FAIL", name, detail])
 	if not ok: fails += 1
 
+func fresh(seed_value := 7) -> Company:
+	var co := Company.new(content); co.new_game(seed_value); return co
+
+func starter_plan(co: Company) -> Dictionary:
+	var p: Dictionary = co.units["bakery"].empty_plan()
+	p["bake"] = {"croissant": 10, "challah": 6, "carrot_cake": 1, "strawberry_cake": 1}
+	return fill(co, "bakery", p)
+
+# Adds a morning purchase of whatever the bake still misses.
+func fill(co: Company, bid: String, p: Dictionary) -> Dictionary:
+	var b: Business = co.units[bid]; var need := b.bake_needs(p)
+	p["buy_now"] = {}
+	for iid in need:
+		var miss: int = int(need[iid]) - b.inv.units(iid)
+		if miss > 0: p["buy_now"][iid] = miss
+	return p
+
 func _init() -> void:
-	var content := ContentDb.new(); content.load_all()
+	Loc.setup("he")
+	content = ContentDb.new(); content.load_all()
 	check("content loads without errors", content.errors.is_empty(), str(content.errors))
-	var prof := Profile.new(); var biz := Business.new(content, "bakery", prof); biz.new_game(false, 7)
-	check("new game starts with 500 shekels", prof.cash == 500 and biz.day == 1)
-	# plan validation
-	var bad := {"supplier": "wholesale", "buy": {}, "bake": {"strawberry_cake": 6}, "prices": {}, "marketing": "none"}
-	check("oven over capacity is rejected", not biz.validate_plan(bad).is_empty(), str(biz.validate_plan(bad)))
-	var poor := {"supplier": "wholesale", "buy": {"base": 200}, "bake": {}, "prices": {}, "marketing": "none"}
-	check("buying more than the cash is rejected", not biz.validate_plan(poor).is_empty())
-	check("a locked supplier is rejected", not biz.validate_plan({"supplier": "family", "buy": {}, "bake": {}, "prices": {}, "marketing": "none"}).is_empty())
-	check("a locked marketing option is rejected", not biz.validate_plan({"supplier": "wholesale", "buy": {}, "bake": {}, "prices": {}, "marketing": "flyers"}).is_empty())
-	check("missing ingredients are rejected", not biz.validate_plan({"supplier": "wholesale", "buy": {}, "bake": {"strawberry_cake": 3}, "prices": {}, "marketing": "none"}).is_empty())
-	check("an empty plan is valid", biz.validate_plan({"supplier": "wholesale", "buy": {}, "bake": {}, "prices": {}, "marketing": "none"}).is_empty())
-	# determinism
-	var a := Business.new(content, "bakery", Profile.new()); a.new_game(false, 42)
-	var b := Business.new(content, "bakery", Profile.new()); b.new_game(false, 42)
-	var ca := a.begin_day().customers; var cb := b.begin_day().customers
-	check("the same seed gives the same customers", str(ca) == str(cb), "n=%d" % ca.size())
-	var c: Business = Business.new(content, "bakery", Profile.new()); c.new_game(false, 43)
-	check("a different seed gives different customers", str(c.begin_day().customers) != str(ca))
-	# one full day with a simple plan
-	var plan := {"supplier": "wholesale", "buy": {}, "bake": {"croissant": 5, "carrot_cake": 1}, "prices": {}, "marketing": "none"}
-	for iid in content.businesses["bakery"]["ingredients"]: plan["buy"][iid] = 0
-	check("a starter plan is valid", a.commit_plan(plan).is_empty(), str(a.validate_plan(plan)))
-	var runner := a.begin_day(); runner.run_auto(); var s := a.close_day(runner)
-	check("day 1 closes with sales", s["served"] > 0 and s["revenue"] > 0, "served=%d revenue=%d profit=%d cash=%d" % [s["served"], s["revenue"], s["profit"], a.profile.cash])
-	check("profit adds up: revenue - cogs - waste - marketing - fixed", s["profit"] == s["revenue"] - s["cogs"] - s["waste_cost"] - s["marketing_cost"] - s["fixed"])
-	check("cash on hand equals start plus the ledger", 500 + a.ledger.total() == a.profile.cash, "%d vs %d" % [500 + a.ledger.total(), a.profile.cash])
-	check("all money values are whole numbers", typeof(s["revenue"]) == TYPE_INT and typeof(s["profit"]) == TYPE_INT and typeof(s["cash_end"]) == TYPE_INT)
-	check("the first day gives experience and the first-day bonus", s["xp_bonus"] >= 25, str(s["xp_bonus"]))
-	check("the coach has something to say", s["coach"].size() >= 1 and s["coach"].size() <= 3, str(s["coach"]))
-	check("the day advanced", a.day == 2 and a.phase == "morning")
-	# ageing: croissants do not keep, cakes sell old at a discount next day
-	var inv := Inventory.new(); inv.reset({"base": 20, "dairy": 20, "sweet": 20}, ["base", "dairy", "sweet"], ["croissant", "carrot_cake"])
-	inv.bake("croissant", {"base": 1, "dairy": 1}, 3); inv.bake("carrot_cake", {"base": 3, "dairy": 2, "sweet": 1}, 2)
-	var w := inv.close_day({"croissant": 1, "carrot_cake": 2})
-	check("unsold croissants are thrown away, cakes age", inv.stock("croissant") == 0 and inv.goods["carrot_cake"]["old"] == 2 and w.size() == 1)
-	w = inv.close_day({"croissant": 1, "carrot_cake": 2})
-	check("old cakes are thrown away after a second day", inv.stock("carrot_cake") == 0 and w.size() == 1)
-	# save round trip
-	var d := a.to_dict(); var e := Business.new(content, "bakery", Profile.new()); e.new_game(false, 1); e.from_dict(JSON.parse_string(JSON.stringify(d)))
-	check("a business survives saving and loading", e.day == a.day and e.profile.cash == a.profile.cash and e.inv.units("base") == a.inv.units("base") and e.prices == a.prices)
-	check("upgrade: the sign is bought and effects apply", _upgrade(content))
-	_balance(content)
+	check("translations are loaded (a key becomes Hebrew text)", Loc.t("biz.bakery") != "biz.bakery", Loc.t("biz.bakery"))
+	_test_basics(); _test_orders(); _test_contract(); _test_cafe(); _test_inspection(); _test_week(); _test_loan(); _test_save(); _test_events(); _test_goals()
+	if not "quick" in OS.get_cmdline_user_args(): _balance()
 	print("RESULT failures=%d" % fails)
 	quit(1 if fails > 0 else 0)
 
-func _upgrade(content: ContentDb) -> bool:
-	var p := Profile.new(); var bz := Business.new(content, "bakery", p); bz.new_game(false, 3)
-	p.cash = 1000
-	return bz.buy_upgrade("sign") == "" and p.cash == 600 and bz.buy_upgrade("sign") != "" and bz.buy_upgrade("oven") != ""
+func _test_basics() -> void:
+	var co := fresh()
+	check("new game: 3,000 in cash, the bakery only, day 1", co.profile.cash == 3000 and co.units.keys() == ["bakery"] and co.day == 1)
+	var b: Business = co.units["bakery"]; var ctx := co.plan_ctx("bakery")
+	var over := b.empty_plan(); over["bake"]["carrot_cake"] = 20
+	check("over the oven's capacity is rejected", not b.validate_plan(over, ctx).is_empty())
+	var poor := b.empty_plan(); poor["buy_now"] = {"sweet": 2000}
+	check("buying more than the cash allows is rejected", not co.validate_day({"bakery": poor}).is_empty())
+	var locked := b.empty_plan(); locked["marketing"] = "flyers"
+	check("a locked marketing option is rejected", not b.validate_plan(locked, ctx).is_empty())
+	var miss := b.empty_plan(); miss["bake"]["strawberry_cake"] = 4
+	check("missing ingredients are rejected", not b.validate_plan(miss, ctx).is_empty())
+	check("an empty plan is valid", b.validate_plan(b.empty_plan(), ctx).is_empty())
+	var a := fresh(42); var c := fresh(42); var d := fresh(43)
+	a.start_morning(); c.start_morning(); d.start_morning()
+	var ra := a.begin_runner("bakery"); var rc := c.begin_runner("bakery"); var rd := d.begin_runner("bakery")
+	check("the same seed gives the same customers", str(ra.customers) == str(rc.customers), "n=%d" % ra.customers.size())
+	check("a different seed gives different customers", str(ra.customers) != str(rd.customers))
+	co.start_morning()
+	var errs := co.commit_day({"bakery": starter_plan(co)}, "bakery")
+	check("a starter plan is valid", errs.is_empty(), str(errs))
+	var s := co.close_day()
+	var u: Dictionary = s["units"]["bakery"]
+	check("day 1 closes with sales", u["served"] > 0 and u["revenue"] > 0, "served=%d/%d revenue=%d profit=%d cash=%d" % [u["served"], u["customers"], u["revenue"], u["profit"], co.profile.cash])
+	check("profit adds up", u["profit"] == u["revenue"] + u["b2b_revenue"] + u["internal_revenue"] - u["cogs"] - u["b2b_cost"] - u["internal_cost"] - u["waste_cost"] - u["marketing_cost"] - u["fixed"] - u["wages"] - u["other"])
+	check("cash on hand equals the ledger", co.ledger.balance() == co.profile.cash, "%d vs %d" % [co.ledger.balance(), co.profile.cash])
+	check("rent is an expense every day but is paid at the end of the week", u["fixed"] > 0 and co.ledger.total(-1, "rent") == 0)
+	check("money values are whole numbers", typeof(u["revenue"]) == TYPE_INT and typeof(s["profit"]) == TYPE_INT and typeof(co.profile.cash) == TYPE_INT)
+	check("the coach has something to say (1 to 3 lines)", s["coach"].size() >= 1 and s["coach"].size() <= 3, str(s["coach"].map(func(x): return Loc.msg(x))))
+	check("the day advanced", co.day == 2 and co.phase == "morning")
+	# goods: croissants do not keep, cakes sell old for a day and are thrown away after
+	var inv := Inventory.new(); inv.reset({"base": 30, "dairy": 30, "sweet": 30}, ["base", "dairy", "sweet"], ["croissant", "carrot_cake"])
+	inv.bake("croissant", {"base": 1, "dairy": 1}, 3); inv.bake("carrot_cake", {"base": 3, "dairy": 2, "sweet": 2}, 2)
+	var w := inv.close_day({"croissant": 1, "carrot_cake": 2})
+	check("unsold croissants are thrown away, cakes age", inv.stock("croissant") == 0 and inv.old("carrot_cake") == 2 and w.size() == 1)
+	w = inv.close_day({"croissant": 1, "carrot_cake": 2})
+	check("old cakes are thrown away after the second day", inv.stock("carrot_cake") == 0 and w.size() == 1)
 
-func _balance(content: ContentDb) -> void:
-	print("--- balance: 30 days x 6 seeds per strategy")
+func _test_orders() -> void:
+	var co := fresh(); co.start_morning()
+	var cash0 := co.profile.cash
+	var e := co.place_order("bakery", "wholesale", {"base": 20, "dairy": 12})
+	check("an order to the wholesaler is placed", e.is_empty(), Loc.msg(e))
+	check("nothing is paid when ordering", co.profile.cash == cash0)
+	co.commit_day({"bakery": co.units["bakery"].empty_plan()}, "bakery"); co.close_day()
+	var units_before: int = co.units["bakery"].inv.units("base")
+	var cash1 := co.profile.cash
+	var r := co.start_morning()
+	check("the order arrives the next morning and is paid on delivery", r["deliveries"].size() == 1 and co.units["bakery"].inv.units("base") == units_before + 20 and co.profile.cash == cash1 - (20 * 2 + 12 * 3))
+	check("the galil supplier is locked at level 1", not co.place_order("bakery", "galil", {"base": 10}).is_empty())
+	var b: Business = co.units["bakery"]
+	var p := b.empty_plan(); p["buy_now"] = {"sweet": 5}
+	var cash2 := co.profile.cash
+	co.commit_day({"bakery": p}, "bakery")
+	check("buying in the morning from the minimarket costs more", cash2 - co.profile.cash == 5 * int(content.world["suppliers"]["minimarket"]["prices"]["sweet"]))
+
+func _test_contract() -> void:
+	var co := fresh(); co.profile.add_xp(400); co.day = 4
+	co.start_morning()
+	var offer := {}
+	for ev in co.pending_events: if ev["kind"] == "contract_offer": offer = ev
+	check("the minimarket offers a contract (level 2, day 4)", not offer.is_empty())
+	if offer.is_empty(): return
+	co.resolve_event(offer, 0)
+	check("the contract is active", co.contracts.has("minimarket") and co.contracts["minimarket"]["active"])
+	co.subscribe("accountant", true)
+	var p := starter_plan(co); p["bake"]["challah"] = 12; p["bake"]["croissant"] = 16; fill(co, "bakery", p)
+	var res := co.reserved_for("bakery")
+	check("the contract reserves today's bread", int(res.get("challah", 0)) == 6 and int(res.get("croissant", 0)) == 6, str(res))
+	co.commit_day({"bakery": p}, "bakery")
+	check("the delivery leaves the bakery and an invoice is opened", co.receivables.size() == 1 and co.units["bakery"].today["b2b_revenue"] == 6 * 12 + 6 * 9)
+	var s := co.close_day()
+	check("the delivery is income in the day's profit", s["units"]["bakery"]["b2b_revenue"] == 126)
+	var due := int(co.receivables[0]["due"]) if not co.receivables.is_empty() else 0
+	var got := 0
+	while co.day <= due + 1:
+		var r := co.start_morning()
+		for v in r["collected"]: got += int(v["amount"])
+		co.commit_day({"bakery": starter_plan(co)} if co.validate_day({"bakery": starter_plan(co)}).is_empty() else {"bakery": co.units["bakery"].empty_plan()}, "bakery")
+		co.close_day()
+	check("with the accountant the invoice is collected on its due day", got >= 126, "collected %d" % got)
+	# missing deliveries cancel the contract
+	var co2 := fresh(9); co2.profile.add_xp(400); co2.day = 4; co2.start_morning()
+	for ev in co2.pending_events.duplicate(): if ev["kind"] == "contract_offer": co2.resolve_event(ev, 0)
+	for i in 3:
+		co2.start_morning(); co2.commit_day({"bakery": co2.units["bakery"].empty_plan()}, "bakery"); co2.close_day()
+	check("three missed deliveries end the contract", co2.contracts.has("minimarket") and not co2.contracts["minimarket"]["active"])
+
+func _test_cafe() -> void:
+	var co := fresh(); co.start_morning()
+	check("the café cannot open at level 1", not co.can_open("cafe").is_empty())
+	co.profile.add_xp(400); co.profile.cash = 9000; co.ledger = Ledger.new(); co.ledger.start_cash = 9000
+	var e := co.open_business("cafe")
+	check("the café opens at level 3 and costs 6,500", e.is_empty() and co.profile.cash == 2500 and co.owns("cafe"), Loc.msg(e))
+	check("the café is ready the next day", not co.unit_ready("cafe"))
+	co.commit_day({"bakery": starter_plan(co)}, "bakery"); co.close_day()
+	co.start_morning()
+	check("the café is ready", co.unit_ready("cafe"))
+	co.hire("yossi", "cafe")
+	var bp := starter_plan(co); bp["bake"]["croissant"] = 22; fill(co, "bakery", bp)
+	var cp: Dictionary = co.units["cafe"].empty_plan(); cp["transfer_in"] = {"croissant": 10}
+	var errs := co.commit_day({"bakery": bp, "cafe": cp}, "bakery")
+	check("both businesses open", errs.is_empty() and co.runners.size() == 2, str(errs))
+	check("the café got 10 croissants from our bakery at the transfer price", co.units["cafe"].inv.stock("croissant") == 10 and co.units["cafe"].inv.goods["croissant"]["fresh_cost"] == 7)
+	check("the transfer moves no cash", co.ledger.total(co.day, "internal") == 0)
+	var s := co.close_day()
+	var cu: Dictionary = s["units"]["cafe"]; var bu: Dictionary = s["units"]["bakery"]
+	check("the café sold drinks made to order", cu["served"] > 0 and int(cu["sold"].get("cappuccino", 0)) + int(cu["sold"].get("americano", 0)) + int(cu["sold"].get("iced", 0)) > 0, str(cu["sold"]))
+	check("the bakery booked the transfer as internal income", bu["internal_revenue"] == 70)
+	check("the café's wages are an expense", cu["wages"] == 310)
+	check("the company profit is the sum of both businesses minus company costs", s["profit"] == bu["profit"] + cu["profit"] - s["services"] - s["interest"] - s["bank_fee"])
+	check("the ledger still matches the cash", co.ledger.balance() == co.profile.cash)
+
+func _test_inspection() -> void:
+	var co := fresh(); co.start_morning()
+	var b: Business = co.units["bakery"]
+	b.cleanliness = 30; b.equipment = 30
+	var r := co.run_inspection("bakery")
+	check("a dirty bakery with broken equipment fails the inspection and is fined", r["fails"] >= 2 and r["fine"] > 0 and co.ledger.total(-1, "fine") < 0, str(r["checks"]))
+	b.cleanliness = 100; b.equipment = 100
+	var r2 := co.run_inspection("bakery")
+	check("a clean, maintained bakery passes", r2["passed"] and co.stats["inspections_passed"] == 1)
+
+func _test_week() -> void:
+	var co := fresh(); var cash_rent := 0
+	for i in 6:
+		co.start_morning()
+		var p := starter_plan(co)
+		if not co.validate_day({"bakery": p}).is_empty(): p = co.units["bakery"].empty_plan()
+		co.commit_day({"bakery": p}, "bakery"); co.close_day()
+	cash_rent = co.ledger.total(-1, "rent")
+	check("after six working days the week is settled: rent paid", cash_rent == -(1400 + 280), str(cash_rent))
+	check("the rest day is skipped", co.day == 8 and co.weekday() == 0, "day %d" % co.day)
+	check("the weekly report is ready", not co.last_week.is_empty() and co.last_week["notes"].size() >= 2)
+
+func _test_loan() -> void:
+	var co := fresh(); co.profile.add_xp(400)
+	var cash0 := co.profile.cash
+	check("a loan can be taken", co.take_loan("large").is_empty() and co.profile.cash == cash0 + 10000)
+	check("the same loan cannot be taken twice", not co.take_loan("large").is_empty())
+	for i in 12:
+		co.start_morning(); co.commit_day({"bakery": co.units["bakery"].empty_plan()}, "bakery"); co.close_day()
+	check("weekly loan payments are made", co.ledger.total(-1, "loan_payment") == -920 * 2, str(co.ledger.total(-1, "loan_payment")))
+
+func _test_save() -> void:
+	var co := fresh(); co.profile.add_xp(400)
+	for i in 3:
+		co.start_morning(); co.commit_day({"bakery": starter_plan(co)}, "bakery"); co.close_day()
+	co.place_order("bakery", "wholesale", {"base": 10})
+	var d: Dictionary = JSON.parse_string(JSON.stringify(co.to_dict()))
+	var e := Company.new(content); e.from_dict(d)
+	check("the company survives saving and loading", e.day == co.day and e.profile.cash == co.profile.cash and e.units["bakery"].inv.units("base") == co.units["bakery"].inv.units("base")
+		and e.orders.size() == 1 and e.ledger.balance() == e.profile.cash and typeof(e.orders[0]["cost"]) == TYPE_INT)
+	var old := {"version": 1, "schema": 2, "profile": {"cash": 1107, "xp": 250, "level": 2, "reputation": 51}, "business": {"day": 3}}
+	var g := Company.new(content); g.new_game(5); g.profile.from_dict(old["profile"], content)
+	check("a 0.4 profile keeps experience and level", g.profile.xp == 250 and g.profile.level == 2)
+
+func _test_events() -> void:
+	var co := fresh(); co.day = 6
+	co.units["bakery"].equipment = 5
+	var found := {}
+	for i in 12:
+		co.start_morning()
+		for ev in co.pending_events: if ev["id"] == "oven_breakdown": found = ev
+		if not found.is_empty(): break
+		co.day += 1; co.ev_state["last"] = {}
+	check("a neglected oven breaks down", not found.is_empty())
+	if found.is_empty(): return
+	var cash0 := co.profile.cash
+	co.resolve_event(found, 0)
+	check("fixing it now costs 450 and restores the oven", co.profile.cash == cash0 - 450 and co.units["bakery"].equipment == 100)
+
+func _test_goals() -> void:
+	var co := fresh()
+	var first: Array = Goals.active(co)
+	check("three goals are shown", first.size() == 3)
+	co.stats["sold_total"] = 20
+	var met := Goals.update(co)
+	check("selling 15 items completes the first goal and pays experience", met.size() >= 1 and met[0]["id"] == "first_sales" and co.profile.xp >= 30)
+
+func _balance() -> void:
+	var days := 42
+	print("--- balance: %d days x 5 seeds per strategy" % days)
 	var strategies := {
 		"idle (does nothing)": {"idle": true},
 		"bakes the oven full": {"max_bake": true},
-		"balanced, market price": {},
-		"balanced, family supplier": {"supplier": "family"},
-		"balanced + social post": {"marketing": "social_post"},
-		"balanced + flyers (day 3+)": {"marketing": "flyers"},
-		"balanced + promo": {"marketing": "promo"},
-		"overpriced (150%)": {"price_pct": 150},
-		"underpriced (65%)": {"price_pct": 65},
-		"balanced + upgrades": {"upgrades": true},
-		"upgrades + social post": {"upgrades": true, "marketing": "social_post"},
-		"upgrades + flyers": {"upgrades": true, "marketing": "flyers"},
+		"balanced": {},
+		"balanced + orders ahead": {"order_ahead": true},
+		"balanced + social post": {"marketing": "social_post", "order_ahead": true},
+		"balanced + promo": {"marketing": "promo", "order_ahead": true},
+		"overpriced (150%)": {"price_pct": 150, "order_ahead": true},
+		"underpriced (65%)": {"price_pct": 65, "order_ahead": true},
+		"no upkeep": {"upkeep": false, "order_ahead": true},
+		"contract + accountant": {"order_ahead": true, "contract": true, "accountant": true},
+		"full: café + upgrades": {"order_ahead": true, "contract": true, "accountant": true, "cafe": true, "upgrades": true},
+		"full + loan for the café": {"order_ahead": true, "contract": true, "accountant": true, "cafe": true, "upgrades": true, "loan": true},
 	}
 	var res := {}
 	for name in strategies:
-		var sum := {"profit_per_day": 0, "cash": 0, "rep": 0, "served": 0, "lost": 0, "waste": 0, "bankrupt_days": 0}
-		var errors: Array = []; var min_cash := 999999
-		for sd in 6:
-			var r := SimPolicies.play(content, 100 + sd, 30, strategies[name])
-			for k in sum: sum[k] += r[k]
+		var sum := {"profit_per_day": 0, "cash": 0, "rep": 0, "served": 0, "lost": 0, "waste": 0, "bankrupt_days": 0, "cafe_day": 0, "level": 0, "inspections": 0, "goals": 0, "late_profit": 0}
+		var errors: Array = []; var min_cash := 1 << 30; var cafe_n := 0
+		for sd in 5:
+			var r := SimPolicies.play(content, 100 + sd, days, strategies[name])
+			for k in sum: sum[k] += int(r[k])
+			if int(r["cafe_day"]) > 0: cafe_n += 1
 			min_cash = mini(min_cash, r["min_cash"]); errors.append_array(r["errors"])
-		for k in sum: sum[k] /= 6
+		for k in sum: sum[k] /= 5
 		res[name] = sum
-		print("%-28s profit/day %5d | cash after 30d %6d | rep %3d | served %3d lost %3d | waste %5d | lowest cash %5d | broke days %d" % [name, sum["profit_per_day"], sum["cash"], sum["rep"], sum["served"], sum["lost"], sum["waste"], min_cash, sum["bankrupt_days"]])
+		print("%-26s late %5d | profit/day %5d | worth %7d | rep %3d | served %4d lost %4d | waste %5d | low cash %6d | broke %d | café %d (day %d) | lvl %d | goals %d" % [name, sum["late_profit"], sum["profit_per_day"], sum["cash"], sum["rep"], sum["served"], sum["lost"], sum["waste"], min_cash, sum["bankrupt_days"], cafe_n, sum["cafe_day"], sum["level"], sum["goals"]])
 		if not errors.is_empty(): check("no invariant errors in '%s'" % name, false, str(errors.slice(0, 3)))
-	check("doing nothing loses money (fixed costs)", res["idle (does nothing)"]["profit_per_day"] < 0)
-	check("a balanced owner makes a profit", res["balanced, market price"]["profit_per_day"] > 100, str(res["balanced, market price"]["profit_per_day"]))
-	check("a balanced owner wastes less than one who bakes blindly, with about the same profit", res["balanced, market price"]["waste"] < res["bakes the oven full"]["waste"] and res["balanced, market price"]["profit_per_day"] * 100 >= res["bakes the oven full"]["profit_per_day"] * 90)
-	check("overpricing is worse than a fair price", res["overpriced (150%)"]["profit_per_day"] < res["balanced, market price"]["profit_per_day"])
-	check("underpricing is worse than a fair price", res["underpriced (65%)"]["profit_per_day"] < res["balanced, market price"]["profit_per_day"])
-	check("no strategy runs away: cash after 30 days stays reasonable", res["balanced + upgrades"]["cash"] < 40000, str(res["balanced + upgrades"]["cash"]))
-	check("a profitable business keeps its customers (reputation does not collapse)", res["balanced, market price"]["rep"] >= 40, str(res["balanced, market price"]["rep"]))
-	check("the promotion helps but does not dominate (under 25 percent better)", res["balanced + promo"]["profit_per_day"] < res["balanced, market price"]["profit_per_day"] * 125 / 100, "%d vs %d" % [res["balanced + promo"]["profit_per_day"], res["balanced, market price"]["profit_per_day"]])
+	var bal: int = res["balanced + orders ahead"]["profit_per_day"]
+	check("doing nothing loses money (rent is due anyway)", res["idle (does nothing)"]["profit_per_day"] < 0)
+	check("a balanced owner makes a profit", res["balanced"]["profit_per_day"] > 80, str(res["balanced"]["profit_per_day"]))
+	check("ordering ahead beats buying every morning", bal > res["balanced"]["profit_per_day"], "%d vs %d" % [bal, res["balanced"]["profit_per_day"]])
+	check("baking blindly wastes more than planning", res["bakes the oven full"]["waste"] > res["balanced"]["waste"])
+	check("overpricing is worse than a fair price", res["overpriced (150%)"]["profit_per_day"] < bal)
+	check("underpricing is worse than a fair price", res["underpriced (65%)"]["profit_per_day"] < bal)
+	check("skipping cleaning and maintenance costs money (fines, breakdowns)", res["no upkeep"]["profit_per_day"] < bal, "%d vs %d" % [res["no upkeep"]["profit_per_day"], bal])
+	check("the promotion helps but does not dominate (under 25 percent better)", res["balanced + promo"]["profit_per_day"] < bal * 125 / 100, "%d vs %d" % [res["balanced + promo"]["profit_per_day"], bal])
+	check("a contract with the minimarket does not cost profit (with the accountant's fee)", res["contract + accountant"]["profit_per_day"] > bal - 40, "%d vs %d" % [res["contract + accountant"]["profit_per_day"], bal])
+	check("the café opens within six weeks for a careful owner", res["full: café + upgrades"]["cafe_day"] > 0)
+	check("with the café open, the company earns clearly more per day (last two weeks)", res["full: café + upgrades"]["late_profit"] > res["contract + accountant"]["late_profit"] + 40, "%d vs %d" % [res["full: café + upgrades"]["late_profit"], res["contract + accountant"]["late_profit"]])
+	check("no strategy runs away (worth after 6 weeks under 60,000)", res["full: café + upgrades"]["cash"] < 60000, str(res["full: café + upgrades"]["cash"]))
+	check("a profitable business keeps its customers (reputation 45+)", res["balanced + orders ahead"]["rep"] >= 45, str(res["balanced + orders ahead"]["rep"]))

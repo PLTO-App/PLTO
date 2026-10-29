@@ -1,47 +1,78 @@
 extends Node
-# Autoload "Game": the one place the game's systems live. Holds the content, the player's profile, the business simulation, the story
-# flags and the sounds, and saves the game. It knows nothing about the 3D world or the screen: those read it and call its methods.
+# Autoload "Game": the one place the game's systems live. Holds the content, the company simulation, the player's settings and the
+# sounds, and saves the game. It knows nothing about the 3D world or the screen: those read it and call its methods.
+
+const SETTINGS_PATH := "user://settings.json"
 
 var content := ContentDb.new()
-var profile := Profile.new()
-var biz: Business
+var co: Company
+var profile: Profile
 var sfx: Sfx
-var flags := {}
-var business_id := "bakery"
+var settings := {"sound": true, "music": true, "locale": Loc.DEFAULT}
 var save_path := "user://save.json"
 var test_mode := false
+var migrated_from := 0
 
 func _ready() -> void:
+	_load_settings()
+	Loc.setup(settings["locale"])
 	content.load_all()
 	for e in content.errors: push_error("content: " + e)
 	sfx = Sfx.new(); add_child(sfx)
-	if "--autotest" in OS.get_cmdline_user_args() or "--coretest" in OS.get_cmdline_user_args():
+	var args := OS.get_cmdline_user_args()
+	if "--autotest" in args or "--coretest" in args:
 		save_path = "user://autotest_save.json"; SaveStore.erase(save_path); test_mode = true
 	load_game()
+	apply_settings()
 
-func business() -> Dictionary:
-	return content.businesses[business_id]
+func business(bid := "") -> Dictionary:
+	return content.businesses[bid if bid != "" else co.worker]
 
 func load_game() -> void:
-	biz = Business.new(content, business_id, profile)
+	co = Company.new(content); profile = co.profile
 	var data := SaveStore.read(save_path)
 	var fresh_seed := 4242 if test_mode else int(Time.get_unix_time_from_system()) % 1000003
 	if data.is_empty():
-		biz.new_game(false, fresh_seed); flags = {}
-	elif data.has("business"):
-		biz.from_dict(data["business"]); flags = data.get("flags", {})
-	else:   # a save from version 0.3: keep cash, experience, level and reputation, start the simulation fresh
-		profile.from_dict(data.get("profile", {}), content); biz.new_game(true, fresh_seed); flags = data.get("flags", {})
+		co.new_game(fresh_seed)
+	elif data.has("company"):
+		co.from_dict(data["company"])
+	else:
+		# a save from version 0.3 or 0.4: keep experience, level and the cash (at least the new starting cash); the town starts fresh
+		migrated_from = 4 if data.has("business") else 3
+		var old: Dictionary = data.get("profile", {})
+		co.new_game(fresh_seed)
+		co.profile.from_dict(old, content)
+		co.profile.cash = maxi(int(old.get("cash", 0)), int(content.world["start"]["cash"]))
+		co.ledger = Ledger.new(); co.ledger.start_cash = co.profile.cash
+		co.stats["week_start_cash"] = co.profile.cash
+		co._snap()
+		save_game()
 
-# Saves the last safe point of the business (a mid-day state is never written), plus the story flags.
+# Saves the last safe point (a morning). A day in progress is never written: if the app closes mid-day, the day starts again.
 func save_game() -> bool:
-	return SaveStore.write(save_path, {"schema": 2, "business": biz.snapshot, "profile": biz.snapshot["profile"], "flags": flags})
+	return SaveStore.write(save_path, {"schema": 3, "company": co.snapshot})
 
 func has_progress() -> bool:
-	return biz.day > 1 or profile.sales_count > 0
+	return co.day > 1 or profile.sales_count > 0
 
 func reset_progress() -> void:
-	biz.new_game(false, int(Time.get_unix_time_from_system()) % 1000003); flags = {}; save_game()
+	co.new_game(int(Time.get_unix_time_from_system()) % 1000003); save_game()
+
+# ---------------------------------------------------------------- settings (sound, music, language)
+func _load_settings() -> void:
+	if not FileAccess.file_exists(SETTINGS_PATH): return
+	var d = JSON.parse_string(FileAccess.open(SETTINGS_PATH, FileAccess.READ).get_as_text())
+	if typeof(d) == TYPE_DICTIONARY:
+		for k in settings: if d.has(k): settings[k] = d[k]
+
+func save_settings() -> void:
+	var f := FileAccess.open(SETTINGS_PATH, FileAccess.WRITE)
+	if f != null: f.store_string(JSON.stringify(settings))
+	apply_settings()
+
+func apply_settings() -> void:
+	if sfx != null: sfx.enabled = bool(settings["sound"]); sfx.set_music(bool(settings["music"]))
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_WM_CLOSE_REQUEST: save_game()
+	if what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_WM_CLOSE_REQUEST:
+		if co != null: save_game()

@@ -1,0 +1,32 @@
+{
+  "_comment": "Goals in chapters. Up to three open goals are shown at a time, in this order. check: the condition (see Goals in scripts/sim/goals.gd). reward: experience and cash (whole shekels).",
+  "chapters": [
+    {"id": "ch1", "name": "goal.ch1", "goals": [
+      {"id": "first_sales",  "name": "goal.first_sales",  "check": {"type": "sold_total", "n": 15}, "reward": {"xp": 30, "cash": 0}},
+      {"id": "clean_day",    "name": "goal.clean_day",    "check": {"type": "no_stockout_day"}, "reward": {"xp": 30, "cash": 100}},
+      {"id": "order_ahead",  "name": "goal.order_ahead",  "check": {"type": "supplier_order"}, "reward": {"xp": 25, "cash": 0}},
+      {"id": "friday_rush",  "name": "goal.friday_rush",  "check": {"type": "sold_product_day", "product": "challah", "n": 12}, "reward": {"xp": 40, "cash": 150}},
+      {"id": "week_profit",  "name": "goal.week_profit",  "check": {"type": "week_profit", "n": 1}, "reward": {"xp": 60, "cash": 200}}
+    ]},
+    {"id": "ch2", "name": "goal.ch2", "goals": [
+      {"id": "contract",     "name": "goal.contract",     "check": {"type": "contract_active", "id": "minimarket"}, "reward": {"xp": 50, "cash": 0}},
+      {"id": "accountant",   "name": "goal.accountant",   "check": {"type": "service", "id": "accountant"}, "reward": {"xp": 30, "cash": 0}},
+      {"id": "rep70",        "name": "goal.rep70",        "check": {"type": "rep", "biz": "bakery", "n": 70}, "reward": {"xp": 50, "cash": 200}},
+      {"id": "upgrade1",     "name": "goal.upgrade1",     "check": {"type": "upgrades", "n": 1}, "reward": {"xp": 40, "cash": 0}},
+      {"id": "inspection",   "name": "goal.inspection",   "check": {"type": "inspection_passed"}, "reward": {"xp": 60, "cash": 0}}
+    ]},
+    {"id": "ch3", "name": "goal.ch3", "goals": [
+      {"id": "save_cafe",    "name": "goal.save_cafe",    "check": {"type": "cash", "n": 6500}, "reward": {"xp": 40, "cash": 0}},
+      {"id": "open_cafe",    "name": "goal.open_cafe",    "check": {"type": "owns", "biz": "cafe"}, "reward": {"xp": 100, "cash": 0}},
+      {"id": "hire",         "name": "goal.hire",         "check": {"type": "staff", "n": 1}, "reward": {"xp": 50, "cash": 0}},
+      {"id": "cafe_sales",   "name": "goal.cafe_sales",   "check": {"type": "biz_sold_total", "biz": "cafe", "n": 60}, "reward": {"xp": 60, "cash": 250}},
+      {"id": "transfer",     "name": "goal.transfer",     "check": {"type": "transfers", "n": 20}, "reward": {"xp": 50, "cash": 0}}
+    ]},
+    {"id": "ch4", "name": "goal.ch4", "goals": [
+      {"id": "two_weeks",    "name": "goal.two_weeks",    "check": {"type": "week_profit", "n": 2}, "reward": {"xp": 80, "cash": 300}},
+      {"id": "rep80",        "name": "goal.rep80",        "check": {"type": "rep_all", "n": 80}, "reward": {"xp": 80, "cash": 300}},
+      {"id": "upgrades4",    "name": "goal.upgrades4",    "check": {"type": "upgrades", "n": 4}, "reward": {"xp": 80, "cash": 0}},
+      {"id": "no_debt",      "name": "goal.no_debt",      "check": {"type": "no_debt_cash", "n": 15000}, "reward": {"xp": 120, "cash": 500}}
+    ]}
+  ]
+}

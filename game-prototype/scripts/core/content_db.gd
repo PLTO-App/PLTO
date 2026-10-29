@@ -1,15 +1,18 @@
 class_name ContentDb
 extends RefCounted
-# Loads game content from JSON (progression curve, business definitions) and checks it.
-# JSON numbers arrive as floats in Godot, so every money or experience value is converted to int and rejected if it was fractional.
+# Loads the game content from JSON (progression, the town, the businesses, events, goals) and checks it.
+# JSON numbers arrive as floats in Godot, so every number is turned into an int and rejected if it was fractional:
+# money, experience and percentages in this game are whole numbers.
 
 var levels: Array[int] = []
-var first_sale_xp := 0
 var start_cash := 0
 var start_reputation := 50
 var rep_min := 0
 var rep_max := 100
-var businesses := {}      # id -> Dictionary (products, customers, ...)
+var world := {}
+var businesses := {}      # id -> Dictionary
+var events: Array = []
+var goals := {}
 var errors: Array[String] = []
 
 static func read_json(path: String) -> Variant:
@@ -17,25 +20,21 @@ static func read_json(path: String) -> Variant:
 	if f == null: return null
 	return JSON.parse_string(f.get_as_text())
 
-func _int(v: Variant, where: String) -> int:
-	if typeof(v) != TYPE_FLOAT and typeof(v) != TYPE_INT:
-		errors.append("%s: not a number" % where); return 0
-	if typeof(v) == TYPE_FLOAT and not is_equal_approx(v, roundf(v)):
-		errors.append("%s: must be a whole number" % where)
-	return int(v)
-
 func load_all() -> void:
 	errors.clear()
 	var p = read_json("res://content/common/progression.json")
 	if typeof(p) != TYPE_DICTIONARY:
 		errors.append("progression.json missing or invalid"); return
+	_intify(p, "progression")
 	levels.clear()
-	for i in (p["levels"] as Array).size(): levels.append(_int(p["levels"][i], "levels[%d]" % i))
+	for v in p["levels"]: levels.append(int(v))
 	for i in range(1, levels.size()):
 		if levels[i] <= levels[i - 1]: errors.append("levels must increase (index %d)" % i)
-	first_sale_xp = _int(p["bonuses"]["first_sale_xp"], "bonuses.first_sale_xp")
-	start_cash = _int(p["start"]["cash"], "start.cash"); start_reputation = _int(p["start"]["reputation"], "start.reputation")
-	rep_min = _int(p["reputation_min"], "reputation_min"); rep_max = _int(p["reputation_max"], "reputation_max")
+	start_cash = int(p["start"]["cash"]); start_reputation = int(p["start"]["reputation"])
+	rep_min = int(p["reputation_min"]); rep_max = int(p["reputation_max"])
+	var w = read_json("res://content/world.json")
+	if typeof(w) != TYPE_DICTIONARY: errors.append("world.json missing or invalid"); return
+	world = _intify(w, "world")
 	businesses.clear()
 	var dir := DirAccess.open("res://content/businesses")
 	if dir == null: errors.append("content/businesses missing"); return
@@ -43,7 +42,12 @@ func load_all() -> void:
 		if not fn.ends_with(".json"): continue
 		var b = read_json("res://content/businesses/" + fn)
 		if typeof(b) != TYPE_DICTIONARY: errors.append(fn + ": invalid"); continue
-		_normalize_business(b, fn); businesses[b.get("id", fn)] = b
+		_intify(b, fn); _check_business(b, fn); businesses[b.get("id", fn)] = b
+	var ev = read_json("res://content/events.json")
+	events = _intify(ev, "events")["events"] if typeof(ev) == TYPE_DICTIONARY else []
+	var g = read_json("res://content/goals.json")
+	goals = _intify(g, "goals") if typeof(g) == TYPE_DICTIONARY else {}
+	_check_world()
 
 # Turns every whole-number float into an int (JSON numbers arrive as floats) and reports any real fraction.
 func _intify(v: Variant, path: String) -> Variant:
@@ -59,28 +63,49 @@ func _intify(v: Variant, path: String) -> Variant:
 			return v
 	return v
 
-func _normalize_business(b: Dictionary, fn: String) -> void:
-	_intify(b, fn)
-	for key in ["id", "name", "start", "slots", "base_customers", "oven_capacity", "fixed_costs", "arrival_weights", "weekday_factor", "weekday_names", "sensitivity",
-			"ingredients", "suppliers", "products", "marketing", "upgrades", "xp_rules", "customers"]:
+func _check_business(b: Dictionary, fn: String) -> void:
+	for key in ["id", "name", "kind", "start", "slots", "base_customers", "capacity", "weekly_costs", "arrival_weights", "weekday_factor", "sensitivity",
+			"ingredients", "products", "marketing", "upgrades", "xp_rules", "supplier_ids"]:
 		if not b.has(key): errors.append("%s: missing %s" % [fn, key])
-	if not (b.has("products") and b.has("ingredients") and b.has("suppliers")): return
-	if b["arrival_weights"].size() != b["slots"]: errors.append(fn + ": arrival_weights must have one weight per slot")
-	if b["weekday_factor"].size() != 7 or b["weekday_names"].size() != 7: errors.append(fn + ": weekday lists need 7 entries")
-	for sid in b["suppliers"]:
-		for iid in b["ingredients"]:
-			if not b["suppliers"][sid]["prices"].has(iid): errors.append("%s.%s: no price for %s" % [fn, sid, iid])
+	if not (b.has("products") and b.has("ingredients")): return
+	if b["arrival_weights"].size() < b["slots"]: errors.append(fn + ": arrival_weights needs one weight per slot")
+	if b["weekday_factor"].size() != 7: errors.append(fn + ": weekday_factor needs 7 entries")
 	for pid in b["products"]:
 		var pr: Dictionary = b["products"][pid]
-		for k in ["price", "xp", "pref", "oven", "shelf_days", "old_price_pct", "recipe", "model", "icon"]:
+		for k in ["name", "price", "xp", "pref", "cap", "icon", "qty"]:
 			if not pr.has(k): errors.append("%s.%s: missing %s" % [fn, pid, k])
 		for iid in pr.get("recipe", {}):
 			if not b["ingredients"].has(iid): errors.append("%s.%s: unknown ingredient %s" % [fn, pid, iid])
-		# cheapest possible unit cost must stay below the price, so the business can make money at all
-		var unit := 0
-		for iid in pr.get("recipe", {}): unit += pr["recipe"][iid] * (b["suppliers"]["wholesale"]["prices"][iid] if b["suppliers"].has("wholesale") else 0)
-		if unit >= pr.get("price", 0): errors.append("%s.%s: ingredient cost %d is not below the price" % [fn, pid, unit])
+		if pr.has("resale") and not b.get("goods_inputs", {}).has(pr["resale"]): errors.append("%s.%s: resale input %s not in goods_inputs" % [fn, pid, pr["resale"]])
+		if pr.has("weekday_pref") and pr["weekday_pref"].size() != 7: errors.append("%s.%s: weekday_pref needs 7 entries" % [fn, pid])
 	if not b["marketing"].has("none"): errors.append(fn + ": marketing needs a 'none' option")
+
+func _check_world() -> void:
+	for key in ["start", "week", "suppliers", "contracts", "services", "bank", "staff_pool", "weather", "upkeep", "inspection", "townsfolk", "people"]:
+		if not world.has(key): errors.append("world: missing %s" % key)
+	if errors.size() > 0: return
+	# every business can buy all it needs from every supplier it lists, and can make money at the cheapest prices
+	for bid in businesses:
+		var b: Dictionary = businesses[bid]
+		var items: Array = b["ingredients"].keys() + b.get("goods_inputs", {}).keys()
+		for sid in b["supplier_ids"]:
+			if not world["suppliers"].has(sid): errors.append("%s: unknown supplier %s" % [bid, sid]); continue
+			for it in items:
+				if not world["suppliers"][sid]["prices"].has(it): errors.append("%s: supplier %s has no price for %s" % [bid, sid, it])
+		var cheap: Dictionary = world["suppliers"]["wholesale"]["prices"]
+		for pid in b["products"]:
+			var pr: Dictionary = b["products"][pid]; var unit := 0
+			if pr.has("resale"): unit = int(cheap.get(pr["resale"], 0))
+			for iid in pr.get("recipe", {}): unit += int(pr["recipe"][iid]) * int(cheap.get(iid, 0))
+			if unit >= int(pr["price"]): errors.append("%s.%s: cost %d is not below the price" % [bid, pid, unit])
+	for bid in world["start"]["businesses"]:
+		if not businesses.has(bid): errors.append("world.start: unknown business %s" % bid)
+	for cid in world["contracts"]:
+		var c: Dictionary = world["contracts"][cid]
+		for pid in c["items"]:
+			if not businesses[c["biz"]]["products"].has(pid): errors.append("contract %s: unknown product %s" % [cid, pid])
+	for e in events:
+		if not e.has("id") or not e.has("title") or not e.has("body"): errors.append("event missing id/title/body: %s" % str(e).left(60))
 
 # Level reached with a given total experience (1-based, capped at the table's end).
 func level_for_xp(xp: int) -> int:

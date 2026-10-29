@@ -17,3 +17,6 @@ func play(sound: String, pitch := 1.0, volume_db := 0.0) -> void:
 	if not _cache.has(sound): _cache[sound] = load("res://assets/audio/%s.wav" % sound)
 	var p := _players[_next]; _next = (_next + 1) % POOL
 	p.stream = _cache[sound]; p.pitch_scale = pitch; p.volume_db = volume_db; p.play()
+
+func set_music(_on: bool) -> void:
+	pass

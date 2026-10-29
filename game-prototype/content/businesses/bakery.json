@@ -1,54 +1,49 @@
 {
   "id": "bakery",
-  "name": "המאפייה של נועה",
-  "owner": "נועה",
-  "_comment": "All money is whole shekels and all percentages are whole numbers. Illustrative values for learning, not business advice. A new business type is a new file like this one.",
+  "name": "biz.bakery",
+  "kind": "food",
+  "scene": "bakery",
+  "_comment": "Whole shekels and whole percents. Illustrative values for a game, not business advice. A new business type is a new file like this one.",
 
-  "start": {"cash": 500, "reputation": 50, "stock": {"base": 10, "dairy": 8, "sweet": 6}},
-  "slots": 12, "slot_minutes": 30, "day_start_hour": 8,
-  "base_customers": 9,
-  "oven_capacity": 16,
-  "fixed_costs": {"rent_utilities": 90},
-  "arrival_weights": [5, 10, 15, 15, 10, 8, 8, 10, 12, 10, 7, 5],
-  "weekday_names": ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"],
-  "weekday_factor": [90, 80, 85, 90, 100, 130, 115],
-  "sensitivity": [{"mult": 80, "w": 10}, {"mult": 90, "w": 15}, {"mult": 100, "w": 20}, {"mult": 110, "w": 20}, {"mult": 125, "w": 20}, {"mult": 140, "w": 15}],
+  "start": {"reputation": 50, "stock": {"base": 40, "dairy": 24, "sweet": 14}},
+  "slots": 12, "slots_friday": 8, "slot_minutes": 30, "day_start_hour": 8,
+  "base_customers": 16,
+  "capacity": {"name": "cap.oven", "amount": 80},
+  "weekly_costs": {"rent": 1400, "utilities": 280},
+  "arrival_weights": [6, 10, 14, 14, 10, 8, 8, 9, 10, 9, 7, 5],
+  "weekday_factor": [90, 85, 85, 90, 110, 135, 0],
+  "sensitivity": [{"mult": 90, "w": 8}, {"mult": 100, "w": 22}, {"mult": 110, "w": 25}, {"mult": 125, "w": 25}, {"mult": 140, "w": 20}],
+  "weather": {"rain": 85, "hot": 95, "sunny": 100, "cloudy": 100},
+  "supplier_ids": ["wholesale", "galil", "minimarket"],
 
   "ingredients": {
-    "base":  {"name": "קמח, סוכר וביצים", "step": 6},
-    "dairy": {"name": "חמאה וחלב",        "step": 4},
-    "sweet": {"name": "שוקולד ופירות",    "step": 4}
+    "base":  {"name": "ing.base",  "step": 10},
+    "dairy": {"name": "ing.dairy", "step": 6},
+    "sweet": {"name": "ing.sweet", "step": 5}
   },
-  "suppliers": {
-    "wholesale": {"name": "סיטונאי השוק",  "quality": 70, "unlock_level": 1, "prices": {"base": 6, "dairy": 10, "sweet": 14}},
-    "family":    {"name": "ספק משפחתי",    "quality": 95, "unlock_level": 2, "prices": {"base": 8, "dairy": 13, "sweet": 19}}
-  },
+  "goods_inputs": {},
 
   "products": {
-    "croissant":       {"name": "קרואסון",          "model": "croissant",                  "scale_pct": 240, "icon": "icon_croissant", "price": 35,  "xp": 3,  "pref": 50, "oven": 1, "shelf_days": 1, "old_price_pct": 0,  "recipe": {"base": 1, "dairy": 1}},
-    "carrot_cake":     {"name": "עוגת גזר",         "model": "carrot_cake",                "scale_pct": 150, "icon": "icon_carrot",    "price": 180, "xp": 8,  "pref": 25, "oven": 3, "shelf_days": 2, "old_price_pct": 60, "recipe": {"base": 3, "dairy": 2, "sweet": 1}},
-    "strawberry_cake": {"name": "עוגת תות ושוקולד", "model": "strawberry_chocolate_cake",  "scale_pct": 150, "icon": "icon_cake",      "price": 220, "xp": 10, "pref": 25, "oven": 3, "shelf_days": 2, "old_price_pct": 60, "recipe": {"base": 3, "dairy": 2, "sweet": 3}}
+    "croissant":       {"name": "prod.croissant",       "model": "croissant",                 "scale_pct": 240, "icon": "icon_croissant", "price": 14,  "xp": 2, "pref": 40, "cap": 1, "shelf_days": 1, "old_price_pct": 0,  "qty": [1, 4], "recipe": {"base": 1, "dairy": 1}},
+    "challah":         {"name": "prod.challah",         "model": "challah",                   "scale_pct": 100, "icon": "icon_challah",   "price": 18,  "xp": 2, "pref": 28, "cap": 2, "shelf_days": 1, "old_price_pct": 0,  "qty": [1, 2], "recipe": {"base": 2}, "weekday_pref": [70, 60, 60, 80, 170, 320, 0]},
+    "carrot_cake":     {"name": "prod.carrot_cake",     "model": "carrot_cake",               "scale_pct": 150, "icon": "icon_carrot",    "price": 95,  "xp": 6, "pref": 16, "cap": 6, "shelf_days": 2, "old_price_pct": 60, "qty": [1, 1], "recipe": {"base": 3, "dairy": 2, "sweet": 2}},
+    "strawberry_cake": {"name": "prod.strawberry_cake", "model": "strawberry_chocolate_cake", "scale_pct": 150, "icon": "icon_cake",      "price": 140, "xp": 8, "pref": 16, "cap": 6, "shelf_days": 2, "old_price_pct": 60, "qty": [1, 1], "recipe": {"base": 3, "dairy": 3, "sweet": 4}}
   },
 
   "marketing": {
-    "none":        {"name": "בלי שיווק",              "cost": 0,   "reach_pct": 0,  "discount_pct": 0,  "pref_mult": 100, "unlock_level": 1},
-    "social_post": {"name": "פוסט ברשת החברתית",      "cost": 60,  "reach_pct": 25, "discount_pct": 0,  "pref_mult": 100, "unlock_level": 1},
-    "promo":       {"name": "מבצע על מוצר אחד",       "cost": 0,   "reach_pct": 0,  "discount_pct": 20, "pref_mult": 150, "unlock_level": 1},
-    "flyers":      {"name": "פליירים בשכונה",         "cost": 150, "reach_pct": 50, "discount_pct": 0,  "pref_mult": 100, "unlock_level": 2}
+    "none":        {"name": "mk.none",        "cost": 0,   "reach_pct": 0,  "discount_pct": 0,  "pref_mult": 100, "unlock_level": 1},
+    "social_post": {"name": "mk.social_post", "cost": 60,  "reach_pct": 20, "discount_pct": 0,  "pref_mult": 100, "unlock_level": 1},
+    "promo":       {"name": "mk.promo",       "cost": 0,   "reach_pct": 0,  "discount_pct": 20, "pref_mult": 125, "unlock_level": 1},
+    "flyers":      {"name": "mk.flyers",      "cost": 180, "reach_pct": 45, "discount_pct": 0,  "pref_mult": 100, "unlock_level": 2}
   },
 
   "upgrades": {
-    "sign":    {"name": "שלט מואר",         "desc": "עוד 2 לקוחות ביום בממוצע",         "cost": 400, "unlock_level": 1, "effect": {"base_customers": 2}},
-    "oven":    {"name": "תנור גדול יותר",   "desc": "עוד 6 יחידות תפוקה ביום",           "cost": 600, "unlock_level": 2, "effect": {"oven_capacity": 6}},
-    "display": {"name": "ויטרינה מעוצבת",   "desc": "לקוחות מוכנים לשלם 8 אחוז יותר",    "cost": 700, "unlock_level": 3, "effect": {"wtp_pct": 8}}
+    "sign":    {"name": "upg.sign",    "desc": "upg.sign.desc",    "cost": 900,  "unlock_level": 1, "effect": {"base_customers": 2}},
+    "fridge":  {"name": "upg.fridge",  "desc": "upg.fridge.desc",  "cost": 1200, "unlock_level": 2, "effect": {"storage": 1}},
+    "oven":    {"name": "upg.oven",    "desc": "upg.oven.desc",    "cost": 2400, "unlock_level": 3, "effect": {"capacity": 40}},
+    "display": {"name": "upg.display", "desc": "upg.display.desc", "cost": 1800, "unlock_level": 4, "effect": {"wtp_pct": 8}},
+    "tables":  {"name": "upg.tables",  "desc": "upg.tables.desc",  "cost": 1500, "unlock_level": 5, "effect": {"base_customers": 2, "patience": 1}}
   },
 
-  "xp_rules": {"profitable_day": 30, "no_stockout": 20, "happy_customers": 20, "first_day": 25, "happy_threshold": 70},
-
-  "customers": [
-    {"id": "ronit", "name": "רונית", "g": "f", "look": {"skin": "light",  "hair": "6b3b22", "hair_style": "long",  "top": "9b2f4a", "bottom": "3d5a80", "apron": ""}},
-    {"id": "yael",  "name": "יעל",   "g": "f", "look": {"skin": "medium", "hair": "1f1612", "hair_style": "bun",   "top": "3a7ca5", "bottom": "2b2d42", "apron": ""}},
-    {"id": "omer",  "name": "עומר",  "g": "m", "look": {"skin": "light",  "hair": "2a1d14", "hair_style": "short", "top": "5c7a4a", "bottom": "3a3f4f", "apron": ""}},
-    {"id": "hila",  "name": "הילה",  "g": "f", "look": {"skin": "deep",   "hair": "17110d", "hair_style": "pony",  "top": "e0a030", "bottom": "5a3e36", "apron": ""}}
-  ]
+  "xp_rules": {"profitable_day": 30, "no_stockout": 20, "happy_customers": 20, "first_day": 25, "happy_threshold": 70}
 }
