@@ -16,6 +16,7 @@ var closed := false
 var on_sale: Callable         # func(outcome: Dictionary) -> void
 var _next := 0
 var _acc := 0.0
+var minute := 0               # minutes since opening (the hands-on day moves time by actions)
 
 func _init(business: Business, custs: Array, slots_today: int, capacity_today: int) -> void:
 	biz = business; db = business.db; customers = custs; slots = slots_today; cap_left = capacity_today
@@ -24,7 +25,7 @@ func finished() -> bool:
 	return slot >= slots and queue.is_empty()
 
 func clock_text() -> String:
-	var minutes: int = db["day_start_hour"] * 60 + mini(slot, slots) * db["slot_minutes"]
+	var minutes: int = maxi(db["day_start_hour"] * 60 + mini(slot, slots) * db["slot_minutes"], clock_minutes())
 	return "%02d:%02d" % [minutes / 60, minutes % 60]
 
 func progress() -> float:
@@ -45,6 +46,32 @@ func begin_slot() -> Dictionary:
 
 func end_slot() -> void:
 	slot += 1
+	minute = maxi(minute, slot * int(db["slot_minutes"]))
+
+# Moves the clock of a hands-on day: every half hour that passes opens a new slot (arrivals, impatient customers leave).
+# Returns the events of the slots that opened.
+func advance(minutes: int) -> Array:
+	var events: Array = []
+	minute += minutes
+	var sm := int(db["slot_minutes"])
+	while slot < slots and minute >= (slot + 1) * sm:
+		slot += 1
+		if slot < slots: events.append(begin_slot())
+		else: events.append(_walkouts_only())
+	if slot >= slots: events.append(_walkouts_only())
+	return events
+
+func _walkouts_only() -> Dictionary:
+	var left: Array = []
+	for c in queue.duplicate():
+		if slot - c["arrival"] > c["patience"] + 1:
+			queue.erase(c)
+			var o := {"type": "walkout", "customer": c, "waited": slot - c["arrival"]}
+			outcomes.append(o); left.append(o)
+	return {"arrived": [], "left": left}
+
+func clock_minutes() -> int:
+	return int(db["day_start_hour"]) * 60 + minute
 
 func front() -> Dictionary:
 	return queue[0] if not queue.is_empty() else {}
@@ -88,6 +115,10 @@ func commit(c: Dictionary) -> Dictionary:
 		if on_sale.is_valid(): on_sale.call(o)
 	outcomes.append(o)
 	return o
+
+# The next waiting customer after the first `skip` ones ({} if none).
+func waiting(skip: int) -> Dictionary:
+	return queue[skip] if queue.size() > skip else {}
 
 func commit_front() -> Dictionary:
 	return commit(front())

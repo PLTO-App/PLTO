@@ -9,7 +9,7 @@ var _banner: PanelContainer
 var _landed := 0
 
 func float_text(text: String, pos: Vector2, color: Color, size := 26) -> void:
-	var l := UiStyle.label(text, size, color, true); l.autowrap_mode = TextServer.AUTOWRAP_OFF; UiStyle.outline(l, Color(0.1, 0.07, 0.03, 0.95), 8)
+	var l := UiStyle.one_line(UiStyle.label(text, size, color, true, HORIZONTAL_ALIGNMENT_CENTER)); UiStyle.outline(l, Color(0.1, 0.07, 0.03, 0.95), 8)
 	l.text_direction = Control.TEXT_DIRECTION_LTR; l.size = Vector2(160, size + 10); l.position = pos - Vector2(80, size); l.pivot_offset = Vector2(80, size / 2.0); l.scale = Vector2(0.4, 0.4)
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE; add_child(l)
 	var tw := create_tween().set_parallel(true)
@@ -23,11 +23,11 @@ func play_sale(result: Dictionary, origin: Vector2, before: Dictionary) -> void:
 	hud.hold = true
 	hud.shown_cash = before["cash"]; hud.shown_rep = before["rep"]
 	var profit: int = result["profit"]
-	if profit > 0: float_text("+₪%s" % UiStyle.number(profit), origin + Vector2(0, -34), UiStyle.GOLD, 30)
+	if profit > 0: float_text(Loc.money_short(profit, true), origin + Vector2(0, -34), UiStyle.GOLD, 30)
 	await _coins(profit, origin)
 	# reputation
 	if result["reputation"] != 0:
-		hud.shown_rep = Game.profile.reputation; hud.punch(hud.rep_pill)
+		hud.shown_rep = Game.co.units[hud.rep_biz].reputation; hud.punch(hud.rep_pill)
 		float_text("%s%d%%" % ["+" if result["reputation"] > 0 else "-", absi(result["reputation"])], hud.rep_pill.get_global_rect().get_center() + Vector2(0, 46), Color("ffe27a"), 18)
 		await get_tree().create_timer(0.25).timeout
 	await _xp(result["xp_total"], before)
@@ -45,7 +45,7 @@ func _coins(profit: int, origin: Vector2) -> void:
 	var n := clampi(profit / 12 + 3, 6, 16)
 	var base := profit / n; var rest := profit - base * n
 	var target := hud.cash_target()
-	var start_cash := Game.profile.cash - profit
+	var start_cash: int = Game.profile.cash - profit
 	_landed = 0
 	for i in n:
 		var coin := UiIcons.coin(30); add_child(coin)
@@ -96,8 +96,8 @@ func _level_up(level: int) -> void:
 	_banner = PanelContainer.new(); _banner.add_theme_stylebox_override("panel", UiStyle.panel(Color(UiStyle.CREAM, 0.97), 28, 20))
 	var col := VBoxContainer.new(); col.add_theme_constant_override("separation", 6); col.alignment = BoxContainer.ALIGNMENT_CENTER; _banner.add_child(col)
 	var st := UiIcons.star(84, level); st.size_flags_horizontal = Control.SIZE_SHRINK_CENTER; col.add_child(st)
-	var t1 := UiStyle.label("דרגה חדשה", 22, UiStyle.INK, true); t1.autowrap_mode = TextServer.AUTOWRAP_OFF; col.add_child(t1)
-	var t2 := UiStyle.label("דרגה %d" % level, 15, UiStyle.MUTED); t2.autowrap_mode = TextServer.AUTOWRAP_OFF; col.add_child(t2)
+	var t1 := UiStyle.one_line(UiStyle.label(Loc.t("ui.level_up"), 22, UiStyle.INK, true, HORIZONTAL_ALIGNMENT_CENTER)); col.add_child(t1)
+	var t2 := UiStyle.one_line(UiStyle.label(Loc.t("ui.level_n", {"n": level}), 15, UiStyle.MUTED, false, HORIZONTAL_ALIGNMENT_CENTER)); col.add_child(t2)
 	_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE; add_child(_banner)
 	await get_tree().process_frame
 	var vp := get_viewport_rect().size

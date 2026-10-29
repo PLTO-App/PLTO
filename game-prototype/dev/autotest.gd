@@ -1,109 +1,135 @@
 extends Node
-# Development only: plays two working days by itself (morning planner, customers, closing summary) and saves screenshots.
-# godot -- --autotest out=/path [landscape=1] [fast=1]. Excluded from the exported APK.
+# Development only: plays the game by itself through the real interface and saves screenshots.
+# Day 1 in the bakery (intro, plan screens, supplier order, serving every customer, summary), the evening and the night,
+# then the café is opened (cash and experience are given to get there quickly), a barista is hired, and a day is played in the café.
+# godot --path . res://scenes/main.tscn -- --autotest out=/path [landscape=1] [fast=1] [days=N]
+# Excluded from the exported APK.
 var main: Node3D
 var out := "/tmp"
-var shots := 0
+var days := 2
+var landscape := false
+var errors: Array = []
 
 func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("out="): out = a.substr(4)
 		if a == "fast=1": Engine.time_scale = 2.0
+		if a.begins_with("days="): days = int(a.substr(5))
+		if a == "landscape=1": landscape = true
+	if landscape: get_window().size = Vector2i(1266, 585)
 	_run()
 
 func shot(name: String) -> void:
+	await get_tree().process_frame
 	get_viewport().get_texture().get_image().save_png("%s/%s.png" % [out, name])
 
 func wait(s: float) -> void:
 	await get_tree().create_timer(s).timeout
 
-func tap(logical: Vector2) -> void:
-	var sc := Vector2(get_window().size) / get_viewport().get_visible_rect().size
-	for pressed in [true, false]:
-		var e := InputEventScreenTouch.new(); e.index = 2; e.pressed = pressed; e.position = logical * sc
-		Input.parse_input_event(e); await wait(0.08)
-
-func tap_node(c: Control) -> void:
-	await tap(c.get_global_rect().get_center())
-
-func walk_to(p: Vector3, limit: float) -> void:
-	var t := 0.0
-	main.ui.use_override = true
-	while t < limit and main.input_toward(p) != Vector2.ZERO:
-		main.ui.override_vec = main.input_toward(p)
-		await get_tree().process_frame
-		t += get_process_delta_time()
-	main.ui.override_vec = Vector2.ZERO
-
-# Fills the planner by calling the same methods the buttons call, then walks through every page.
-func wait_until(cond: Callable, limit := 30.0) -> bool:
+func wait_until(cond: Callable, limit := 60.0) -> bool:
 	var t := 0.0
 	while not cond.call() and t < limit:
 		await wait(0.2); t += 0.2
 	return cond.call()
 
-func plan_morning(name: String, bake: Dictionary, marketing := "none") -> void:
-	var m: ManagePanel = main.ui.manage
-	await wait_until(func(): return m.visible and m.mode == "planner")
-	await wait(0.6); shot("%s_p1_status" % name)
-	for pid in bake: m.plan["bake"][pid] = bake[pid]
-	m.plan["marketing"] = marketing
-	m._fill_missing()
-	for i in 5:
-		await tap_node(m.next_b); await wait(0.4); shot("%s_p%d" % [name, i + 2])
-		print("TEST %s plan errors=%s buy=%s bake=%s units=%s" % [name, str(Game.biz.validate_plan(m.plan)), m.plan["buy"], m.plan["bake"], {"base": Game.biz.inv.units("base"), "dairy": Game.biz.inv.units("dairy"), "sweet": Game.biz.inv.units("sweet")}])
-	await tap_node(m.next_b); await wait(0.5)
+func ui() -> GameUi: return main.ui
 
-func play_day(name: String) -> void:
-	var guard := 0.0; var queue_shot := false; var sale_shot := false
-	while main.state == main.State.DAY and guard < 900.0:
-		var dt := 0.25
-		if main.step == main.Step.PICK and not main.busy:
-			await walk_to(main.PICKUP_SPOT, 25.0); main.ui.override_vec = Vector2.ZERO; await wait(0.3)
-			await tap_node(main.ui.action_button); await wait(1.6)
-		elif main.step == main.Step.SERVE and not main.busy:
-			await walk_to(main.PLACE_SPOT, 25.0); main.ui.override_vec = Vector2.ZERO; await wait(0.3)
-			if not queue_shot: shot("%s_serve_prompt" % name)
-			await tap_node(main.ui.action_button); await wait(1.9)
-			if not sale_shot: shot("%s_coins" % name); sale_shot = true
-		else:
-			await wait(dt)
-		if main.runner != null and main.runner.queue.size() >= 2 and not queue_shot: queue_shot = true; shot("%s_queue" % name)
-		guard += dt
-	print("TEST %s day ended after ~%ds state=%d" % [name, int(guard), main.state])
+# Answers every open card with its first choice (or a given one).
+func answer_cards(choice := 0, name := "") -> void:
+	var n := 0
+	while ui().card_dim.visible and n < 12:
+		if name != "" and n == 0: await shot(name)
+		await wait(0.3); ui().card_choice.emit(choice); n += 1
+		await wait(0.4)
+
+func check(label: String, ok: bool, detail := "") -> void:
+	print("TEST %s %s %s" % ["PASS" if ok else "FAIL", label, detail])
+	if not ok: errors.append(label)
 
 func _run() -> void:
-	for a in OS.get_cmdline_user_args():
-		if a == "landscape=1": get_window().size = Vector2i(1266, 585)
-	await wait(1.0); shot("00_intro")
-	await tap_node(main.ui.card_button)
-	var start_cash := Game.profile.cash
-	await plan_morning("d1", {"croissant": 5, "carrot_cake": 1, "strawberry_cake": 1})
-	print("TEST d1 started state=%d cash=%d customers=%d" % [main.state, Game.profile.cash, main.runner.customers.size()])
-	await play_day("d1")
-	await wait_until(func(): return main.ui.manage.visible and main.ui.manage.mode == "summary")
-	await wait(0.4)
-	var s: Dictionary = Game.biz.last_summary
-	print("TEST d1 summary revenue=%d profit=%d served=%d/%d lostP=%d lostS=%d walk=%d cash=%d rep=%d level=%d" % [s["revenue"], s["profit"], s["served"], s["customers"], s["lost_price"], s["lost_stock"], s["walkouts"], Game.profile.cash, Game.profile.reputation, Game.profile.level])
-	print("TEST ledger_reconciles=%s" % (start_cash + Game.biz.ledger.total() == Game.profile.cash))
-	shot("d1_summary_p1")
-	await tap_node(main.ui.manage.next_b); await wait(0.4); shot("d1_summary_p2")
-	await tap_node(main.ui.manage.next_b)
-	await wait_until(func(): return main.state == main.State.PLANNING)
-	print("TEST day2 morning state=%d day=%d" % [main.state, Game.biz.day])
-	var saved := SaveStore.read(Game.save_path)
-	print("TEST saved day=%d cash=%d" % [int(saved["business"]["day"]), int(saved["business"]["profile"]["cash"])])
-	# upgrades screen
-	var m: ManagePanel = main.ui.manage
-	await wait(0.3); m.open_upgrades(Game.biz); await wait(0.4); shot("d2_upgrades"); m.mode = "planner"; m._render()
-	await plan_morning("d2", {"croissant": 6, "carrot_cake": 2, "strawberry_cake": 1}, "social_post")
-	await play_day("d2")
-	await wait_until(func(): return main.ui.manage.visible and main.ui.manage.mode == "summary")
-	await wait(0.4)
-	s = Game.biz.last_summary
-	print("TEST d2 summary revenue=%d profit=%d served=%d/%d cash=%d rep=%d level=%d" % [s["revenue"], s["profit"], s["served"], s["customers"], Game.profile.cash, Game.profile.reputation, Game.profile.level])
-	print("TEST ledger_reconciles_2=%s" % (start_cash + Game.biz.ledger.total() == Game.profile.cash))
-	shot("d2_summary")
+	await wait(1.2)
+	await answer_cards(0, "00_intro")
+	await wait_until(func(): return ui().sheet.visible and ui().sheet.screen_id == "today")
+	await wait(0.5); await shot("01_today")
+	var co: Company = Game.co
+	check("the morning checklist is open", ui().sheet.visible)
+	# plan screens
+	ui().screens.open_plan("bakery"); await wait(0.5)
+	for i in 4:
+		ui().sheet.tab = i; ui().sheet.refresh(); await wait(0.35); await shot("02_plan_tab%d" % i)
+	# a supplier order for tomorrow
+	ui().open_screen("orders"); await wait(0.4)
+	for bid in co.units: ui().screens.draft["wholesale"] = {bid: co.suggest_order(bid)}
+	ui().sheet.refresh(); await wait(0.3); await shot("03_orders")
+	await ui().screens._send_orders(ui().sheet)
+	check("an order was placed", not co.orders.is_empty())
+	for s in ["staff", "finance", "goals", "settings"]:
+		ui().open_screen(s); await wait(0.4); await shot("04_%s" % s)
+	main._on_building("cafe"); await wait(0.6); await shot("05_building_cafe")
+	ui().sheet.close(); main.town_x = -8.0; await wait(1.2); await shot("06_town_pan")
+	main.town_x = 0.0
+	for d in days:
+		await play_day("d%d" % (d + 1))
+		if d == 0:
+			# fast-forward to the café: experience and cash, open it, and a barista
+			co.profile.add_xp(700); co.book("relief", 9000, "", "autotest")
+			ui().hud.sync()
+			main._on_building("cafe"); await wait(0.6)
+			var e := co.open_business("cafe"); check("the café opens", e.is_empty(), Loc.msg(e))
+			main._flow("opened", {"biz": "cafe"}); await wait(0.6); await answer_cards(0, "07_cafe_opened")
+			await wait(1.5); await shot("08_town_cafe_open")
+		await night_to_morning("d%d" % (d + 2))
+		if co.owns("cafe") and co.unit_ready("cafe") and co.staff.is_empty():
+			co.hire("yossi", "bakery"); co.worker = "cafe"
+			ui().screens.new_morning(); ui().open_screen("today"); await wait(0.5); await shot("09_today_two_businesses")
+	check("the ledger matches the cash", co.ledger.balance() == co.profile.cash, "%d vs %d" % [co.ledger.balance(), co.profile.cash])
 	var RS := RenderingServer
-	print("PERF draw_calls=%d primitives=%d vram_mb=%.1f" % [RS.get_rendering_info(RS.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME), RS.get_rendering_info(RS.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME), RS.get_rendering_info(RS.RENDERING_INFO_VIDEO_MEM_USED) / 1048576.0])
+	print("PERF draw_calls=%d primitives=%d vram_mb=%.1f fps=%d" % [RS.get_rendering_info(RS.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME), RS.get_rendering_info(RS.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME), RS.get_rendering_info(RS.RENDERING_INFO_VIDEO_MEM_USED) / 1048576.0, Engine.get_frames_per_second()])
+	print("TEST RESULT failures=%d %s" % [errors.size(), str(errors)])
 	get_tree().quit()
+
+func play_day(name: String) -> void:
+	var co: Company = Game.co
+	ui().open_screen("today"); await wait(0.4)
+	var cash0 := co.profile.cash
+	ui().screens._open_day(ui().sheet)
+	await wait_until(func(): return main.state == "day" and main.runner != null, 20.0)
+	await wait(1.0); await shot("%s_10_shop" % name)
+	var served := 0; var t := 0.0; var shots := {}
+	while main.state == "day" and t < 600.0:
+		if ui().card_dim.visible:
+			await answer_cards(0, "%s_inspection" % name if not shots.has("insp") else ""); shots["insp"] = true
+		if ui().action_button.visible:
+			if not shots.has("act"): shots["act"] = true; await shot("%s_11_action" % name)
+			ui().action_pressed.emit(); served += 1
+			await wait(0.5)
+			if served == 3 and not shots.has("coins"): shots["coins"] = true; await wait(1.4); await shot("%s_12_serving" % name)
+		else:
+			await wait(0.25)
+		if main.runner != null and main.runner.queue.size() >= 3 and not shots.has("queue"): shots["queue"] = true; await shot("%s_13_queue" % name)
+		t += 0.25
+	print("TEST %s day ended after ~%ds, actions %d" % [name, int(t), served])
+	await wait_until(func(): return ui().card_dim.visible or (ui().sheet.visible and ui().sheet.screen_id == "summary"), 30.0)
+	await answer_cards(0, "%s_14_goal" % name)
+	await wait_until(func(): return ui().sheet.visible and ui().sheet.screen_id == "summary", 20.0)
+	var s: Dictionary = co.last_summary
+	for bid in s["units"]:
+		var u: Dictionary = s["units"][bid]
+		print("TEST %s %s served=%d/%d revenue=%d profit=%d walkouts=%d closed=%s" % [name, bid, u["served"], u["customers"], u["revenue"], u["profit"], u["walkouts"], u["closed"]])
+	check("%s: customers were served" % name, int(s["units"][co.worker]["served"]) > 0 if s["units"].has(co.worker) else false)
+	for i in 3:
+		ui().sheet.tab = i; ui().sheet.refresh(); await wait(0.4); await shot("%s_15_summary_%d" % [name, i])
+	ui().screens.flow.call("summary_done", {})
+	await wait(0.6)
+	if ui().sheet.visible and ui().sheet.screen_id == "week":
+		await shot("%s_16_week" % name); ui().screens.flow.call("week_done", {}); await wait(0.6)
+	await wait(1.0); await shot("%s_17_evening" % name)
+	check("%s: the day was saved" % name, int(SaveStore.read(Game.save_path)["company"]["day"]) == co.day)
+
+func night_to_morning(name: String) -> void:
+	main._on_cta()
+	await wait_until(func(): return main.state == "morning", 20.0)
+	await wait(1.0)
+	await answer_cards(0, "%s_00_event" % name)
+	await wait_until(func(): return ui().sheet.visible and ui().sheet.screen_id == "today", 10.0)
+	await wait(0.6); await shot("%s_01_morning" % name)

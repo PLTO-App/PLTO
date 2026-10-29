@@ -1,7 +1,7 @@
-extends SceneTree
-# Development only: compiles every script of the game and reports the ones that fail (Godot prints the errors).
-# godot --headless --path game-prototype --script dev/check_scripts.gd
-func _init() -> void:
+extends Node
+# Development only: compiles every script with the game's autoloads present (run as a scene) and reports failures.
+# godot --headless --path game-prototype res://dev/check_scene.tscn
+func _ready() -> void:
 	var bad := 0; var n := 0
 	for dir in ["res://scripts", "res://dev"]:
 		for path in _files(dir):
@@ -9,7 +9,7 @@ func _init() -> void:
 			var s = load(path)
 			if s == null or not (s as Script).can_instantiate(): print("FAILED ", path); bad += 1
 	print("CHECKED %d scripts, %d failed" % [n, bad])
-	quit(1 if bad > 0 else 0)
+	get_tree().quit(1 if bad > 0 else 0)
 
 func _files(dir: String) -> Array:
 	var out: Array = []

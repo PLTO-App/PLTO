@@ -266,7 +266,37 @@ def basket():
     bpy.ops.mesh.primitive_torus_add(major_radius=0.45, minor_radius=0.04, location=(0, 0, 0.23)); _finish(bpy.context.active_object, '#9c6b38', 0)
     export('food_basket')
 
+# ------------------------------------------------------------------ ingredients (for icons)
+def ingredient_icons():
+    new_asset()   # flour sack
+    ball(0.3, (0, 0, 0.3), '#f3ead7', (1, 0.8, 1.15), 14)
+    cyl(0.12, 0.12, (0, 0, 0.68), '#e6d8bd', 10)
+    box((0.3, 0.02, 0.16), (0, -0.24, 0.32), '#c8a26a', 0.01)
+    export('ing_base')
+    new_asset()   # butter and eggs
+    box((0.42, 0.22, 0.16), (-0.05, 0, 0.08), '#ffe082', 0.03)
+    box((0.44, 0.24, 0.05), (-0.05, 0, 0.18), '#ffffff', 0.01)
+    for x in (0.28, 0.42): ball(0.1, (x, 0.05, 0.12), '#fff3e0', (1, 1, 1.3), 10)
+    export('ing_dairy')
+    new_asset()   # chocolate and strawberries
+    box((0.36, 0.24, 0.06), (-0.05, 0, 0.04), '#5d3a28', 0.02)
+    for i in range(3):
+        for j in range(2): box((0.1, 0.1, 0.03), (-0.17 + i * 0.12, -0.06 + j * 0.12, 0.08), '#6d4532', 0.01)
+    for x in (0.25, 0.36): ball(0.08, (x, -0.02, 0.1), '#e53935', (1, 1, 1.2), 8)
+    export('ing_sweet')
+    new_asset()   # coffee beans bag
+    box((0.36, 0.24, 0.46), (0, 0, 0.23), '#6d4c41', 0.05)
+    box((0.2, 0.02, 0.14), (0, -0.13, 0.26), '#fff6ea', 0.01)
+    for k in range(4): ball(0.035, (-0.12 + k * 0.08, -0.16, 0.05), '#3e2723', (1, 0.7, 0.6), 6)
+    export('ing_beans')
+    new_asset()   # milk carton
+    box((0.24, 0.24, 0.42), (0, 0, 0.21), '#ffffff', 0.02)
+    box((0.25, 0.25, 0.12), (0, 0, 0.46), '#e3f2fd', 0.02)
+    box((0.25, 0.02, 0.14), (0, -0.125, 0.2), '#42a5f5', 0.01)
+    export('ing_milk')
+
 os.makedirs(kit.OUT, exist_ok=True)
+ingredient_icons()
 room('room_bakery', '#f8e6cf', '#2fb3a2', '#fff6ea', '#ff7a59')
 room('room_cafe', '#efe0cc', '#5b3a29', '#f7e7d0', '#2e7d5b')
 display_case(); oven(); work_table(); bread_shelf(); register_counter(); espresso_bar(); pastry_case()

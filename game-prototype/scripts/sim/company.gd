@@ -40,6 +40,7 @@ var regulars := {}
 var wages_due := 0
 var levels_today: Array[int] = []
 var phase := "morning"          # morning | day
+var morning_day := 0            # the day whose morning already ran (deliveries, events): never run it twice
 var runners := {}
 var last_report := {}
 var last_summary := {}
@@ -82,7 +83,8 @@ func to_dict() -> Dictionary:
 		"contracts": contracts.duplicate(true), "orders": orders.duplicate(true), "special": special.duplicate(true), "mods": mods.duplicate(true),
 		"services": services.duplicate(), "flags": flags.duplicate(true), "stats": stats.duplicate(true), "goals_done": goals_done.duplicate(),
 		"ev_state": ev_state.duplicate(true), "regulars": regulars.duplicate(true), "wages_due": wages_due,
-		"last_summary": last_summary.duplicate(true), "last_week": last_week.duplicate(true)}
+		"last_summary": last_summary.duplicate(true), "last_week": last_week.duplicate(true),
+		"morning_day": morning_day, "pending_events": pending_events.duplicate(true), "last_report": last_report.duplicate(true), "inspection_today": inspection_today}
 
 func from_dict(d: Dictionary) -> void:
 	profile.from_dict(d.get("profile", {}), content)
@@ -99,7 +101,9 @@ func from_dict(d: Dictionary) -> void:
 	mods = _ints(d.get("mods", [])); services = d.get("services", {}); flags = d.get("flags", {}); stats = _ints(d.get("stats", stats))
 	goals_done = d.get("goals_done", []); ev_state = _ints(d.get("ev_state", ev_state)); regulars = _ints(d.get("regulars", {}))
 	wages_due = int(d.get("wages_due", 0)); last_summary = d.get("last_summary", {}); last_week = d.get("last_week", {})
-	phase = "morning"; runners = {}; pending_events = []; inspection_today = ""
+	phase = "morning"; runners = {}
+	morning_day = int(d.get("morning_day", 0)); pending_events = _ints(d.get("pending_events", [])) if morning_day == day else []
+	last_report = _ints(d.get("last_report", {})) if morning_day == day else {}; inspection_today = str(d.get("inspection_today", "")) if morning_day == day else ""
 	# the books must match the cash; if an edited or broken save does not, start the journal again from the cash on hand
 	if ledger.balance() != profile.cash:
 		ledger = Ledger.new(); ledger.start_cash = profile.cash
@@ -324,7 +328,7 @@ func orders_for(bid: String) -> Array:
 
 # ---------------------------------------------------------------- the morning
 func start_morning() -> Dictionary:
-	phase = "morning"; levels_today = []; inspection_today = ""
+	phase = "morning"; levels_today = []; inspection_today = ""; morning_day = day
 	for bid in units: units[bid].reset_today()
 	var r := {"day": day, "weekday_k": weekday_key(), "deliveries": [], "collected": [], "paid": [], "late": [], "relief": 0, "events": [], "notes": []}
 	# weather
@@ -705,3 +709,69 @@ func upgrades_count() -> int:
 	var t := 0
 	for bid in units: t += units[bid].upgrades.size()
 	return t
+
+# ---------------------------------------------------------------- suggestions for the player (a starting point, not a decision)
+# A sensible morning plan: bake what the forecast suggests plus what partners and our café need, buy in the morning only what is
+# still missing, keep the current prices, clean and maintain when it is due. The player adjusts it.
+func suggest_plan(bid: String, plans := {}) -> Dictionary:
+	var b: Business = units[bid]
+	var plan := b.empty_plan()
+	if not b.last_plan.is_empty():
+		plan["marketing"] = "none"
+	var want := forecast_items(bid, plan)
+	if bid == "cafe":
+		var src: String = world.get("internal", {}).get("cafe", {}).get("from", "")
+		if owns(src):
+			plan["transfer_in"] = {"croissant": maxi(0, int(want.get("croissant", 0)) - b.inv.stock("croissant"))}
+		var drinks := 0
+		for pid in b.db["products"]: if b.is_mto(pid): drinks += int(want.get(pid, 0))
+		for iid in b.ingredient_ids():
+			var miss := drinks + 4 - b.inv.units(iid)
+			if miss > 0: plan["buy_now"][iid] = (miss + item_step(bid, iid) - 1) / item_step(bid, iid) * item_step(bid, iid)
+		var ck := int(want.get("cookie", 0)) - b.inv.stock("cookie")
+		if ck > 0 and not owns(src): plan["buy_now"]["cookie"] = (ck + 9) / 10 * 10
+		if not owns(src):
+			var cr := int(want.get("croissant", 0)) - b.inv.stock("croissant")
+			if cr > 0: plan["buy_now"]["croissant"] = (cr + 4) / 5 * 5
+	else:
+		var reserved := reserved_for(bid, plans)
+		var cap := b.capacity(mod_value("capacity_pct", bid)); var used := 0
+		var ids: Array = b.db["products"].keys()
+		ids.sort_custom(func(x, y): return int(want.get(x, 0)) > int(want.get(y, 0)))
+		for pid in ids:
+			if not b.is_baked(pid): continue
+			var per: int = b.db["products"][pid]["cap"]
+			var n := int(want.get(pid, 0)) + int(reserved.get(pid, 0)) - b.inv.old(pid)
+			n = clampi(n, 0, (cap - used) / maxi(1, per))
+			plan["bake"][pid] = n; used += n * per
+		var need := b.bake_needs(plan)
+		for iid in need:
+			var miss: int = int(need[iid]) - b.inv.units(iid)
+			if miss > 0: plan["buy_now"][iid] = miss
+	plan["deep_clean"] = b.cleanliness < 55
+	plan["maintenance"] = b.equipment < 50
+	return plan
+
+# What to order from a supplier today for tomorrow: about a day of ingredients beyond what is on hand.
+func suggest_order(bid: String) -> Dictionary:
+	var b: Business = units[bid]
+	var want := forecast_items(bid, b.empty_plan())
+	var need := {}
+	for pid in b.db["products"]:
+		var pr: Dictionary = b.db["products"][pid]
+		var n := int(want.get(pid, 0)) * 12 / 10 + 2
+		for cid in contracts:
+			if contracts[cid]["active"] and world["contracts"][cid]["biz"] == bid: n += int(contracts[cid]["items"].get(pid, 0))
+		if bid == "bakery" and owns("cafe") and pid == "croissant": n += int(forecast_items("cafe", units["cafe"].empty_plan()).get("croissant", 0))
+		for iid in pr.get("recipe", {}): need[iid] = int(need.get(iid, 0)) + int(pr["recipe"][iid]) * n
+		if pr.has("resale") and not (bid == "cafe" and owns(world.get("internal", {}).get("cafe", {}).get("from", "")) and pid == "croissant"):
+			need[pr["resale"]] = int(need.get(pr["resale"], 0)) + n
+	var items := {}
+	for iid in need:
+		var have := b.inv.units(iid) if b.db["ingredients"].has(iid) else b.inv.stock(b.product_for_input(iid))
+		for o in orders_for(bid): have += int(o["items"].get(iid, 0))
+		var miss: int = int(need[iid]) - have
+		if miss > 0:
+			var st := item_step(bid, iid)
+			items[iid] = (miss + st - 1) / st * st
+	return items

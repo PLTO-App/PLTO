@@ -21,14 +21,14 @@
     "beans": {"name": "ing.beans", "step": 10},
     "milk":  {"name": "ing.milk",  "step": 10}
   },
-  "goods_inputs": {"croissant": {"name": "prod.croissant", "step": 5}, "cookie": {"name": "prod.cookie", "step": 10}},
+  "goods_inputs": {"croissant": {"name": "prod.croissant", "name_pl": "prod.croissant.pl", "step": 5}, "cookie": {"name": "prod.cookie", "name_pl": "prod.cookie.pl", "step": 10}},
 
   "products": {
-    "cappuccino": {"name": "prod.cappuccino", "model": "cup", "scale_pct": 100, "icon": "icon_cappuccino", "price": 16, "xp": 1, "pref": 42, "cap": 1, "made_to_order": true, "qty": [1, 4], "recipe": {"beans": 1, "milk": 1}},
-    "americano":  {"name": "prod.americano",  "model": "cup", "scale_pct": 100, "icon": "icon_americano",  "price": 13, "xp": 1, "pref": 16, "cap": 1, "made_to_order": true, "qty": [1, 3], "recipe": {"beans": 1}},
-    "iced":       {"name": "prod.iced",       "model": "cup_iced", "scale_pct": 100, "icon": "icon_iced", "price": 18, "xp": 1, "pref": 12, "cap": 1, "made_to_order": true, "qty": [1, 3], "recipe": {"beans": 1, "milk": 1}, "weather_pref": {"hot": 300, "rain": 30}},
-    "croissant":  {"name": "prod.croissant",  "model": "croissant", "scale_pct": 240, "icon": "icon_croissant", "price": 16, "xp": 1, "pref": 18, "cap": 0, "resale": "croissant", "shelf_days": 1, "old_price_pct": 0, "qty": [1, 2]},
-    "cookie":     {"name": "prod.cookie",     "model": "cookie", "scale_pct": 100, "icon": "icon_cookie", "price": 10, "xp": 1, "pref": 12, "cap": 0, "resale": "cookie", "shelf_days": 5, "old_price_pct": 100, "qty": [1, 3]}
+    "cappuccino": {"name": "prod.cappuccino", "name_pl": "prod.cappuccino.pl", "model": "cup", "scale_pct": 100, "icon": "icon_cappuccino", "price": 16, "xp": 1, "pref": 42, "cap": 1, "made_to_order": true, "qty": [1, 4], "recipe": {"beans": 1, "milk": 1}},
+    "americano":  {"name": "prod.americano", "name_pl": "prod.americano.pl",  "model": "cup", "scale_pct": 100, "icon": "icon_americano",  "price": 13, "xp": 1, "pref": 16, "cap": 1, "made_to_order": true, "qty": [1, 3], "recipe": {"beans": 1}},
+    "iced":       {"name": "prod.iced", "name_pl": "prod.iced.pl",       "model": "cup_iced", "scale_pct": 100, "icon": "icon_iced", "price": 18, "xp": 1, "pref": 12, "cap": 1, "made_to_order": true, "qty": [1, 3], "recipe": {"beans": 1, "milk": 1}, "weather_pref": {"hot": 300, "rain": 30}},
+    "croissant":  {"name": "prod.croissant", "name_pl": "prod.croissant.pl",  "model": "croissant", "scale_pct": 240, "icon": "icon_croissant", "price": 16, "xp": 1, "pref": 18, "cap": 0, "resale": "croissant", "shelf_days": 1, "old_price_pct": 0, "qty": [1, 2]},
+    "cookie":     {"name": "prod.cookie", "name_pl": "prod.cookie.pl",     "model": "cookie", "scale_pct": 100, "icon": "icon_cookie", "price": 10, "xp": 1, "pref": 12, "cap": 0, "resale": "cookie", "shelf_days": 5, "old_price_pct": 100, "qty": [1, 3]}
   },
 
   "marketing": {
