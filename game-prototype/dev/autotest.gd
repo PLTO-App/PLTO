@@ -9,6 +9,7 @@ var out := "/tmp"
 var days := 2
 var landscape := false
 var errors: Array = []
+var inspect := false
 
 func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
@@ -16,6 +17,7 @@ func _ready() -> void:
 		if a.begins_with("fast="): Engine.time_scale = 2.0 * float(a.substr(5))
 		if a.begins_with("days="): days = int(a.substr(5))
 		if a == "landscape=1": landscape = true
+		if a == "inspect=1": inspect = true
 	if landscape: get_window().size = Vector2i(1266, 585)
 	_run()
 
@@ -93,6 +95,7 @@ func play_day(name: String) -> void:
 	var co: Company = Game.co
 	ui().open_screen("today"); await wait(0.4)
 	var cash0 := co.profile.cash
+	if inspect: co.inspection_today = co.worker; co.units[co.worker].cleanliness = 40
 	ui().screens._open_day(ui().sheet)
 	await wait_until(func(): return main.state == "day" and main.runner != null, 20.0)
 	await wait(1.0); await shot("%s_10_shop" % name)

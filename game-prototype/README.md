@@ -1,60 +1,46 @@
-# המאפייה של נועה (אבטיפוס משחק)
+# רחוב הגפן: המאפייה של נועה (אבטיפוס משחק)
 
-פרויקט Godot 4.5.1 (רנדרר Compatibility) למשחק הסימולציה העסקי של PLTO. פרויקט נפרד לגמרי ממערכת ה-CRM: אין בו חיבור ל-Supabase, אין נתוני משתמשים ואין הרשאות רשת.
+פרויקט Godot 4.5.1 (רנדרר Compatibility) למשחק הסימולציה העסקי של PLTO. הפרויקט נפרד לגמרי ממערכת ה-CRM: אין בו חיבור ל-Supabase, אין נתוני משתמשים ואין הרשאות רשת.
 
-## מה יש בגרסה הנוכחית (0.4)
-**יום בעל עסק:** תכנון בבוקר (אפייה, קנייה, מחירים, שיווק), יום עבודה עם תור לקוחות ומלאי, סגירה עם דוח רווח והפסד ושדרוגים. מנוע הסימולציה ב-`scripts/sim/`, התוכן ב-`content/`. פירוט ב-`plans/game-v0-4-status-2026-10-29.md`.
-
-מה שהיה בגרסה 0.3 (עדיין תקף):
-- **מכירה אמיתית:** לקוחה נכנסת עם הזמנה (בועה עם אייקון המוצר), נועה לוקחת את המוצר מהדלפק ומגישה, והלקוחה משלמת.
-- **רגע התגמול:** נועה מגישה, הלקוחה מחייכת וקופצת, מטבעות עפים לקופה ומספר הקופה עולה עם כל מטבע שנוחת (עם צליל "דינג" עולה), המוניטין מתעדכן, פס הניסיון מתמלא, ובדרגה חדשה מופיע באנר.
-- **התקדמות:** קופה בשקלים בדיוניים, ניסיון, דרגה ומוניטין, עם שמירה מקומית בטלפון (`user://save.json`, שום דבר לא נשלח).
-- **מראה:** תאורה חמה והדרגת צבע, צל רך מתחת לדמויות, ממשק עם פאנלים, כמוסות ופס דרגה.
-- **דמויות:** נועה והלקוחות על אותו שלד בקוד, עם גווני עור, שיער, בגדים והבעות (חיוך, שמחה, הפתעה, מחשבה, מצמוץ). דמות זמנית שאפשר להחליף (`scripts/world/character_rig.gd`).
-- שליטה במגע (ג'ויסטיק צף וכפתור פעולה), פורטרט ולנדסקייפ, אזורי בטיחות, בלי הרשאות.
+## מה יש בגרסה 0.5
+רחוב עם שישה בניינים: המאפייה של נועה, בית קפה (נפתח בהמשך), המכולת של אבי, משרד הנהלת חשבונות, בנק ומחסן ספקים. בכל בוקר יש משלוחים, חשבוניות ואירועים, אחר כך רשימת "היום" ותכנון לכל עסק. במהלך היום נועה משרתת בעסק אחד והעובדים בשני. בערב מוצגים סיכום, רווח והפסד ומטרות, ובסוף השבוע מגיע דוח שבועי. פירוט נמצא ב-`plans/game-v0-5-status-2026-10-29.md`.
 
 ## שכבות
-המערכות, התוכן והעיצוב מופרדים, כדי שאפשר יהיה להוסיף תחום עסקי בלי לבנות הכול מחדש.
+| שכבה | נתיב | אחריות |
+|---|---|---|
+| תוכן | `content/` | עולם (`world.json`), עסקים (`businesses/*.json`), אירועים, מטרות, דרגות. כל הטקסטים הם מפתחות תרגום |
+| טקסטים | `locale/strings.csv`, `locale/formats.json` | עמודה לכל שפה (עברית היא ברירת המחדל), כיווניות ופורמט כסף לכל שפה |
+| מנוע | `scripts/sim/` | `company.gd` (החברה, היום, השבוע), `business.gd`, `day_runner.gd`, `demand.gd`, `inventory.gd`, `ledger.gd`, `events.gd`, `goals.gd`, `coach.gd`. בלי מסך ובלי תלת־ממד |
+| ליבה | `scripts/core/` | `game.gd` (autoload: שמירה והגדרות), `loc.gd` (תרגום ופורמטים), `content_db.gd`, `profile.gd`, `save_store.gd`, `sfx.gd` |
+| עולם | `scripts/world/` | `town.gd` (הרחוב), `shop_room.gd` (פנים העסקים), `character_rig.gd` (הדמויות), `npc.gd`, `player.gd` |
+| ממשק | `scripts/ui/` | `game_ui.gd`, `hud.gd`, `sheet.gd`, `screens.gd`, `reward_fx.gd`, `ui_style.gd`, `ui_icons.gd`, `fonts.gd` |
+| מהלך | `scripts/main.gd` | בוקר ברחוב, יום בעסק, סגירה וערב |
 
-| שכבה | נתיב | אחריות | לא יודעת על |
-|---|---|---|---|
-| **תוכן** | `content/` | JSON: עקומת דרגות, מוצרים, מחירים, לקוחות ומראה שלהם. עסק חדש הוא קובץ חדש | קוד |
-| **מערכות** | `scripts/core/` | פרופיל (קופה, ניסיון, דרגה, מוניטין), חישוב מכירה, שמירה, צלילים, `Game` (autoload) | תלת־ממד ומסך |
-| **עולם** | `scripts/world/` | החדר, הדמויות, ההתנגשויות | כסף וניסיון |
-| **ממשק** | `scripts/ui/` | סגנון, שורת מצב, אפקט התגמול, כרטיסים, ג'ויסטיק | חוקי המשחק |
-| **מהלך הסצנה** | `scripts/main.gd` | מחבר בין השכבות | |
+כל הכסף במספרים שלמים בשקלים. המספרים להמחשה בלבד, ואינם ייעוץ עסקי, פיננסי, משפטי או מס.
 
-כל הכסף במספרים שלמים בשקלים. הנחה באחוזים מחושבת בחילוק שלמים.
+## נכסים (הכול יצירה מקורית מקוד)
+- `tools/blender/make_characters.py`: דמויות עם שלד, שיער, אביזרים ו-14 אנימציות. `tools/make_faces.py`: אטלס הבעות הפנים.
+- `tools/blender/make_town.py`: בנייני הרחוב והאביזרים. `tools/blender/make_interiors.py`: רהיטים, מאפים וחומרי גלם. `tools/blender/kit.py`: עזרי מידול.
+- `tools/make_music.py`: מוזיקה, אווירה וצלילים. `tools/make_sounds.py`: צלילי מגע ומטבעות. `tools/make_icons.py`: בועה וצל.
+- `dev/make_portraits.tscn`: דיוקנאות ואייקונים מתוך המודלים. `dev/make_icon.tscn`: אייקון האפליקציה.
+- `tools/locale_tool.py`: הוספת מפתחות תרגום ובדיקה שלא חסר טקסט.
 
 ## בדיקות
 ```
-godot --headless --path game-prototype --script dev/test_core.gd -- --coretest     # בדיקות ליבה
-godot --headless --path game-prototype --script dev/test_sim.gd                      # בדיקות סימולציה ואיזון (30 ימים, 6 זרעים)
-godot --path game-prototype -- --autotest out=/tmp/shots                            # משחק שני ימי עבודה לבד
+godot --headless --path . --script dev/test_sim.gd              # מנוע ואיזון: 54 בדיקות וסימולציה של 6 שבועות
+godot --headless --path . res://dev/test_save.tscn              # שמירה, טעינה ושמירה מגרסה 0.4
+godot --headless --path . res://dev/check_scene.tscn            # כל הסקריפטים מתקמפלים
+xvfb-run -a godot --path . --rendering-driver opengl3 res://scenes/main.tscn -- --autotest fast=2 days=5 out=/tmp/shots
+python3 -I tools/locale_tool.py . check                         # אין מפתח טקסט חסר
 ```
 
-## הרצה ובדיקה על מחשב
+## בניית APK (debug)
+דרישות: Godot 4.5.1 עם תבניות הייצוא, JDK, Android SDK (platform-tools, build-tools 35.0.1, platforms;android-35), ומפתח ה-debug המקורי מוגדר בהגדרות העורך (`export/android/debug_keystore`). המפתח לא נשמר ב-Git.
 ```
-godot --path game-prototype                                  # הרצה
-godot --path game-prototype -- --autotest out=/tmp/shots     # משחק את הפרק לבד ושומר צילומים
-godot --path game-prototype -- --autotest landscape=1 out=/tmp/shots
+godot --headless --path . --import
+godot --headless --path . --export-debug "Android Debug" build/noa-bakery-debug.apk
 ```
-בלי מסך גרפי אפשר להריץ דרך `xvfb-run -a godot --rendering-driver opengl3 ...`. מקלדת: חצים להליכה, Enter לפעולה.
-
-## בניית APK לבדיקה (debug)
-דרישות: Godot 4.5.1 עם תבניות הייצוא שלו, JDK, Android SDK (platform-tools, build-tools 35.0.1, platforms;android-35), ומפתח debug מקומי שמוגדר בהגדרות העורך של Godot (`export/android/debug_keystore`). המפתח לא נשמר ב-Git.
-```
-godot --headless --path game-prototype --import
-python3 -I game-prototype/tools/patch_imports.py game-prototype     # דחיסת טקסטורות לטלפון
-godot --headless --path game-prototype --import
-godot --headless --path game-prototype --export-debug "Android Debug" build/noa-bakery-debug.apk
-```
-הקובץ `build/` לא נכנס ל-Git.
-
-## שחזור נכסים
-הדגמים והטקסטורות כבר בתיקייה `assets/`. לשחזור מאפס: `tools/ph_download.py` מוריד מ-Poly Haven ומאמת כל קובץ מול ה-md5 שה-API שלהם מפרסם, `tools/prep_assets.py` ו-`tools/optimize_models.py` (Blender 4.2) מכווצים. פרטים והסברים בסעיף 7 של `plans/game-performance-test-2026-10-29.md`.
 
 ## כללים
-- לא מוסיפים נכס שאי אפשר לאמת מול ערך רשמי של המקור. רישיון CC0 או רישיון מסחרי ברור שאומת באתר המקור.
-- הגופן DejaVu Sans מצורף כי גופן ברירת המחדל של Godot אינו כולל עברית.
+- נכס חיצוני נכנס רק עם רישיון ברור ואימות מול מקור רשמי. כרגע הנכס החיצוני היחיד הוא הגופן Noto (חבילת Ubuntu חתומה).
 - אין שירותי רשת, אנליטיקס או הרשאות באפליקציה.

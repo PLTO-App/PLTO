@@ -199,6 +199,7 @@ func _show_stock() -> void:
 func _enter_shop(bid: String) -> void:
 	await ui.fade_out(0.35)
 	town.visible = false; town.process_mode = Node.PROCESS_MODE_DISABLED
+	town.set_time(0.42)      # the shop shares the town's light: daytime inside
 	for k in shops: shops[k].visible = false
 	shop = _get_shop(bid); shop.visible = true
 	worker = bid
