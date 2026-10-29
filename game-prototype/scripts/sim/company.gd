@@ -65,7 +65,7 @@ func new_game(new_seed: int, keep_profile := false) -> void:
 	stats = {"sold_total": 0, "transfers": 0, "inspections_passed": 0, "supplier_orders": 0, "profit_weeks": 0, "best_no_stockout": 0,
 		"sold_product_day": {}, "week_profit": 0, "week_revenue": 0, "week_start_cash": profile.cash}
 	goals_done = []; ev_state = {"last": {}, "times": {}, "next_inspection": int(world["inspection"]["first_day"])}
-	pending_events = []; inspection_today = ""; regulars = {}; wages_due = 0; phase = "morning"; runners = {}
+	pending_events = []; inspection_today = ""; regulars = {}; wages_due = 0; phase = "morning"; runners = {}; morning_day = 0; levels_today = []
 	last_report = {}; last_summary = {}; last_week = {}; last_goals = []
 	_snap()
 
@@ -98,12 +98,13 @@ func from_dict(d: Dictionary) -> void:
 	worker = str(d.get("worker", "bakery")) if units.has(str(d.get("worker", "bakery"))) else units.keys()[0]
 	staff = _ints(d.get("staff", [])); receivables = _ints(d.get("receivables", [])); payables = _ints(d.get("payables", []))
 	loans = _ints(d.get("loans", [])); contracts = _ints(d.get("contracts", {})); orders = _ints(d.get("orders", [])); special = _ints(d.get("special", []))
-	mods = _ints(d.get("mods", [])); services = d.get("services", {}); flags = d.get("flags", {}); stats = _ints(d.get("stats", stats))
+	mods = _ints(d.get("mods", [])); services = _ints(d.get("services", {})); flags = _ints(d.get("flags", {})); stats = _ints(d.get("stats", stats))
 	goals_done = d.get("goals_done", []); ev_state = _ints(d.get("ev_state", ev_state)); regulars = _ints(d.get("regulars", {}))
-	wages_due = int(d.get("wages_due", 0)); last_summary = d.get("last_summary", {}); last_week = d.get("last_week", {})
+	wages_due = int(d.get("wages_due", 0)); last_summary = _ints(d.get("last_summary", {})); last_week = _ints(d.get("last_week", {}))
 	phase = "morning"; runners = {}
 	morning_day = int(d.get("morning_day", 0)); pending_events = _ints(d.get("pending_events", [])) if morning_day == day else []
 	last_report = _ints(d.get("last_report", {})) if morning_day == day else {}; inspection_today = str(d.get("inspection_today", "")) if morning_day == day else ""
+	if morning_day == day: _roll_weather()
 	# the books must match the cash; if an edited or broken save does not, start the journal again from the cash on hand
 	if ledger.balance() != profile.cash:
 		ledger = Ledger.new(); ledger.start_cash = profile.cash
@@ -331,10 +332,7 @@ func start_morning() -> Dictionary:
 	phase = "morning"; levels_today = []; inspection_today = ""; morning_day = day
 	for bid in units: units[bid].reset_today()
 	var r := {"day": day, "weekday_k": weekday_key(), "deliveries": [], "collected": [], "paid": [], "late": [], "relief": 0, "events": [], "notes": []}
-	# weather
-	var wk: Dictionary = world["weather"]["kinds"]; var ws: Array = wk.keys(); var ww: Array = []
-	for k in ws: ww.append(int(wk[k]["w"]))
-	weather = ws[rng("weather").weighted(ww)]
+	_roll_weather()
 	r["weather"] = weather
 	# deliveries from suppliers
 	var keep: Array = []
@@ -379,6 +377,12 @@ func start_morning() -> Dictionary:
 	last_report = r
 	_snap()
 	return r
+
+# Today's weather comes from the seed and the day, so it is not saved: a morning that is loaded again gets the same weather.
+func _roll_weather() -> void:
+	var wk: Dictionary = world["weather"]["kinds"]; var ws: Array = wk.keys(); var ww: Array = []
+	for k in ws: ww.append(int(wk[k]["w"]))
+	weather = ws[rng("weather").weighted(ww)]
 
 func supplier_price_at(o: Dictionary, item: String) -> int:
 	# the price that was paid per unit when ordered (the cost is split by the list prices at the time of ordering)

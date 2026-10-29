@@ -5,6 +5,7 @@ extends Control
 # passing a builder function; refresh() rebuilds the body in place (after a +/- tap) and keeps the scroll position.
 
 signal closed
+signal opened
 
 var panel: PanelContainer
 var title_l: Label
@@ -22,6 +23,9 @@ var tabs: Array = []
 var closable := true
 var tall := false
 var screen_id := ""
+var col: VBoxContainer
+var _built_compact := false
+var compact := false           # a short (landscape) screen: tighter spacing so the list gets more room
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -32,7 +36,7 @@ func _ready() -> void:
 	panel = PanelContainer.new()
 	var sb := UiStyle.panel(Color(UiStyle.CREAM, 0.985), 26, 14); sb.shadow_size = 12
 	panel.add_theme_stylebox_override("panel", sb); add_child(panel)
-	var col := UiStyle.vbox(8); panel.add_child(col)
+	col = UiStyle.vbox(8); panel.add_child(col)
 	var head := UiStyle.hbox(8); col.add_child(head)
 	var tv := UiStyle.vbox(0); tv.size_flags_horizontal = Control.SIZE_EXPAND_FILL; head.add_child(tv)
 	title_l = UiStyle.label("", 21, UiStyle.INK, true); tv.add_child(title_l)
@@ -54,13 +58,18 @@ func _ready() -> void:
 
 func _layout() -> void:
 	var vp := get_viewport().get_visible_rect().size
+	compact = vp.y <= vp.x and vp.y < 500.0
+	if visible and compact != _built_compact: call_deferred("_rebuild_for_size")      # the phone was turned: tabs and buttons change height
+	col.add_theme_constant_override("separation", 4 if compact else 8)
+	(panel.get_theme_stylebox("panel") as StyleBoxFlat).set_content_margin_all(10 if compact else 14)
 	if vp.y > vp.x:
 		var h := vp.y * (0.86 if tall else 0.64)
 		panel.position = Vector2(6, vp.y - h - 6); panel.size = Vector2(vp.x - 12, h)
 	else:
-		# landscape: the sheet takes the end side, so the profile card at the start side stays visible
-		var w := vp.x * 0.56
-		panel.position = Vector2(6.0 if UiStyle.rtl() else vp.x - w - 6.0, 6.0); panel.size = Vector2(w, vp.y - 12.0)
+		# landscape: the sheet stands between the cash pills and side buttons (end side) and the profile card (start side), so both stay visible
+		var gap := 132.0
+		var w := minf(vp.x * 0.56, vp.x - gap - 200.0)
+		panel.position = Vector2(gap if UiStyle.rtl() else vp.x - gap - w, 6.0); panel.size = Vector2(w, vp.y - 12.0)
 	dim.visible = vp.y > vp.x and tall
 
 # opts: tabs (Array of names), tab (int), closable (bool), tall (bool), sub (String), id (String)
@@ -71,6 +80,7 @@ func open(title: String, p_builder: Callable, opts := {}) -> void:
 	close_b.visible = closable
 	visible = true; _layout()
 	_build(true)
+	opened.emit()
 	panel.modulate.a = 0.0
 	create_tween().tween_property(panel, "modulate:a", 1.0, 0.15)
 	Game.sfx.play("swish", 1.0, -8.0)
@@ -82,7 +92,11 @@ func refresh() -> void:
 	await get_tree().process_frame
 	scroll.scroll_vertical = keep
 
+func _rebuild_for_size() -> void:
+	if visible and compact != _built_compact: refresh()
+
 func _build(reset_scroll: bool) -> void:
+	_built_compact = compact
 	for c in body.get_children(): c.queue_free()
 	for c in foot.get_children(): c.queue_free()
 	for c in tabs_box.get_children(): c.queue_free()
@@ -102,7 +116,7 @@ func note(text: String, good := false) -> void:
 	note_l.text = text; note_l.add_theme_color_override("font_color", UiStyle.GOOD if good else UiStyle.BAD)
 
 func add_footer(text: String, kind: String, cb: Callable, expand := true) -> Button:
-	var b := UiStyle.button(text, kind, 17, 52)
+	var b := UiStyle.button(text, kind, 17, 46 if compact else 52)
 	if expand: b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.pressed.connect(func(): Game.sfx.play("tap", 1.0, -6.0); cb.call())
 	foot.add_child(b)
@@ -142,12 +156,12 @@ func stepper(parent: Control, icon_id: String, title: String, subtitle: String, 
 	return {"minus": minus, "plus": plus, "value": val}
 
 func _round(text: String) -> Button:
-	var b := Button.new(); b.text = text; b.custom_minimum_size = Vector2(44, 44); b.focus_mode = Control.FOCUS_NONE
+	var b := Button.new(); b.text = text; b.custom_minimum_size = Vector2(48, 48); b.focus_mode = Control.FOCUS_NONE
 	b.add_theme_font_override("font", UiStyle.bold()); b.add_theme_font_size_override("font_size", 22)
 	for st in ["normal", "hover", "pressed", "focus", "disabled"]:
 		var c := UiStyle.ACCENT if st != "pressed" else UiStyle.ACCENT.darkened(0.2)
 		if st == "disabled": c = Color("cfd3da")
-		b.add_theme_stylebox_override(st, UiStyle.panel(c, 22, 2, false))
+		b.add_theme_stylebox_override(st, UiStyle.panel(c, 24, 2, false))
 	b.add_theme_color_override("font_color", Color.WHITE); b.add_theme_color_override("font_pressed_color", Color.WHITE); b.add_theme_color_override("font_disabled_color", Color("f4f4f4"))
 	return b
 

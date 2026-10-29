@@ -2,7 +2,7 @@ extends Node
 # Development only: plays the game by itself through the real interface and saves screenshots.
 # Day 1 in the bakery (intro, plan screens, supplier order, serving every customer, summary), the evening and the night,
 # then the café is opened (cash and experience are given to get there quickly), a barista is hired, and a day is played in the café.
-# godot --path . res://scenes/main.tscn -- --autotest out=/path [landscape=1] [fast=1] [days=N]
+# godot --path . res://scenes/main.tscn -- --autotest out=/path [landscape=1] [size=WxH] [fast=1] [days=N]
 # Excluded from the exported APK.
 var main: Node3D
 var out := "/tmp"
@@ -10,6 +10,7 @@ var days := 2
 var landscape := false
 var errors: Array = []
 var inspect := false
+var win_size := Vector2i.ZERO
 
 func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
@@ -17,8 +18,11 @@ func _ready() -> void:
 		if a.begins_with("fast="): Engine.time_scale = 2.0 * float(a.substr(5))
 		if a.begins_with("days="): days = int(a.substr(5))
 		if a == "landscape=1": landscape = true
+		if a.begins_with("size="):
+			var wh := a.substr(5).split("x"); win_size = Vector2i(int(wh[0]), int(wh[1]))
 		if a == "inspect=1": inspect = true
 	if landscape: get_window().size = Vector2i(1266, 585)
+	if win_size != Vector2i.ZERO: get_window().size = win_size
 	_run()
 
 func shot(name: String) -> void:

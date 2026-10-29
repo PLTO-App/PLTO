@@ -300,7 +300,7 @@ func orders(sh: Sheet) -> void:
 			var row := sh.row(pc)
 			var t := UiStyle.label(Loc.t("orders.pending_line", {"sup_k": c.world["suppliers"][o["sup"]]["name"], "biz_k": c.units[o["biz"]].db["name"], "amount_m": o["cost"]}), 13)
 			t.size_flags_horizontal = Control.SIZE_EXPAND_FILL; row.add_child(t)
-			var x := UiStyle.button(Loc.t("orders.cancel"), "ghost", 13, 36); x.pressed.connect(func(): c.cancel_order(i); sh.refresh()); row.add_child(x)
+			var x := UiStyle.button(Loc.t("orders.cancel"), "ghost", 13, 44); x.pressed.connect(func(): c.cancel_order(i); sh.refresh()); row.add_child(x)
 	sh.add_footer(Loc.t("orders.suggest"), "secondary", func():
 		for bid in c.units: draft[order_sup][bid] = c.suggest_order(bid)
 		sh.refresh())
@@ -338,7 +338,7 @@ func staff(sh: Sheet) -> void:
 		for bid in c.units:
 			var ch := UiStyle.chip(biz_name(bid), s["assigned"] == bid, 13); ch.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			ch.pressed.connect(func(): c.assign(s["id"], bid); sh.refresh()); ah.add_child(ch)
-		var fire := UiStyle.button(Loc.t("staff.fire"), "ghost", 13, 36)
+		var fire := UiStyle.button(Loc.t("staff.fire"), "ghost", 13, 44)
 		fire.pressed.connect(func(): c.fire(s["id"]); Game.save_game(); sh.refresh()); card.add_child(fire)
 	var cand := c.candidates()
 	if c.level() < 2: sh.line(Loc.t("err.staff_level"), 13, UiStyle.MUTED)
@@ -352,7 +352,7 @@ func staff(sh: Sheet) -> void:
 			v.add_child(UiStyle.label(Loc.t("staff.line", {"skill": d["skill"], "wage_m": d["wage"]}), 12, UiStyle.MUTED))
 			var bh := sh.row(card)
 			for bid in c.units:
-				var hb := UiStyle.button(Loc.t("staff.hire_to", {"biz_k": c.units[bid].db["name"]}), "primary", 13, 40); hb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				var hb := UiStyle.button(Loc.t("staff.hire_to", {"biz_k": c.units[bid].db["name"]}), "primary", 13, 44); hb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 				hb.pressed.connect(func():
 					var e := c.hire(d["id"], bid)
 					if not e.is_empty(): sh.note(Loc.msg(e))

@@ -41,6 +41,8 @@ var card_who: Label
 var card_title: Label
 var card_body: Label
 var card_note: Label
+var card_scroll: ScrollContainer
+var card_text: VBoxContainer
 var card_choices: VBoxContainer
 var fade: ColorRect
 var fps_label: Label
@@ -70,6 +72,7 @@ func _ready() -> void:
 	_build_side(); _build_bottom(); _build_strip(); _build_objective(); _build_action(); _build_hint()
 	fx = RewardFx.new(); fx.hud = hud; fx.mouse_filter = Control.MOUSE_FILTER_IGNORE; fx.set_anchors_preset(Control.PRESET_FULL_RECT); root.add_child(fx)
 	sheet = Sheet.new(); root.add_child(sheet)
+	sheet.opened.connect(_sync_bar); sheet.closed.connect(_sync_bar)
 	screens = Screens.new(self)
 	_build_card()
 	fps_label = Label.new(); fps_label.add_theme_font_size_override("font_size", 11); fps_label.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))
@@ -77,6 +80,7 @@ func _ready() -> void:
 	fade = ColorRect.new(); fade.color = Color(0.05, 0.08, 0.16, 0.0); fade.set_anchors_preset(Control.PRESET_FULL_RECT); fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(fade)
 	get_viewport().size_changed.connect(_layout); _layout()
+	get_viewport().size_changed.connect(func(): if card_dim.visible: _fit_card())      # a turned phone changes how much room a card has
 
 func _vignette() -> TextureRect:
 	var g := Gradient.new(); g.offsets = PackedFloat32Array([0.0, 0.72, 1.0])
@@ -96,10 +100,14 @@ func _round_button(kind: String, tip: String) -> Button:
 
 func _build_side() -> void:
 	side = UiStyle.vbox(8); side.mouse_filter = Control.MOUSE_FILTER_IGNORE; root.add_child(side)
-	var gb := _round_button("goals", Loc.t("ui.goals")); gb.pressed.connect(func(): _tap(); open_screen("goals")); side.add_child(gb)
+	var gb := _round_button("goals", Loc.t("ui.goals")); gb.pressed.connect(func(): _tap(); open_screen("goals"))
+	# the badge sits at the top corner of the button; the wrapper is left to right so that corner is not mirrored off the screen
+	var gw := Control.new(); gw.custom_minimum_size = Vector2(56, 56); gw.layout_direction = Control.LAYOUT_DIRECTION_LTR; gw.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	gb.set_anchors_preset(Control.PRESET_FULL_RECT); gw.add_child(gb); side.add_child(gw)
 	goals_badge = UiStyle.one_line(UiStyle.label("", 12, Color.WHITE, true, HORIZONTAL_ALIGNMENT_CENTER))
 	var badge := PanelContainer.new(); badge.add_theme_stylebox_override("panel", UiStyle.panel(UiStyle.CORAL, 10, 2, false)); badge.add_child(goals_badge)
-	badge.position = Vector2(38, -2); badge.mouse_filter = Control.MOUSE_FILTER_IGNORE; badge.layout_direction = Control.LAYOUT_DIRECTION_LTR; gb.add_child(badge)
+	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE; gw.add_child(badge)
+	badge.position = Vector2(38, -2)      # after add_child: a position set before entering the tree is mirrored for right-to-left
 	var sb := _round_button("gear", Loc.t("ui.settings")); sb.pressed.connect(func(): _tap(); open_screen("settings")); side.add_child(sb)
 
 func _build_bottom() -> void:
@@ -128,7 +136,8 @@ func _build_strip() -> void:
 	root.add_child(strip)
 
 func setup_strip(bid: String) -> void:
-	for c in strip_box.get_children(): c.queue_free()
+	for c in strip_box.get_children():
+		strip_box.remove_child(c); c.queue_free()      # removed at once, so the old chips do not stretch the strip
 	strip_chips = {}
 	strip_clock = UiStyle.one_line(UiStyle.label("", 13, UiStyle.MUTED, true)); strip_clock.text_direction = Control.TEXT_DIRECTION_LTR; strip_box.add_child(strip_clock)
 	strip_box.add_child(UiStyle.spacer())
@@ -140,6 +149,7 @@ func setup_strip(bid: String) -> void:
 		var l := UiStyle.one_line(UiStyle.label("0", 14, UiStyle.INK, true)); l.text_direction = Control.TEXT_DIRECTION_LTR; strip_box.add_child(l); strip_chips[pid] = l
 	strip_box.add_child(UiStyle.spacer())
 	strip_queue = UiStyle.one_line(UiStyle.label("", 13, UiStyle.INK, true)); strip_box.add_child(strip_queue)
+	strip.reset_size(); _layout()
 
 func set_strip(clock: String, stock: Dictionary, queue_n: int) -> void:
 	if strip_clock == null: return
@@ -173,8 +183,11 @@ func _build_card() -> void:
 	var hv := UiStyle.vbox(0); hv.size_flags_horizontal = Control.SIZE_EXPAND_FILL; hv.alignment = BoxContainer.ALIGNMENT_CENTER; head.add_child(hv)
 	card_who = UiStyle.label("", 13, UiStyle.ACCENT, true); hv.add_child(card_who)
 	card_title = UiStyle.label("", 21, UiStyle.INK, true); hv.add_child(card_title)
-	card_body = UiStyle.label("", 16, UiStyle.INK); box.add_child(card_body)
-	card_note = UiStyle.label("", 14, UiStyle.MUTED); box.add_child(card_note)
+	# the text scrolls if the card would not fit the screen (a short landscape phone), the choices stay in view
+	card_scroll = ScrollContainer.new(); card_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; box.add_child(card_scroll)
+	card_text = UiStyle.vbox(10); card_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL; card_scroll.add_child(card_text)
+	card_body = UiStyle.label("", 16, UiStyle.INK); card_text.add_child(card_body)
+	card_note = UiStyle.label("", 14, UiStyle.MUTED); card_text.add_child(card_note)
 	card_choices = UiStyle.vbox(8); box.add_child(card_choices)
 
 # ---------------------------------------------------------------- layout (safe area, orientation)
@@ -192,26 +205,50 @@ func _layout() -> void:
 	var w := vp.x - l - r; var h := vp.y - t - b
 	var portrait := h > w
 	# side buttons at the end side, under the top bar
-	side.position = Vector2(8 if UiStyle.rtl() else w - 64, 158 if strip.visible else 112)
+	side.size = side.get_combined_minimum_size()          # the size first: in right-to-left a control grows toward the start side
+	side.position = Vector2(8 if UiStyle.rtl() else w - 64, 166 if strip.visible else 112)
 	var bw := w - 16.0 if portrait else minf(560.0, w * 0.6)
 	bottom.size = Vector2(bw, 0); bottom.position = Vector2((w - bw) / 2.0, h - 150.0)
-	strip.size = Vector2(w - 16.0, 0); strip.position = Vector2(8, 104)
-	var ow := minf(w - 32.0, 360.0)
-	objective_label.custom_minimum_size.x = ow - 28.0; objective_panel.position = Vector2((w - ow) / 2.0, 150); objective_panel.size = Vector2(ow, 0)
+	strip.size = Vector2(w - 16.0, 0); strip.position = Vector2(8, 112)
+	# the objective stays clear of the side buttons: it uses the width between them and the other edge
+	var lo := 8.0 + (72.0 if UiStyle.rtl() else 0.0); var hi := w - 8.0 - (0.0 if UiStyle.rtl() else 72.0)
+	var ow := minf(360.0, hi - lo)
+	objective_label.custom_minimum_size.x = ow - 28.0; objective_panel.position = Vector2(clampf((w - ow) / 2.0, lo, hi - ow), 158); objective_panel.size = Vector2(ow, 0)
 	var aw := minf(w - 40.0, 360.0)
 	action_button.custom_minimum_size = Vector2(aw, 64); action_button.size = Vector2(aw, 64); action_button.position = Vector2((w - aw) / 2.0, h - 92.0)
 	var hw := minf(w - 40.0, 340.0)
 	hint_label.custom_minimum_size.x = hw - 24.0; hint_panel.custom_minimum_size.x = hw; hint_panel.size = Vector2(hw, 0)
-	hint_panel.position = Vector2((w - hw) / 2.0, h - (250.0 if bottom.visible else 190.0))
+	_hint_pos = Vector2((w - hw) / 2.0, h - (158.0 if bottom.visible else 100.0))
+	_place_hint()
 	card_panel.custom_minimum_size.x = minf(w - 36.0, 400.0)
 	fps_label.position = Vector2(10, h - 18)
+
+var _hint_pos := Vector2.ZERO
+
+# The hint grows upward from just above the action button (or the town bar), so a long one never covers the button.
+func _place_hint() -> void:
+	hint_panel.position = Vector2(_hint_pos.x, _hint_pos.y - maxf(hint_panel.size.y, hint_panel.get_combined_minimum_size().y))
+
+# The Android back button closes the open sheet first; with nothing to close it saves and leaves (it no longer quits straight away).
+func _notification(what: int) -> void:
+	if what != NOTIFICATION_WM_GO_BACK_REQUEST: return
+	if card_dim.visible: return
+	if sheet.visible and sheet.closable: sheet.close(); return
+	Game.save_game(); get_tree().quit()
 
 func _tap() -> void:
 	Game.sfx.play("tap", 1.0, -6.0)
 
 # ---------------------------------------------------------------- modes
+var _bar_on := false
+
 func show_town_bar(on: bool, cta_text := "") -> void:
-	bottom.visible = on; cta.text = cta_text
+	_bar_on = on; cta.text = cta_text
+	_sync_bar()
+
+# The town bar is hidden while a sheet is open: it would peek out beside or behind the sheet in landscape.
+func _sync_bar() -> void:
+	bottom.visible = _bar_on and not sheet.visible
 	_layout()
 
 func show_day_ui(on: bool) -> void:
@@ -224,7 +261,7 @@ func update_goals_badge() -> void:
 	var ready := 0
 	for g in a: if Goals.progress(Game.co, g) >= 100: ready += 1
 	goals_badge.text = str(Game.co.goals_done.size())
-	goals_badge.get_parent().visible = true
+	goals_badge.get_parent().visible = Game.co.goals_done.size() > 0      # a red 0 means nothing
 
 # ---------------------------------------------------------------- screens in the sheet
 func open_screen(id: String, opts := {}) -> void:
@@ -249,7 +286,7 @@ func open_screen(id: String, opts := {}) -> void:
 func show_card(spec: Dictionary) -> void:
 	card_portrait.get_parent().remove_child(card_portrait); card_portrait.queue_free()
 	var who: String = spec.get("who", "")
-	card_portrait = UiStyle.portrait(who, 72) if who != "" else Control.new()
+	card_portrait = UiStyle.portrait(who, 72 if root.size.y > root.size.x else 56) if who != "" else Control.new()
 	(card_title.get_parent().get_parent() as HBoxContainer).add_child(card_portrait)
 	(card_title.get_parent().get_parent() as HBoxContainer).move_child(card_portrait, 0)
 	card_who.text = spec.get("who_name", ""); card_who.visible = card_who.text != ""
@@ -266,6 +303,18 @@ func show_card(spec: Dictionary) -> void:
 	card_panel.pivot_offset = card_panel.size / 2.0; card_panel.scale = Vector2(0.92, 0.92)
 	create_tween().tween_property(card_panel, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_end_stick()
+	_fit_card()
+
+# Gives the card's text the height it needs, but never more than the screen allows.
+func _fit_card() -> void:
+	card_scroll.custom_minimum_size.y = card_text.get_combined_minimum_size().y
+	for i in 3: await get_tree().process_frame
+	var full := card_text.get_combined_minimum_size().y
+	card_scroll.custom_minimum_size.y = full
+	for i in 2: await get_tree().process_frame
+	var room := root.size.y - 20.0
+	if card_panel.size.y > room:
+		card_scroll.custom_minimum_size.y = maxf(56.0, full - (card_panel.size.y - room))
 
 func hide_card() -> void:
 	card_dim.visible = false; input_enabled = true
@@ -288,10 +337,12 @@ func set_action(text: String) -> void:
 
 func show_hint(text: String, seconds := 3.0) -> void:
 	hint_label.text = text; hint_panel.visible = true; hint_panel.modulate.a = 1.0
-	_layout()
 	if _hint_tw != null and _hint_tw.is_valid(): _hint_tw.kill()
 	_hint_tw = create_tween(); _hint_tw.tween_interval(seconds); _hint_tw.tween_property(hint_panel, "modulate:a", 0.0, 0.6)
 	_hint_tw.tween_callback(func(): hint_panel.visible = false)
+	for i in 3:                                      # the wrapped text needs a frame or two before its height is known
+		hint_panel.reset_size(); _layout()
+		await get_tree().process_frame
 
 func fade_out(t := 0.35) -> void:
 	fade.mouse_filter = Control.MOUSE_FILTER_STOP

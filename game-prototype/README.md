@@ -27,10 +27,12 @@
 
 ## בדיקות
 ```
-godot --headless --path . --script dev/test_sim.gd              # מנוע ואיזון: 54 בדיקות וסימולציה של 6 שבועות
+godot --headless --path . --script dev/test_sim.gd              # מנוע ואיזון: 71 בדיקות וסימולציה של 6 שבועות
 godot --headless --path . res://dev/test_save.tscn              # שמירה, טעינה ושמירה מגרסה 0.4
+godot --headless --path . --script dev/test_saveload.gd         # שמירה וטעינה בכל בוקר וערב לא משנות את מהלך המשחק (5 עונות)
+xvfb-run -a godot --path . --rendering-driver opengl3 res://dev/layout_audit.tscn -- out=/tmp/audit shots=flagged   # פריסה ב-18 גדלי מסך, לאורך ולרוחב (כ-12 דקות)
 godot --headless --path . res://dev/check_scene.tscn            # כל הסקריפטים מתקמפלים
-xvfb-run -a godot --path . --rendering-driver opengl3 res://scenes/main.tscn -- --autotest fast=2 days=5 out=/tmp/shots
+xvfb-run -a godot --path . --rendering-driver opengl3 res://scenes/main.tscn -- --autotest fast=2 days=5 out=/tmp/shots [size=360x640] [landscape=1]
 python3 -I tools/locale_tool.py . check                         # אין מפתח טקסט חסר
 ```
 

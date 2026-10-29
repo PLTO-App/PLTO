@@ -28,6 +28,20 @@ func _ready() -> void:
 	Game.load_game()
 	check("after a restart the same morning is kept, not run again", Game.co.morning_day == Game.co.day and Game.co.units["bakery"].inv.units("base") == base_units)
 	check("pending events survive the restart", Game.co.pending_events.size() == co.pending_events.size())
+	# a file that is cut off or not a save at all: the game starts fresh and the bad file is set aside, not deleted
+	var f := FileAccess.open(Game.save_path, FileAccess.WRITE); f.store_string('{"version":1,"schema":3,"company":{"day":4,"profi'); f.close()
+	Game.load_game()
+	check("a cut-off save starts a new game", Game.co.day == 1 and Game.co.profile.cash == 3000)
+	check("the broken file is kept aside", FileAccess.file_exists(Game.save_path + ".bad") and not FileAccess.file_exists(Game.save_path))
+	DirAccess.remove_absolute(Game.save_path + ".bad")
+	# a save written by a different version of the format is also set aside
+	SaveStore.write(Game.save_path, {"schema": 3, "company": Game.co.snapshot}); var raw := FileAccess.get_file_as_string(Game.save_path).replace('"version":1', '"version":99')
+	f = FileAccess.open(Game.save_path, FileAccess.WRITE); f.store_string(raw); f.close()
+	check("an unknown format version is not read", SaveStore.read(Game.save_path).is_empty())
+	DirAccess.remove_absolute(Game.save_path + ".bad")
+	# the weather of a morning that is loaded again is the same as before
+	Game.load_game(); var w: String = Game.co.start_morning()["weather"]; Game.save_game(); Game.load_game()
+	check("a loaded morning keeps its weather", Game.co.weather == w, "%s vs %s" % [Game.co.weather, w])
 	SaveStore.erase(Game.save_path)
 	print("RESULT failures=%d" % fails)
 	get_tree().quit(1 if fails > 0 else 0)

@@ -519,13 +519,27 @@ func _build_marker() -> void:
 func _mark(at: Vector3) -> void:
 	marker.visible = true; ring.global_position = at + Vector3(0, 0.07, 0); arrow.set_meta("base", at + Vector3(0, 2.6, 0)); arrow.global_position = at + Vector3(0, 2.6, 0)
 
+# The orientation comes from the window itself (not from the scaled viewport, which depends on the orientation chosen).
 func _portrait() -> bool:
-	var vp := get_viewport().get_visible_rect().size
-	return vp.y > vp.x
+	var ws := get_window().size
+	return ws.y > ws.x
 
 func _apply_view() -> void:
 	var portrait := _portrait()
-	get_window().content_scale_size = Vector2i(390, 844) if portrait else Vector2i(844, 390)
+	var win := get_window()
+	var base := Vector2(390, 844) if portrait else Vector2(844, 390)
+	win.content_scale_size = Vector2i(base)
+	win.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_EXPAND
+	# A phone screen is scaled by its short side (390 points wide in portrait, 390 high in landscape), so buttons and text keep their
+	# size on short 16:9 screens too, where fitting the whole 390x844 would shrink everything. Near-square screens (tablets) would get
+	# too little room that way, so they keep the plain fit.
+	var ws := Vector2(win.size)
+	var long_ratio := maxf(ws.x, ws.y) / maxf(1.0, minf(ws.x, ws.y))
+	var factor := 1.0
+	if long_ratio >= 1.74 and ws.x > 0.0 and ws.y > 0.0:
+		var fit := minf(ws.x / base.x, ws.y / base.y)
+		factor = (minf(ws.x, ws.y) / 390.0) / fit
+	if not is_equal_approx(win.content_scale_factor, factor): win.content_scale_factor = factor
 	cam.keep_aspect = Camera3D.KEEP_WIDTH if portrait else Camera3D.KEEP_HEIGHT
 	if state == "day" or state == "closing":
 		cam.fov = 50.0 if portrait else 36.0
