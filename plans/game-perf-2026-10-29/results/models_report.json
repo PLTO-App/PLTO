@@ -1,0 +1,112 @@
+{
+ "electric_stove": {
+  "before": 13914,
+  "after": 2990,
+  "glb_bytes": 525724
+ },
+ "vintage_electric_kettle": {
+  "before": 14838,
+  "after": 2500,
+  "glb_bytes": 237724
+ },
+ "brass_pot_01": {
+  "before": 3760,
+  "after": 1499,
+  "glb_bytes": 68012
+ },
+ "pot_enamel_01": {
+  "before": 11416,
+  "after": 1498,
+  "glb_bytes": 68084
+ },
+ "wooden_cutting_board": {
+  "before": 3520,
+  "after": 799,
+  "glb_bytes": 54600
+ },
+ "croissant": {
+  "before": 1990,
+  "after": 1200,
+  "glb_bytes": 122996
+ },
+ "wooden_bowl_01": {
+  "before": 14122,
+  "after": 1200,
+  "glb_bytes": 55864
+ },
+ "lemon": {
+  "before": 4012,
+  "after": 500,
+  "glb_bytes": 37388
+ },
+ "ceramic_vase_01": {
+  "before": 10296,
+  "after": 1000,
+  "glb_bytes": 52936
+ },
+ "metal_jug": {
+  "before": 6040,
+  "after": 1000,
+  "glb_bytes": 50916
+ },
+ "tea_set_01": {
+  "before": 40296,
+  "after": 2993,
+  "glb_bytes": 168572
+ },
+ "wicker_basket_01": {
+  "before": 22276,
+  "after": 1999,
+  "glb_bytes": 205400
+ },
+ "carrot_cake": {
+  "before": 13790,
+  "after": 2000,
+  "glb_bytes": 206844
+ },
+ "vintage_cabinet_01": {
+  "before": 61096,
+  "after": 4995,
+  "glb_bytes": 475576
+ },
+ "strawberry_chocolate_cake": {
+  "before": 27054,
+  "after": 2999,
+  "glb_bytes": 242196
+ },
+ "round_wooden_table_01": {
+  "before": 8640,
+  "after": 1999,
+  "glb_bytes": 140336
+ },
+ "painted_wooden_chair_01": {
+  "before": 724,
+  "after": 724,
+  "glb_bytes": 133224
+ },
+ "standing_chalkboard_01": {
+  "before": 2372,
+  "after": 2372,
+  "glb_bytes": 151076
+ },
+ "potted_plant_02": {
+  "before": 69806,
+  "after": 7999,
+  "glb_bytes": 783288
+ },
+ "planter_box_01": {
+  "before": 8094,
+  "after": 1499,
+  "glb_bytes": 95560
+ },
+ "fancy_picture_frame_01": {
+  "before": 938,
+  "after": 938,
+  "glb_bytes": 66960
+ },
+ "wooden_display_shelves_01": {
+  "before": 3174,
+  "after": 3174,
+  "glb_bytes": 136628
+ }
+}

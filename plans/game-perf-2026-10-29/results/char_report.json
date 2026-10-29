@@ -1,0 +1,166 @@
+{
+ "hero": {
+  "parts": {
+   "Human": [
+    17012,
+    11488
+   ],
+   "Human.eyebrow010": [
+    192,
+    192
+   ],
+   "Human.eyelashes03": [
+    368,
+    368
+   ],
+   "Human.female_casualsuit01": [
+    4236,
+    2541
+   ],
+   "Human.high-poly": [
+    2040,
+    611
+   ],
+   "Human.ponytail01": [
+    5352,
+    2942
+   ],
+   "Human.shoes01": [
+    3320,
+    996
+   ],
+   "Human.teeth_base": [
+    7120,
+    712
+   ]
+  },
+  "tris": 19850,
+  "bytes": 4690432,
+  "images": {
+   "brown_eye": [
+    256,
+    256
+   ],
+   "eyebrow010": [
+    256,
+    256
+   ],
+   "eyelashes03": [
+    256,
+    256
+   ],
+   "female_casualsuit01_diffuse": [
+    1024,
+    1024
+   ],
+   "female_casualsuit01_normal": [
+    512,
+    512
+   ],
+   "ponytail01_diffuse": [
+    512,
+    512
+   ],
+   "shoes01_diffuse": [
+    256,
+    256
+   ],
+   "shoes01_normal": [
+    256,
+    256
+   ],
+   "teeth": [
+    128,
+    128
+   ],
+   "tongue01_diffuse": [
+    64,
+    64
+   ],
+   "young_lightskinned_female_diffuse": [
+    1024,
+    1024
+   ]
+  }
+ },
+ "npc": {
+  "parts": {
+   "Human": [
+    17012,
+    5613
+   ],
+   "Human.eyebrow010": [
+    192,
+    192
+   ],
+   "Human.eyelashes03": [
+    368,
+    368
+   ],
+   "Human.female_casualsuit01": [
+    4236,
+    1694
+   ],
+   "Human.high-poly": [
+    2040,
+    306
+   ],
+   "Human.ponytail01": [
+    5352,
+    2139
+   ],
+   "Human.shoes01": [
+    3320,
+    664
+   ]
+  },
+  "tris": 10976,
+  "bytes": 1639488,
+  "images": {
+   "brown_eye": [
+    128,
+    128
+   ],
+   "eyebrow010": [
+    128,
+    128
+   ],
+   "eyelashes03": [
+    128,
+    128
+   ],
+   "female_casualsuit01_diffuse": [
+    512,
+    512
+   ],
+   "female_casualsuit01_normal": [
+    256,
+    256
+   ],
+   "ponytail01_diffuse": [
+    256,
+    256
+   ],
+   "shoes01_diffuse": [
+    128,
+    128
+   ],
+   "shoes01_normal": [
+    128,
+    128
+   ],
+   "teeth": [
+    64,
+    64
+   ],
+   "tongue01_diffuse": [
+    64,
+    64
+   ],
+   "young_lightskinned_female_diffuse": [
+    512,
+    512
+   ]
+  }
+ }
+}

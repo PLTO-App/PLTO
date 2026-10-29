@@ -1,0 +1,1 @@
+{"set": "opt", "mode": "bench", "chars": 0, "window": [780, 1688], "tris": 90260, "draw": 106, "prims_all_passes": 46502, "vmem_mb": 46.1, "tex_mem_mb": 34.5, "tex_astc_est_mb": 15.7, "tex_count": 105, "tex_max": 1024, "build_ms": 113, "frame_avg_ms": 237.8, "frame_med_ms": 236.4, "frame_p95_ms": 259.4, "bake_ms": null}

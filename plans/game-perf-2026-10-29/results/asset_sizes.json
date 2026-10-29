@@ -1,0 +1,74 @@
+{
+ "source_bytes": {
+  "orig": {
+   "props": 42080142,
+   "env_textures": 8786778,
+   "character": 24523268
+  },
+  "opt": {
+   "props": 4079904,
+   "env_textures": 612853,
+   "character_hero": 4690508,
+   "character_npc": 1639548
+  }
+ },
+ "unique_prop_tris": {
+  "before": 342168,
+  "after": 47877
+ },
+ "char_tris": {
+  "orig": 40168,
+  "hero": 19850,
+  "npc": 10976
+ },
+ "imported": {
+  "shared": {
+   "tex": {
+    "etc2_astc": 174828,
+    "s3tc_bptc": 174828,
+    "other": 2097204,
+    "src_bytes": 1477042,
+    "files": 2
+   },
+   "scene": {
+    "etc2_astc": 0,
+    "s3tc_bptc": 0,
+    "other": 2125572,
+    "src_bytes": 14732704,
+    "files": 2
+   }
+  },
+  "assets_orig": {
+   "tex": {
+    "etc2_astc": 131428892,
+    "s3tc_bptc": 131428892,
+    "other": 0,
+    "src_bytes": 63426007,
+    "files": 105
+   },
+   "scene": {
+    "etc2_astc": 0,
+    "s3tc_bptc": 0,
+    "other": 14479207,
+    "src_bytes": 24662957,
+    "files": 23
+   }
+  },
+  "assets_opt": {
+   "tex": {
+    "etc2_astc": 10592164,
+    "s3tc_bptc": 10592164,
+    "other": 0,
+    "src_bytes": 6698450,
+    "files": 115
+   },
+   "scene": {
+    "etc2_astc": 0,
+    "s3tc_bptc": 0,
+    "other": 5508314,
+    "src_bytes": 10409960,
+    "files": 24
+   }
+  }
+ }
+}

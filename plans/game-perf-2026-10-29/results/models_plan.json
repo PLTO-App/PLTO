@@ -1,0 +1,90 @@
+{
+ "electric_stove": {
+  "target_tris": 3000,
+  "tex": 512
+ },
+ "vintage_electric_kettle": {
+  "target_tris": 2500,
+  "tex": 256
+ },
+ "brass_pot_01": {
+  "target_tris": 1500,
+  "tex": 256
+ },
+ "pot_enamel_01": {
+  "target_tris": 1500,
+  "tex": 256
+ },
+ "wooden_cutting_board": {
+  "target_tris": 800,
+  "tex": 256
+ },
+ "croissant": {
+  "target_tris": 1200,
+  "tex": 512
+ },
+ "wooden_bowl_01": {
+  "target_tris": 1200,
+  "tex": 256
+ },
+ "lemon": {
+  "target_tris": 500,
+  "tex": 256
+ },
+ "ceramic_vase_01": {
+  "target_tris": 1000,
+  "tex": 256
+ },
+ "metal_jug": {
+  "target_tris": 1000,
+  "tex": 256
+ },
+ "tea_set_01": {
+  "target_tris": 3000,
+  "tex": 512
+ },
+ "wicker_basket_01": {
+  "target_tris": 2000,
+  "tex": 512
+ },
+ "carrot_cake": {
+  "target_tris": 2000,
+  "tex": 512
+ },
+ "vintage_cabinet_01": {
+  "target_tris": 5000,
+  "tex": 512
+ },
+ "strawberry_chocolate_cake": {
+  "target_tris": 3000,
+  "tex": 512
+ },
+ "round_wooden_table_01": {
+  "target_tris": 2000,
+  "tex": 512
+ },
+ "painted_wooden_chair_01": {
+  "target_tris": 800,
+  "tex": 512
+ },
+ "standing_chalkboard_01": {
+  "target_tris": 2400,
+  "tex": 256
+ },
+ "potted_plant_02": {
+  "target_tris": 8000,
+  "tex": 512
+ },
+ "planter_box_01": {
+  "target_tris": 1500,
+  "tex": 256
+ },
+ "fancy_picture_frame_01": {
+  "target_tris": 940,
+  "tex": 256
+ },
+ "wooden_display_shelves_01": {
+  "target_tris": 3200,
+  "tex": 256
+ }
+}

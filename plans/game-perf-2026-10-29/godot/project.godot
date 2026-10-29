@@ -1,0 +1,17 @@
+config_version=5
+
+[application]
+config/name="plto-perf-test"
+run/main_scene="res://main.tscn"
+
+[display]
+window/size/viewport_width=780
+window/size/viewport_height=1688
+window/vsync/vsync_mode=0
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
+textures/vram_compression/import_s3tc_bptc=true
+limits/opengl/max_lights_per_object=8
