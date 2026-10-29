@@ -16,6 +16,11 @@ var root := Control.new()
 var stick: StickView
 var hud: Hud
 var fx: RewardFx
+var manage: ManagePanel
+var strip: PanelContainer
+var strip_clock: Label
+var strip_queue: Label
+var strip_chips := {}      # product id -> Label with the stock count
 var objective_panel: PanelContainer
 var objective_label: Label
 var action_button: Button
@@ -63,6 +68,8 @@ func _ready() -> void:
 	fps_label = Label.new(); fps_label.add_theme_font_size_override("font_size", 12); fps_label.add_theme_color_override("font_color", Color(1, 1, 1, 0.8)); UiStyle.outline(fps_label, Color(0, 0, 0, 0.6), 4)
 	root.add_child(fps_label)
 	fx = RewardFx.new(); fx.hud = hud; fx.mouse_filter = Control.MOUSE_FILTER_IGNORE; fx.set_anchors_preset(Control.PRESET_FULL_RECT); root.add_child(fx)
+	manage = ManagePanel.new(); root.add_child(manage)
+	_build_strip()
 	_build_card()
 	get_viewport().size_changed.connect(_layout); _layout()
 
@@ -74,6 +81,27 @@ func _make_vignette() -> TextureRect:
 	var tr := TextureRect.new(); tr.texture = tex; tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; tr.stretch_mode = TextureRect.STRETCH_SCALE
 	tr.set_anchors_preset(Control.PRESET_FULL_RECT); tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return tr
+
+# One compact line under the top bar during the working day: the clock, the stock of each product, and how many are waiting.
+func _build_strip() -> void:
+	strip = PanelContainer.new(); strip.mouse_filter = Control.MOUSE_FILTER_IGNORE; strip.visible = false
+	strip.add_theme_stylebox_override("panel", UiStyle.panel(Color(UiStyle.CREAM, 0.92), 14, 5))
+	var h := HBoxContainer.new(); h.add_theme_constant_override("separation", 10); h.mouse_filter = Control.MOUSE_FILTER_IGNORE; strip.add_child(h)
+	strip_queue = UiStyle.label("", 13, UiStyle.INK, true); strip_queue.autowrap_mode = TextServer.AUTOWRAP_OFF; h.add_child(strip_queue)
+	var sp := Control.new(); sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL; sp.mouse_filter = Control.MOUSE_FILTER_IGNORE; h.add_child(sp)
+	for pid in Game.business()["products"]:
+		var ic := TextureRect.new(); ic.texture = load("res://assets/ui/%s.png" % Game.business()["products"][pid]["icon"]); ic.custom_minimum_size = Vector2(22, 22)
+		ic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED; ic.mouse_filter = Control.MOUSE_FILTER_IGNORE; h.add_child(ic)
+		var l := UiStyle.label("0", 14, UiStyle.INK, true); l.autowrap_mode = TextServer.AUTOWRAP_OFF; l.text_direction = Control.TEXT_DIRECTION_LTR; h.add_child(l); strip_chips[pid] = l
+	strip_clock = UiStyle.label("", 13, UiStyle.MUTED, true); strip_clock.autowrap_mode = TextServer.AUTOWRAP_OFF; strip_clock.text_direction = Control.TEXT_DIRECTION_LTR; h.add_child(strip_clock)
+	root.add_child(strip)
+
+func set_day_strip(clock: String, stock: Dictionary, queue_n: int) -> void:
+	strip_clock.text = clock; strip_queue.text = "בתור: %d" % queue_n
+	for pid in stock: strip_chips[pid].text = str(stock[pid])
+
+func show_day_strip(on: bool) -> void:
+	strip.visible = on
 
 func _build_card() -> void:
 	card_dim = ColorRect.new(); card_dim.color = Color(0.06, 0.12, 0.24, 0.55); card_dim.set_anchors_preset(Control.PRESET_FULL_RECT); card_dim.visible = false
@@ -109,7 +137,8 @@ func _layout() -> void:
 	var ow := minf(w - 32.0, 360.0)
 	objective_label.custom_minimum_size.x = ow - 28.0
 	objective_panel.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	objective_panel.offset_left = -ow / 2.0; objective_panel.offset_right = ow / 2.0; objective_panel.offset_top = 76.0; objective_panel.offset_bottom = 76.0
+	objective_panel.offset_left = -ow / 2.0; objective_panel.offset_right = ow / 2.0; objective_panel.offset_top = 122.0; objective_panel.offset_bottom = 122.0
+	strip.custom_minimum_size.x = w - 16.0; strip.position = Vector2(8, 80); strip.size = Vector2(w - 16.0, 0)
 	fps_label.position = Vector2(10, h - 22)
 	action_button.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT); action_button.grow_horizontal = Control.GROW_DIRECTION_BEGIN; action_button.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	action_button.offset_right = -20.0; action_button.offset_left = -20.0; action_button.offset_bottom = -28.0; action_button.offset_top = -28.0
@@ -151,7 +180,7 @@ func _end_stick() -> void:
 	_stick_touch = -1; stick.active = false; stick.queue_redraw(); move_vec = Vector2.ZERO
 
 func _blocked(p: Vector2) -> bool:
-	if not input_enabled: return true
+	if not input_enabled or manage.is_open(): return true
 	if action_button.visible and action_button.get_global_rect().grow(8).has_point(p): return true
 	return false
 
@@ -186,6 +215,7 @@ func _input(e: InputEvent) -> void:
 
 func current_move() -> Vector2:
 	if use_override: return override_vec
+	if manage.is_open(): return Vector2.ZERO
 	if move_vec != Vector2.ZERO: return move_vec
 	if not input_enabled: return Vector2.ZERO
 	return Input.get_vector("ui_left", "ui_right", "ui_down", "ui_up")

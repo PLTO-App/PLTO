@@ -25,6 +25,18 @@ func _ready() -> void:
 func set_solid(on: bool) -> void:
 	body.collision_layer = 1 if on else 0
 
+var at_counter := false            # standing at the counter, waiting to be served
+var q_index := -1
+var route_id := 0
+
+# Walks a list of points in order. A newer route cancels an older one (returns false then).
+func follow(points: Array) -> bool:
+	route_id += 1; var mine := route_id
+	for p in points:
+		await walk_to(p)
+		if mine != route_id or not is_inside_tree(): return false
+	return true
+
 # Walks to a point (flat), then emits "arrived". Await it.
 func walk_to(p: Vector3) -> void:
 	_target = Vector3(p.x, 0.0, p.z); _moving = true

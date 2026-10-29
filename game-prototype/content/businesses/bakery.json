@@ -2,19 +2,53 @@
   "id": "bakery",
   "name": "המאפייה של נועה",
   "owner": "נועה",
-  "_comment": "Prices and costs are whole shekels, illustrative only. Customers and products are data, so another business type is a new file, not new code.",
-  "products": {
-    "strawberry_cake": {"name": "עוגת תות ושוקולד", "model": "strawberry_chocolate_cake", "scale": 1.5, "icon": "icon_cake", "price": 220, "cost": 70, "xp": 80},
-    "carrot_cake":     {"name": "עוגת גזר",         "model": "carrot_cake",                "scale": 1.5, "icon": "icon_carrot", "price": 180, "cost": 55, "xp": 60},
-    "croissant":       {"name": "קרואסון",          "model": "croissant",                  "scale": 2.4, "icon": "icon_croissant", "price": 35,  "cost": 10, "xp": 15}
+  "_comment": "All money is whole shekels and all percentages are whole numbers. Illustrative values for learning, not business advice. A new business type is a new file like this one.",
+
+  "start": {"cash": 500, "reputation": 50, "stock": {"base": 10, "dairy": 8, "sweet": 6}},
+  "slots": 12, "slot_minutes": 30, "day_start_hour": 8,
+  "base_customers": 9,
+  "oven_capacity": 16,
+  "fixed_costs": {"rent_utilities": 90},
+  "arrival_weights": [5, 10, 15, 15, 10, 8, 8, 10, 12, 10, 7, 5],
+  "weekday_names": ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"],
+  "weekday_factor": [90, 80, 85, 90, 100, 130, 115],
+  "sensitivity": [{"mult": 80, "w": 10}, {"mult": 90, "w": 15}, {"mult": 100, "w": 20}, {"mult": 110, "w": 20}, {"mult": 125, "w": 20}, {"mult": 140, "w": 15}],
+
+  "ingredients": {
+    "base":  {"name": "קמח, סוכר וביצים", "step": 6},
+    "dairy": {"name": "חמאה וחלב",        "step": 4},
+    "sweet": {"name": "שוקולד ופירות",    "step": 4}
   },
+  "suppliers": {
+    "wholesale": {"name": "סיטונאי השוק",  "quality": 70, "unlock_level": 1, "prices": {"base": 6, "dairy": 10, "sweet": 14}},
+    "family":    {"name": "ספק משפחתי",    "quality": 95, "unlock_level": 2, "prices": {"base": 8, "dairy": 13, "sweet": 19}}
+  },
+
+  "products": {
+    "croissant":       {"name": "קרואסון",          "model": "croissant",                  "scale_pct": 240, "icon": "icon_croissant", "price": 35,  "xp": 3,  "pref": 50, "oven": 1, "shelf_days": 1, "old_price_pct": 0,  "recipe": {"base": 1, "dairy": 1}},
+    "carrot_cake":     {"name": "עוגת גזר",         "model": "carrot_cake",                "scale_pct": 150, "icon": "icon_carrot",    "price": 180, "xp": 8,  "pref": 25, "oven": 3, "shelf_days": 2, "old_price_pct": 60, "recipe": {"base": 3, "dairy": 2, "sweet": 1}},
+    "strawberry_cake": {"name": "עוגת תות ושוקולד", "model": "strawberry_chocolate_cake",  "scale_pct": 150, "icon": "icon_cake",      "price": 220, "xp": 10, "pref": 25, "oven": 3, "shelf_days": 2, "old_price_pct": 60, "recipe": {"base": 3, "dairy": 2, "sweet": 3}}
+  },
+
+  "marketing": {
+    "none":        {"name": "בלי שיווק",              "cost": 0,   "reach_pct": 0,  "discount_pct": 0,  "pref_mult": 100, "unlock_level": 1},
+    "social_post": {"name": "פוסט ברשת החברתית",      "cost": 60,  "reach_pct": 25, "discount_pct": 0,  "pref_mult": 100, "unlock_level": 1},
+    "promo":       {"name": "מבצע על מוצר אחד",       "cost": 0,   "reach_pct": 0,  "discount_pct": 20, "pref_mult": 150, "unlock_level": 1},
+    "flyers":      {"name": "פליירים בשכונה",         "cost": 150, "reach_pct": 50, "discount_pct": 0,  "pref_mult": 100, "unlock_level": 2}
+  },
+
+  "upgrades": {
+    "sign":    {"name": "שלט מואר",         "desc": "עוד 2 לקוחות ביום בממוצע",         "cost": 400, "unlock_level": 1, "effect": {"base_customers": 2}},
+    "oven":    {"name": "תנור גדול יותר",   "desc": "עוד 6 יחידות תפוקה ביום",           "cost": 600, "unlock_level": 2, "effect": {"oven_capacity": 6}},
+    "display": {"name": "ויטרינה מעוצבת",   "desc": "לקוחות מוכנים לשלם 8 אחוז יותר",    "cost": 700, "unlock_level": 3, "effect": {"wtp_pct": 8}}
+  },
+
+  "xp_rules": {"profitable_day": 30, "no_stockout": 20, "happy_customers": 20, "first_day": 25, "happy_threshold": 70},
+
   "customers": [
-    {"id": "ronit", "name": "רונית", "look": {"skin": "light",  "hair": "6b3b22", "hair_style": "long",  "top": "9b2f4a", "bottom": "3d5a80", "apron": ""}},
-    {"id": "yael",  "name": "יעל",   "look": {"skin": "medium", "hair": "1f1612", "hair_style": "bun",   "top": "3a7ca5", "bottom": "2b2d42", "apron": ""}},
-    {"id": "omer",  "name": "עומר",  "look": {"skin": "light",  "hair": "2a1d14", "hair_style": "short", "top": "5c7a4a", "bottom": "3a3f4f", "apron": ""}},
-    {"id": "hila",  "name": "הילה",  "look": {"skin": "deep",   "hair": "17110d", "hair_style": "pony",  "top": "e0a030", "bottom": "5a3e36", "apron": ""}}
-  ],
-  "first_order": {"customer": "ronit", "product": "strawberry_cake"},
-  "order_cycle": ["carrot_cake", "croissant", "strawberry_cake", "croissant"],
-  "reputation_per_sale": 5
+    {"id": "ronit", "name": "רונית", "g": "f", "look": {"skin": "light",  "hair": "6b3b22", "hair_style": "long",  "top": "9b2f4a", "bottom": "3d5a80", "apron": ""}},
+    {"id": "yael",  "name": "יעל",   "g": "f", "look": {"skin": "medium", "hair": "1f1612", "hair_style": "bun",   "top": "3a7ca5", "bottom": "2b2d42", "apron": ""}},
+    {"id": "omer",  "name": "עומר",  "g": "m", "look": {"skin": "light",  "hair": "2a1d14", "hair_style": "short", "top": "5c7a4a", "bottom": "3a3f4f", "apron": ""}},
+    {"id": "hila",  "name": "הילה",  "g": "f", "look": {"skin": "deep",   "hair": "17110d", "hair_style": "pony",  "top": "e0a030", "bottom": "5a3e36", "apron": ""}}
+  ]
 }

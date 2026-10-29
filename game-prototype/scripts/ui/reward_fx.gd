@@ -33,6 +33,12 @@ func play_sale(result: Dictionary, origin: Vector2, before: Dictionary) -> void:
 	await _xp(result["xp_total"], before)
 	hud.hold = false; hud.sync()
 
+# Experience gained outside a sale (the closing bonuses): the bar fills and a level-up banner appears if needed.
+func play_xp(gain: int, before: Dictionary) -> void:
+	hud.hold = true
+	await _xp(gain, before)
+	hud.hold = false; hud.sync()
+
 func _coins(profit: int, origin: Vector2) -> void:
 	if profit <= 0:
 		hud.shown_cash = Game.profile.cash; return

@@ -45,22 +45,42 @@ func load_all() -> void:
 		if typeof(b) != TYPE_DICTIONARY: errors.append(fn + ": invalid"); continue
 		_normalize_business(b, fn); businesses[b.get("id", fn)] = b
 
+# Turns every whole-number float into an int (JSON numbers arrive as floats) and reports any real fraction.
+func _intify(v: Variant, path: String) -> Variant:
+	match typeof(v):
+		TYPE_FLOAT:
+			if not is_equal_approx(v, roundf(v)): errors.append("%s: must be a whole number" % path)
+			return int(roundf(v))
+		TYPE_DICTIONARY:
+			for k in (v as Dictionary).keys(): v[k] = _intify(v[k], "%s.%s" % [path, k])
+			return v
+		TYPE_ARRAY:
+			for i in (v as Array).size(): v[i] = _intify(v[i], "%s[%d]" % [path, i])
+			return v
+	return v
+
 func _normalize_business(b: Dictionary, fn: String) -> void:
-	for key in ["id", "name", "products", "customers", "first_order", "order_cycle", "reputation_per_sale"]:
+	_intify(b, fn)
+	for key in ["id", "name", "start", "slots", "base_customers", "oven_capacity", "fixed_costs", "arrival_weights", "weekday_factor", "weekday_names", "sensitivity",
+			"ingredients", "suppliers", "products", "marketing", "upgrades", "xp_rules", "customers"]:
 		if not b.has(key): errors.append("%s: missing %s" % [fn, key])
-	if not b.has("products"): return
+	if not (b.has("products") and b.has("ingredients") and b.has("suppliers")): return
+	if b["arrival_weights"].size() != b["slots"]: errors.append(fn + ": arrival_weights must have one weight per slot")
+	if b["weekday_factor"].size() != 7 or b["weekday_names"].size() != 7: errors.append(fn + ": weekday lists need 7 entries")
+	for sid in b["suppliers"]:
+		for iid in b["ingredients"]:
+			if not b["suppliers"][sid]["prices"].has(iid): errors.append("%s.%s: no price for %s" % [fn, sid, iid])
 	for pid in b["products"]:
 		var pr: Dictionary = b["products"][pid]
-		for k in ["price", "cost", "xp"]: pr[k] = _int(pr.get(k), "%s.%s.%s" % [fn, pid, k])
-		if pr["cost"] > pr["price"]: errors.append("%s.%s: cost above price" % [fn, pid])
-	b["reputation_per_sale"] = _int(b.get("reputation_per_sale"), fn + ".reputation_per_sale")
-	for pid in b.get("order_cycle", []):
-		if not b["products"].has(pid): errors.append("%s: order_cycle has unknown product %s" % [fn, pid])
-	var fo: Dictionary = b.get("first_order", {})
-	if not b["products"].has(fo.get("product", "")): errors.append(fn + ": first_order product unknown")
-	var ids := []
-	for c in b.get("customers", []): ids.append(c.get("id"))
-	if not ids.has(fo.get("customer", "")): errors.append(fn + ": first_order customer unknown")
+		for k in ["price", "xp", "pref", "oven", "shelf_days", "old_price_pct", "recipe", "model", "icon"]:
+			if not pr.has(k): errors.append("%s.%s: missing %s" % [fn, pid, k])
+		for iid in pr.get("recipe", {}):
+			if not b["ingredients"].has(iid): errors.append("%s.%s: unknown ingredient %s" % [fn, pid, iid])
+		# cheapest possible unit cost must stay below the price, so the business can make money at all
+		var unit := 0
+		for iid in pr.get("recipe", {}): unit += pr["recipe"][iid] * (b["suppliers"]["wholesale"]["prices"][iid] if b["suppliers"].has("wholesale") else 0)
+		if unit >= pr.get("price", 0): errors.append("%s.%s: ingredient cost %d is not below the price" % [fn, pid, unit])
+	if not b["marketing"].has("none"): errors.append(fn + ": marketing needs a 'none' option")
 
 # Level reached with a given total experience (1-based, capped at the table's end).
 func level_for_xp(xp: int) -> int:

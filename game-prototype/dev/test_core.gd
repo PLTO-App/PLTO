@@ -10,10 +10,6 @@ func check(name: String, ok: bool, detail := "") -> void:
 func _init() -> void:
 	var db := ContentDb.new(); db.load_all()
 	check("content loads without errors", db.errors.is_empty(), str(db.errors))
-	var b: Dictionary = db.businesses["bakery"]
-	for pid in b["products"]:
-		var p: Dictionary = b["products"][pid]
-		check("product %s is integer money with a margin" % pid, typeof(p["price"]) == TYPE_INT and typeof(p["cost"]) == TYPE_INT and p["price"] > p["cost"])
 	check("level 1 at 0 xp, level 2 at 100", db.level_for_xp(0) == 1 and db.level_for_xp(99) == 1 and db.level_for_xp(100) == 2)
 	check("level capped at table end", db.level_for_xp(999999) == db.levels.size())
 	var pr := Profile.new(); pr.reset(db)
@@ -23,15 +19,6 @@ func _init() -> void:
 	check("a big gain can pass several levels", pr.add_xp(400) == [3, 4], str(pr.level))
 	pr.add_reputation(500); check("reputation clamps at 100", pr.reputation == 100)
 	pr.add_reputation(-500); check("reputation clamps at 0", pr.reputation == 0)
-	# sale math
-	var cake: Dictionary = b["products"]["strawberry_cake"]
-	var r := SaleCalc.compute(cake, {}, b["reputation_per_sale"], true, db.first_sale_xp)
-	check("first sale of the cake: 220 - 70 = 150 profit, 80 + 25 xp", r["profit"] == 150 and r["xp_total"] == 105 and r["revenue"] == 220, str(r))
-	r = SaleCalc.compute(cake, {"discount_pct": 15}, 5, false, 25)
-	check("15 percent discount uses integer math (187)", r["revenue"] == 187 and typeof(r["revenue"]) == TYPE_INT, str(r["revenue"]))
-	r = SaleCalc.compute(cake, {"discount_pct": 60}, 5, false, 25)
-	check("a deep discount costs reputation and can lose money", r["revenue"] == 88 and r["profit"] == 18 and r["reputation"] == 2, str(r))
-	check("discount is clamped to 0..100", SaleCalc.compute(cake, {"discount_pct": 250}, 5, false, 25)["revenue"] == 0)
 	# save round trip
 	var path := "user://core_test_save.json"; SaveStore.erase(path)
 	pr.cash = 1234

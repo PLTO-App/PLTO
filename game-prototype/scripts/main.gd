@@ -1,30 +1,40 @@
 extends Node3D
-# The bakery day, first slice: a customer comes in with an order, Noa takes it from the display, serves it and gets paid.
-# The money, experience and reputation come from the Game systems (autoload); this script only runs the scene and tells the UI.
+# The bakery day. Each morning the owner plans (ManagePanel), then customers arrive and Noa serves them by hand in the 3D shop, and at the
+# close the numbers are shown. The decisions and results come from the business simulation (Game.biz); this script runs the scene and the UI.
 
-enum Step { INTRO, PICK, SERVE, BETWEEN }
+enum Step { IDLE, PICK, SERVE }
+enum State { INTRO, PLANNING, DAY, CLOSING }
 
 const CAM_YAW := 0.32
 const CAM_H := 7.6
 const CAM_D := 8.8
+const PANEL_V_OFFSET := -2.1                   # shifts the view up while a sheet covers the lower part of a portrait screen
 const SPAWN := Vector3(0.6, 0, 2.7)
-const DOOR := Vector3(1.8, 0, 8.6)             # where customers come from and leave to (in front of the open side of the room)
-const CUSTOMER_SPOT := Vector3(3.7, 0, 0.0)          # behind the table, facing Noa and the camera
-const CUSTOMER_PATH := [Vector3(1.6, 0, 4.2), Vector3(1.6, 0, 0.4)]
+const DOOR := Vector3(1.8, 0, 8.6)
+const LANE_FRONT := Vector3(1.6, 0, 4.2)
+const LANE_MID := Vector3(1.6, 0, 3.6)
+const LANE_BACK := Vector3(1.6, 0, 0.4)
+const CUSTOMER_SPOT := Vector3(3.7, 0, 0.0)    # behind the table, facing Noa and the camera
+const QUEUE_SPOTS := [Vector3(0.6, 0, 3.9), Vector3(-0.2, 0, 3.9), Vector3(-1.0, 0, 3.9), Vector3(-1.8, 0, 3.9), Vector3(-2.6, 0, 3.9)]
 const PICKUP_SPOT := Vector3(-3.1, 0, 0.8)     # in front of the display counter
 const PICKUP_AT := Vector3(-3.2, 1.3, -0.4)
 const PLACE_SPOT := Vector3(2.3, 0, 1.6)       # next to the customers' table
 const TABLE_AT := Vector3(3.2, 1.17, 1.9)
 const REACH := 1.7
 
+signal front_done
+
 var room: BakeryRoom
 var player: Player
 var cam: Camera3D
 var ui: TouchUi
-var step: int = Step.INTRO
+var state: int = State.INTRO
+var step: int = Step.IDLE
 var busy := false
-var customer: Npc = null
-var customer_ready := false
+var runner: DayRunner
+var npcs := {}                                  # customer id -> Npc
+var front_npc: Npc = null
+var front_pre := {}
 var product_id := ""
 var product: Dictionary = {}
 var carried: Node3D = null
@@ -33,6 +43,7 @@ var arrow: MeshInstance3D
 var ring: MeshInstance3D
 var cam_target := Vector3.ZERO
 var zoom := 0.86
+var panel_shift := 0.0
 var t := 0.0
 
 func _ready() -> void:
@@ -44,15 +55,18 @@ func _ready() -> void:
 	ui.action_pressed.connect(_on_action)
 	ui.card_button_pressed.connect(_on_card_button)
 	ui.card_secondary_pressed.connect(_on_card_secondary)
+	ui.manage.plan_ready.connect(_on_plan_ready)
 	get_viewport().size_changed.connect(_apply_view)
 	_apply_view()
 	cam_target = player.position + Vector3(0, 1.0, 0)
 	cam.global_position = cam_target + _cam_offset(); cam.look_at(cam_target)
 	player.cam_yaw = CAM_YAW
 	ui.hud.sync()
-	var b := Game.business()
-	ui.show_card({"title": "היום הראשון במאפייה של נועה", "body": "נועה פתחה מאפייה קטנה, והלקוחה הראשונה מגיעה בקרוב. בואו נמכור.",
-		"button": "מתחילים", "secondary": "להתחיל מאפס" if Game.has_progress() else ""})
+	var biz := Game.biz
+	if Game.has_progress():
+		ui.show_card({"title": "המאפייה של נועה", "body": "יום %d מחכה. בקופה: %s." % [biz.day, UiMoney.fmt(biz.profile.cash)], "button": "ממשיכים", "secondary": "להתחיל מאפס"})
+	else:
+		ui.show_card({"title": "היום הראשון במאפייה של נועה", "body": "בבוקר מחליטים מה לאפות, כמה לקנות ובכמה למכור. במהלך היום משרתים לקוחות, ובסגירה רואים מה קרה ולמה.", "button": "מתחילים"})
 	if "--autotest" in OS.get_cmdline_user_args() and ResourceLoader.exists("res://dev/autotest.gd"):
 		var at = load("res://dev/autotest.gd").new(); at.main = self; add_child(at)     # development only; not part of the APK
 
@@ -77,39 +91,8 @@ func _apply_view() -> void:
 	cam.fov = 42.0 if portrait else 34.0
 	get_window().content_scale_size = Vector2i(390, 844) if portrait else Vector2i(844, 390)
 
-# ---------------------------------------------------------------- the day
-func _on_card_button() -> void:
-	ui.hide_card()
-	if step == Step.INTRO:
-		ui.show_hint("גוררים באצבע בצד שמאל כדי ללכת", 6.0)
-		_next_customer()
-
-func _on_card_secondary() -> void:
-	Game.reset_progress(); get_tree().reload_current_scene()
-
-# Picks the next order from the business content and sends the customer in. The first order is fixed (the guided one).
-func _next_customer() -> void:
-	var b := Game.business()
-	var n := Game.profile.sales_count
-	var cust: Dictionary
-	if n == 0:
-		for c in b["customers"]:
-			if c["id"] == b["first_order"]["customer"]: cust = c
-		product_id = b["first_order"]["product"]
-	else:
-		cust = b["customers"][n % b["customers"].size()]
-		product_id = b["order_cycle"][(n - 1) % b["order_cycle"].size()]
-	product = b["products"][product_id]
-	step = Step.PICK; customer_ready = false
-	ui.set_objective("לקחת %s מהדלפק" % product["name"])
-	_mark(PICKUP_SPOT, PICKUP_AT + Vector3(0, 0.9, 0))
-	customer = Npc.make(cust); customer.position = DOOR; room.add_child(customer)
-	for p in CUSTOMER_PATH + [CUSTOMER_SPOT]:
-		await customer.walk_to(p)
-		if not is_instance_valid(customer): return
-	customer.face_point(PLACE_SPOT); customer.set_solid(true)
-	customer.show_order("res://assets/ui/%s.png" % product["icon"])
-	Game.sfx.play("arrive"); customer_ready = true
+func _panel_shift(on: bool) -> void:
+	create_tween().tween_property(self, "panel_shift", 1.0 if on else 0.0, 0.35)
 
 func _mark(spot: Vector3, above: Vector3) -> void:
 	marker.visible = true; ring.global_position = spot + Vector3(0, 0.07, 0); arrow.set_meta("base", above); arrow.global_position = above
@@ -118,10 +101,121 @@ func _near(p: Vector3) -> bool:
 	var d := player.global_position - p
 	return Vector2(d.x, d.z).length() <= REACH
 
+# ---------------------------------------------------------------- the morning
+func _on_card_button() -> void:
+	ui.hide_card()
+	if state == State.INTRO:
+		ui.show_hint("גוררים באצבע בצד שמאל כדי ללכת", 6.0)
+		_start_morning()
+
+func _on_card_secondary() -> void:
+	Game.reset_progress(); get_tree().reload_current_scene()
+
+func _start_morning() -> void:
+	state = State.PLANNING; step = Step.IDLE
+	var relief := Game.biz.morning_relief()
+	ui.hud.sync(); ui.show_day_strip(false); ui.set_objective(""); marker.visible = false
+	_panel_shift(true)
+	if relief > 0: ui.show_hint("הקופה כמעט ריקה, והמשפחה עזרה ב-%s כדי להמשיך." % UiMoney.fmt(relief), 5.0)
+	ui.manage.open_planner(Game.biz)
+
+func _on_plan_ready(plan: Dictionary) -> void:
+	var errs := Game.biz.commit_plan(plan)
+	if not errs.is_empty():
+		ui.manage.open_planner(Game.biz); ui.manage.note_l.text = errs[0]; return
+	_panel_shift(false)
+	_run_day()
+
+# ---------------------------------------------------------------- the working day
+func _stock_now() -> Dictionary:
+	var d := {}
+	for pid in Game.business()["products"]: d[pid] = Game.biz.inv.stock(pid)
+	return d
+
+func _update_strip() -> void:
+	ui.set_day_strip("%s · %s" % [Game.biz.weekday_name(), runner.clock_text()], _stock_now(), runner.queue.size())
+
+func _run_day() -> void:
+	state = State.DAY; npcs = {}
+	runner = Game.biz.begin_day()
+	ui.show_day_strip(true); _update_strip()
+	ui.show_hint("לקוחות מגיעים. מי שמחכה יותר מדי עלול לעזוב.", 4.0)
+	while not runner.finished():
+		var ev := runner.begin_slot()
+		var first := true
+		for c in ev["arrived"]:
+			_spawn_customer(c)
+			if first: Game.sfx.play("arrive"); first = false
+		for o in ev["left"]: _customer_walkout(o)
+		_reflow_queue(); _update_strip()
+		if runner.queue.is_empty():
+			runner.end_slot(); await get_tree().create_timer(0.25).timeout; continue
+		await _serve_front()
+		runner.end_slot()
+	await _close_day()
+
+func _spawn_customer(c: Dictionary) -> void:
+	var npc := Npc.make(c); npc.position = DOOR; room.add_child(npc); npcs[c["id"]] = npc
+
+# Sends every waiting customer to the right place in line. The first one walks to the counter.
+func _reflow_queue() -> void:
+	for i in runner.queue.size():
+		var npc: Npc = npcs.get(runner.queue[i]["id"])
+		if npc == null or npc.q_index == i: continue
+		npc.q_index = i; npc.at_counter = false; _route(npc, i)
+
+func _route(npc: Npc, i: int) -> void:
+	var pts: Array = [LANE_FRONT] if npc.position.z > 6.0 else []
+	if i == 0: pts += [LANE_MID, LANE_BACK, CUSTOMER_SPOT]
+	else: pts += [QUEUE_SPOTS[mini(i - 1, QUEUE_SPOTS.size() - 1)]]
+	var ok: bool = await npc.follow(pts)
+	if ok and is_instance_valid(npc):
+		npc.set_solid(true)
+		if i == 0: npc.face_point(PLACE_SPOT); npc.at_counter = true
+		else: npc.face_point(Vector3(1.6, 0, 1.0))
+
+func _customer_walkout(o: Dictionary) -> void:
+	var npc: Npc = npcs.get(o["customer"]["id"])
+	if npc == null: return
+	npcs.erase(o["customer"]["id"])
+	npc.rig.set_expression("neutral")
+	ui.show_hint("ל%s נמאס לחכות." % o["customer"]["name"], 2.5)
+	_send_out(npc)
+
+func _send_out(npc: Npc) -> void:
+	npc.hide_order(); npc.set_solid(false)
+	await npc.follow([LANE_MID, LANE_FRONT, DOOR])
+	if is_instance_valid(npc): npc.queue_free()
+
+func _serve_front() -> void:
+	var c := runner.front(); var npc: Npc = npcs.get(c["id"])
+	front_npc = npc
+	while is_instance_valid(npc) and not npc.at_counter: await get_tree().process_frame
+	front_pre = runner.preview_front()
+	var db := Game.business()
+	if front_pre["type"] == "sale":
+		product_id = front_pre["product"]; product = db["products"][product_id]
+		npc.show_order("res://assets/ui/%s.png" % product["icon"])
+		if front_pre["substitute"]:
+			ui.show_hint("אזל %s. מציעים ל%s את %s." % [db["products"][front_pre["wanted"]]["name"], c["name"], product["name"]], 3.5)
+		step = Step.PICK
+		ui.set_objective("לקחת %s מהדלפק" % product["name"])
+		_mark(PICKUP_SPOT, PICKUP_AT + Vector3(0, 0.9, 0))
+		await front_done
+	else:
+		var wanted: Dictionary = db["products"][front_pre["wanted"]]
+		npc.show_order("res://assets/ui/%s.png" % wanted["icon"]); npc.rig.set_expression("think")
+		ui.show_hint(("%s: זה יקר לי." % c["name"]) if front_pre["type"] == "lost_price" else "אזל המלאי של %s." % wanted["name"], 2.4)
+		ui.set_objective("")
+		await get_tree().create_timer(2.2).timeout
+		runner.commit_front(); npc.rig.set_expression("neutral"); npcs.erase(c["id"])
+		_update_strip(); _send_out(npc)
+		await get_tree().create_timer(0.8).timeout
+
 func _on_action() -> void:
 	if busy: return
 	if step == Step.PICK and _near(PICKUP_SPOT): _pick()
-	elif step == Step.SERVE and customer_ready and _near(PLACE_SPOT): _serve()
+	elif step == Step.SERVE and _near(PLACE_SPOT): _serve()
 
 func _pick() -> void:
 	busy = true; player.locked = true; ui.set_action(""); marker.visible = false
@@ -129,12 +223,12 @@ func _pick() -> void:
 	player.rig.start_reach()
 	await player.rig.action_peak
 	Game.sfx.play("pickup")
-	carried = room.instance_model(product["model"], product["scale"])
+	carried = room.instance_model(product["model"], float(product["scale_pct"]) / 100.0)
 	player.rig.carry_anchor.add_child(carried); carried.position = Vector3(0, -0.08, 0)
 	player.carrying = true
 	await player.rig.action_done
 	player.locked = false; busy = false; step = Step.SERVE
-	ui.set_objective("להגיש ל%s" % customer.data["name"])
+	ui.set_objective("להגיש ל%s" % front_npc.data["name"])
 	_mark(PLACE_SPOT, TABLE_AT + Vector3(0, 1.1, 0))
 
 func _serve() -> void:
@@ -146,56 +240,54 @@ func _serve() -> void:
 	carried.rotation = Vector3.ZERO
 	create_tween().tween_property(carried, "global_position", TABLE_AT, 0.25)
 	Game.sfx.play("place"); player.carrying = false
-	customer.hide_order(); customer.rig.set_expression("happy"); customer.rig.hop()
+	var npc := front_npc
+	npc.hide_order(); npc.rig.set_expression("happy"); npc.rig.hop()
 	await player.rig.action_done
 	player.locked = false
-	await _complete_sale()
-
-func _complete_sale() -> void:
-	var before := {"level": Game.profile.level, "xp": Game.profile.xp, "cash": Game.profile.cash, "rep": Game.profile.reputation}
-	ui.hud.hold = true            # the top bar keeps the old numbers until the reward animation raises them
-	var result := Game.complete_sale(product_id)
-	var origin := cam.unproject_position(customer.global_position + Vector3(0, 2.7, 0))
-	await get_tree().create_timer(0.35).timeout
-	await ui.fx.play_sale(result, origin, before)
-	if result["first_sale"]:
-		ui.show_card({"title": "המכירה הראשונה בקופה!",
-			"lines": ["מכירה: %s" % UiStyle.money(result["revenue"]), "חומרי גלם: %s" % UiStyle.money(result["cost"]), "רווח: %s" % UiStyle.money(result["profit"]),
-				"ניסיון: %d" % result["xp"], "בונוס מכירה ראשונה: %d" % result["bonus_xp"], "מוניטין: %s" % _delta_text(result["reputation"])],
-			"note": "המספרים להמחשה בלבד, ולא ייעוץ עסקי.", "button": "ממשיכים"})
-		await ui.card_button_pressed
-	else:
-		ui.show_hint("מכירה ל%s, רווח של %s" % [customer.data["name"], UiStyle.money(result["profit"])], 3.0)
-	step = Step.BETWEEN; busy = false
-	_customer_leaves()
-	await get_tree().create_timer(1.6).timeout
-	_next_customer()
-
-# "up 5%" without a plus sign, which flips direction in right to left text
-func _delta_text(d: int) -> String:
-	if d > 0: return "עלייה של %d%%" % d
-	if d < 0: return "ירידה של %d%%" % absi(d)
-	return "ללא שינוי"
-
-func _customer_leaves() -> void:
-	var c := customer; var cake := carried
-	customer = null; carried = null
-	c.set_solid(false); c.rig.set_expression("smile")
+	var p := Game.profile
+	var before := {"level": p.level, "xp": p.xp, "cash": p.cash, "rep": p.reputation}
+	ui.hud.hold = true
+	var out := runner.commit_front()
+	npcs.erase(npc.data["id"])
+	var origin := cam.unproject_position(npc.global_position + Vector3(0, 2.7, 0))
+	_update_strip()
+	await get_tree().create_timer(0.3).timeout
+	await ui.fx.play_sale({"profit": out["price"], "reputation": 0, "xp_total": out["xp"]}, origin, before)
+	var cake := carried; carried = null
 	if is_instance_valid(cake):
-		var tw := create_tween(); tw.tween_property(cake, "scale", Vector3.ZERO, 0.4).set_delay(0.5); tw.tween_callback(cake.queue_free)
-	for p in [Vector3(1.6, 0, 0.4), Vector3(1.6, 0, 4.2), DOOR]: await c.walk_to(p)
-	c.queue_free()
+		var tw := create_tween(); tw.tween_property(cake, "scale", Vector3.ZERO, 0.4).set_delay(0.4); tw.tween_callback(cake.queue_free)
+	npc.rig.set_expression("smile"); _send_out(npc)
+	step = Step.IDLE; busy = false
+	front_done.emit()
+
+# ---------------------------------------------------------------- closing
+func _close_day() -> void:
+	state = State.CLOSING; step = Step.IDLE
+	ui.set_objective(""); marker.visible = false; ui.show_day_strip(false)
+	await get_tree().create_timer(0.6).timeout
+	var p := Game.profile
+	var before := {"level": p.level, "xp": p.xp, "cash": p.cash, "rep": p.reputation}
+	ui.hud.hold = true
+	var s := Game.biz.close_day(runner)
+	Game.save_game()
+	await ui.fx.play_xp(s["xp_bonus"], before)
+	_panel_shift(true)
+	ui.manage.open_summary(Game.biz, s)
+	await ui.manage.summary_done
+	_start_morning()
 
 # ---------------------------------------------------------------- per frame
 func _process(delta: float) -> void:
 	t += delta
-	player.input_vec = ui.current_move() if step != Step.INTRO else Vector2.ZERO
+	player.input_vec = ui.current_move() if state == State.DAY else Vector2.ZERO
 	cam_target = cam_target.lerp(player.global_position + Vector3(0, 1.0, 0), 1.0 - exp(-6.0 * delta))
 	cam.global_position = cam_target + _cam_offset(); cam.look_at(cam_target)
+	var portrait := get_viewport().get_visible_rect().size.y > get_viewport().get_visible_rect().size.x
+	cam.v_offset = panel_shift * PANEL_V_OFFSET if portrait else 0.0
 	var prompt := ""
-	if not busy and step != Step.INTRO:
+	if not busy and state == State.DAY:
 		if step == Step.PICK and _near(PICKUP_SPOT): prompt = "לקחת"
-		elif step == Step.SERVE and customer_ready and _near(PLACE_SPOT): prompt = "להגיש ולגבות"
+		elif step == Step.SERVE and _near(PLACE_SPOT): prompt = "להגיש ולגבות"
 	ui.set_action(prompt)
 	if marker.visible:
 		var base: Vector3 = arrow.get_meta("base", Vector3.ZERO)
