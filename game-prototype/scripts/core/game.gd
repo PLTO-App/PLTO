@@ -71,7 +71,12 @@ func save_settings() -> void:
 	apply_settings()
 
 func apply_settings() -> void:
-	if sfx != null: sfx.enabled = bool(settings["sound"]); sfx.set_music(bool(settings["music"]))
+	if sfx != null:
+		sfx.enabled = bool(settings["sound"]); sfx.set_music(bool(settings["music"]))
+		if not sfx.enabled: sfx.amb.stop()
+		elif sfx._amb_name != "" and not sfx.amb.playing:
+			var n := sfx._amb_name
+			sfx._amb_name = ""; sfx.play_ambience(n)
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_WM_CLOSE_REQUEST:

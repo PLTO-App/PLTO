@@ -79,8 +79,9 @@ func morning() -> void:
 	var co := Game.co
 	_enter_town_now(0.14)
 	if co.morning_day != co.day:
-		co.start_morning()
+		var rep := co.start_morning()
 		Game.save_game()
+		if not rep["deliveries"].is_empty(): Game.sfx.play("truck", 1.0, -6.0)
 	town.show_owned(co.units)
 	ui.screens.new_morning()
 	ui.hud.rep_biz = co.worker; ui.hud.sync(); _set_info()
@@ -168,6 +169,7 @@ func _night() -> void:
 # ================================================================ scenes
 func _enter_town_now(time01: float) -> void:
 	town.visible = true; town.process_mode = Node.PROCESS_MODE_INHERIT
+	Game.sfx.play_music("music_day"); Game.sfx.play_ambience("amb_town")
 	for bid in shops: shops[bid].visible = false
 	if player != null: player.visible = false
 	town.set_time(time01)
@@ -216,6 +218,7 @@ func _enter_shop(bid: String) -> void:
 	_refresh_shop(shop, bid)
 	cam_target = player.global_position + Vector3(0, 1.0, 0)
 	ui.show_town_bar(false); ui.show_day_ui(true); ui.setup_strip(bid); ui.stick_enabled = true
+	Game.sfx.play_ambience("amb_shop")
 	ui.hud.rep_biz = bid; ui.hud.sync()
 	_apply_view()
 	await ui.fade_in(0.35)
@@ -243,7 +246,7 @@ func _run_day() -> void:
 		var npc: Npc = npcs.get(front.get("id", -1)) if not front.is_empty() else null
 		if npc != null and npc.at_counter and not noa_busy:
 			await _serve(front, npc)
-			_advance(SERVE_MIN)
+			_advance(SERVE_MIN * 100 / int(co.units[worker].db.get("service_pct", 100)))
 			continue
 		await get_tree().create_timer(IDLE_TICK).timeout
 		_advance(IDLE_MIN if runner.queue.is_empty() else WAIT_MIN)
@@ -265,7 +268,7 @@ func _apply_slot_events(e: Dictionary) -> void:
 	var first := true
 	for c in e.get("arrived", []):
 		var npc := Npc.make(c); shop.add_child(npc); npc.position = shop.lay["door"]; npcs[c["id"]] = npc
-		if first: Game.sfx.play("arrive", 1.0, -4.0); first = false
+		if first: Game.sfx.play("bell", 1.0, -6.0); first = false
 	for o in e.get("left", []): _walkout(o)
 	_reflow()
 
@@ -381,7 +384,7 @@ func _hand_over(c: Dictionary, npc: Npc, pid: String) -> void:
 	player.rig.start_reach(); await player.rig.action_peak
 	var item := player.drop_item()
 	if item != null: item.queue_free()
-	Game.sfx.play("place")
+	Game.sfx.play("place"); Game.sfx.play("register", 1.0, -8.0)
 	npc.hide_order(); npc.give(_carry_model(pid)); npc.rig.set_expression("happy"); npc.rig.hop()
 	var p := Game.profile
 	var before := {"level": p.level, "xp": p.xp, "cash": p.cash, "rep": Game.co.units[worker].reputation}

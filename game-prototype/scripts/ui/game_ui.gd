@@ -90,7 +90,8 @@ func _vignette() -> TextureRect:
 func _round_button(kind: String, tip: String) -> Button:
 	var b := Button.new(); b.custom_minimum_size = Vector2(56, 56); b.focus_mode = Control.FOCUS_NONE; b.tooltip_text = tip
 	for st in ["normal", "hover", "pressed", "focus"]: b.add_theme_stylebox_override(st, UiStyle.panel(UiStyle.GLASS if st != "pressed" else UiStyle.INK, 28, 4))
-	var g := UiIcons.glyph(kind, 30, Color.WHITE); g.position = Vector2(13, 13); b.add_child(g)
+	var cc := CenterContainer.new(); cc.set_anchors_preset(Control.PRESET_FULL_RECT); cc.mouse_filter = Control.MOUSE_FILTER_IGNORE; b.add_child(cc)
+	cc.add_child(UiIcons.glyph(kind, 30, Color.WHITE))
 	return b
 
 func _build_side() -> void:
@@ -98,7 +99,7 @@ func _build_side() -> void:
 	var gb := _round_button("goals", Loc.t("ui.goals")); gb.pressed.connect(func(): _tap(); open_screen("goals")); side.add_child(gb)
 	goals_badge = UiStyle.one_line(UiStyle.label("", 12, Color.WHITE, true, HORIZONTAL_ALIGNMENT_CENTER))
 	var badge := PanelContainer.new(); badge.add_theme_stylebox_override("panel", UiStyle.panel(UiStyle.CORAL, 10, 2, false)); badge.add_child(goals_badge)
-	badge.position = Vector2(36, -4); badge.mouse_filter = Control.MOUSE_FILTER_IGNORE; gb.add_child(badge)
+	badge.position = Vector2(38, -2); badge.mouse_filter = Control.MOUSE_FILTER_IGNORE; badge.layout_direction = Control.LAYOUT_DIRECTION_LTR; gb.add_child(badge)
 	var sb := _round_button("gear", Loc.t("ui.settings")); sb.pressed.connect(func(): _tap(); open_screen("settings")); side.add_child(sb)
 
 func _build_bottom() -> void:

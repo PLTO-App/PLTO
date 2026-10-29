@@ -13,7 +13,7 @@ var errors: Array = []
 func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("out="): out = a.substr(4)
-		if a == "fast=1": Engine.time_scale = 2.0
+		if a.begins_with("fast="): Engine.time_scale = 2.0 * float(a.substr(5))
 		if a.begins_with("days="): days = int(a.substr(5))
 		if a == "landscape=1": landscape = true
 	if landscape: get_window().size = Vector2i(1266, 585)
@@ -79,6 +79,7 @@ func _run() -> void:
 			main._flow("opened", {"biz": "cafe"}); await wait(0.6); await answer_cards(0, "07_cafe_opened")
 			await wait(1.5); await shot("08_town_cafe_open")
 		await night_to_morning("d%d" % (d + 2))
+		if Game.co.contracts.has("minimarket"): print("TEST contract active=%s misses=%d" % [Game.co.contracts["minimarket"]["active"], Game.co.contracts["minimarket"]["misses"]])
 		if co.owns("cafe") and co.unit_ready("cafe") and co.staff.is_empty():
 			co.hire("yossi", "bakery"); co.worker = "cafe"
 			ui().screens.new_morning(); ui().open_screen("today"); await wait(0.5); await shot("09_today_two_businesses")
@@ -98,6 +99,7 @@ func play_day(name: String) -> void:
 	var served := 0; var t := 0.0; var shots := {}
 	while main.state == "day" and t < 600.0:
 		if ui().card_dim.visible:
+			print("TEST %s day card: %s" % [name, ui().card_title.text])
 			await answer_cards(0, "%s_inspection" % name if not shots.has("insp") else ""); shots["insp"] = true
 		if ui().action_button.visible:
 			if not shots.has("act"): shots["act"] = true; await shot("%s_11_action" % name)
@@ -130,6 +132,7 @@ func night_to_morning(name: String) -> void:
 	main._on_cta()
 	await wait_until(func(): return main.state == "morning", 20.0)
 	await wait(1.0)
+	if ui().card_dim.visible: print("TEST %s morning card: %s" % [name, ui().card_title.text])
 	await answer_cards(0, "%s_00_event" % name)
 	await wait_until(func(): return ui().sheet.visible and ui().sheet.screen_id == "today", 10.0)
 	await wait(0.6); await shot("%s_01_morning" % name)

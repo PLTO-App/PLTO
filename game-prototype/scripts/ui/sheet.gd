@@ -38,7 +38,9 @@ func _ready() -> void:
 	title_l = UiStyle.label("", 21, UiStyle.INK, true); tv.add_child(title_l)
 	sub_l = UiStyle.label("", 13, UiStyle.MUTED); tv.add_child(sub_l)
 	close_b = Button.new(); close_b.flat = true; close_b.custom_minimum_size = Vector2(44, 44); close_b.focus_mode = Control.FOCUS_NONE
-	var g := UiIcons.glyph("close", 22, UiStyle.MUTED); g.set_anchors_preset(Control.PRESET_CENTER); g.position = Vector2(11, 11); close_b.add_child(g)
+	var cc := CenterContainer.new(); cc.set_anchors_preset(Control.PRESET_FULL_RECT); cc.mouse_filter = Control.MOUSE_FILTER_IGNORE; close_b.add_child(cc)
+	cc.add_child(UiIcons.glyph("close", 22, UiStyle.MUTED))
+	close_b.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	close_b.pressed.connect(func(): Game.sfx.play("tap", 1.0, -6.0); close())
 	head.add_child(close_b)
 	tabs_box = UiStyle.hbox(6); col.add_child(tabs_box)
@@ -71,6 +73,7 @@ func open(title: String, p_builder: Callable, opts := {}) -> void:
 	_build(true)
 	panel.modulate.a = 0.0
 	create_tween().tween_property(panel, "modulate:a", 1.0, 0.15)
+	Game.sfx.play("swish", 1.0, -8.0)
 
 func refresh() -> void:
 	if not visible: return
