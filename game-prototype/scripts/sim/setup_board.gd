@@ -20,9 +20,9 @@ static func def_of(co: Company, id: String) -> Dictionary:
 	return {}
 
 static func init(co: Company, bid: String) -> void:
-	co.setup = {"biz": bid, "tasks": {}, "launch": {}, "bids": {}, "reserve": reserve(co.content, bid, co.units[bid].format)}
+	co.setup = {"biz": bid, "tasks": {}, "launch": {}, "bids": {}, "log": [], "neg": {}, "reserve": reserve(co.content, bid, co.units[bid].format)}
 	for t in co.content.setup_tasks_for(bid):
-		co.setup["tasks"][t["id"]] = {"state": "todo", "opt": "", "start": 0, "due": 0, "tries": 0, "fails": 0, "price": 0, "rel": 0, "defect": false, "resolved": false}
+		co.setup["tasks"][t["id"]] = {"state": "todo", "opt": "", "start": 0, "due": 0, "tries": 0, "fails": 0, "price": 0, "rel": 0, "days": 0, "defect": false, "resolved": false}
 		if t.has("bids"): co.setup["bids"][t["id"]] = _make_bids(co, t)
 
 # The part of the setup cost that is held back as the contractor's budget: it is paid when a contractor is chosen, at the price quoted.
@@ -30,6 +30,10 @@ static func reserve(content: ContentDb, bid: String, fmt: String) -> int:
 	for t in content.setup_tasks_for(bid):
 		if t.has("bids"): return int(t["bids"]["budget"].get(fmt if fmt != "" else "regular", 0))
 	return 0
+
+# The journal of the setup: what was paid, saved and lost, and why. The summary at the opening is built from it.
+static func journal(co: Company, kind: String, task: String, amount: int, days: int, p := {}) -> void:
+	co.setup["log"].append({"day": co.day, "kind": kind, "task": task, "amount": amount, "days": days, "p": p})
 
 static func _fmt(co: Company) -> String:
 	var f: String = co.units[co.setup["biz"]].format
@@ -45,7 +49,7 @@ static func _make_bids(co: Company, t: Dictionary) -> Array:
 		var who: String = pool.pop_at(r.int_range(0, pool.size() - 1))
 		var price := budget * (int(tier["price_pct"]) + r.int_range(-8, 8)) / 100 / 10 * 10
 		var days := maxi(2, base_days + int(tier["days_delta"]) + r.int_range(0, 1))
-		out.append({"id": tier["id"], "who": who, "price": price, "days": days, "rel": r.int_range(int(tier["rel"][0]), int(tier["rel"][1])), "checked": false})
+		out.append({"id": tier["id"], "who": who, "price": price, "days": days, "rel": r.int_range(int(tier["rel"][0]), int(tier["rel"][1])), "checked": false, "neg": "none", "deal": false, "warranty": false})
 	return out
 
 static func st(co: Company, id: String) -> Dictionary: return co.setup["tasks"].get(id, {})
@@ -57,9 +61,10 @@ static func options_of(co: Company, t: Dictionary) -> Array:
 	var out: Array = []
 	if t.has("bids"):
 		for b in co.setup["bids"].get(t["id"], []):
+			if b["neg"] == "burned": continue            # the professional left the table
 			var known: bool = bool(b["checked"])
 			out.append({"id": b["id"], "label": t["bids"]["bid_label"], "p": {"who_k": b["who"]}, "desc": t["bids"]["bid_desc"], "cost": int(b["price"]), "days": int(b["days"]),
-				"fail_pct": 0, "rel": int(b["rel"]), "bid": true, "checked": known, "risk_k": risk_label(100 - int(b["rel"])) if known else "setup.risk_unknown"})
+				"fail_pct": 0, "rel": int(b["rel"]), "bid": true, "checked": known, "neg": b["neg"], "deal": bool(b["deal"]), "warranty": bool(b["warranty"]), "list": int(b.get("list", b["price"])), "risk_k": risk_label(100 - int(b["rel"])) if known else "setup.risk_unknown"})
 	for o in t["options"]:
 		var c: Dictionary = o.duplicate()
 		if t.has("bids"):
@@ -80,7 +85,7 @@ static func check_bid(co: Company, id: String, oid: String) -> Dictionary:
 	if cost > co.profile.cash: return Loc.m("err.no_cash", {"amount_m": cost - co.profile.cash})
 	for b in co.setup["bids"][id]:
 		if b["id"] == oid and not b["checked"]:
-			b["checked"] = true; co.book("event", -cost, co.setup["biz"], "setup_check"); co._snap(); return {}
+			b["checked"] = true; co.book("event", -cost, co.setup["biz"], "setup_check"); journal(co, "check", id, cost, 0, {"who_k": b["who"]}); co._snap(); return {}
 	return Loc.m("err.setup_unknown")
 
 # Days for an option in the size of the business (a regular shop takes longer to fit out than a small one).
@@ -126,10 +131,12 @@ static func start(co: Company, id: String, oid: String) -> Dictionary:
 	if o.is_empty(): return Loc.m("err.setup_unknown")
 	var cost := int(o.get("cost", 0))
 	if cost > 0 and cost > co.profile.cash: return Loc.m("err.no_cash", {"amount_m": cost - co.profile.cash})   # a free option is always open, even with an empty cash box
+	if Negotiation.is_open(co): Negotiation._finish(co, "walked")
 	if cost > 0: co.book("event", -cost, co.setup["biz"], "setup_" + id)
+	if cost > 0: journal(co, "contractor" if t.has("bids") else ("launch" if id == "launch" else "fee"), id, cost, 0, {"who_k": o.get("p", {}).get("who_k", ""), "opt_k": o["label"]})
 	var s := st(co, id)
 	s["state"] = "active"; s["opt"] = oid; s["start"] = co.day; s["due"] = co.day + option_days(co, o)
-	s["price"] = cost; s["rel"] = int(o.get("rel", 100)); s["resolved"] = false
+	s["price"] = cost; s["rel"] = int(o.get("rel", 100)); s["resolved"] = false; s["days"] = option_days(co, o)
 	co._snap()
 	return {}
 
@@ -150,6 +157,8 @@ static func advance(co: Company, report: Dictionary) -> void:
 			s["state"] = "todo"; s["fails"] = int(s["fails"]) + 1
 			var fc := int(o.get("fail_cost", 0))
 			if fc > 0: co.book("event", -fc, bid, "setup_fail_" + t["id"])
+			if fc > 0: journal(co, "fix", t["id"], fc, 0)
+			journal(co, "fail", t["id"], 0, int(s["days"]), {"hint_k": _hint(co, t, o), "opt_k": o["label"]})
 			out.append({"task": t["id"], "result": "failed", "cost": fc, "note_k": str(o.get("fail_note", ""))})
 		else:
 			s["state"] = "done"
@@ -157,7 +166,7 @@ static func advance(co: Company, report: Dictionary) -> void:
 			# nothing was paid up front (friends and family): the materials are billed when the work is done
 			if int(o.get("settle_pct", 0)) > 0 and t.has("bids"):
 				var mat := int(t["bids"]["budget"][_fmt(co)]) * int(o["settle_pct"]) / 100 / 10 * 10
-				co.book("event", -mat, bid, "setup_materials")
+				co.book("event", -mat, bid, "setup_materials"); journal(co, "materials", t["id"], mat, 0)
 				out.append({"task": t["id"], "result": "overrun", "cost": mat, "days": 0, "note_k": ""})
 			out.append({"task": t["id"], "result": "done", "cost": 0, "note_k": ""})
 	report["setup"] = out
@@ -173,23 +182,39 @@ static func _resolve_work(co: Company, t: Dictionary, s: Dictionary, out: Array)
 	var bid: String = co.setup["biz"]
 	match kind:
 		"delay":
-			var n := r.int_range(1, 2)
+			var n := r.int_range(int(t["bids"]["delay_days"][0]), int(t["bids"]["delay_days"][1]))
 			s["due"] = co.day + n
+			journal(co, "delay", t["id"], 0, n, _who(co, t, s))
 			out.append({"task": t["id"], "result": "delayed", "cost": 0, "days": n, "note_k": ""})
 			return true
 		"overrun":
 			var base: int = int(s["price"]) if int(s["price"]) > 0 else int(t["bids"]["budget"][_fmt(co)])
-			var extra := base * r.int_range(15, 25) / 100 / 10 * 10
-			co.book("event", -extra, bid, "setup_overrun")
+			var extra := base * r.int_range(int(t["bids"]["overrun_pct"][0]), int(t["bids"]["overrun_pct"][1])) / 100 / 10 * 10
+			co.book("event", -extra, bid, "setup_overrun"); journal(co, "overrun", t["id"], extra, 0, _who(co, t, s))
 			out.append({"task": t["id"], "result": "overrun", "cost": extra, "days": 0, "note_k": ""})
 		"defect":
-			s["defect"] = true
+			s["defect"] = true; journal(co, "defect", t["id"], 0, 0, _who(co, t, s))
 	return false
+
+# Who did the work and whether the player had checked: the cause behind a delay, an overrun or a defect.
+static func _who(co: Company, t: Dictionary, s: Dictionary) -> Dictionary:
+	for b in co.setup["bids"].get(t["id"], []):
+		if b["id"] == s["opt"]: return {"who_k": b["who"], "checked": bool(b["checked"]), "rel": int(b["rel"])}
+	return {"who_k": "setup.fit_out.friends", "checked": false, "rel": int(s["rel"])}
+
+# The most likely reason a step did not pass, for the summary.
+static func _hint(co: Company, t: Dictionary, o: Dictionary) -> String:
+	if t["id"] == "health_inspection":
+		if not is_done(co, "cleaning"): return "setup.hint.no_clean"
+		if st(co, "equipment").get("opt", "") == "used": return "setup.hint.used_equipment"
+		if bool(st(co, "fit_out").get("defect", false)): return "setup.hint.defect"
+	if str(o["id"]) == "self": return "setup.hint.self_filed"
+	return "setup.hint.bad_luck"
 
 static func _apply(co: Company, effects: Array, bid: String) -> void:
 	var b: Business = co.units[bid]
 	for fx in effects:
-		if fx.has("cash"): co.book("event", int(fx["cash"]), bid, "setup")
+		if fx.has("cash"): co.book("event", int(fx["cash"]), bid, "setup"); journal(co, "saving", "equipment", int(fx["cash"]), 0)
 		if fx.has("equip"): b.equipment = int(fx["equip"]["set"])
 		if fx.has("clean"): b.cleanliness = int(fx["clean"]["set"])
 		if fx.has("rep"): b.reputation = clampi(b.reputation + int(fx["rep"]["delta"]), 0, 100)
@@ -213,6 +238,58 @@ static func _open(co: Company, out: Array) -> void:
 	var L: Dictionary = co.setup.get("launch", {})
 	if not L.is_empty(): co.add_mod(L["kind"], bid, int(L["value"]), int(L["days"]) + (b.opened_day - co.day))
 	co.setup["launch"] = {}
+	co.setup_report = report(co, b)
+
+# The summary of the setup: planned against actual, delays, defects and the reasons.
+static func report(co: Company, b: Business) -> Dictionary:
+	var sums := {}; var days_late := 0; var days_failed := 0; var why: Array = []
+	for e in co.setup["log"]:
+		sums[e["kind"]] = int(sums.get(e["kind"], 0)) + int(e["amount"])
+		if e["kind"] == "delay": days_late += int(e["days"])
+		if e["kind"] == "fail": days_failed += int(e["days"])
+	for e in co.setup["log"]:
+		var p: Dictionary = e["p"]
+		match e["kind"]:
+			"delay": why.append({"k": "setup.why.delay", "p": {"who_k": p["who_k"], "n": e["days"], "known_k": "setup.why.rep_known" if p["checked"] else "setup.why.rep_unknown"}})
+			"overrun": why.append({"k": "setup.why.overrun", "p": {"who_k": p["who_k"], "cost_m": e["amount"], "known_k": "setup.why.rep_known" if p["checked"] else "setup.why.rep_unknown"}})
+			"materials": why.append({"k": "setup.why.materials", "p": {"cost_m": e["amount"]}})
+			"defect": why.append({"k": "setup.why.defect", "p": {"who_k": p["who_k"]}})
+			"fail": why.append({"k": "setup.why.fail", "p": {"task_k": def_of(co, e["task"])["name"], "hint_k": p["hint_k"]}})
+			"negotiation":
+				if int(e["amount"]) > 0: why.append({"k": "setup.why.neg_saved", "p": {"who_k": p["who_k"], "saved_m": e["amount"]}})
+				elif bool(p["warranty"]): why.append({"k": "setup.why.neg_warranty", "p": {"who_k": p["who_k"]}})
+			"burned": why.append({"k": "setup.why.neg_burned", "p": {"who_k": p["who_k"]}})
+	var worked := _workdays(co, b.lease_day, b.opened_day)
+	# the plan: the longest chain of the tasks that were done, each started the moment the one before it ended, with nothing going wrong
+	var memo := {}
+	var plan_end := b.lease_day
+	for t in defs(co):
+		if is_done(co, t["id"]): plan_end = maxi(plan_end, _plan_finish(co, t["id"], memo, b.lease_day))
+	var fd0 := co.format_def(co.setup["biz"], b.format if b.format != "" else "regular")
+	plan_end = maxi(plan_end, b.lease_day + int(fd0.get("setup_days", 1)))
+	var planned := _workdays(co, b.lease_day, plan_end)
+	var idle := maxi(0, worked - planned - days_late - days_failed)
+	if idle > 0: why.append({"k": "setup.why.idle", "p": {"n": idle}})
+	var weekly := 0
+	for k in b.db["weekly_costs"]: weekly += int(b.db["weekly_costs"][k])
+	return {"opened": b.opened_day, "lease": b.lease_day, "days": worked, "planned_days": planned, "delay_days": days_late + days_failed,
+		"reserve": int(co.setup["reserve"]), "contractor": int(sums.get("contractor", 0)), "overrun": int(sums.get("overrun", 0)) + int(sums.get("materials", 0)),
+		"saved": int(sums.get("negotiation", 0)), "fees": int(sums.get("fee", 0)) + int(sums.get("launch", 0)), "checks": int(sums.get("check", 0)), "fixes": int(sums.get("fix", 0)),
+		"equip_saving": int(sums.get("saving", 0)), "rent": weekly * worked / 6, "why": why}
+
+static func _workdays(co: Company, from_day: int, to_day: int) -> int:
+	var n := 0
+	for d in range(from_day, to_day): if co.is_workday(d): n += 1
+	return n
+
+static func _plan_finish(co: Company, id: String, memo: Dictionary, lease: int) -> int:
+	if memo.has(id): return memo[id]
+	var t := def_of(co, id)
+	var start := lease
+	for r in t["requires"]:
+		if is_done(co, r): start = maxi(start, _plan_finish(co, r, memo, lease))
+	memo[id] = start + int(st(co, id).get("days", 0))
+	return memo[id]
 
 # ---------------------------------------------------------------- for the balance bots and tests: play the board by a style
 # style: "diy" (cheapest options), "pro" (the safest options, cleaning done), "mixed" (a consultant for the license only)

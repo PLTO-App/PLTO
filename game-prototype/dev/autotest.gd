@@ -129,6 +129,11 @@ func _run_owner() -> void:
 	ui().open_screen("setup_task", {"task": "tax_file"}); await wait(0.5); await shot("o03b_task_tax")
 	ui().open_screen("setup_task", {"task": "equipment"}); await wait(0.5); await shot("o03c_task_equipment")
 	ui().open_screen("setup_task", {"task": "fit_out"}); await wait(0.5); await shot("o03d_task_fit_out")
+	check("a negotiation opens", Negotiation.begin(co, "fit_out", "mid").is_empty())
+	ui().open_screen("negotiation"); await wait(0.5); await shot("o03e_negotiation")
+	Negotiation.play(co, "ask_big"); ui().open_screen("negotiation"); await wait(0.5); await shot("o03f_negotiation_after")
+	while Negotiation.is_open(co): Negotiation.play(co, "accept")
+	ui().open_screen("negotiation"); await wait(0.5); await shot("o03g_negotiation_done")
 	var n := 0
 	while co.in_setup() and n < 14:
 		n += 1
@@ -197,5 +202,9 @@ func night_to_morning(name: String) -> void:
 	await wait(1.0)
 	if ui().card_dim.visible: print("TEST %s morning card: %s" % [name, ui().card_title.text])
 	await answer_cards(0, "%s_00_event" % name)
+	await wait(0.6)
+	if ui().sheet.visible and ui().sheet.screen_id == "setup_summary":
+		await shot("%s_summary" % name); ui().sheet.close(); await wait(0.6)
+		await answer_cards(0, "%s_00_event2" % name)
 	await wait_until(func(): return ui().sheet.visible and ui().sheet.screen_id == "today", 10.0)
 	await wait(0.6); await shot("%s_01_morning" % name)

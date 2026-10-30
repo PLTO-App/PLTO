@@ -152,6 +152,9 @@ func morning() -> void:
 		co.flags["owner_opened"] = co.day
 		Game.sfx.play("levelup")
 		await ui.ask({"who": "shira", "who_name": Loc.t("npc.shira"), "title": Loc.t("tut.owner_open_title"), "body": Loc.t("tut.owner_open_body"), "choices": [Loc.t("ui.continue")]})
+		if not co.setup_report.is_empty():
+			ui.open_screen("setup_summary")
+			await ui.sheet.closed
 	for ev in co.pending_events.duplicate():
 		await _event_card(ev)
 	Game.save_game()

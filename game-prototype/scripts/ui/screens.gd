@@ -158,6 +158,19 @@ func setup_task(sh: Sheet, id: String) -> void:
 		var risk: String = o["risk_k"] if o.has("risk_k") else SetupBoard.risk_label(SetupBoard.fail_pct(c, t, o))
 		var facts := Loc.t("setup.opt_facts", {"cost_m": o["cost"], "days": days, "risk_k": risk})
 		card.add_child(UiStyle.label(facts, 13))
+		if bool(o.get("bid", false)):
+			match o["neg"]:
+				"deal": card.add_child(UiStyle.label(Loc.t("setup.neg.deal", {"price_m": o["cost"]}), 13, UiStyle.GOOD, true))
+				"closed": card.add_child(UiStyle.label(Loc.t("setup.neg.closed"), 12, UiStyle.MUTED))
+				_:
+					var nb := UiStyle.button(Loc.t("setup.neg.continue" if o["neg"] == "open" else "setup.neg.start"), "secondary", 13, 40)
+					var nid: String = o["id"]
+					nb.pressed.connect(func():
+						if o["neg"] == "none":
+							var e1 := Negotiation.begin(c, id, nid)
+							if not e1.is_empty(): sh.note(Loc.msg(e1)); return
+						ui.open_screen("negotiation"))
+					card.add_child(nb)
 		if bool(o.get("bid", false)) and not bool(o["checked"]):
 			var cb := UiStyle.button(Loc.t("setup.check", {"cost_m": t["bids"]["check_cost"]}), "secondary", 13, 40)
 			var bid_id: String = o["id"]
@@ -173,6 +186,75 @@ func setup_task(sh: Sheet, id: String) -> void:
 			if not e.is_empty(): sh.note(Loc.msg(e)); return
 			Game.save_game(); Game.sfx.play("coin"); ui.hud.sync(); ui.open_screen("today"))
 		card.add_child(b)
+
+# The haggling with one professional: what is on the table, how the mood is, and the moves that can be made now.
+func negotiation(sh: Sheet) -> void:
+	var c := co(); var n := Negotiation.state(c)
+	if n.is_empty(): return
+	var who: String = ""
+	for b in c.setup["bids"][n["task"]]: if b["id"] == n["bid"]: who = b["who"]
+	sh.set_title(Loc.t(who), Loc.t("setup.neg.title"))
+	var card := sh.card()
+	card.add_child(UiStyle.label(Loc.t("neg.price_now", {"price_m": n["price"], "list_m": n["list"]}), 15, UiStyle.INK, true))
+	if bool(n["open"]):
+		card.add_child(UiStyle.label(Loc.t("neg.mood.%d" % Negotiation.mood(c)), 13, UiStyle.MUTED))
+		card.add_child(UiStyle.label(Loc.t("neg.moves_left", {"n": maxi(0, int(Negotiation.cfg(c)["max_moves"]) - int(n["moves"]))}), 12, UiStyle.MUTED))
+	var lines: Array = n["lines"]
+	if not lines.is_empty():
+		var tc := sh.card()
+		for i in range(maxi(0, lines.size() - 6), lines.size()): tc.add_child(UiStyle.label(Loc.t(lines[i]["k"], lines[i]["p"]), 13))
+	if bool(n["open"]):
+		var cfg := Negotiation.cfg(c)
+		var mc := sh.card()
+		for m in Negotiation.moves(c):
+			var price := 0
+			match m:
+				"ask_small", "ask_big", "ask_huge": price = Negotiation.r10(int(n["price"]) * (100 - int(cfg["asks"][m])) / 100)
+				"compromise": price = Negotiation.r10((int(n["price"]) + int(n["last_ask"])) / 2)
+				"insist": price = int(n["last_ask"])
+				"accept": price = int(n["price"])
+			var kind := "cta" if m == "accept" else ("secondary" if m == "walk" else "primary")
+			var mb := UiStyle.button(Loc.t("neg.move.%s" % m, {"price_m": price}), kind, 14, 44)
+			var move: String = m
+			mb.pressed.connect(func():
+				var e := Negotiation.play(c, move)
+				if not e.is_empty(): sh.note(Loc.msg(e)); return
+				Game.save_game(); Game.sfx.play("coin" if move in ["accept"] else "tap"); ui.hud.sync(); sh.refresh())
+			mc.add_child(mb)
+	else:
+		var rc := sh.card()
+		rc.add_child(UiStyle.label(Loc.t("neg.result.%s" % n["result"], {"price_m": n["price"]}), 15, UiStyle.INK, true))
+		var bb := UiStyle.button(Loc.t("neg.back"), "cta", 15, 48)
+		bb.pressed.connect(func(): ui.open_screen("setup_task", {"task": n["task"]}))
+		rc.add_child(bb)
+
+# What the setup was: the budget planned against what was spent, the time, and why it deviated.
+func setup_summary(sh: Sheet) -> void:
+	var c := co(); var r := c.setup_report
+	if r.is_empty(): return
+	sh.set_title(Loc.t("setup.sum.title"), Loc.t("setup.sum.sub", {"day": r["opened"], "days": r["days"], "planned": r["planned_days"]}))
+	var bc := sh.card(); bc.add_child(UiStyle.label(Loc.t("setup.sum.budget"), 14, UiStyle.MUTED, true))
+	var actual: int = int(r["contractor"]) + int(r["overrun"])
+	sh.kv(bc, Loc.t("setup.sum.planned"), Loc.money(int(r["reserve"])))
+	sh.kv(bc, Loc.t("setup.sum.contractor"), Loc.money(int(r["contractor"])))
+	if int(r["saved"]) != 0: sh.kv(bc, Loc.t("setup.sum.saved"), Loc.money(int(r["saved"]), true), false, UiStyle.GOOD if int(r["saved"]) > 0 else UiStyle.BAD)
+	if int(r["overrun"]) > 0: sh.kv(bc, Loc.t("setup.sum.overrun"), Loc.money(-int(r["overrun"]), true), false, UiStyle.BAD)
+	sh.kv(bc, Loc.t("setup.sum.actual"), Loc.money(actual), true, UiStyle.BAD if actual > int(r["reserve"]) else UiStyle.GOOD)
+	var uc := sh.card()
+	if int(r["fees"]) > 0: sh.kv(uc, Loc.t("setup.sum.fees"), Loc.money(int(r["fees"])))
+	if int(r["checks"]) > 0: sh.kv(uc, Loc.t("setup.sum.checks"), Loc.money(int(r["checks"])))
+	if int(r["fixes"]) > 0: sh.kv(uc, Loc.t("setup.sum.fixes"), Loc.money(int(r["fixes"])), false, UiStyle.BAD)
+	if int(r["equip_saving"]) > 0: sh.kv(uc, Loc.t("setup.sum.equip"), Loc.money(int(r["equip_saving"]), true), false, UiStyle.GOOD)
+	var total: int = actual + int(r["fees"]) + int(r["checks"]) + int(r["fixes"]) - int(r["equip_saving"])
+	sh.kv(uc, Loc.t("setup.sum.total"), Loc.money(total), true)
+	sh.kv(uc, Loc.t("setup.sum.rent"), Loc.money(int(r["rent"])))
+	var tc := sh.card(); tc.add_child(UiStyle.label(Loc.t("setup.sum.time"), 14, UiStyle.MUTED, true))
+	tc.add_child(UiStyle.label(Loc.t("setup.sum.days", {"planned": r["planned_days"], "days": r["days"]}), 14))
+	if int(r["delay_days"]) > 0: tc.add_child(UiStyle.label(Loc.t("setup.sum.delay", {"n": r["delay_days"]}), 13, UiStyle.BAD))
+	var wc := sh.card(); wc.add_child(UiStyle.label(Loc.t("setup.sum.why"), 14, UiStyle.MUTED, true))
+	if r["why"].is_empty(): wc.add_child(UiStyle.label(Loc.t("setup.sum.none"), 13))
+	for w in r["why"]: wc.add_child(UiStyle.label("• " + Loc.t(w["k"], w["p"]), 13))
+	sh.add_footer(Loc.t("setup.sum.go"), "cta", func(): sh.close())
 
 # The first mornings: one short sentence from Shira about the next step, following what was already done.
 func _today_tip() -> String:

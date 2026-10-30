@@ -13,7 +13,7 @@ func play(seed_value: int, opts: Dictionary) -> Dictionary:
 	if opts.has("cash"): co.profile.cash = int(opts["cash"]); co.ledger = Ledger.new(); co.ledger.start_cash = co.profile.cash
 	var bid: String = opts["biz"]
 	var res := {"ok": false, "cash0": co.profile.cash, "open_day": 0, "profit_per_day": 0, "late_profit": 0, "worth": 0, "min_cash": 1 << 30, "broke_days": 0, "rep": 0,
-		"payback_day": 0, "setup_spend": 0, "errors": [], "served": 0, "lost": 0, "waste": 0, "fines": 0, "first_profit_week": 0, "cash_open": 0, "setup_fails": 0}
+		"payback_day": 0, "setup_spend": 0, "errors": [], "served": 0, "lost": 0, "waste": 0, "fines": 0, "first_profit_week": 0, "cash_open": 0, "setup_fails": 0, "saved": 0, "burned": 0, "negotiated": 0}
 	var e := co.begin_business(bid, opts["fmt"], opts.get("loan", ""))
 	if not e.is_empty(): res["errors"].append(Loc.msg(e)); return res
 	res["ok"] = true
@@ -41,12 +41,22 @@ func play(seed_value: int, opts: Dictionary) -> Dictionary:
 			# the contractor: a fixed tier, or "checked" (pay for the reference checks, take the middle quote if it is reliable enough, else the dear one)
 			var ct := str(opts.get("contractor", ""))
 			if ct != "" and SetupBoard.status(co, SetupBoard.def_of(co, "fit_out")) == "ready":
-				if ct == "checked":
+				if ct == "informed":
+					# pays for every reference check, then takes the quote with the lowest expected cost: price plus the chance of trouble times what trouble costs
+					var trouble_cost := int(SetupBoard.def_of(co, "fit_out")["bids"]["budget"][SetupBoard._fmt(co)]) * 45 / 100
+					var best_score := 1 << 30
+					for q in ["cheap", "mid", "premium"]: SetupBoard.check_bid(co, "fit_out", q)
+					for q in co.setup["bids"]["fit_out"]:
+						var sc := int(q["price"]) + (100 - int(q["rel"])) * trouble_cost / 100 + int(q["days"]) * trouble_cost * 8 / 10   # a day is worth about the trouble cost
+						if sc < best_score: best_score = sc; ct = q["id"]
+				elif ct == "checked":
 					for q in ["mid", "premium"]: SetupBoard.check_bid(co, "fit_out", q)
 					var mid_rel := 0
 					for q in co.setup["bids"]["fit_out"]: if q["id"] == "mid": mid_rel = int(q["rel"])
 					ct = "mid" if mid_rel >= 70 else "premium"
-				SetupBoard.start(co, "fit_out", ct)
+				_negotiate(co, ct, str(opts.get("negotiate", "none")), res)
+				var order: Array = [ct, "mid", "cheap", "premium", "friends"]
+				for q in order: if SetupBoard.start(co, "fit_out", q).is_empty(): break
 			SetupBoard.auto(co, str(opts.get("setup_style", "mixed")))
 			if opts.has("launch") and SetupBoard.status(co, SetupBoard.def_of(co, "launch")) == "ready": SetupBoard.start(co, "launch", ["flyers", "post"][int(opts["launch"])])
 			if not res.get("ordered", false) and SetupBoard.pending_required(co).all(func(t): return SetupBoard.st(co, t["id"])["state"] == "active"):
@@ -138,7 +148,7 @@ func avg(opts: Dictionary, n := 4) -> Dictionary:
 		var r := play(300 + sd, opts)
 		if not r["ok"]: errors.append_array(r["errors"]); continue
 		ok += 1
-		for k in ["profit_per_day", "late_profit", "worth", "rep", "open_day", "served", "lost", "waste", "fines", "first_profit_week", "cash_after_setup", "runway_weeks_x10", "min21", "neg_days", "cash_w1", "cash_open", "setup_fails"]: sum[k] = int(sum.get(k, 0)) + int(r[k])
+		for k in ["profit_per_day", "late_profit", "worth", "rep", "open_day", "served", "lost", "waste", "fines", "first_profit_week", "cash_after_setup", "runway_weeks_x10", "min21", "neg_days", "cash_w1", "cash_open", "setup_fails", "saved", "burned", "negotiated"]: sum[k] = int(sum.get(k, 0)) + int(r[k])
 		sum["min21_worst"] = mini(int(sum.get("min21_worst", 1 << 30)), int(r["min21"]))
 		min_cash = mini(min_cash, r["min_cash"]); errors.append_array(r["errors"])
 		if r["broke_days"] > 0: broke += 1
@@ -166,6 +176,7 @@ func _init() -> void:
 		"long": _long()
 		"room": _room()
 		"mistakes": _mistakes()
+		"negotiate": _negotiate_modes()
 		"contractor": _contractor()
 		"buffer": _buffer()
 	quit(0)
@@ -278,8 +289,35 @@ func _buffer() -> void:
 func _contractor() -> void:
 	print("--- contractor: 70 days x 16 seeds, opening cash 5000, unexpected expenses")
 	for cfg in [{"fmt": "small", "loan": ""}, {"fmt": "regular", "loan": "small"}]:
-		for ct in ["friends", "cheap", "mid", "premium", "checked"]:
+		for ct in ["friends", "cheap", "mid", "premium", "informed"]:
 			var o := {"biz": "bakery", "cash": 5000, "setup_style": "mixed", "contractor": ct, "shocks": SHOCKS}; o.merge(cfg)
-			var r := avg(o, 16)
+			var r := avg(o, 64)
 			print("%-7s %-8s opens day %4.1f | step failures %4.1f | cash on opening day %5d | lowest in 3 weeks %5d (worst %5d) | days below zero %4.1f | worth@70 %6d" % [
 				cfg["fmt"], ct, float(r["open_day"]), float(r["setup_fails"]), r["cash_open"], r["min21"], r["min21_worst"], float(r["neg_days"]), r["worth"]])
+
+# Haggling styles over the contractor quote. moves that cannot be made are skipped.
+func _negotiate(co: Company, tier: String, style: String, res: Dictionary) -> void:
+	if style == "none": return
+	var plan: Array = {"polite": ["ask_small", "accept"], "firm": ["ask_big", "compromise", "accept"], "hard": ["ask_huge", "insist", "insist", "accept"],
+		"smart": ["alt", "ask_big", "compromise", "accept"], "bluffer": ["alt", "ask_huge", "accept"], "greedy": ["ask_huge", "ask_huge", "ask_huge", "accept"]}[style]
+	if not Negotiation.begin(co, "fit_out", tier).is_empty(): return
+	var list := int(Negotiation.state(co)["list"])
+	for m in plan:
+		if not Negotiation.is_open(co): break
+		if m in Negotiation.moves(co): Negotiation.play(co, m)
+	if Negotiation.is_open(co): Negotiation.play(co, "accept")
+	var n := Negotiation.state(co)
+	res["negotiated"] += 1
+	if n["result"] == "deal": res["saved"] += list - int(n["price"])
+	if n["result"] == "burned": res["burned"] += 1
+
+func _negotiate_modes() -> void:
+	var N := 48
+	print("--- negotiating the contractor quote: 70 days x %d seeds, mid quote, opening cash 5000" % N)
+	for style in ["none", "polite", "firm", "smart", "bluffer", "hard", "greedy"]:
+		var saved := 0; var burned := 0; var worth := 0; var opened := 0; var ok := 0
+		for sd in N:
+			var r := play(500 + sd, {"biz": "bakery", "fmt": "small", "loan": "", "cash": 5000, "setup_style": "mixed", "contractor": "mid", "negotiate": style, "shocks": SHOCKS})
+			if not r["ok"]: continue
+			ok += 1; saved += r["saved"]; burned += r["burned"]; worth += r["worth"]; opened += r["open_day"]
+		print("%-8s saved on the quote (avg) %4d | the professional left in %2d of %d | opens day %4.1f | worth@70 %6d" % [style, saved / maxi(1, ok), burned, ok, float(opened) / maxi(1, ok), worth / maxi(1, ok)])

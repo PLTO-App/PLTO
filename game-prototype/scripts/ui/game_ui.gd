@@ -297,6 +297,8 @@ func open_screen(id: String, opts := {}) -> void:
 			for bid in Game.co.units: names.append(s.biz_name(bid))
 			sheet.open(Loc.t("upg.title"), s.upgrades, {"id": id, "tabs": names, "tab": opts.get("tab", 0)})
 		"setup_task": sheet.open("", func(sh): s.setup_task(sh, opts["task"]), {"id": id})
+		"negotiation": sheet.open("", func(sh): s.negotiation(sh), {"id": id})
+		"setup_summary": sheet.open("", func(sh): s.setup_summary(sh), {"id": id})
 		"goals": sheet.open(Loc.t("ui.goals"), s.goals, {"id": id})
 		"settings": sheet.open(Loc.t("set.title"), s.settings, {"id": id})
 		"building": sheet.open("", func(sh): s.building(sh, opts["building"]), {"id": id})

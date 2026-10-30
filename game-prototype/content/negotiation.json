@@ -1,0 +1,14 @@
+{
+  "_comment": "Negotiating with a professional before hiring (the contractor). All percents are of the list price of the quote. Every number is an illustration. flex: how far the price can really come down (hidden from the player, with a random part per quote). patience: how many rude moves the professional puts up with. busy: a busy professional is less flexible. urgent: after urgent_days of setup the professional senses the owner is in a hurry.",
+  "flex": {"cheap": 8, "mid": 15, "premium": 22},
+  "patience": {"cheap": 2, "mid": 3, "premium": 4},
+  "busy_pct": 35, "busy_penalty": 7,
+  "urgent_days": 4, "urgent_penalty": 3,
+  "bad_reputation_below": 55, "bad_reputation_bonus": 3,
+  "alt_bonus": 4, "cash_bonus": 3, "cash_buffer": 800,
+  "bluff_called_pct": 55, "bluff_penalty": 3, "bluff_lucky_bonus": 2,
+  "warranty_pct": {"cheap": 45, "mid": 70, "premium": 90}, "warranty_busy_penalty": 15, "warranty_charge_pct": 4, "warranty_rel": 10,
+  "max_moves": 5,
+  "asks": {"ask_small": 5, "ask_big": 12, "ask_huge": 20},
+  "yes_pct": 90, "counter_share": 30, "near_pct": 4, "far_pct": 10
+}

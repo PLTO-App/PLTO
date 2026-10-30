@@ -31,6 +31,7 @@ var special: Array = []         # one-off partner orders: {biz, product, qty, pr
 var mods: Array = []            # {kind, target, value, until}
 var services := {}              # service id -> true
 var flags := {}
+var setup_report := {}          # the summary of the last setup (SetupBoard.report), shown when the doors open
 var setup := {}                 # the setup file of the business being set up (SetupBoard); empty when there is none
 var stats := {"sold_total": 0, "transfers": 0, "inspections_passed": 0, "supplier_orders": 0, "profit_weeks": 0, "best_no_stockout": 0,
 	"sold_product_day": {}, "week_profit": 0, "week_revenue": 0, "week_start_cash": 0}
@@ -56,7 +57,7 @@ func _init(content_db: ContentDb) -> void:
 
 # ---------------------------------------------------------------- start, save, load
 func new_game(new_seed: int, keep_profile := false) -> void:
-	seed_value = new_seed; day = 1; track = "existing_bakery"; setup = {}
+	seed_value = new_seed; day = 1; track = "existing_bakery"; setup = {}; setup_report = {}
 	if not keep_profile: profile.reset(content)
 	profile.cash = int(world["start"]["cash"]) if not keep_profile else profile.cash
 	ledger = Ledger.new(); ledger.start_cash = profile.cash
@@ -144,7 +145,7 @@ func setup_left(bid: String) -> int: return -1 if units[bid].opened_day > (1 << 
 func to_dict() -> Dictionary:
 	var u := {}
 	for bid in units: u[bid] = units[bid].to_dict()
-	return {"v": SAVE_VERSION, "profile": profile.to_dict(), "day": day, "seed": seed_value, "units": u, "ledger": ledger.to_dict(), "worker": worker, "track": track, "setup": setup.duplicate(true),
+	return {"v": SAVE_VERSION, "profile": profile.to_dict(), "day": day, "seed": seed_value, "units": u, "ledger": ledger.to_dict(), "worker": worker, "track": track, "setup": setup.duplicate(true), "setup_report": setup_report.duplicate(true),
 		"staff": staff.duplicate(true), "receivables": receivables.duplicate(true), "payables": payables.duplicate(true), "loans": loans.duplicate(true),
 		"contracts": contracts.duplicate(true), "orders": orders.duplicate(true), "special": special.duplicate(true), "mods": mods.duplicate(true),
 		"services": services.duplicate(), "flags": flags.duplicate(true), "stats": stats.duplicate(true), "goals_done": goals_done.duplicate(),
@@ -159,7 +160,7 @@ func from_dict(d: Dictionary) -> void:
 	for bid in d.get("units", {}):
 		if content.businesses.has(bid):
 			var b := Business.new(content.business_db(bid, str(d["units"][bid].get("format", "")))); b.from_dict(d["units"][bid]); units[bid] = b
-	track = str(d.get("track", "existing_bakery")); setup = _ints(d.get("setup", {}))
+	track = str(d.get("track", "existing_bakery")); setup = _ints(d.get("setup", {})); setup_report = _ints(d.get("setup_report", {}))
 	if units.is_empty() and track != "owner": _add_unit("bakery")
 	ledger = Ledger.new(); ledger.from_dict(d.get("ledger", {}))
 	worker = str(d.get("worker", "bakery")) if units.has(str(d.get("worker", "bakery"))) else (units.keys()[0] if not units.is_empty() else "")

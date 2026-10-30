@@ -289,7 +289,7 @@ func _test_owner() -> void:
 	# 1ב-ב: the contractor. Three quotes (cheap, middling, dear), the same for the same seed; reliability is hidden until a reference check
 	var cb := _owner(); cb.begin_business("bakery", "small")
 	var qs: Array = cb.setup["bids"]["fit_out"]
-	check("three quotes: cheap, middling and dear, and the dearer the more reliable", qs.size() == 3 and qs[0]["price"] < qs[1]["price"] and qs[1]["price"] < qs[2]["price"] and qs[0]["rel"] < qs[1]["rel"] and qs[1]["rel"] < qs[2]["rel"])
+	check("three quotes: cheap, middling and dear", qs.size() == 3 and qs[0]["price"] < qs[1]["price"] and qs[1]["price"] < qs[2]["price"])
 	var cb2 := Company.new(content); cb2.start_owner(21); cb2.begin_business("bakery", "small")
 	check("the same seed gives the same quotes", JSON.stringify(cb2.setup["bids"]) == JSON.stringify(cb.setup["bids"]))
 	var fo := SetupBoard.def_of(cb, "fit_out")
@@ -297,7 +297,7 @@ func _test_owner() -> void:
 	check("before a reference check the risk is unknown, and the quotes do not give away the reliability", shown.all(func(o): return o["risk_k"] == "setup.risk_unknown"))
 	cb.start_morning()
 	var c0 := cb.profile.cash
-	check("a reference check costs money and shows how risky the quote is", SetupBoard.check_bid(cb, "fit_out", "cheap").is_empty() and cb.profile.cash == c0 - 60
+	check("a reference check costs money and shows how risky the quote is", SetupBoard.check_bid(cb, "fit_out", "cheap").is_empty() and cb.profile.cash == c0 - 40
 		and SetupBoard.options_of(cb, fo).filter(func(o): return o["id"] == "cheap")[0]["risk_k"] == "setup.risk_high" and not SetupBoard.check_bid(cb, "fit_out", "cheap").is_empty())
 	var c1 := cb.profile.cash
 	check("a quote is paid when it is chosen, at its price (the budget was held back)", SetupBoard.start(cb, "fit_out", "mid").is_empty() and cb.profile.cash == c1 - int(qs[1]["price"]) and cb.ledger.balance() == cb.profile.cash)
@@ -318,6 +318,30 @@ func _test_owner() -> void:
 			if had: troubles[tier] += 1
 	check("the cheap quote runs into trouble more than the middle one, and that more than the dear one", troubles["cheap"] > troubles["mid"] and troubles["mid"] > troubles["premium"], str(troubles))
 	check("the dear quote is not trouble free, and every kind of trouble happens", troubles["premium"] > 0 and kinds["delayed"] > 0 and kinds["overrun"] > 0 and kinds["defect"] > 0, str(kinds))
+	# the price is not the whole story: sometimes the cheap quote is the more reliable one, so a reference check tells something new
+	var inversions := 0; var inf := {"informed": 0, "mid": 0, "premium": 0, "cheap": 0}; var N := 240
+	for sd in range(1, N + 1):
+		var rows := {}
+		for pol in ["informed", "mid", "premium", "cheap"]:
+			var w := Company.new(content); w.start_owner(sd * 17); w.begin_business("bakery", "small"); w.start_morning()
+			var qq: Array = w.setup["bids"]["fit_out"]
+			if pol == "informed":
+				var best := ""; var br := -1
+				for q in qq:
+					SetupBoard.check_bid(w, "fit_out", q["id"])
+					if int(q["rel"]) > br: br = int(q["rel"]); best = q["id"]
+				SetupBoard.start(w, "fit_out", best)
+			else: SetupBoard.start(w, "fit_out", pol)
+			if pol == "informed" and int(qq[0]["rel"]) > int(qq[2]["rel"]): inversions += 1
+			var had := false; var g := 0
+			while not SetupBoard.is_done(w, "fit_out") and g < 12:
+				g += 1; w.commit_day({}, "bakery"); w.close_day(); w.start_morning()
+				for r in w.last_report.get("setup", []):
+					if r["task"] == "fit_out" and r["result"] in ["delayed", "overrun"]: had = true
+			if bool(w.setup["tasks"]["fit_out"]["defect"]): had = true
+			if had: inf[pol] += 1
+	check("the cheap quote is sometimes the more reliable (so the price alone does not tell)", inversions > N / 10, str(inversions))
+	check("choosing after reference checks gives less trouble than any blind choice", inf["informed"] < inf["mid"] and inf["informed"] < inf["premium"] and inf["informed"] < inf["cheap"], str(inf))
 	# a defect shows later: the health inspection is harder and the equipment is worn when the doors open
 	var df := _owner(); df.begin_business("bakery", "small")
 	var hd := SetupBoard.def_of(df, "health_inspection"); var ho2 := SetupBoard.option(df, hd, "standard")
@@ -329,6 +353,106 @@ func _test_owner() -> void:
 	df.units["bakery"].equipment = 100
 	df.day = 6; df.start_morning(); check("the doors open once all that is required is done", not df.in_setup())
 	check("a defect leaves the equipment worn", df.units["bakery"].equipment == 90 and df.last_report["setup"].any(func(r): return r["result"] == "defect"))
+	# 1ב-ג: negotiation. A move can be made, it can go well or badly, and the result depends on the quote, the season and what the player does
+	var ng := _owner(); ng.begin_business("bakery", "small"); ng.start_morning()
+	check("a negotiation can be opened once per quote", Negotiation.begin(ng, "fit_out", "mid").is_empty() and Negotiation.is_open(ng) and ng.setup["bids"]["fit_out"][1]["neg"] == "open")
+	var mv: Array = Negotiation.moves(ng)
+	check("at the start the player may ask, bargain on terms, accept or walk, but not compromise or insist yet", "ask_small" in mv and "warranty" in mv and "alt" in mv and "cash" in mv and "accept" in mv and "walk" in mv and not ("compromise" in mv) and not ("insist" in mv))
+	check("an unknown move is refused", not Negotiation.play(ng, "bribe").is_empty())
+	Negotiation.play(ng, "accept")
+	check("accepting the list price ends it at that price", not Negotiation.is_open(ng) and Negotiation.state(ng)["result"] == "deal" and ng.setup["bids"]["fit_out"][1]["price"] == Negotiation.state(ng)["list"])
+	check("a quote cannot be negotiated twice", not Negotiation.begin(ng, "fit_out", "mid").is_empty())
+	# the same moves with the same seed give the same story
+	var ja := ""; var jb := ""
+	for k in 2:
+		var x := _owner(); x.begin_business("bakery", "small"); x.start_morning(); Negotiation.begin(x, "fit_out", "mid")
+		for m in ["ask_big", "compromise", "accept"]: if m in Negotiation.moves(x): Negotiation.play(x, m)
+		if k == 0:
+			ja = JSON.stringify(Negotiation.state(x))
+		else:
+			jb = JSON.stringify(Negotiation.state(x))
+	check("same seed and moves give the same negotiation", ja == jb)
+	# over many seeds: asking little works more often than asking a lot, and asking a lot costs the professional's patience
+	var res := {"ask_small": [0, 0], "ask_huge": [0, 0]}
+	for sd in range(1, 201):
+		for m in ["ask_small", "ask_huge"]:
+			var y := Company.new(content); y.start_owner(sd * 19); y.begin_business("bakery", "small"); y.start_morning()
+			Negotiation.begin(y, "fit_out", "mid"); Negotiation.play(y, m)
+			if Negotiation.state(y)["result"] == "deal": res[m][0] += 1
+			if int(Negotiation.state(y)["patience"]) < 3: res[m][1] += 1
+	check("a small ask is accepted more often than a huge one", res["ask_small"][0] > res["ask_huge"][0] + 30, str(res))
+	check("a huge ask burns patience more often", res["ask_huge"][1] > res["ask_small"][1] + 40, str(res))
+	# a real second quote helps; a bluff can be called
+	var better := 0; var worse := 0; var called := 0; var bluffs := 0
+	for sd in range(1, 201):
+		var base_price := 0; var alt_price := 0
+		for withalt in [false, true]:
+			var z := Company.new(content); z.start_owner(sd * 23); z.begin_business("bakery", "small"); z.start_morning()
+			Negotiation.begin(z, "fit_out", "mid")
+			if withalt: Negotiation.play(z, "alt")
+			Negotiation.play(z, "ask_huge")
+			if Negotiation.is_open(z): Negotiation.play(z, "accept")
+			if withalt:
+				alt_price = int(Negotiation.state(z)["price"])
+			else:
+				base_price = int(Negotiation.state(z)["price"])
+		if alt_price < base_price: better += 1
+		if alt_price > base_price: worse += 1
+		var bl := Company.new(content); bl.start_owner(sd * 29); bl.begin_business("bakery", "small"); bl.start_morning()
+		for q in bl.setup["bids"]["fit_out"]: if q["id"] != "mid": q["price"] = int(q["price"]) * 3          # no other quote is believable
+		Negotiation.begin(bl, "fit_out", "mid"); Negotiation.play(bl, "alt"); bluffs += 1
+		if Negotiation.state(bl)["lines"].any(func(l): return l["k"] == "neg.say.alt_called"): called += 1
+	check("mentioning a real other quote gets a better price more often than a worse one", better > worse + 10, "%d vs %d" % [better, worse])
+	check("a bluff is sometimes called and sometimes works", called > bluffs / 5 and called < bluffs * 4 / 5, "%d of %d" % [called, bluffs])
+	# cash in hand matters, only when there is enough of it
+	var rich := _owner(); rich.begin_business("bakery", "small"); rich.start_morning(); Negotiation.begin(rich, "fit_out", "mid")
+	var adj0 := int(Negotiation.state(rich)["adj"]); Negotiation.play(rich, "cash")
+	check("paying at once lowers the floor when the cash allows", int(Negotiation.state(rich)["adj"]) < adj0)
+	var poor := _owner(); poor.begin_business("bakery", "small"); poor.start_morning(); poor.profile.cash = 300; poor.ledger = Ledger.new(); poor.ledger.start_cash = 300
+	Negotiation.begin(poor, "fit_out", "mid"); var adj1 := int(Negotiation.state(poor)["adj"]); Negotiation.play(poor, "cash")
+	check("and it does nothing when the cash does not allow", int(Negotiation.state(poor)["adj"]) == adj1)
+	# a warranty costs more and makes the work more reliable
+	var wr := 0; var wr_ok := true
+	for sd in range(1, 121):
+		var w2 := Company.new(content); w2.start_owner(sd * 31); w2.begin_business("bakery", "small"); w2.start_morning()
+		var rel0 := int(w2.setup["bids"]["fit_out"][2]["rel"]); var list0 := int(w2.setup["bids"]["fit_out"][2]["price"])
+		Negotiation.begin(w2, "fit_out", "premium"); Negotiation.play(w2, "warranty")
+		if Negotiation.state(w2)["warranty"]:
+			Negotiation.play(w2, "accept"); wr += 1
+			var bb: Dictionary = w2.setup["bids"]["fit_out"][2]
+			if not (int(bb["rel"]) >= mini(98, rel0 + 10) and int(bb["price"]) > list0): wr_ok = false
+	check("a warranty is given sometimes, it raises the price and the reliability", wr > 20 and wr_ok, str(wr))
+	# too much pushing: the professional leaves and the quote is gone
+	var left := 0; var gone_ok := true
+	for sd in range(1, 121):
+		var w3 := Company.new(content); w3.start_owner(sd * 37); w3.begin_business("bakery", "small"); w3.start_morning()
+		Negotiation.begin(w3, "fit_out", "cheap")
+		for i in 3: if Negotiation.is_open(w3): Negotiation.play(w3, "ask_huge")
+		if Negotiation.state(w3)["result"] == "burned":
+			left += 1
+			if SetupBoard.options_of(w3, SetupBoard.def_of(w3, "fit_out")).any(func(o): return o["id"] == "cheap"): gone_ok = false
+	check("a professional who is pushed too hard leaves, and his quote disappears", left > 20 and gone_ok, str(left))
+	var wk := _owner(); wk.begin_business("bakery", "small"); wk.start_morning(); Negotiation.begin(wk, "fit_out", "mid"); Negotiation.play(wk, "walk")
+	check("walking away keeps the quote at its list price", wk.setup["bids"]["fit_out"][1]["neg"] == "closed" and SetupBoard.options_of(wk, SetupBoard.def_of(wk, "fit_out")).any(func(o): return o["id"] == "mid"))
+	var dl := _owner(); dl.begin_business("bakery", "small"); dl.start_morning(); Negotiation.begin(dl, "fit_out", "mid")
+	Negotiation.play(dl, "ask_small"); while Negotiation.is_open(dl): Negotiation.play(dl, "accept")
+	var dealt := int(dl.setup["bids"]["fit_out"][1]["price"]); var cdl := dl.profile.cash
+	check("the agreed price is the one that is paid", SetupBoard.start(dl, "fit_out", "mid").is_empty() and dl.profile.cash == cdl - dealt)
+	# the summary: every shekel in it is in the books, and the reasons are named
+	var recon := true; var whys := 0
+	for sd in range(1, 41):
+		var q := Company.new(content); q.start_owner(sd * 41); q.begin_business("bakery", "small")
+		_run_setup(q, "mixed")
+		var rp := q.setup_report
+		if rp.is_empty(): recon = false; continue
+		var total: int = int(rp["contractor"]) + int(rp["overrun"]) + int(rp["fees"]) + int(rp["checks"]) + int(rp["fixes"]) - int(rp["equip_saving"])
+		if total != -q.ledger.total_since(1, "event"): recon = false
+		whys += rp["why"].size()
+	check("the summary adds up to the books", recon)
+	check("the summary names reasons for what went wrong", whys > 0, str(whys))
+	var sm := Company.new(content); sm.start_owner(5); sm.begin_business("bakery", "small"); _run_setup(sm, "pro")
+	var sm2 := Company.new(content); sm2.from_dict(JSON.parse_string(JSON.stringify(sm.to_dict())))
+	check("the summary has planned and actual days and survives saving", sm.setup_report["planned_days"] >= 2 and sm.setup_report["planned_days"] <= sm.setup_report["days"] and sm.setup_report["days"] >= 3 and sm2.setup_report["days"] == sm.setup_report["days"] and sm2.setup_report["why"].size() == sm.setup_report["why"].size())
 	# the requirements follow the kind of business: no food pack, no health inspection
 	var saved: Array = content.businesses["bakery"]["setup_packs"]
 	content.businesses["bakery"]["setup_packs"] = ["common"]

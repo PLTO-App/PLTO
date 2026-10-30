@@ -3,13 +3,13 @@
   "id": "common",
   "tasks": [
     {"id": "fit_out", "kind": "business", "required": true, "name": "setup.fit_out", "desc": "setup.fit_out.desc", "requires": [],
-     "bids": {"budget": {"small": 900, "regular": 2000}, "days": {"small": 4, "regular": 5}, "check_cost": 60,
+     "bids": {"budget": {"small": 900, "regular": 2000}, "days": {"small": 4, "regular": 5}, "check_cost": 40,
               "bid_label": "setup.fit_out.bid", "bid_desc": "setup.fit_out.bid.desc",
               "pool": ["setup.con.1", "setup.con.2", "setup.con.3", "setup.con.4", "setup.con.5", "setup.con.6"],
-              "tiers": [{"id": "cheap", "price_pct": 70, "days_delta": 1, "rel": [40, 55]},
-                        {"id": "mid", "price_pct": 100, "days_delta": 0, "rel": [65, 78]},
-                        {"id": "premium", "price_pct": 140, "days_delta": -1, "rel": [85, 95]}],
-              "problems": {"delay": 50, "overrun": 35, "defect": 15}},
+              "tiers": [{"id": "cheap", "price_pct": 70, "days_delta": 1, "rel": [25, 88]},
+                        {"id": "mid", "price_pct": 100, "days_delta": 0, "rel": [40, 90]},
+                        {"id": "premium", "price_pct": 140, "days_delta": -1, "rel": [55, 96]}],
+              "problems": {"delay": 50, "overrun": 35, "defect": 15}, "delay_days": [1, 3], "overrun_pct": [20, 35]},
      "options": [
        {"id": "friends", "label": "setup.fit_out.friends", "desc": "setup.fit_out.friends.desc", "cost": 0, "days_delta": 3, "rel": 30, "fail_pct": 0, "settle_pct": 40}
      ]},

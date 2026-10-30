@@ -37,7 +37,7 @@ if cmd == 'add':
 elif cmd == 'check':
     rows, order, langs = read()
     used = set()
-    key_re = re.compile(r'"((?:day|biz|cap|ing|prod|mk|upg|sup|partner|svc|staff|role|wx|npc|goal|insp|err|coach|week|ev|ui|hint|tut|scene|sign|set|ach|bank|tab|plan|sum|town|people|dlg|today|orders|fin|bld|act|start|setup|track|fmt)\.[a-z0-9_.]+)"')
+    key_re = re.compile(r'"((?:day|biz|cap|ing|prod|mk|upg|sup|partner|svc|staff|role|wx|npc|goal|insp|err|coach|week|ev|ui|hint|tut|scene|sign|set|ach|bank|tab|plan|sum|town|people|dlg|today|orders|fin|bld|act|start|setup|track|fmt|neg)\.[a-z0-9_.]+)"')
     for root, _, files in os.walk(game):
         if '/.godot' in root or '/tools' in root: continue
         for fn in files:
