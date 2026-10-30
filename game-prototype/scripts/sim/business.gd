@@ -22,6 +22,8 @@ var last_summary := {}
 var history: Array = []
 var sold_total := 0
 var opened_day := 1
+var format := ""               # "" or "regular" = the file as written; another format is a smaller space (see ContentDb.business_db)
+var lease_day := -1            # the day the space was rented; -1 = rent starts when the doors open (the older way)
 var today := {}                # what happened today outside the counter: deliveries to partners, internal transfers, extra costs
 
 func _init(p_db: Dictionary) -> void:
@@ -260,7 +262,7 @@ func close_day(runner: DayRunner, ctx: Dictionary) -> Dictionary:
 func to_dict() -> Dictionary:
 	return {"id": id, "prices": prices.duplicate(), "upgrades": upgrades.duplicate(), "reputation": reputation, "cleanliness": cleanliness, "equipment": equipment,
 		"last_plan": last_plan.duplicate(true), "last_summary": last_summary.duplicate(true), "history": history.duplicate(true), "sold_total": sold_total,
-		"opened_day": opened_day, "inv": inv.to_dict()}
+		"opened_day": opened_day, "format": format, "lease_day": lease_day, "inv": inv.to_dict()}
 
 func from_dict(d: Dictionary) -> void:
 	prices = {}
@@ -273,6 +275,7 @@ func from_dict(d: Dictionary) -> void:
 	equipment = clampi(int(d.get("equipment", 100)), 0, 100)
 	last_plan = d.get("last_plan", {}); last_summary = d.get("last_summary", {}); history = d.get("history", [])
 	sold_total = maxi(0, int(d.get("sold_total", 0))); opened_day = int(d.get("opened_day", 1))
+	format = str(d.get("format", "")); lease_day = int(d.get("lease_day", -1))
 	inv.from_dict(d.get("inv", {}), ingredient_ids(), product_ids())
 	marketing = "none"; promo_product = ""
 	reset_today()

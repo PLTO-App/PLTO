@@ -12,6 +12,7 @@ var settings := {"sound": true, "music": true, "locale": Loc.DEFAULT}
 var save_path := "user://save.json"
 var test_mode := false
 var migrated_from := 0
+var fresh_start := false      # a new game with no save yet: the player chooses how to begin (see Main._choose_start)
 
 func _ready() -> void:
 	_load_settings()
@@ -31,9 +32,11 @@ func business(bid := "") -> Dictionary:
 func load_game() -> void:
 	co = Company.new(content); profile = co.profile
 	var data := SaveStore.read(save_path)
+	fresh_start = false
 	var fresh_seed := 4242 if test_mode else int(Time.get_unix_time_from_system()) % 1000003
 	if data.is_empty():
 		co.new_game(fresh_seed)
+		fresh_start = not test_mode or "owner=1" in OS.get_cmdline_user_args()
 	elif data.has("company"):
 		co.from_dict(data["company"])
 	else:
@@ -50,13 +53,23 @@ func load_game() -> void:
 
 # Saves the last safe point (a morning). A day in progress is never written: if the app closes mid-day, the day starts again.
 func save_game() -> bool:
-	return SaveStore.write(save_path, {"schema": 3, "company": co.snapshot})
+	return SaveStore.write(save_path, {"schema": 4, "company": co.snapshot})
 
 func has_progress() -> bool:
 	return co.day > 1 or profile.sales_count > 0
 
 func reset_progress() -> void:
 	co.new_game(int(Time.get_unix_time_from_system()) % 1000003); save_game()
+	fresh_start = true
+
+# The owner track: an empty rented space. The first business, its size and the loan (or "") were chosen by the player.
+func start_owner(biz: String, fmt: String, loan_id: String) -> Dictionary:
+	co.start_owner(int(Time.get_unix_time_from_system()) % 1000003)
+	var e := co.begin_business(biz, fmt, loan_id)
+	if not e.is_empty(): co.new_game(int(Time.get_unix_time_from_system()) % 1000003); return e
+	fresh_start = false
+	save_game()
+	return {}
 
 # ---------------------------------------------------------------- settings (sound, music, language)
 func _load_settings() -> void:

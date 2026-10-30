@@ -30,7 +30,7 @@ func _init() -> void:
 	content = ContentDb.new(); content.load_all()
 	check("content loads without errors", content.errors.is_empty(), str(content.errors))
 	check("translations are loaded (a key becomes Hebrew text)", Loc.t("biz.bakery") != "biz.bakery", Loc.t("biz.bakery"))
-	_test_basics(); _test_orders(); _test_contract(); _test_cafe(); _test_inspection(); _test_week(); _test_loan(); _test_save(); _test_events(); _test_goals(); _test_stars(); _test_market()
+	_test_basics(); _test_orders(); _test_contract(); _test_cafe(); _test_inspection(); _test_week(); _test_loan(); _test_save(); _test_events(); _test_goals(); _test_stars(); _test_market(); _test_owner()
 	if not "quick" in OS.get_cmdline_user_args(): _balance(); _balance_market()
 	print("RESULT failures=%d" % fails)
 	quit(1 if fails > 0 else 0)
@@ -191,6 +191,81 @@ func _test_save() -> void:
 	var old := {"version": 1, "schema": 2, "profile": {"cash": 1107, "xp": 250, "level": 2, "reputation": 51}, "business": {"day": 3}}
 	var g := Company.new(content); g.new_game(5); g.profile.from_dict(old["profile"], content)
 	check("a 0.4 profile keeps experience and level", g.profile.xp == 250 and g.profile.level == 2)
+
+func _owner(cash := -1) -> Company:
+	var co := Company.new(content); co.start_owner(21)
+	if cash >= 0: co.profile.cash = cash; co.ledger = Ledger.new(); co.ledger.start_cash = cash
+	return co
+
+func _test_owner() -> void:
+	# the formats: a small space is the same business with smaller numbers; the file itself is untouched
+	var small := content.business_db("bakery", "small")
+	check("a small bakery has a smaller oven and a lower rent, the regular one is untouched",
+		small["capacity"]["amount"] == 50 and small["weekly_costs"]["rent"] == 700 and content.businesses["bakery"]["capacity"]["amount"] == 80 and content.business_db("bakery", "regular") == content.businesses["bakery"])
+	var co := _owner()
+	check("the owner track starts with cash and no business", co.track == "owner" and co.units.is_empty() and co.profile.cash == int(content.tracks["owner"]["cash"]) and co.ledger.balance() == co.profile.cash)
+	check("a new game is the existing bakery", fresh().track == "existing_bakery")
+	# funding: a regular bakery needs a loan; a small one does not
+	check("a regular bakery cannot be set up from the cash alone", not co.can_begin("bakery", "regular").is_empty())
+	check("with the small loan it can", co.can_begin("bakery", "regular", "small").is_empty())
+	check("a loan is available on day one on this track only", co.loan_available("small") and not fresh().loan_available("small"))
+	check("the terms of a loan: amount, weekly payment, weeks, total, cost", co.loan_terms("small") == {"amount": 5000, "weekly": 540, "weeks": 10, "total": 5400, "cost": 400})
+	var cash0 := co.profile.cash
+	var e := co.begin_business("bakery", "small")
+	var cost := int(content.businesses["bakery"]["formats"]["small"]["setup_cost"]); var days := int(content.businesses["bakery"]["formats"]["small"]["setup_days"])
+	check("setting up a small bakery costs its price and the books match", e.is_empty() and co.profile.cash == cash0 - cost and co.ledger.balance() == co.profile.cash)
+	check("the space is rented from today and opens after the setup days", co.units["bakery"].lease_day == 1 and co.units["bakery"].opened_day == 1 + days and co.in_setup() and co.setup_left("bakery") == days)
+	check("a second business cannot be set up the same way", not co.begin_business("bakery", "small").is_empty())
+	# the mornings of the setup: one setup card, no ordinary events, no inspection
+	var rep := co.start_morning()
+	check("a setup morning brings one setup card and nothing else", rep["events"].size() == 1 and rep["events"][0]["kind"] == "setup" and co.inspection_today == "", str(rep["events"].size()))
+	check("a small setup is too short for the contractor card", rep["events"][0]["id"] != "setup_contractor")
+	# the card's effects: used equipment brings cash and wears the equipment; the launch boost starts at the opening
+	var cash1 := co.profile.cash
+	var used := -1
+	for i in rep["events"][0]["choices"].size(): if rep["events"][0]["choices"][i]["label_k"] == "ev.setup.equipment.used": used = i
+	if rep["events"][0]["id"] == "setup_equipment":
+		co.resolve_event(rep["events"][0], used)
+		check("used equipment brings cash and a worn oven", co.profile.cash == cash1 + 300 and co.units["bakery"].equipment == 60)
+	# a setup day: no runners, rent runs, the week settles with rent for the whole week
+	co.commit_day({}, "bakery"); var s := co.close_day()
+	check("a setup day has no business results and the books match", s["units"].is_empty() and co.ledger.balance() == co.profile.cash and co.day == 2)
+	rep = co.start_morning()
+	for ev in rep["events"]: if ev["id"] == "setup_launch": co.resolve_event(ev, 0)
+	check("the launch boost waits for the opening and then runs four working days", co.mod_value("demand_pct", "bakery") == 20 and co.setup_left("bakery") == 1)
+	co.commit_day({}, "bakery"); co.close_day()
+	check("the doors open after the setup days", not co.in_setup() and co.unit_ready("bakery") and co.day == 3)
+	var plans := {"bakery": co.suggest_plan("bakery")}
+	co.start_morning(); check("an ordinary morning follows the opening", co.commit_day(plans, "bakery").is_empty())
+	co.close_day()
+	for i in 3: co.start_morning(); co.commit_day({"bakery": co.suggest_plan("bakery")}, "bakery"); co.close_day()
+	check("the rent of the first week covers the setup days too (six days of 880)", co.ledger.total(-1, "rent") == -880, str(co.ledger.total(-1, "rent")))
+	check("the books still match", co.ledger.balance() == co.profile.cash)
+	# a faster contractor: a day less, never less than one day left
+	var r := _owner(); r.begin_business("bakery", "regular", "small")
+	check("a loan taken with the setup arrives with it", r.loan_open("small") and r.loans.size() == 1 and r.ledger.balance() == r.profile.cash)
+	var d0 := r.setup_left("bakery")
+	r.shift_setup("bakery", -1); check("a faster contractor opens a day earlier", r.setup_left("bakery") == d0 - 1)
+	r.shift_setup("bakery", -10); check("the setup never ends before tomorrow", r.setup_left("bakery") == 1)
+	# saving in the middle of a setup keeps the size, the lease and the track
+	var sv := _owner(); sv.begin_business("bakery", "small")
+	var back := Company.new(content); back.from_dict(JSON.parse_string(JSON.stringify(sv.to_dict())))
+	check("a setup in progress survives saving and loading", back.track == "owner" and back.in_setup() and back.units["bakery"].format == "small" and back.units["bakery"].lease_day == 1
+		and back.units["bakery"].db["capacity"]["amount"] == 50 and back.ledger.balance() == back.profile.cash)
+	# the owner track is not a shortcut: a careless owner loses money, and a balanced one does not
+	for sk in ["good", "poor"]:
+		var o := _owner(); o.begin_business("bakery", "small")
+		var t := 0
+		while o.day <= 40:
+			o.start_morning()
+			for ev in o.pending_events.duplicate(): o.resolve_event(ev, 0)
+			if o.in_setup(): o.commit_day({}, "bakery"); o.close_day(); continue
+			var p := SimPolicies.plan_for(o, "bakery", {"order_ahead": sk == "good"} if sk == "good" else {"max_bake": true, "upkeep": false})
+			if not o.commit_day({"bakery": p}, "bakery").is_empty(): o.commit_day({"bakery": o.units["bakery"].empty_plan()}, "bakery")
+			if sk == "good": SimPolicies.order_ahead(o, "bakery")
+			o.close_day()
+		if sk == "good": check("a balanced small owner is ahead after six weeks", o.profile.cash - o.debt() > 3500, str(o.profile.cash))
+		else: check("a careless owner is not", o.profile.cash - o.debt() < 3500, str(o.profile.cash))
 
 func _test_events() -> void:
 	var co := fresh(); co.day = 6

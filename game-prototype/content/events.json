@@ -55,6 +55,25 @@
        {"label": "ev.tasting.no", "cost": 0, "effects": [], "note": "ev.tasting.no.note"}
      ]},
 
+    {"id": "setup_contractor", "kind": "setup", "title": "ev.setup.contractor.title", "body": "ev.setup.contractor.body", "who": "shira", "min_left": 3,
+     "choices": [
+       {"label": "ev.setup.contractor.fast", "cost": 350, "effects": [{"setup_days": -1}], "note": "ev.setup.contractor.fast.note"},
+       {"label": "ev.setup.contractor.normal", "cost": 0, "effects": [], "note": "ev.setup.contractor.normal.note"}
+     ]},
+
+    {"id": "setup_equipment", "kind": "setup", "biz_kind": "food", "title": "ev.setup.equipment.title", "body": "ev.setup.equipment.body", "who": "shira",
+     "choices": [
+       {"label": "ev.setup.equipment.used", "cost": 0, "effects": [{"cash": 300}, {"equip": {"biz": "@", "set": 60}}], "note": "ev.setup.equipment.used.note"},
+       {"label": "ev.setup.equipment.new", "cost": 0, "effects": [], "note": "ev.setup.equipment.new.note"}
+     ]},
+
+    {"id": "setup_launch", "kind": "setup", "title": "ev.setup.launch.title", "body": "ev.setup.launch.body", "who": "shira",
+     "choices": [
+       {"label": "ev.setup.launch.flyers", "cost": 150, "effects": [{"launch_mod": {"kind": "demand_pct", "value": 20, "days": 4}}], "note": "ev.setup.launch.flyers.note"},
+       {"label": "ev.setup.launch.post", "cost": 0, "effects": [{"launch_mod": {"kind": "demand_pct", "value": 8, "days": 3}}], "note": "ev.setup.launch.post.note"},
+       {"label": "ev.setup.launch.none", "cost": 0, "effects": [], "note": "ev.setup.launch.none.note"}
+     ]},
+
     {"id": "staff_raise", "kind": "staff_raise", "title": "ev.raise.title", "body": "ev.raise.body", "who": "", "min_day": 8, "weight": 6, "cooldown": 14},
     {"id": "staff_sick", "kind": "staff_sick", "title": "ev.sick.title", "body": "ev.sick.body", "who": "", "min_day": 6, "weight": 5, "cooldown": 10},
     {"id": "payment_late", "kind": "payment_late", "title": "ev.late.title", "body": "ev.late.body", "who": "michal", "weight": 100, "cooldown": 3}

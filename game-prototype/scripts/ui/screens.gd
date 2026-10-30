@@ -42,6 +42,8 @@ func today(sh: Sheet) -> void:
 		var nc := sh.card()
 		nc.add_child(UiStyle.label(Loc.t("today.news"), 14, UiStyle.MUTED, true))
 		for n in news: nc.add_child(UiStyle.label("• " + n, 14))
+	if c.in_setup():
+		_setup_today(sh); return
 	if c.day <= 2: _tip_card(sh, _today_tip())
 	var list := sh.card()
 	list.add_child(UiStyle.label(Loc.t("today.checklist"), 14, UiStyle.MUTED, true))
@@ -78,6 +80,27 @@ func today(sh: Sheet) -> void:
 	var errs := c.validate_day(plans)
 	if not errs.is_empty(): sh.note(Loc.msg(errs[0]))
 	sh.add_footer(Loc.t("today.open"), "cta", func(): _open_day(sh))
+
+# A morning of the setup period: the space is rented and being fitted out, so there is no working day yet. The checklist shows what
+# can still be done before the doors open; the day itself passes with the button at the bottom.
+func _setup_today(sh: Sheet) -> void:
+	var c := co(); var bid := c.setup_bid(); var left := c.setup_left(bid)
+	var total: int = int(c.format_def(bid, c.units[bid].format).get("setup_days", left))
+	var weekly := 0
+	for k in c.units[bid].db["weekly_costs"]: weekly += int(c.units[bid].db["weekly_costs"][k])
+	var card := sh.card()
+	card.add_child(UiStyle.label(Loc.t("setup.title", {"biz_k": c.units[bid].db["name"]}), 16, UiStyle.INK, true))
+	var bar := UiStyle.bar(maxi(0, total - left), maxi(1, total), UiStyle.TEAL, 12); bar.custom_minimum_size = Vector2(0, 12); card.add_child(bar)
+	card.add_child(UiStyle.label(Loc.t("setup.left_one" if left == 1 else "setup.left", {"n": left}), 14))
+	card.add_child(UiStyle.label(Loc.t("setup.rent", {"weekly_m": weekly}), 13, UiStyle.MUTED))
+	if c.day - c.units[bid].lease_day == 0: _tip_card(sh, "setup.tip")
+	var list := sh.card()
+	list.add_child(UiStyle.label(Loc.t("today.checklist"), 14, UiStyle.MUTED, true))
+	var placed := 0
+	for o in c.orders: placed += int(o["cost"])
+	_task(list, placed > 0, Loc.t("setup.order"), Loc.t("setup.order_sub", {"amount_m": placed}) if placed > 0 else Loc.t("setup.order_none"), func(): ui.open_screen("orders"))
+	_task(list, false, Loc.t("setup.money"), Loc.t("setup.money_sub", {"cash_m": c.profile.cash}), func(): ui.open_screen("finance", {"tab": 1}))
+	sh.add_footer(Loc.t("setup.end"), "cta", func(): flow.call("setup_day", {}))
 
 # The first mornings: one short sentence from Shira about the next step, following what was already done.
 func _today_tip() -> String:
@@ -425,7 +448,7 @@ func finance(sh: Sheet) -> void:
 				var L: Dictionary = c.world["bank"]["loans"][lid]; var card := sh.card()
 				card.add_child(UiStyle.label(Loc.t("fin.loan_title", {"amount_m": L["amount"]}), 16, UiStyle.INK, true))
 				card.add_child(UiStyle.label(Loc.t("fin.loan_terms", {"weeks": L["weeks"], "weekly_m": L["weekly"], "total_m": int(L["weekly"]) * int(L["weeks"]), "cost_m": int(L["weekly"]) * int(L["weeks"]) - int(L["amount"])}), 13, UiStyle.MUTED))
-				var open := c.level() >= int(L["unlock_level"]); var active := c.loan_open(lid)
+				var open := c.loan_available(lid); var active := c.loan_open(lid)
 				var b := UiStyle.button(Loc.t("fin.loan_active") if active else (Loc.t("fin.loan_take") if open else Loc.t("err.level", {"n": L["unlock_level"]})), "gold", 15, 44)
 				b.disabled = active or not open
 				b.pressed.connect(func():

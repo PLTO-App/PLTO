@@ -4,6 +4,8 @@ extends Node
 # then the café is opened (cash and experience are given to get there quickly), a barista is hired, and a day is played in the café.
 # godot --path . res://scenes/main.tscn -- --autotest out=/path [landscape=1] [size=WxH] [fast=1] [days=N] [market=1]
 # market=1: after the first day the minimarket is opened (cash and experience are given) and Noa works there from the second day.
+# owner=1: the owner track: the start choices (first answers: a new business, small, no loan), the setup mornings (cards, an order, the
+# setup day), the opening, and the days as usual.
 # Excluded from the exported APK.
 var main: Node3D
 var out := "/tmp"
@@ -13,6 +15,7 @@ var errors: Array = []
 var inspect := false
 var win_size := Vector2i.ZERO
 var market_test := false
+var owner_test := false
 
 func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
@@ -23,6 +26,7 @@ func _ready() -> void:
 		if a.begins_with("size="):
 			var wh := a.substr(5).split("x"); win_size = Vector2i(int(wh[0]), int(wh[1]))
 		if a == "inspect=1": inspect = true
+		if a == "owner=1": owner_test = true
 		if a == "market=1": market_test = true
 	if landscape: get_window().size = Vector2i(1266, 585)
 	if win_size != Vector2i.ZERO: get_window().size = win_size
@@ -47,7 +51,7 @@ func ui() -> GameUi: return main.ui
 func answer_cards(choice := 0, name := "") -> void:
 	var n := 0
 	while ui().card_dim.visible and n < 12:
-		if name != "" and n == 0: await shot(name)
+		if name != "" and n == 0: await wait(0.7); await shot(name)
 		await wait(0.3); ui().card_choice.emit(choice); n += 1
 		await wait(0.4)
 
@@ -61,6 +65,7 @@ func _run() -> void:
 	await wait_until(func(): return ui().sheet.visible and ui().sheet.screen_id == "today")
 	await wait(0.5); await shot("01_today")
 	var co: Company = Game.co
+	if owner_test: await _run_owner(); return
 	check("the morning checklist is open", ui().sheet.visible)
 	# plan screens
 	ui().screens.open_plan("bakery"); await wait(0.5)
@@ -105,6 +110,39 @@ func _run() -> void:
 	check("the ledger matches the cash", co.ledger.balance() == co.profile.cash, "%d vs %d" % [co.ledger.balance(), co.profile.cash])
 	var RS := RenderingServer
 	print("PERF draw_calls=%d primitives=%d vram_mb=%.1f fps=%d" % [RS.get_rendering_info(RS.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME), RS.get_rendering_info(RS.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME), RS.get_rendering_info(RS.RENDERING_INFO_VIDEO_MEM_USED) / 1048576.0, Engine.get_frames_per_second()])
+	print("TEST RESULT failures=%d %s" % [errors.size(), str(errors)])
+	get_tree().quit()
+
+func _run_owner() -> void:
+	var co: Company = Game.co
+	check("the owner track began with one unit in setup", co.track == "owner" and co.in_setup() and co.units.size() == 1, "%s %d" % [co.track, co.units.size()])
+	check("the setup cost was paid and the books match", co.ledger.balance() == co.profile.cash)
+	await shot("o01_setup_today")
+	var bid: String = co.setup_bid()
+	ui().open_screen("orders"); await wait(0.4)
+	ui().screens.draft["wholesale"] = {bid: co.suggest_order(bid)}
+	ui().sheet.refresh(); await wait(0.3); await shot("o02_orders")
+	await ui().screens._send_orders(ui().sheet)
+	check("an order was placed during the setup", not co.orders.is_empty())
+	ui().open_screen("finance", {"tab": 1}); await wait(0.4); await shot("o03_loans")
+	var n := 0
+	while co.in_setup() and n < 8:
+		n += 1
+		ui().open_screen("today"); await wait(0.5); await shot("o04_setup_day%d" % n)
+		var day0 := co.day
+		main._flow("setup_day", {})
+		await wait_until(func(): return main.state == "evening" or (ui().sheet.visible and ui().sheet.screen_id == "week"), 10.0)
+		await wait(0.6)
+		if ui().sheet.visible and ui().sheet.screen_id == "week":
+			await shot("o05_week"); ui().screens.flow.call("week_done", {}); await wait(0.6)
+		check("setup day %d passed" % n, co.day > day0)
+		check("the books match the cash after setup day %d" % n, co.ledger.balance() == co.profile.cash, "%d vs %d" % [co.ledger.balance(), co.profile.cash])
+		await night_to_morning("s%d" % n)
+	check("the doors opened after the setup", not co.in_setup() and co.unit_ready(bid))
+	for d in days:
+		await play_day("d%d" % (d + 1))
+		await night_to_morning("d%d" % (d + 2))
+	check("the ledger matches the cash", co.ledger.balance() == co.profile.cash, "%d vs %d" % [co.ledger.balance(), co.profile.cash])
 	print("TEST RESULT failures=%d %s" % [errors.size(), str(errors)])
 	get_tree().quit()
 

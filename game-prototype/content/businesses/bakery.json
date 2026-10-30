@@ -10,6 +10,12 @@
   "base_customers": 16,
   "capacity": {"name": "cap.oven", "amount": 80},
   "weekly_costs": {"rent": 1400, "utilities": 280},
+  "_formats_comment": "Opening a first business from an empty rented space (the owner track). setup_cost and setup_days are provisional until the balance run is approved. A small format overrides top-level keys of this file: same business, smaller space.",
+  "formats": {
+    "regular": {"name": "fmt.regular", "setup_cost": 6500, "setup_days": 4},
+    "small":   {"name": "fmt.small",   "setup_cost": 3000, "setup_days": 2,
+                "set": {"base_customers": 10, "capacity": {"name": "cap.oven", "amount": 50}, "weekly_costs": {"rent": 700, "utilities": 180}}}
+  },
   "arrival_weights": [6, 10, 14, 14, 10, 8, 8, 9, 10, 9, 7, 5],
   "weekday_factor": [90, 85, 85, 90, 110, 135, 0],
   "sensitivity": [{"mult": 90, "w": 8}, {"mult": 100, "w": 22}, {"mult": 110, "w": 25}, {"mult": 125, "w": 25}, {"mult": 140, "w": 20}],

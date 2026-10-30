@@ -8,7 +8,7 @@ extends RefCounted
 #                       and on the eve of the rest day the week is settled (rent, wages, services, loans)
 # No screen and no 3D here, so a whole season can be played in a test in seconds.
 
-const SAVE_VERSION := 3
+const SAVE_VERSION := 4
 const OWNER_RATE := 250          # customers per half-hour slot, in percent, that Noa serves when the day is played automatically
 
 var content: ContentDb
@@ -20,6 +20,7 @@ var day := 1
 var seed_value := 1
 var weather := "sunny"
 var worker := "bakery"          # where Noa works today
+var track := "existing_bakery"  # how this company began (content/tracks.json); a save from before tracks is the existing bakery
 var staff: Array = []           # {id, wage, skill, role, assigned, hired_day, sick_day, asked_raise}
 var receivables: Array = []     # {id, partner_k, amount, due, late_until, biz}
 var payables: Array = []        # {id, to_k, amount, due}
@@ -54,7 +55,7 @@ func _init(content_db: ContentDb) -> void:
 
 # ---------------------------------------------------------------- start, save, load
 func new_game(new_seed: int, keep_profile := false) -> void:
-	seed_value = new_seed; day = 1
+	seed_value = new_seed; day = 1; track = "existing_bakery"
 	if not keep_profile: profile.reset(content)
 	profile.cash = int(world["start"]["cash"]) if not keep_profile else profile.cash
 	ledger = Ledger.new(); ledger.start_cash = profile.cash
@@ -69,16 +70,77 @@ func new_game(new_seed: int, keep_profile := false) -> void:
 	last_report = {}; last_summary = {}; last_week = {}; last_goals = []
 	_snap()
 
-func _add_unit(bid: String) -> Business:
-	var b := Business.new(content.businesses[bid])
+func _add_unit(bid: String, fmt := "") -> Business:
+	var b := Business.new(content.business_db(bid, fmt))
 	b.new_unit(day, world["suppliers"]["wholesale"]["prices"])
+	b.format = fmt
 	units[bid] = b
 	return b
+
+# ---------------------------------------------------------------- the owner track: an empty rented space, a business to build
+# Starts a company from the owner track: the cash of the track, no business yet. begin_business() then rents the space for the
+# chosen business and size; the doors open after the setup days (rent runs from day one).
+func start_owner(new_seed: int) -> void:
+	new_game(new_seed)
+	var t: Dictionary = content.tracks["owner"]
+	track = "owner"
+	profile.cash = int(t["cash"])
+	ledger = Ledger.new(); ledger.start_cash = profile.cash
+	stats["week_start_cash"] = profile.cash
+	units = {}; worker = ""
+	_snap()
+
+func track_def() -> Dictionary: return content.tracks.get(track, {})
+
+func format_def(bid: String, fmt: String) -> Dictionary: return content.businesses[bid].get("formats", {}).get(fmt, {})
+
+# The cost and the days to open one business in a size; {} if it cannot be done now.
+func can_begin(bid: String, fmt: String, loan_id := "") -> Dictionary:
+	var f := format_def(bid, fmt)
+	if f.is_empty() or not units.is_empty(): return Loc.m("err.setup_unknown")
+	var cash := profile.cash
+	if loan_id != "":
+		if not world["bank"]["loans"].has(loan_id): return Loc.m("err.setup_unknown")
+		cash += int(world["bank"]["loans"][loan_id]["amount"])
+	if cash < int(f["setup_cost"]): return Loc.m("err.no_cash", {"amount_m": int(f["setup_cost"]) - cash})
+	return {}
+
+func begin_business(bid: String, fmt: String, loan_id := "") -> Dictionary:
+	var e := can_begin(bid, fmt, loan_id)
+	if not e.is_empty(): return e
+	var f := format_def(bid, fmt)
+	if loan_id != "":
+		var r := take_loan(loan_id)
+		if not r.is_empty(): return r
+	book("investment", -int(f["setup_cost"]), bid, "setup")
+	var b := _add_unit(bid, fmt)
+	b.opened_day = day + int(f["setup_days"]); b.lease_day = day
+	worker = bid
+	flags["opened_" + bid] = day
+	_snap()
+	return {}
+
+# True while the space is rented but no business has opened yet: there is no working day, only a setup day.
+func in_setup() -> bool:
+	if units.is_empty(): return false
+	for bid in units: if unit_ready(bid): return false
+	return true
+
+func setup_bid() -> String:
+	for bid in units: if not unit_ready(bid): return bid
+	return ""
+
+func setup_left(bid: String) -> int: return maxi(0, units[bid].opened_day - day)
+
+# A faster (or slower) setup, at least one more day to go.
+func shift_setup(bid: String, delta: int) -> void:
+	if not units.has(bid) or unit_ready(bid): return
+	units[bid].opened_day = maxi(day + 1, units[bid].opened_day + delta)
 
 func to_dict() -> Dictionary:
 	var u := {}
 	for bid in units: u[bid] = units[bid].to_dict()
-	return {"v": SAVE_VERSION, "profile": profile.to_dict(), "day": day, "seed": seed_value, "units": u, "ledger": ledger.to_dict(), "worker": worker,
+	return {"v": SAVE_VERSION, "profile": profile.to_dict(), "day": day, "seed": seed_value, "units": u, "ledger": ledger.to_dict(), "worker": worker, "track": track,
 		"staff": staff.duplicate(true), "receivables": receivables.duplicate(true), "payables": payables.duplicate(true), "loans": loans.duplicate(true),
 		"contracts": contracts.duplicate(true), "orders": orders.duplicate(true), "special": special.duplicate(true), "mods": mods.duplicate(true),
 		"services": services.duplicate(), "flags": flags.duplicate(true), "stats": stats.duplicate(true), "goals_done": goals_done.duplicate(),
@@ -92,10 +154,11 @@ func from_dict(d: Dictionary) -> void:
 	units = {}
 	for bid in d.get("units", {}):
 		if content.businesses.has(bid):
-			var b := Business.new(content.businesses[bid]); b.from_dict(d["units"][bid]); units[bid] = b
-	if units.is_empty(): _add_unit("bakery")
+			var b := Business.new(content.business_db(bid, str(d["units"][bid].get("format", "")))); b.from_dict(d["units"][bid]); units[bid] = b
+	track = str(d.get("track", "existing_bakery"))
+	if units.is_empty() and track != "owner": _add_unit("bakery")
 	ledger = Ledger.new(); ledger.from_dict(d.get("ledger", {}))
-	worker = str(d.get("worker", "bakery")) if units.has(str(d.get("worker", "bakery"))) else units.keys()[0]
+	worker = str(d.get("worker", "bakery")) if units.has(str(d.get("worker", "bakery"))) else (units.keys()[0] if not units.is_empty() else "")
 	staff = _ints(d.get("staff", [])); receivables = _ints(d.get("receivables", [])); payables = _ints(d.get("payables", []))
 	loans = _ints(d.get("loans", [])); contracts = _ints(d.get("contracts", {})); orders = _ints(d.get("orders", [])); special = _ints(d.get("special", []))
 	mods = _ints(d.get("mods", [])); services = _ints(d.get("services", {})); flags = _ints(d.get("flags", {})); stats = _ints(d.get("stats", stats))
@@ -257,9 +320,19 @@ func loan_open(lid: String) -> bool:
 	for l in loans: if l["id"] == lid: return true
 	return false
 
+# Whether the bank offers a loan now: by level, or from the first day on a track that says so.
+func loan_available(lid: String) -> bool:
+	return level() >= int(world["bank"]["loans"][lid]["unlock_level"]) or bool(track_def().get("loans_from_start", false))
+
+# What a loan costs in total and above the amount borrowed (the terms shown to the player: amount, weekly payment, weeks, total cost).
+func loan_terms(lid: String) -> Dictionary:
+	var L: Dictionary = world["bank"]["loans"][lid]
+	var total := int(L["weekly"]) * int(L["weeks"])
+	return {"amount": int(L["amount"]), "weekly": int(L["weekly"]), "weeks": int(L["weeks"]), "total": total, "cost": total - int(L["amount"])}
+
 func take_loan(lid: String) -> Dictionary:
 	var L: Dictionary = world["bank"]["loans"][lid]
-	if level() < int(L["unlock_level"]): return Loc.m("err.level", {"n": L["unlock_level"]})
+	if not loan_available(lid): return Loc.m("err.level", {"n": L["unlock_level"]})
 	if loan_open(lid): return Loc.m("err.loan_open")
 	var interest_week: int = (int(L["weekly"]) * int(L["weeks"]) - int(L["amount"])) / int(L["weeks"])
 	loans.append({"id": lid, "weekly": int(L["weekly"]), "weeks_left": int(L["weeks"]), "interest_week": interest_week})
@@ -684,7 +757,7 @@ func _settle_week() -> Dictionary:
 		var b: Business = units[bid]
 		var weekly := 0
 		for k in b.db["weekly_costs"]: weekly += int(b.db["weekly_costs"][k])
-		var days_open := clampi(day - b.opened_day, 0, 6)
+		var days_open := clampi(day - (b.lease_day if b.lease_day >= 0 else b.opened_day), 0, 6)
 		var rent := weekly * days_open / 6
 		book("rent", -rent, bid, "week"); w["rent"] += rent; w["units"][bid] = rent
 	book("wages", -wages_due, "", "week"); wages_due = 0

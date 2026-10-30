@@ -13,6 +13,9 @@ var world := {}
 var businesses := {}      # id -> Dictionary
 var events: Array = []
 var goals := {}
+var tracks := {}          # id -> Dictionary (where the company can start)
+var track_order: Array = []
+var _format_cache := {}   # "business/format" -> the business as that format
 var errors: Array[String] = []
 
 static func read_json(path: String) -> Variant:
@@ -47,7 +50,13 @@ func load_all() -> void:
 	events = _intify(ev, "events")["events"] if typeof(ev) == TYPE_DICTIONARY else []
 	var g = read_json("res://content/goals.json")
 	goals = _intify(g, "goals") if typeof(g) == TYPE_DICTIONARY else {}
+	var tr = read_json("res://content/tracks.json")
+	tracks = {}; track_order = []; _format_cache = {}
+	if typeof(tr) == TYPE_DICTIONARY:
+		_intify(tr, "tracks"); tracks = tr.get("tracks", {}); track_order = tr.get("order", [])
+	else: errors.append("tracks.json missing or invalid")
 	_check_world()
+	_check_tracks()
 
 # Turns every whole-number float into an int (JSON numbers arrive as floats) and reports any real fraction.
 func _intify(v: Variant, path: String) -> Variant:
@@ -106,6 +115,36 @@ func _check_world() -> void:
 			if not businesses[c["biz"]]["products"].has(pid): errors.append("contract %s: unknown product %s" % [cid, pid])
 	for e in events:
 		if not e.has("id") or not e.has("title") or not e.has("body"): errors.append("event missing id/title/body: %s" % str(e).left(60))
+
+# A business as one of its formats. "" and "regular" are the file itself; another format overrides top-level keys (a smaller space:
+# fewer customers, a smaller oven, a lower rent) and is the same business with the same id.
+func business_db(bid: String, fmt := "") -> Dictionary:
+	var base: Dictionary = businesses[bid]
+	var f: Dictionary = base.get("formats", {}).get(fmt, {})
+	if fmt == "" or fmt == "regular" or not f.has("set"): return base
+	var key := bid + "/" + fmt
+	if not _format_cache.has(key):
+		var d: Dictionary = base.duplicate(true)
+		for k in f["set"]: d[k] = f["set"][k]
+		_format_cache[key] = d
+	return _format_cache[key]
+
+func _check_tracks() -> void:
+	for tid in tracks:
+		var t: Dictionary = tracks[tid]
+		for key in ["name", "desc"]:
+			if not t.has(key): errors.append("track %s: missing %s" % [tid, key])
+		for bid in t.get("choose", []):
+			if not businesses.has(bid): errors.append("track %s: unknown business %s" % [tid, bid]); continue
+			var fm: Dictionary = businesses[bid].get("formats", {})
+			if fm.is_empty(): errors.append("track %s: %s has no formats" % [tid, bid])
+			for fid in fm:
+				for k in ["name", "setup_cost", "setup_days"]:
+					if not fm[fid].has(k): errors.append("%s format %s: missing %s" % [bid, fid, k])
+				for k in fm[fid].get("set", {}):
+					if not businesses[bid].has(k): errors.append("%s format %s: sets unknown key %s" % [bid, fid, k])
+	for tid in track_order:
+		if not tracks.has(tid): errors.append("tracks order: unknown track %s" % tid)
 
 # Level reached with a given total experience (1-based, capped at the table's end).
 func level_for_xp(xp: int) -> int:

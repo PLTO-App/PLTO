@@ -27,7 +27,8 @@
 
 ## בדיקות
 ```
-godot --headless --path . --script dev/test_sim.gd              # מנוע ואיזון (כולל מינימרקט): 96 בדיקות וסימולציה של 6 שבועות
+godot --headless --path . --script dev/test_sim.gd              # מנוע ואיזון (כולל מינימרקט ומסלול בעל עסק): 121 בדיקות וסימולציה של 6 שבועות
+godot --headless --path . --script dev/sim_owner.gd -- grid     # איזון מסלול בעל עסק (גם: sweep, setup, long, baseline)
 godot --headless --path . res://dev/test_save.tscn              # שמירה, טעינה ושמירה מגרסה 0.4
 godot --headless --path . --script dev/test_saveload.gd         # שמירה וטעינה בכל בוקר וערב לא משנות את מהלך המשחק (5 עונות)
 xvfb-run -a godot --path . --rendering-driver opengl3 res://dev/layout_audit.tscn -- out=/tmp/audit shots=flagged   # פריסה ב-18 גדלי מסך, לאורך ולרוחב (כ-12 דקות)

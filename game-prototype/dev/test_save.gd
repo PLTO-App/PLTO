@@ -19,7 +19,16 @@ func _ready() -> void:
 	check("a 0.4 save loads: the books match the cash", co.ledger.balance() == co.profile.cash)
 	check("the player is told about the new version", Game.migrated_from == 4)
 	var saved := SaveStore.read(Game.save_path)
-	check("the migrated game is saved in the new format", saved.has("company") and int(saved["schema"]) == 3)
+	check("the migrated game is saved in the new format", saved.has("company") and int(saved["schema"]) == 4)
+	check("a migrated game is the existing bakery", co.track == "existing_bakery")
+	# a save from version 0.5 (schema 3, no track): it is the existing bakery and nothing changes
+	var v5: Dictionary = JSON.parse_string(JSON.stringify(co.snapshot)); v5.erase("track")
+	for bid in v5["units"]: v5["units"][bid].erase("format"); v5["units"][bid].erase("lease_day")
+	SaveStore.write(Game.save_path, {"schema": 3, "company": v5})
+	Game.load_game()
+	check("a 0.5 save (no track) loads as the existing bakery", Game.co.track == "existing_bakery" and Game.co.units.has("bakery") and Game.co.profile.cash == int(v5["profile"]["cash"]) and not Game.fresh_start, "%s %s %d vs %d fresh=%s" % [Game.co.track, str(Game.co.units.keys()), Game.co.profile.cash, int(v5["profile"]["cash"]), str(Game.fresh_start)])
+	check("a 0.5 save keeps rent from the opening day", Game.co.units["bakery"].lease_day == -1 and Game.co.units["bakery"].format == "")
+	co = Game.co
 	# a morning that already ran is not run again after a restart (no double deliveries)
 	co.place_order("bakery", "wholesale", {"base": 20})
 	co.start_morning(); co.commit_day({"bakery": co.units["bakery"].empty_plan()}, "bakery"); co.close_day()

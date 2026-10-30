@@ -56,16 +56,72 @@ func _ready() -> void:
 	_boot()
 
 func _boot() -> void:
+	if Game.fresh_start: await _choose_start()
 	var co := Game.co
 	town.show_owned(co.units)
 	ui.hud.sync()
 	_enter_town_now(0.12)
 	if not co.flags.has("tut_intro") and co.day == 1:
-		await _intro()
+		if co.track == "owner": await _intro_owner()
+		else: await _intro()
 	elif Game.migrated_from > 0:
 		await ui.ask({"who": "shira", "who_name": Loc.t("npc.shira"), "title": Loc.t("tut.welcome_back"), "body": Loc.t("tut.welcome_back_body"), "choices": [Loc.t("ui.continue")]})
 		Game.migrated_from = 0
 	morning()
+
+# A new game with no save: how to begin (content/tracks.json). The owner track asks for the size of the business and how to fund it;
+# the existing bakery keeps the game as it was. Each step is a card; nothing starts until the last choice.
+func _choose_start() -> void:
+	var gc := Game.content
+	var who := {"who": "shira", "who_name": Loc.t("npc.shira")}
+	var tid := ""
+	if gc.track_order.size() == 1: tid = gc.track_order[0]
+	else:
+		var body := Loc.t("start.body"); var names: Array = []
+		for t in gc.track_order:
+			var cash: int = int(gc.tracks[t]["cash"]) if gc.tracks[t].has("cash") else int(gc.world["start"]["cash"])
+			names.append(Loc.t(gc.tracks[t]["name"]))
+			body += "\n\n" + Loc.t(gc.tracks[t]["name"]) + ": " + Loc.t(gc.tracks[t]["desc"], {"cash_m": cash})
+		var spec := who.duplicate(); spec.merge({"title": Loc.t("start.title"), "body": body, "choices": names})
+		tid = gc.track_order[await ui.ask(spec)]
+	if tid == "existing_bakery":
+		Game.fresh_start = false; return
+	var t: Dictionary = gc.tracks[tid]
+	var biz: String = t["choose"][0]
+	while true:
+		# 1. the size
+		var fmts: Array = ["small", "regular"].filter(func(f): return gc.businesses[biz]["formats"].has(f))
+		var lines: Array = []; var names: Array = []
+		for f in fmts:
+			var fd: Dictionary = gc.businesses[biz]["formats"][f]; var db: Dictionary = gc.business_db(biz, f)
+			var weekly := 0
+			for k in db["weekly_costs"]: weekly += int(db["weekly_costs"][k])
+			lines.append(Loc.t("start.fmt_line", {"fmt_k": fd["name"], "cost_m": fd["setup_cost"], "days": fd["setup_days"], "weekly_m": weekly}))
+			names.append(Loc.t("start.size_label", {"fmt_k": fd["name"]}))
+		var spec1 := who.duplicate()
+		spec1.merge({"title": Loc.t("start.size_title"), "body": Loc.t("start.size_body", {"biz_k": gc.businesses[biz]["name"]}) + "\n\n" + "\n".join(lines), "choices": names})
+		var fmt: String = fmts[await ui.ask(spec1)]
+		# 2. the funding
+		var cost: int = int(gc.businesses[biz]["formats"][fmt]["setup_cost"]); var cash: int = int(t["cash"])
+		var opts: Array = []; var labels: Array = []; var flines: Array = []
+		if cash >= cost:
+			opts.append(""); labels.append(Loc.t("start.noloan")); flines.append(Loc.t("start.noloan_line", {"left_m": cash - cost}))
+		for lid in gc.world["bank"]["loans"]:
+			var L: Dictionary = gc.world["bank"]["loans"][lid]
+			var total := int(L["weekly"]) * int(L["weeks"])
+			opts.append(lid); labels.append(Loc.t("start.loan_label", {"amount_m": L["amount"]}))
+			flines.append(Loc.t("start.loan_line", {"amount_m": L["amount"], "weekly_m": L["weekly"], "weeks": L["weeks"], "total_m": total, "cost_m": total - int(L["amount"]), "left_m": cash + int(L["amount"]) - cost}))
+		var spec2 := who.duplicate()
+		spec2.merge({"title": Loc.t("start.fund_title"), "body": Loc.t("start.fund_body", {"cost_m": cost, "cash_m": cash}) + "\n\n" + "\n".join(flines), "choices": labels})
+		var err := Game.start_owner(biz, fmt, opts[await ui.ask(spec2)])
+		if err.is_empty(): return
+		await ui.ask({"who": "shira", "who_name": Loc.t("npc.shira"), "title": Loc.t("start.fund_title"), "body": Loc.msg(err), "choices": [Loc.t("ui.continue")]})
+
+func _intro_owner() -> void:
+	for i in 2:
+		await ui.ask({"who": "shira", "who_name": Loc.t("npc.shira"), "title": Loc.t("start.owner%d.title" % (i + 1)), "body": Loc.t("start.owner%d.body" % (i + 1)),
+			"choices": [Loc.t("ui.continue") if i < 1 else Loc.t("start.go")]})
+	Game.co.flags["tut_intro"] = 1
 
 func _intro() -> void:
 	for i in 3:
@@ -87,6 +143,10 @@ func morning() -> void:
 	ui.hud.rep_biz = co.worker; ui.hud.sync(); _set_info()
 	ui.show_day_ui(false); ui.show_town_bar(true, Loc.t("ui.cta_morning"))
 	ui.update_goals_badge()
+	if co.track == "owner" and not co.flags.has("owner_opened") and not co.units.is_empty() and not co.in_setup():
+		co.flags["owner_opened"] = co.day
+		Game.sfx.play("levelup")
+		await ui.ask({"who": "shira", "who_name": Loc.t("npc.shira"), "title": Loc.t("tut.owner_open_title"), "body": Loc.t("tut.owner_open_body"), "choices": [Loc.t("ui.continue")]})
 	for ev in co.pending_events.duplicate():
 		await _event_card(ev)
 	Game.save_game()
@@ -133,6 +193,14 @@ func _flow(action: String, data: Dictionary) -> void:
 			if not errs.is_empty(): ui.sheet.note(Loc.msg(errs[0])); return
 			ui.sheet.close()
 			_run_day()
+		"setup_day":
+			ui.sheet.close()
+			co.commit_day({}, co.worker)
+			co.close_day()
+			Game.save_game()
+			ui.hud.sync(); _set_info()
+			if not co.last_week.is_empty(): ui.open_screen("week", {"week": co.last_week})
+			else: _evening()
 		"summary_done":
 			if not co.last_week.is_empty(): ui.open_screen("week", {"week": co.last_week})
 			else: _evening()
