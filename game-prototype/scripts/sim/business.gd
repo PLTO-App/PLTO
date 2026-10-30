@@ -47,6 +47,15 @@ func is_mto(pid: String) -> bool: return bool(db["products"][pid].get("made_to_o
 func is_resale(pid: String) -> bool: return db["products"][pid].has("resale")
 func is_baked(pid: String) -> bool: return not is_mto(pid) and not is_resale(pid)
 
+# A shop that makes nothing: everything is bought ready and sold from shelves with limited room.
+func is_retail() -> bool: return str(db.get("kind", "")) == "retail"
+
+# Pieces on the shelves (fresh and old, all products).
+func stock_total() -> int:
+	var n := 0
+	for pid in db["products"]: n += inv.stock(pid)
+	return n
+
 # The product a bought input becomes (a café buys "croissant" goods and sells them as its "croissant" product).
 func product_for_input(input_id: String) -> String:
 	for pid in db["products"]:
@@ -147,6 +156,10 @@ func validate_plan(plan: Dictionary, ctx: Dictionary) -> Array:
 		errs.append(Loc.m("err.no_cash", {"amount_m": costs["total"] - int(ctx.get("cash_available", 0))}))
 	var cap := capacity(int(ctx.get("capacity_pct", 0))); var used := capacity_used(plan)
 	if used > cap: errs.append(Loc.m("err.capacity", {"cap_k": db["capacity"]["name"], "max": cap, "used": used}))
+	if is_retail():
+		var held := stock_total(); var buying := 0
+		for item in plan.get("buy_now", {}): buying += int(plan["buy_now"][item])
+		if buying > 0 and held + buying > cap: errs.append(Loc.m("err.shelf_full", {"used": held + buying, "cap": cap}))
 	var need := bake_needs(plan)
 	for iid in need:
 		if inv.units(iid) + int(plan.get("buy_now", {}).get(iid, 0)) < need[iid]: errs.append(Loc.m("err.missing", {"item_k": db["ingredients"][iid]["name"]}))

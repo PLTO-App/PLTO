@@ -2,7 +2,8 @@ extends Node
 # Development only: plays the game by itself through the real interface and saves screenshots.
 # Day 1 in the bakery (intro, plan screens, supplier order, serving every customer, summary), the evening and the night,
 # then the café is opened (cash and experience are given to get there quickly), a barista is hired, and a day is played in the café.
-# godot --path . res://scenes/main.tscn -- --autotest out=/path [landscape=1] [size=WxH] [fast=1] [days=N]
+# godot --path . res://scenes/main.tscn -- --autotest out=/path [landscape=1] [size=WxH] [fast=1] [days=N] [market=1]
+# market=1: after the first day the minimarket is opened (cash and experience are given) and Noa works there from the second day.
 # Excluded from the exported APK.
 var main: Node3D
 var out := "/tmp"
@@ -11,6 +12,7 @@ var landscape := false
 var errors: Array = []
 var inspect := false
 var win_size := Vector2i.ZERO
+var market_test := false
 
 func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
@@ -21,6 +23,7 @@ func _ready() -> void:
 		if a.begins_with("size="):
 			var wh := a.substr(5).split("x"); win_size = Vector2i(int(wh[0]), int(wh[1]))
 		if a == "inspect=1": inspect = true
+		if a == "market=1": market_test = true
 	if landscape: get_window().size = Vector2i(1266, 585)
 	if win_size != Vector2i.ZERO: get_window().size = win_size
 	_run()
@@ -84,11 +87,21 @@ func _run() -> void:
 			var e := co.open_business("cafe"); check("the café opens", e.is_empty(), Loc.msg(e))
 			main._flow("opened", {"biz": "cafe"}); await wait(0.6); await answer_cards(0, "07_cafe_opened")
 			await wait(1.5); await shot("08_town_cafe_open")
+		if d == 0 and market_test:
+			co.profile.add_xp(2500); co.book("relief", 20000, "", "autotest")
+			ui().hud.sync()
+			main._on_building("market"); await wait(0.6); await shot("05_building_market")
+			var e2 := co.open_business("market"); check("the market opens", e2.is_empty(), Loc.msg(e2))
+			main._flow("opened", {"biz": "market"}); await wait(0.6); await answer_cards(0, "07_market_opened")
+			await wait(1.5); await shot("08_town_market_open")
 		await night_to_morning("d%d" % (d + 2))
 		if Game.co.contracts.has("minimarket"): print("TEST contract active=%s misses=%d" % [Game.co.contracts["minimarket"]["active"], Game.co.contracts["minimarket"]["misses"]])
 		if co.owns("cafe") and co.unit_ready("cafe") and co.staff.is_empty():
 			co.hire("yossi", "bakery"); co.worker = "cafe"
 			ui().screens.new_morning(); ui().open_screen("today"); await wait(0.5); await shot("09_today_two_businesses")
+		if market_test and co.owns("market") and co.unit_ready("market") and co.worker != "market":
+			co.worker = "market"
+			ui().screens.new_morning(); ui().open_screen("today"); await wait(0.5); await shot("09_today_market")
 	check("the ledger matches the cash", co.ledger.balance() == co.profile.cash, "%d vs %d" % [co.ledger.balance(), co.profile.cash])
 	var RS := RenderingServer
 	print("PERF draw_calls=%d primitives=%d vram_mb=%.1f fps=%d" % [RS.get_rendering_info(RS.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME), RS.get_rendering_info(RS.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME), RS.get_rendering_info(RS.RENDERING_INFO_VIDEO_MEM_USED) / 1048576.0, Engine.get_frames_per_second()])

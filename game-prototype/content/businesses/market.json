@@ -1,0 +1,374 @@
+{
+ "id": "market",
+ "name": "biz.market",
+ "kind": "retail",
+ "scene": "market",
+ "_comment": "A neighbourhood minimarket: nothing is made, everything is bought from suppliers and sold from the shelves. Margins are thin, so volume, shelf space, fresh goods that spoil, and prices matter. Whole shekels.",
+ "start": {
+  "reputation": 50,
+  "stock": {}
+ },
+ "slots": 14,
+ "slots_friday": 10,
+ "slot_minutes": 30,
+ "day_start_hour": 7,
+ "base_customers": 34,
+ "patience": 1,
+ "service_pct": 165,
+ "capacity": {
+  "name": "cap.shelf",
+  "amount": 150
+ },
+ "weekly_costs": {
+  "rent": 650,
+  "utilities": 160
+ },
+ "arrival_weights": [
+  6,
+  9,
+  9,
+  7,
+  6,
+  6,
+  7,
+  8,
+  8,
+  7,
+  6,
+  6,
+  5,
+  4
+ ],
+ "weekday_factor": [
+  95,
+  90,
+  90,
+  95,
+  105,
+  125,
+  0
+ ],
+ "sensitivity": [
+  {
+   "mult": 90,
+   "w": 10
+  },
+  {
+   "mult": 100,
+   "w": 28
+  },
+  {
+   "mult": 110,
+   "w": 27
+  },
+  {
+   "mult": 125,
+   "w": 22
+  },
+  {
+   "mult": 140,
+   "w": 13
+  }
+ ],
+ "addon": {
+  "from": [
+   "milkcart",
+   "yogurt",
+   "eggs",
+   "pasta"
+  ],
+  "products": [
+   "fruit",
+   "snack",
+   "water"
+  ],
+  "pct": 45
+ },
+ "weather": {
+  "rain": 90,
+  "hot": 105,
+  "sunny": 100,
+  "cloudy": 100
+ },
+ "supplier_ids": [
+  "wholesale",
+  "galil",
+  "minimarket"
+ ],
+ "ingredients": {},
+ "goods_inputs": {
+  "milkcart": {
+   "name": "prod.milkcart",
+   "name_pl": "prod.milkcart.pl",
+   "step": 12
+  },
+  "eggs": {
+   "name": "prod.eggs",
+   "name_pl": "prod.eggs.pl",
+   "step": 6
+  },
+  "yogurt": {
+   "name": "prod.yogurt",
+   "name_pl": "prod.yogurt.pl",
+   "step": 12
+  },
+  "water": {
+   "name": "prod.water",
+   "name_pl": "prod.water.pl",
+   "step": 12
+  },
+  "soda": {
+   "name": "prod.soda",
+   "name_pl": "prod.soda.pl",
+   "step": 12
+  },
+  "snack": {
+   "name": "prod.snack",
+   "name_pl": "prod.snack.pl",
+   "step": 12
+  },
+  "pasta": {
+   "name": "prod.pasta",
+   "name_pl": "prod.pasta.pl",
+   "step": 8
+  },
+  "fruit": {
+   "name": "prod.fruit",
+   "name_pl": "prod.fruit.pl",
+   "step": 6
+  }
+ },
+ "products": {
+  "milkcart": {
+   "name": "prod.milkcart",
+   "name_pl": "prod.milkcart.pl",
+   "model": "goods_milkcart",
+   "scale_pct": 100,
+   "icon": "icon_milkcart",
+   "price": 10,
+   "xp": 1,
+   "pref": 22,
+   "cap": 0,
+   "resale": "milkcart",
+   "shelf_days": 3,
+   "old_price_pct": 80,
+   "qty": [
+    1,
+    4
+   ]
+  },
+  "eggs": {
+   "name": "prod.eggs",
+   "name_pl": "prod.eggs.pl",
+   "model": "goods_eggs",
+   "scale_pct": 100,
+   "icon": "icon_eggs",
+   "price": 22,
+   "xp": 1,
+   "pref": 14,
+   "cap": 0,
+   "resale": "eggs",
+   "shelf_days": 7,
+   "old_price_pct": 80,
+   "qty": [
+    1,
+    3
+   ]
+  },
+  "yogurt": {
+   "name": "prod.yogurt",
+   "name_pl": "prod.yogurt.pl",
+   "model": "goods_yogurt",
+   "scale_pct": 100,
+   "icon": "icon_yogurt",
+   "price": 8,
+   "xp": 1,
+   "pref": 16,
+   "cap": 0,
+   "resale": "yogurt",
+   "shelf_days": 4,
+   "old_price_pct": 80,
+   "qty": [
+    2,
+    6
+   ]
+  },
+  "water": {
+   "name": "prod.water",
+   "name_pl": "prod.water.pl",
+   "model": "goods_water",
+   "scale_pct": 100,
+   "icon": "icon_water",
+   "price": 9,
+   "xp": 1,
+   "pref": 20,
+   "cap": 0,
+   "resale": "water",
+   "shelf_days": 60,
+   "old_price_pct": 100,
+   "qty": [
+    2,
+    6
+   ],
+   "weather_pref": {
+    "hot": 250,
+    "rain": 70
+   }
+  },
+  "soda": {
+   "name": "prod.soda",
+   "name_pl": "prod.soda.pl",
+   "model": "goods_soda",
+   "scale_pct": 100,
+   "icon": "icon_soda",
+   "price": 13,
+   "xp": 1,
+   "pref": 14,
+   "cap": 0,
+   "resale": "soda",
+   "shelf_days": 60,
+   "old_price_pct": 100,
+   "qty": [
+    1,
+    4
+   ],
+   "weather_pref": {
+    "hot": 200,
+    "rain": 70
+   }
+  },
+  "snack": {
+   "name": "prod.snack",
+   "name_pl": "prod.snack.pl",
+   "model": "goods_snack",
+   "scale_pct": 100,
+   "icon": "icon_snack",
+   "price": 11,
+   "xp": 1,
+   "pref": 14,
+   "cap": 0,
+   "resale": "snack",
+   "shelf_days": 40,
+   "old_price_pct": 100,
+   "qty": [
+    1,
+    4
+   ]
+  },
+  "pasta": {
+   "name": "prod.pasta",
+   "name_pl": "prod.pasta.pl",
+   "model": "goods_pasta",
+   "scale_pct": 100,
+   "icon": "icon_pasta",
+   "price": 13,
+   "xp": 1,
+   "pref": 10,
+   "cap": 0,
+   "resale": "pasta",
+   "shelf_days": 90,
+   "old_price_pct": 100,
+   "qty": [
+    1,
+    3
+   ]
+  },
+  "fruit": {
+   "name": "prod.fruit",
+   "name_pl": "prod.fruit.pl",
+   "model": "goods_fruit",
+   "scale_pct": 100,
+   "icon": "icon_fruit",
+   "price": 17,
+   "xp": 1,
+   "pref": 12,
+   "cap": 0,
+   "resale": "fruit",
+   "shelf_days": 2,
+   "old_price_pct": 80,
+   "qty": [
+    1,
+    3
+   ]
+  }
+ },
+ "marketing": {
+  "none": {
+   "name": "mk.none",
+   "cost": 0,
+   "reach_pct": 0,
+   "discount_pct": 0,
+   "pref_mult": 100,
+   "unlock_level": 1
+  },
+  "social_post": {
+   "name": "mk.social_post",
+   "cost": 60,
+   "reach_pct": 20,
+   "discount_pct": 0,
+   "pref_mult": 100,
+   "unlock_level": 1
+  },
+  "promo": {
+   "name": "mk.promo",
+   "cost": 0,
+   "reach_pct": 0,
+   "discount_pct": 20,
+   "pref_mult": 150,
+   "unlock_level": 1
+  },
+  "flyers": {
+   "name": "mk.flyers",
+   "cost": 180,
+   "reach_pct": 45,
+   "discount_pct": 0,
+   "pref_mult": 100,
+   "unlock_level": 2
+  }
+ },
+ "upgrades": {
+  "sign": {
+   "name": "upg.sign",
+   "desc": "upg.sign.desc",
+   "cost": 900,
+   "unlock_level": 6,
+   "effect": {
+    "base_customers": 2
+   }
+  },
+  "shelves": {
+   "name": "upg.shelves",
+   "desc": "upg.shelves.desc",
+   "cost": 1300,
+   "unlock_level": 6,
+   "effect": {
+    "capacity": 70
+   }
+  },
+  "baskets": {
+   "name": "upg.baskets",
+   "desc": "upg.baskets.desc",
+   "cost": 700,
+   "unlock_level": 7,
+   "effect": {
+    "patience": 1
+   }
+  },
+  "cooler": {
+   "name": "upg.cooler",
+   "desc": "upg.cooler.desc",
+   "cost": 1500,
+   "unlock_level": 7,
+   "effect": {
+    "wtp_pct": 8
+   }
+  }
+ },
+ "xp_rules": {
+  "profitable_day": 30,
+  "no_stockout": 20,
+  "happy_customers": 20,
+  "first_day": 25,
+  "happy_threshold": 70
+ }
+}

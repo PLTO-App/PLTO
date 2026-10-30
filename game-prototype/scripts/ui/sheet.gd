@@ -54,15 +54,15 @@ func _ready() -> void:
 	body = UiStyle.vbox(8); body.size_flags_horizontal = Control.SIZE_EXPAND_FILL; scroll.add_child(body)
 	note_l = UiStyle.label("", 13, UiStyle.BAD); col.add_child(note_l)
 	foot = UiStyle.hbox(10); col.add_child(foot)
-	get_viewport().size_changed.connect(_layout)
 	visible = false
 
 func _layout() -> void:
-	var vp := get_viewport().get_visible_rect().size
+	var vp := size                       # the safe area: the sheet fills the interface root, which is inset from the notch and the bars
 	compact = vp.y <= vp.x and vp.y < 500.0
 	if visible and compact != _built_compact: call_deferred("_rebuild_for_size")      # the phone was turned: tabs and buttons change height
 	col.add_theme_constant_override("separation", 4 if compact else 8)
-	(panel.get_theme_stylebox("panel") as StyleBoxFlat).set_content_margin_all(10 if compact else 14)
+	title_l.add_theme_font_size_override("font_size", 18 if compact else 21)
+	(panel.get_theme_stylebox("panel") as StyleBoxFlat).set_content_margin_all(8 if compact else 14)
 	if vp.y > vp.x:
 		var h := vp.y * (0.86 if tall else 0.64)
 		panel.position = Vector2(6, vp.y - h - 6); panel.size = Vector2(vp.x - 12, h)
@@ -108,7 +108,7 @@ func _build(reset_scroll: bool) -> void:
 		var b := UiStyle.chip(tabs[i], i == tab, 14); b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.pressed.connect(func(): Game.sfx.play("tap", 1.0, -8.0); tab = i; refresh())
 		tabs_box.add_child(b)
-	note_l.text = ""
+	note_l.text = ""; note_l.visible = false
 	if builder.is_valid(): builder.call(self)
 	_building = false
 	if reset_scroll: scroll.scroll_vertical = 0
@@ -117,7 +117,7 @@ func set_title(t: String, sub := "") -> void:
 	title_l.text = t; sub_l.text = sub; sub_l.visible = sub != ""
 
 func note(text: String, good := false) -> void:
-	note_l.text = text; note_l.add_theme_color_override("font_color", UiStyle.GOOD if good else UiStyle.BAD)
+	note_l.text = text; note_l.visible = text != ""; note_l.add_theme_color_override("font_color", UiStyle.GOOD if good else UiStyle.BAD)
 	if text != "" and not good and not _building: Game.sfx.play("deny", 1.0, -6.0)      # a tap that did not work, not a note shown while building
 
 func add_footer(text: String, kind: String, cb: Callable, expand := true) -> Button:

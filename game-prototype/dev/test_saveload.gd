@@ -51,6 +51,7 @@ func _init() -> void:
 	content = ContentDb.new(); content.load_all()
 	for seed_value in [11, 12, 13]:
 		_season(seed_value, {"order_ahead": true, "contract": true, "accountant": true, "cafe": true, "upgrades": true, "loan": true}, 36)
+	_season(31, {"order_ahead": true, "contract": true, "accountant": true, "cafe": true, "upgrades": true, "loan": true, "market": true}, 60)
 	_season(21, {"order_ahead": false}, 20)
 	_season(22, {"idle": true}, 14)
 	_test_reset()
@@ -63,6 +64,9 @@ func decide(co: Company, opts: Dictionary) -> void:
 		if opts.get("loan", false) and co.level() >= 3 and not co.loan_open("large") and co.profile.cash < 6500: co.take_loan("large")
 		if co.can_open("cafe").is_empty() and co.profile.cash >= int(co.world["openable"]["cafe"]["cost"]) + (1200 if not opts.get("loan", false) else 0): co.open_business("cafe")
 	if co.owns("cafe") and co.staff.is_empty() and co.level() >= 2: co.hire("yossi", "cafe")
+	if opts.get("market", false):
+		if not co.owns("market") and co.level() >= 6 and co.can_open("market").is_empty() and co.profile.cash >= int(co.world["openable"]["market"]["cost"]) + 1500: co.open_business("market")
+		if co.owns("market") and co.staff_at("market").is_empty() and co.level() >= 2: co.hire("maya", "market")
 	if opts.get("upgrades", false):
 		for bid in co.units:
 			for uid in co.units[bid].db["upgrades"]:

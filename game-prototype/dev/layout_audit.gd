@@ -3,7 +3,8 @@ extends Node
 # It builds a rich company (both businesses, staff, loan, upgrades, a contract), opens every screen, tab and card at every window
 # size and checks, from the live node tree: controls outside the screen, content cut on the side of a scroll area, buttons covered by
 # another control, overlapping bars, touch targets that are too small, text that is too small, and a sheet with almost no room to scroll.
-# godot --path . res://dev/layout_audit.tscn -- out=/path [sizes=360x640,844x390] [shots=all|flagged|none] [only=scenario,...]
+# godot --path . res://dev/layout_audit.tscn -- out=/path [sizes=360x640,844x390] [shots=all|flagged|none] [only=scenario,...] [insets=l,t,r,b]
+# insets: pretend the screen has a notch and bars (in interface points), for example insets=44,0,44,21 for a landscape phone.
 # Excluded from the exported APK.
 
 const SIZES := [
@@ -18,6 +19,7 @@ var out := "/tmp"
 var shots_mode := "flagged"
 var only: Array = []
 var sizes: Array = SIZES.duplicate()
+var insets := Vector4.ZERO
 var findings: Array = []
 var counts := {}
 var summary: Dictionary
@@ -32,6 +34,8 @@ func _ready() -> void:
 		if a.begins_with("out="): out = a.substr(4)
 		if a.begins_with("shots="): shots_mode = a.substr(6)
 		if a.begins_with("only="): only = a.substr(5).split(",")
+		if a.begins_with("insets="):
+			var q := a.substr(7).split(","); insets = Vector4(float(q[0]), float(q[1]), float(q[2]), float(q[3]))
 		if a.begins_with("sizes="):
 			sizes = []
 			for s in a.substr(6).split(","):
@@ -41,6 +45,7 @@ func _ready() -> void:
 	SaveStore.erase(Game.save_path)
 	_rich_company()
 	main = load("res://scenes/main.tscn").instantiate(); add_child(main)
+	if insets != Vector4.ZERO: main.ui.test_insets = insets; main.ui._layout()
 	_run()
 
 # ---------------------------------------------------------------- a company with everything switched on
@@ -59,6 +64,8 @@ func _rich_company() -> void:
 		if co.owns("cafe") and co.staff.is_empty():
 			co.hire("yossi", "cafe")
 			if not co.loan_open("large"): co.take_loan("large")
+		if not co.owns("market") and co.can_open("market").is_empty():
+			co.open_business("market"); co.hire("maya", "market")
 		if co.day == 10:
 			for bid in co.units:
 				for uid in co.units[bid].db["upgrades"]:
@@ -150,15 +157,16 @@ func _scenarios() -> void:
 	list.append(["hud_extremes", func(): _town(false); _hud_extremes()])
 	for scr in ["today", "orders", "staff", "goals", "settings"]: list.append([scr, func(): s.open_screen(scr)])
 	for t in 3: list.append(["finance_%d" % t, func(): s.open_screen("finance", {"tab": t})])
-	for t in 2: list.append(["upgrades_%d" % t, func(): s.open_screen("upgrades", {"tab": t})])
-	for bid in ["bakery", "cafe"]:
+	for t in 3: list.append(["upgrades_%d" % t, func(): s.open_screen("upgrades", {"tab": t})])
+	for bid in ["bakery", "cafe", "market"]:
 		for t in 4: list.append(["plan_%s_%d" % [bid, t], func(): s.screens.new_morning(); s.screens.open_plan(bid); s.sheet.tab = t; s.sheet.refresh()])
-	for b in ["bakery", "cafe", "minimarket"]: list.append(["building_" + b, func(): s.open_screen("building", {"building": b})])
+	for b in ["bakery", "cafe", "market", "minimarket"]: list.append(["building_" + b, func(): s.open_screen("building", {"building": b})])
 	list.append(["settings_reset_armed", func(): s.screens.reset_armed = true; s.open_screen("settings")])
 	for t in 3: list.append(["summary_%d" % t, func(): s.open_screen("summary", {"summary": summary}); s.sheet.tab = t; s.sheet.refresh()])
 	if not week.is_empty(): list.append(["week", func(): s.open_screen("week", {"week": week})])
 	list.append(["day_bakery", func(): _day("bakery", false)])
 	list.append(["day_cafe_long", func(): _day("cafe", true)])
+	list.append(["day_market", func(): _day("market", false)])
 	# cards: a long synthetic one, and every real event
 	list.append(["card_stress", func(): _stress_card()])
 	list.append(["card_one_choice", func(): s.show_card({"who": "shira", "who_name": Loc.t("npc.shira"), "title": Loc.t("tut.intro1.title"), "body": Loc.t("tut.intro1.body"), "choices": [Loc.t("ui.continue")]})])
@@ -285,7 +293,8 @@ func _audit() -> void:
 	var s := ui()
 	var all: Array = []
 	_collect(s.root, all)
-	var screen := Rect2(Vector2.ZERO, vp)
+	var screen := s.root.get_global_rect()          # the safe area (the whole screen when there are no insets)
+	var full := Rect2(Vector2.ZERO, vp)
 	var modal_card := s.card_dim.visible
 	for c: Control in all:
 		if _skip(c): continue
@@ -295,9 +304,10 @@ func _audit() -> void:
 		if r.size.x < 1.0 or r.size.y < 1.0: continue
 		var sc := _ancestor_scroll(c)
 		if sc == null:
-			if not screen.grow(1.5).encloses(r) and c.get_parent() != null:
+			var lim := full if modal_card else screen
+			if not lim.grow(1.5).encloses(r) and c.get_parent() != null:
 				if not (c.get_parent() is Button and c is PanelContainer):
-					flag("off_screen", "%s %s vs screen %s" % [_desc(c), str(r), str(screen)])
+					flag("off_screen", "%s %s vs screen %s" % [_desc(c), str(r), str(lim)])
 		else:
 			var sr := sc.get_global_rect()
 			if r.end.x > sr.end.x + 1.5 or r.position.x < sr.position.x - 1.5:

@@ -140,7 +140,7 @@ func _flow(action: String, data: Dictionary) -> void:
 			_evening()
 		"opened":
 			town.show_owned(co.units); Game.sfx.play("levelup")
-			await ui.ask({"who": "shira", "who_name": Loc.t("npc.shira"), "title": Loc.t("tut.cafe_title"), "body": Loc.t("tut.cafe_body"), "choices": [Loc.t("ui.continue")]})
+			await ui.ask({"who": "shira", "who_name": Loc.t("npc.shira"), "title": Loc.t("tut.%s_title" % data["biz"]), "body": Loc.t("tut.%s_body" % data["biz"]), "choices": [Loc.t("ui.continue")]})
 			ui.screens.new_morning()
 		"upgraded":
 			if shops.has(data["biz"]): _refresh_shop(shops[data["biz"]], data["biz"])
@@ -263,7 +263,6 @@ func _update_strip() -> void:
 	var u: Business = Game.co.units[worker]; var st := {}
 	for pid in u.db["products"]: st[pid] = u.inv.stock(pid) if not u.is_mto(pid) else runner.available(pid)
 	ui.set_strip(runner.clock_text(), st, runner.queue.size())
-	_set_info(runner.clock_text())
 	_show_stock()
 
 func _apply_slot_events(e: Dictionary) -> void:

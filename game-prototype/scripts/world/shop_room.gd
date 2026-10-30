@@ -50,6 +50,33 @@ const LAYOUTS := {
 			"cookie": {"model": "food_cookie", "base": Vector3(-1.3, 1.78, -0.9), "pile": true, "max": 10},
 			"cappuccino": {"model": "food_cup", "base": Vector3(-0.5, 1.3, -1.25), "dx": 0.28, "max": 4, "machine": true}}
 	},
+	"market": {
+		"room": "room_cafe", "floor": Color("a9bca4"), "floor_line": Color("8aa285"), "floor_tile": 1.2,
+		"furniture": [
+			["f_breadshelf", Vector3(-4.6, 0, -3.95), 0.0], ["f_breadshelf", Vector3(-2.0, 0, -3.95), 0.0],
+			["f_display", Vector3(-1.2, 0, 0.1), 0.0], ["f_register", Vector3(3.3, 0, 0.1), 0.0],
+			["f_plant_tall", Vector3(-5.6, 0, 3.4), 0.0], ["f_plant", Vector3(5.6, 0, -3.6), 0.0]],
+		"upgrades": {"shelves": [["f_breadshelf", Vector3(0.6, 0, -3.95), 0.0]],
+			"cooler": [["f_fridge", Vector3(2.6, 0, -3.6), 0.0], ["f_fridge", Vector3(4.2, 0, -3.6), 0.0]],
+			"baskets": [["food_basket", Vector3(5.0, 0, 5.0), 0.0], ["food_basket", Vector3(5.6, 0.27, 5.0), 0.0]]},
+		"menu": [Vector3(1.4, 2.8, -4.17), 0.0], "cert": Vector3(-6.22, 2.9, 0.4),
+		"noa_home": Vector3(0.6, 0, -1.3), "serve_spot": Vector3(3.3, 0, -1.15), "serve_at": Vector3(3.3, 1.35, 0.1),
+		"customer_spot": Vector3(3.3, 0, 1.55), "queue": [Vector3(4.5, 0, 2.3), Vector3(5.2, 0, 3.2), Vector3(4.2, 0, 3.7), Vector3(3.0, 0, 3.8), Vector3(1.8, 0, 3.8), Vector3(0.6, 0, 3.8)],
+		"door": Vector3(6.4, 0, 6.5), "entry": Vector3(5.6, 0, 4.6),
+		"staff_spot": Vector3(-1.2, 0, -1.25), "staff_customer": Vector3(-1.2, 0, 1.55),
+		"seats": [],
+		"pick": {"milkcart": Vector3(-2.6, 0, -1.15), "yogurt": Vector3(-1.0, 0, -1.15), "eggs": Vector3(-0.2, 0, -1.15), "fruit": Vector3(-1.8, 0, -1.15),
+			"water": Vector3(-5.0, 0, -2.9), "soda": Vector3(-4.4, 0, -2.9), "snack": Vector3(-2.9, 0, -2.9), "pasta": Vector3(-2.2, 0, -2.9)},
+		"slots": {
+			"milkcart": {"model": "goods_milkcart", "base": Vector3(-3.0, 1.07, 0.1), "dx": 0.26, "max": 6},
+			"yogurt": {"model": "goods_yogurt", "base": Vector3(-1.5, 1.07, 0.1), "dx": 0.13, "max": 8},
+			"eggs": {"model": "goods_eggs", "base": Vector3(-0.3, 1.07, 0.1), "dx": 0.33, "max": 2},
+			"fruit": {"model": "goods_fruit", "base": Vector3(-2.8, 1.9, 0.1), "dx": 0.55, "max": 4},
+			"water": {"model": "goods_water", "base": Vector3(-5.7, 2.38, -3.85), "dx": 0.28, "max": 8},
+			"soda": {"model": "goods_soda", "base": Vector3(-5.7, 1.68, -3.85), "dx": 0.2, "max": 10},
+			"snack": {"model": "goods_snack", "base": Vector3(-3.1, 1.68, -3.85), "dx": 0.22, "max": 10},
+			"pasta": {"model": "goods_pasta", "base": Vector3(-3.1, 0.98, -3.85), "dx": 0.22, "max": 10}}
+	},
 }
 
 static var _scenes := {}
@@ -64,6 +91,7 @@ var upgrade_nodes := {}       # upgrade id -> Array[Node3D]
 var seats_taken := {}         # seat index -> true
 
 static func food(model: String) -> Node3D:
+	if PrimGoods.has(model): return PrimGoods.make(model)
 	if not _scenes.has(model): _scenes[model] = load("res://assets/interior/%s.glb" % model)
 	var n: Node3D = (_scenes[model] as PackedScene).instantiate()
 	Town._apply(n, false)
@@ -143,6 +171,7 @@ func show_certificate(on: bool) -> void:
 
 func set_menu(lines: Array) -> void:
 	menu_label.text = "\n".join(lines)
+	menu_label.pixel_size = 0.0042 * minf(1.0, 5.0 / maxf(1.0, float(lines.size())))     # five lines fit the board at full size
 
 # Shows the stock: one model per piece up to each slot's maximum.
 func show_stock(stock: Dictionary) -> void:

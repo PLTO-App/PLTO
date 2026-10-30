@@ -9,6 +9,8 @@ signal cta_pressed
 signal card_choice(index: int)
 
 var move_vec := Vector2.ZERO
+var test_insets := Vector4.ZERO   # development only: left, top, right, bottom insets as if the screen had a notch
+var vignette: TextureRect
 var stars_day := 0                # the day whose summary already played its count-up and stars
 var override_vec := Vector2.ZERO
 var use_override := false
@@ -67,7 +69,7 @@ func _ready() -> void:
 	root.theme = UiStyle.theme(); root.layout_direction = UiStyle.direction()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT); root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
-	root.add_child(_vignette())
+	vignette = _vignette(); root.add_child(vignette)
 	stick = StickView.new(); stick.set_anchors_preset(Control.PRESET_FULL_RECT); stick.mouse_filter = Control.MOUSE_FILTER_IGNORE; root.add_child(stick)
 	hud = Hud.new(); root.add_child(hud)
 	_build_side(); _build_bottom(); _build_strip(); _build_objective(); _build_action(); _build_hint()
@@ -145,9 +147,12 @@ func setup_strip(bid: String) -> void:
 	strip_clock = UiStyle.one_line(UiStyle.label("", 13, UiStyle.MUTED, true)); strip_clock.text_direction = Control.TEXT_DIRECTION_LTR; strip_box.add_child(strip_clock)
 	strip_box.add_child(UiStyle.spacer())
 	var db: Dictionary = Game.co.units[bid].db
+	var shown: Array = db["products"].keys().filter(func(q): return not (db["products"][q].get("made_to_order", false) and q != "cappuccino"))
+	shown.sort_custom(func(x, y): return int(db["products"][x]["pref"]) > int(db["products"][y]["pref"]))
+	if shown.size() > 4: shown = shown.slice(0, 4)           # a shop with many goods shows its four busiest on the strip (that is what fits)
 	for pid in db["products"]:
 		var pr: Dictionary = db["products"][pid]
-		if pr.get("made_to_order", false) and pid != "cappuccino": continue
+		if not (pid in shown): continue
 		strip_box.add_child(UiStyle.icon(UiStyle.item_icon_id(pid), 24))
 		var l := UiStyle.one_line(UiStyle.label("0", 14, UiStyle.INK, true)); l.text_direction = Control.TEXT_DIRECTION_LTR; strip_box.add_child(l); strip_chips[pid] = l
 	strip_box.add_child(UiStyle.spacer())
@@ -204,7 +209,11 @@ func _layout() -> void:
 	if safe.size.x > 0 and scr.x > 0 and win.x >= scr.x - 1.0:
 		l = safe.position.x * sc.x; t = safe.position.y * sc.y
 		r = (scr.x - safe.end.x) * sc.x; b = (scr.y - safe.end.y) * sc.y
+	if test_insets != Vector4.ZERO: l = test_insets.x; t = test_insets.y; r = test_insets.z; b = test_insets.w
 	root.offset_left = l; root.offset_top = t; root.offset_right = -r; root.offset_bottom = -b
+	# what dims or fades the whole screen reaches under the notch and the bars too
+	for full in [fade, card_dim, vignette]:
+		full.offset_left = -l; full.offset_top = -t; full.offset_right = r; full.offset_bottom = b
 	var w := vp.x - l - r; var h := vp.y - t - b
 	var portrait := h > w
 	# side buttons at the end side, under the top bar
@@ -225,6 +234,7 @@ func _layout() -> void:
 	_place_hint()
 	card_panel.custom_minimum_size.x = minf(w - 36.0, 400.0)
 	fps_label.position = Vector2(10, h - 18)
+	sheet._layout()
 
 var _hint_pos := Vector2.ZERO
 

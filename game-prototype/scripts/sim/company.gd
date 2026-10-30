@@ -306,6 +306,16 @@ func place_order(bid: String, sid: String, items: Dictionary) -> Dictionary:
 	var clean := {}
 	for item in items: if int(items[item]) > 0: clean[item] = int(items[item])
 	if clean.is_empty(): return Loc.m("err.empty_order")
+	# a shop has room for only so much on its shelves: what is there, what is on its way and this order
+	var shop: Business = units[bid]
+	if shop.is_retail():
+		var pending := 0
+		for o in orders_for(bid): for k in o["items"]: pending += int(o["items"][k])
+		var add := 0
+		for k in clean: add += int(clean[k])
+		var room := shop.capacity(mod_value("capacity_pct", bid))
+		var after := projected_stock(bid) + pending + add
+		if after > room: return Loc.m("err.shelf_full", {"used": after, "cap": room})
 	var cost := order_cost(sid, clean)
 	var credit := credit_ok(sid)
 	if not credit and cost > cash_available() - _orders_due_tomorrow(): return Loc.m("err.no_cash", {"amount_m": cost - (cash_available() - _orders_due_tomorrow())})
@@ -315,6 +325,17 @@ func place_order(bid: String, sid: String, items: Dictionary) -> Dictionary:
 	stats["supplier_orders"] += 1
 	_snap()
 	return {}
+
+# What will be on a shop's shelves tomorrow morning if nothing more is ordered: today's stock less what today is expected to sell
+# (once the morning has run and the day is still to be played), so an order placed in the morning is judged by tomorrow's room.
+func projected_stock(bid: String) -> int:
+	var b: Business = units[bid]; var n := b.stock_total()
+	if morning_day == day:
+		var sold := 0
+		var w := forecast_items(bid, b.empty_plan())
+		for pid in w: sold += int(w[pid])
+		n = maxi(0, n - sold)
+	return n
 
 func _orders_due_tomorrow() -> int:
 	var t := 0
@@ -723,7 +744,19 @@ func suggest_plan(bid: String, plans := {}) -> Dictionary:
 	if not b.last_plan.is_empty():
 		plan["marketing"] = "none"
 	var want := forecast_items(bid, plan)
-	if bid == "cafe":
+	if b.is_retail():
+		# restock to a little above what is expected today, the busiest products first, as far as the shelves allow
+		var room := b.capacity(mod_value("capacity_pct", bid)) - b.stock_total()
+		var ids: Array = b.db["products"].keys()
+		ids.sort_custom(func(x, y): return int(b.db["products"][x]["pref"]) > int(b.db["products"][y]["pref"]))
+		for pid in ids:
+			var item: String = b.db["products"][pid]["resale"]
+			var miss := int(want.get(pid, 0)) * 11 / 10 + 1 - b.inv.stock(pid)
+			if miss <= 0: continue
+			var st := item_step(bid, item)
+			var n := mini((miss + st - 1) / st * st, room / st * st)
+			if n > 0: plan["buy_now"][item] = n; room -= n
+	elif bid == "cafe":
 		var src: String = world.get("internal", {}).get("cafe", {}).get("from", "")
 		if owns(src):
 			plan["transfer_in"] = {"croissant": maxi(0, int(want.get("croissant", 0)) - b.inv.stock("croissant"))}
@@ -773,9 +806,27 @@ func suggest_order(bid: String) -> Dictionary:
 	var items := {}
 	for iid in need:
 		var have := b.inv.units(iid) if b.db["ingredients"].has(iid) else b.inv.stock(b.product_for_input(iid))
+		# a shop sells today what is on its shelves: only what is left after today's expected sales is there tomorrow
+		if b.is_retail(): have = maxi(0, have - int(want.get(b.product_for_input(iid), 0)))
 		for o in orders_for(bid): have += int(o["items"].get(iid, 0))
 		var miss: int = int(need[iid]) - have
 		if miss > 0:
 			var st := item_step(bid, iid)
 			items[iid] = (miss + st - 1) / st * st
+	if b.is_retail() and not items.is_empty():
+		# keep it within the shelves: shrink every line by the same share, in whole steps
+		var pending := 0
+		for o in orders_for(bid): for k in o["items"]: pending += int(o["items"][k])
+		var room := maxi(0, b.capacity(mod_value("capacity_pct", bid)) - projected_stock(bid) - pending)
+		var total := 0
+		for iid in items: total += int(items[iid])
+		if total > room:
+			# the busiest products first, in whole steps, until the shelves are full
+			var order: Array = items.keys()
+			order.sort_custom(func(x, y): return int(b.db["products"][b.product_for_input(x)]["pref"]) > int(b.db["products"][b.product_for_input(y)]["pref"]))
+			for iid in order:
+				var st2 := item_step(bid, iid)
+				var n2 := mini(int(items[iid]), room / st2 * st2)
+				if n2 > 0: items[iid] = n2; room -= n2
+				else: items.erase(iid)
 	return items

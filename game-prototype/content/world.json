@@ -5,16 +5,17 @@
   "week": {"workdays": [0, 1, 2, 3, 4, 5], "rest_day": 6, "weekday_keys": ["day.sun", "day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat"]},
 
   "openable": {
-    "cafe": {"cost": 6500, "unlock_level": 3, "setup_days": 1}
+    "cafe": {"cost": 6500, "unlock_level": 3, "setup_days": 1},
+    "market": {"cost": 9000, "unlock_level": 6, "setup_days": 1}
   },
 
   "suppliers": {
     "wholesale": {"name": "sup.wholesale", "who": "sup.wholesale.who", "quality": 70, "delivery_days": 1, "unlock_level": 1, "credit_level": 4, "credit_days": 7,
-                  "prices": {"base": 2, "dairy": 3, "sweet": 5, "beans": 2, "milk": 1, "cookie": 3, "croissant": 9}},
+                  "prices": {"base": 2, "dairy": 3, "sweet": 5, "beans": 2, "milk": 1, "cookie": 3, "croissant": 9, "milkcart": 4, "eggs": 11, "yogurt": 3, "water": 3, "soda": 5, "snack": 5, "pasta": 6, "fruit": 7}},
     "galil":     {"name": "sup.galil", "who": "sup.galil.who", "quality": 95, "delivery_days": 1, "unlock_level": 2, "credit_level": 99, "credit_days": 0,
-                  "prices": {"base": 3, "dairy": 4, "sweet": 7, "beans": 3, "milk": 2, "cookie": 4, "croissant": 11}},
+                  "prices": {"base": 3, "dairy": 4, "sweet": 7, "beans": 3, "milk": 2, "cookie": 4, "croissant": 11, "milkcart": 5, "eggs": 12, "yogurt": 4, "water": 4, "soda": 6, "snack": 6, "pasta": 7, "fruit": 9}},
     "minimarket":{"name": "sup.minimarket", "who": "sup.minimarket.who", "quality": 75, "delivery_days": 0, "unlock_level": 1, "credit_level": 99, "credit_days": 0,
-                  "prices": {"base": 3, "dairy": 4, "sweet": 7, "beans": 3, "milk": 2, "cookie": 4, "croissant": 12}}
+                  "prices": {"base": 3, "dairy": 4, "sweet": 7, "beans": 3, "milk": 2, "cookie": 4, "croissant": 12, "milkcart": 6, "eggs": 15, "yogurt": 5, "water": 5, "soda": 7, "snack": 7, "pasta": 9, "fruit": 10}}
   },
 
   "contracts": {

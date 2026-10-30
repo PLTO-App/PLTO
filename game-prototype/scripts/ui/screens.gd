@@ -115,6 +115,7 @@ func _plan_summary(bid: String, p: Dictionary) -> String:
 	var n := 0
 	for pid in p.get("bake", {}): n += int(p["bake"][pid])
 	var cost: int = b.plan_costs(p, c.plan_ctx(bid))["total"]
+	if b.is_retail(): return Loc.t("today.plan_market_sub", {"n": b.stock_total(), "amount_m": cost})
 	if bid == "cafe":
 		var t := 0
 		for pid in p.get("transfer_in", {}): t += int(p["transfer_in"][pid])
@@ -144,7 +145,8 @@ func plan(sh: Sheet, bid: String) -> void:
 	sh.set_title(Loc.t("plan.title", {"biz_k": b.db["name"]}), Loc.t("plan.forecast", {"lo": fc.x, "hi": fc.y}))
 	match sh.tab:
 		0:
-			if bid == "cafe": _plan_cafe(sh, bid, b, p)
+			if b.is_retail(): _plan_retail(sh, bid, b, p)
+			elif bid == "cafe": _plan_cafe(sh, bid, b, p)
 			else: _plan_make(sh, bid, b, p)
 		1: _plan_prices(sh, bid, b, p)
 		2: _plan_marketing(sh, bid, b, p)
@@ -192,6 +194,30 @@ func _plan_make(sh: Sheet, bid: String, b: Business, p: Dictionary) -> void:
 	if buy > 0:
 		ic.add_child(UiStyle.label(Loc.t("plan.buy_now_note", {"amount_m": buy}), 12, UiStyle.MUTED))
 		var ob := UiStyle.button(Loc.t("plan.to_orders"), "secondary", 14, 44); ob.pressed.connect(func(): ui.open_screen("orders")); ic.add_child(ob)
+
+# A shop that makes nothing: the shelves, and what to buy this morning (at the neighbour's price) for what is still missing.
+func _plan_retail(sh: Sheet, bid: String, b: Business, p: Dictionary) -> void:
+	var c := co(); var np: Dictionary = c.plan_ctx(bid)["now_prices"]
+	var want := c.forecast_items(bid, p)
+	var cap := b.capacity(c.mod_value("capacity_pct", bid))
+	var held := b.stock_total(); var adding := 0
+	for item in p["buy_now"]: adding += int(p["buy_now"][item])
+	var cc := sh.card()
+	sh.meter(cc, Loc.t(b.db["capacity"]["name"]), held + adding, cap, UiStyle.GOLD_DEEP if held + adding <= cap else UiStyle.BAD)
+	cc.add_child(UiStyle.label(Loc.t("plan.shelf_sub", {"have": held, "add": adding, "cap": cap}), 12, UiStyle.MUTED))
+	var list := sh.card()
+	var ids: Array = b.db["products"].keys()
+	ids.sort_custom(func(x, y): return int(b.db["products"][x]["pref"]) > int(b.db["products"][y]["pref"]))
+	for pid in ids:
+		var pr: Dictionary = b.db["products"][pid]; var item: String = pr["resale"]
+		var add := int(p["buy_now"].get(item, 0)); var st := c.item_step(bid, item)
+		var sub := Loc.t("plan.goods_sub", {"want": want.get(pid, 0), "have": b.inv.stock(pid), "price_m": np.get(item, 0)})
+		if b.inv.old(pid) > 0: sub += " · " + Loc.t("plan.old_n", {"n": b.inv.old(pid)})
+		var btns := sh.stepper(list, UiStyle.item_icon_id(pid), Loc.t(pr["name"]), sub, "+%d" % add,
+			func(): p["buy_now"][item] = maxi(0, add - st); sh.refresh(), func(): p["buy_now"][item] = add + st; sh.refresh())
+		btns["minus"].disabled = add <= 0; btns["plus"].disabled = held + adding + st > cap
+	var cost: int = b.plan_costs(p, c.plan_ctx(bid))["buy"]
+	if cost > 0: sh.line(Loc.t("plan.buy_now_note", {"amount_m": cost}), 12, UiStyle.MUTED)
 
 func _plan_cafe(sh: Sheet, bid: String, b: Business, p: Dictionary) -> void:
 	var c := co(); var np: Dictionary = c.plan_ctx(bid)["now_prices"]
@@ -478,14 +504,14 @@ func settings(sh: Sheet) -> void:
 func building(sh: Sheet, id: String) -> void:
 	var c := co()
 	match id:
-		"bakery", "cafe":
+		"bakery", "cafe", "market":
 			if not c.owns(id):
-				sh.set_title(Loc.t("bld.cafe_rent"), Loc.t("bld.cafe_rent_sub"))
+				sh.set_title(Loc.t("bld.%s_rent" % id), Loc.t("bld.%s_rent_sub" % id))
 				var o: Dictionary = c.world["openable"][id]; var card := sh.card()
-				card.add_child(UiStyle.label(Loc.t("bld.open_cost", {"amount_m": o["cost"], "level": o["unlock_level"]}), 15, UiStyle.INK, true))
-				card.add_child(UiStyle.label(Loc.t("bld.cafe_pitch"), 13, UiStyle.MUTED))
+				card.add_child(UiStyle.label(Loc.t("bld.open_cost_%s" % id, {"amount_m": o["cost"], "level": o["unlock_level"]}), 15, UiStyle.INK, true))
+				card.add_child(UiStyle.label(Loc.t("bld.%s_pitch" % id), 13, UiStyle.MUTED))
 				var e := c.can_open(id)
-				var b := UiStyle.button(Loc.t("bld.open") if e.is_empty() else Loc.msg(e), "cta", 16, 50); b.disabled = not e.is_empty()
+				var b := UiStyle.button(Loc.t("bld.open_%s" % id) if e.is_empty() else Loc.msg(e), "cta", 16, 50); b.disabled = not e.is_empty()
 				b.pressed.connect(func():
 					var err := c.open_business(id)
 					if err.is_empty(): Game.save_game(); flow.call("opened", {"biz": id}); sh.close()
@@ -529,7 +555,7 @@ func summary(sh: Sheet, s: Dictionary) -> void:
 			var t := UiStyle.label(Loc.t("sum.profit") if int(s["profit"]) >= 0 else Loc.t("sum.loss"), 18, UiStyle.INK, true); t.size_flags_horizontal = Control.SIZE_EXPAND_FILL; h.add_child(t)
 			var v := UiStyle.one_line(UiStyle.label(Loc.money(int(s["profit"]), true), 24, UiStyle.GOOD if int(s["profit"]) >= 0 else UiStyle.BAD, true)); v.text_direction = Control.TEXT_DIRECTION_LTR; h.add_child(v)
 			if first_view: _count_up(v, int(s["profit"]))
-			_stars_card(sh, Coach.stars(s), first_view)
+			_stars_card(sh, Coach.stars(s), first_view, int(s["profit"]) > 0)
 			ui.stars_day = int(s["day"])
 			for bid in s["units"]:
 				var u: Dictionary = s["units"][bid]
@@ -587,7 +613,7 @@ func _count_up(l: Label, target: int) -> void:
 	tw.tween_method(func(x: float): l.text = Loc.money(roundi(x), true), 0.0, float(target), 0.8).set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
 
 # Three stars for the day: they pop in one after the other, each earned one with a rising ping.
-func _stars_card(sh: Sheet, n: int, animate: bool) -> void:
+func _stars_card(sh: Sheet, n: int, animate: bool, profitable: bool) -> void:
 	var card := sh.card()
 	var row := UiStyle.hbox(10); row.alignment = BoxContainer.ALIGNMENT_CENTER; card.add_child(row)
 	for i in 3:
@@ -597,7 +623,8 @@ func _stars_card(sh: Sheet, n: int, animate: bool) -> void:
 		var tw := st.create_tween(); tw.tween_interval(0.35 + 0.3 * i)
 		if i < n: tw.tween_callback(func(): Game.sfx.play("star", 1.0 + 0.12 * i, -4.0))
 		tw.tween_property(st, "scale", Vector2.ONE, 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	card.add_child(UiStyle.label(Loc.t("sum.stars_%d" % n), 16, UiStyle.INK, true, HORIZONTAL_ALIGNMENT_CENTER))
+	var headline := Loc.t("sum.stars_%d" % n) if (profitable or n == 0) else Loc.t("sum.stars_loss")      # a day with a loss is not called good
+	card.add_child(UiStyle.label(headline, 16, UiStyle.INK, true, HORIZONTAL_ALIGNMENT_CENTER))
 	card.add_child(UiStyle.label(Loc.t("sum.stars_legend"), 12, UiStyle.MUTED, false, HORIZONTAL_ALIGNMENT_CENTER))
 
 func week(sh: Sheet, w: Dictionary) -> void:

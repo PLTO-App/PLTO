@@ -25,7 +25,14 @@
     {"id": "ch4", "name": "goal.ch4", "goals": [
       {"id": "two_weeks",    "name": "goal.two_weeks",    "check": {"type": "week_profit", "n": 2}, "reward": {"xp": 80, "cash": 300}},
       {"id": "rep80",        "name": "goal.rep80",        "check": {"type": "rep_all", "n": 80}, "reward": {"xp": 80, "cash": 300}},
-      {"id": "upgrades4",    "name": "goal.upgrades4",    "check": {"type": "upgrades", "n": 4}, "reward": {"xp": 80, "cash": 0}},
+      {"id": "upgrades4",    "name": "goal.upgrades4",    "check": {"type": "upgrades", "n": 4}, "reward": {"xp": 80, "cash": 0}}
+    ]},
+    {"id": "chm", "name": "goal.ch_market", "goals": [
+      {"id": "open_market",  "name": "goal.open_market",  "check": {"type": "owns", "biz": "market"}, "reward": {"xp": 100, "cash": 300}},
+      {"id": "market_sales", "name": "goal.market_sales", "check": {"type": "biz_sold_total", "biz": "market", "n": 150}, "reward": {"xp": 70, "cash": 250}},
+      {"id": "market_rep70", "name": "goal.market_rep70", "check": {"type": "rep", "biz": "market", "n": 70}, "reward": {"xp": 70, "cash": 200}}
+    ]},
+    {"id": "ch6", "name": "goal.ch6", "goals": [
       {"id": "no_debt",      "name": "goal.no_debt",      "check": {"type": "no_debt_cash", "n": 15000}, "reward": {"xp": 120, "cash": 500}}
     ]}
   ]

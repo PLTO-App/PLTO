@@ -30,8 +30,8 @@ func _init() -> void:
 	content = ContentDb.new(); content.load_all()
 	check("content loads without errors", content.errors.is_empty(), str(content.errors))
 	check("translations are loaded (a key becomes Hebrew text)", Loc.t("biz.bakery") != "biz.bakery", Loc.t("biz.bakery"))
-	_test_basics(); _test_orders(); _test_contract(); _test_cafe(); _test_inspection(); _test_week(); _test_loan(); _test_save(); _test_events(); _test_goals(); _test_stars()
-	if not "quick" in OS.get_cmdline_user_args(): _balance()
+	_test_basics(); _test_orders(); _test_contract(); _test_cafe(); _test_inspection(); _test_week(); _test_loan(); _test_save(); _test_events(); _test_goals(); _test_stars(); _test_market()
+	if not "quick" in OS.get_cmdline_user_args(): _balance(); _balance_market()
 	print("RESULT failures=%d" % fails)
 	quit(1 if fails > 0 else 0)
 
@@ -275,3 +275,76 @@ func _test_stars() -> void:
 	var co := fresh(); co.start_morning(); co.commit_day({"bakery": starter_plan(co)}, "bakery")
 	var s := co.close_day()
 	check("a real first day has a rating between 0 and 3", Coach.stars(s) >= 0 and Coach.stars(s) <= 3, str(Coach.stars(s)))
+
+# ---------------------------------------------------------------- the minimarket
+func _market_company(seed_value := 7) -> Company:
+	var co := fresh(seed_value)
+	co.profile.add_xp(1600); co.book("relief", 20000, "", "test")
+	return co
+
+func _test_market() -> void:
+	var co := fresh()
+	check("the market is not open at level 1", not co.can_open("market").is_empty())
+	co = _market_company()
+	check("at level 6 with the cash the market can open", co.can_open("market").is_empty(), str(co.can_open("market")))
+	var cash0 := co.profile.cash
+	check("opening it costs 9,000", co.open_business("market").is_empty() and co.profile.cash == cash0 - 9000)
+	check("it is ready the next day, not today", not co.unit_ready("market") and co.owns("market"))
+	co.start_morning(); co.commit_day({"bakery": co.units["bakery"].empty_plan()}, "bakery"); co.close_day()
+	check("the day after it is ready", co.unit_ready("market"))
+	var m: Business = co.units["market"]
+	check("a retail shop makes nothing and sells goods it buys", m.is_retail() and m.db["ingredients"].is_empty() and m.goods_input_ids().size() == 8)
+	# shelves
+	var cap := m.capacity(0)
+	var big := {"eggs": cap + 6}
+	check("an order that does not fit the shelves is refused", co.place_order("market", "wholesale", big).has("k"), str(co.place_order("market", "wholesale", big)))
+	var sug := co.suggest_order("market"); var pieces := 0
+	for k in sug: pieces += int(sug[k])
+	check("the suggested order fits the shelves", pieces <= cap and pieces > 0, "%d of %d" % [pieces, cap])
+	check("the suggested order can be placed", co.place_order("market", "wholesale", sug).is_empty())
+	var over := m.empty_plan(); over["buy_now"] = {"water": cap + 12}
+	check("a plan that buys more than the shelves hold is invalid", not m.validate_plan(over, co.plan_ctx("market")).is_empty())
+	# a morning with deliveries, a suggested plan, a day, and the books
+	co.start_morning()
+	var plans := {}
+	for bid in co.units: if co.unit_ready(bid): plans[bid] = co.suggest_plan(bid, plans)
+	var errs := co.validate_day(plans)
+	check("the suggested plans are valid", errs.is_empty(), str(errs))
+	check("the suggested plan for the market fits the shelves", m.stock_total() + _sum(plans["market"]["buy_now"]) <= cap)
+	co.commit_day(plans, "market")
+	var s := co.close_day()
+	var u: Dictionary = s["units"]["market"]
+	check("the market sold goods", u["served"] > 0 and u["revenue"] > 0, "served %d of %d, revenue %d" % [u["served"], u["customers"], u["revenue"]])
+	check("the books match the cash", co.ledger.balance() == co.profile.cash)
+	check("the market's profit adds up", u["profit"] == u["revenue"] + u["b2b_revenue"] + u["internal_revenue"] - u["cogs"] - u["b2b_cost"] - u["internal_cost"] - u["waste_cost"] - u["marketing_cost"] - u["fixed"] - u["wages"] - u["other"])
+	# fruit spoils: a shelf of fruit nobody buys is thrown away after two days
+	var inv: Inventory = m.inv
+	inv.add_goods("fruit", 10, 70, 7)
+	var w1 := inv.close_day(m.shelf_days()); var w2 := inv.close_day(m.shelf_days())
+	var wasted := 0
+	for w in w1 + w2: if w["product"] == "fruit": wasted += int(w["pieces"])
+	check("unsold fruit is thrown away after its two days", wasted == 10 and inv.stock("fruit") == 0, "wasted %d" % wasted)
+
+func _sum(d: Dictionary) -> int:
+	var t := 0
+	for k in d: t += int(d[k])
+	return t
+
+func _balance_market() -> void:
+	var days := 90
+	print("--- market balance: %d days x 3 seeds" % days)
+	var base := {"order_ahead": true, "contract": true, "accountant": true, "cafe": true, "loan": true}
+	var variants := {"café, no market": base, "café + market": base.merged({"market": true})}
+	var out := {}
+	for name in variants:
+		var late := 0; var worth := 0; var opened := 0; var mday := 0; var errors: Array = []; var broke := 0
+		for sd in 3:
+			var r := SimPolicies.play(content, 200 + sd, days, variants[name])
+			late += int(r["late_profit"]); worth += int(r["cash"]); broke += int(r["bankrupt_days"]); errors.append_array(r["errors"])
+			if int(r["market_day"]) > 0: opened += 1; mday += int(r["market_day"])
+		out[name] = {"late": late / 3, "worth": worth / 3, "opened": opened, "mday": mday / maxi(1, opened), "broke": broke}
+		print("%-18s late profit/day %5d | worth %7d | market opened in %d of 3 (day %d) | broke days %d" % [name, late / 3, worth / 3, opened, mday / maxi(1, opened), broke])
+		if not errors.is_empty(): check("no invariant errors in '%s'" % name, false, str(errors.slice(0, 3)))
+	check("the market opens for a careful owner within 90 days", out["café + market"]["opened"] >= 2, str(out["café + market"]))
+	check("with the market open the company earns more per day than without it", out["café + market"]["late"] > out["café, no market"]["late"] + 30, "%d vs %d" % [out["café + market"]["late"], out["café, no market"]["late"]])
+	check("the market does not make the game run away (worth under 90,000 after 90 days)", out["café + market"]["worth"] < 90000, str(out["café + market"]["worth"]))

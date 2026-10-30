@@ -14,12 +14,16 @@ const BUILDINGS := [
 	{"id": "bakery", "model": "bld_bakery", "x": 0.0, "sign": "sign.bakery", "sy": 5.2, "sz": 3.91, "bw": 3.6, "w": 9.0},
 	{"id": "minimarket", "model": "bld_minimarket", "x": 10.0, "sign": "sign.minimarket", "sy": 4.9, "sz": 3.66, "bw": 4.0, "w": 9.0},
 	{"id": "bank", "model": "bld_bank", "x": 19.5, "sign": "sign.bank", "sy": 4.55, "sz": 4.86, "bw": 3.2, "w": 7.5},
+	# the third business of ours: for rent (the same empty shop as the café's) until it is opened; the neighbour's minimarket
+	# building in green so that the two are not mistaken for each other
+	{"id": "market", "model": "bld_cafe_rent", "x": 29.0, "sign": "sign.for_rent", "sy": 2.2, "sz": 4.0, "bw": 2.8, "w": 9.0,
+		"owned_model": "bld_minimarket", "owned_tint": Color("6fcf8a"), "owned_sign": "sign.market", "owned_sy": 4.9, "owned_sz": 3.66, "owned_bw": 4.0},
 ]
 const BACK_Z := -4.0          # building origins; their fronts are at about z = -0.5
 const WALK_NEAR := 1.6        # the sidewalk in front of the shops
 const WALK_FAR := 12.6        # the far sidewalk
 const MIN_X := -34.0
-const MAX_X := 24.0
+const MAX_X := 35.0
 
 static var _scenes := {}
 static var _mat_world: ShaderMaterial
@@ -95,20 +99,20 @@ func _slab(size: Vector3, pos: Vector3, kind: int, base: Color, tile := 1.2, lin
 	add_child(mi); return mi
 
 func _build_ground() -> void:
-	_slab(Vector3(140, 0.2, 60), Vector3(-5, -0.15, -20), 2, Color("6fb35c"))                      # grass behind and around
-	_slab(Vector3(76, 0.3, 4.6), Vector3(-5, 0.0, 1.6), 1, Color("d9c3a5"), 1.1, Color("b9a68c"))  # near sidewalk
-	_slab(Vector3(76, 0.3, 30), Vector3(-5, -0.02, -15.0), 1, Color("c9bba6"), 1.6, Color("ad9f8a"))  # yard behind the row
+	_slab(Vector3(160, 0.2, 60), Vector3(5, -0.15, -20), 2, Color("6fb35c"))                       # grass behind and around
+	_slab(Vector3(92, 0.3, 4.6), Vector3(3, 0.0, 1.6), 1, Color("d9c3a5"), 1.1, Color("b9a68c"))  # near sidewalk
+	_slab(Vector3(92, 0.3, 30), Vector3(3, -0.02, -15.0), 1, Color("c9bba6"), 1.6, Color("ad9f8a"))  # yard behind the row
 	_slab(Vector3(140, 0.2, 7.2), Vector3(-5, -0.06, 7.5), 0, Color("4a4d57"))                      # road
-	_slab(Vector3(76, 0.3, 3.6), Vector3(-5, 0.0, WALK_FAR), 1, Color("d9c3a5"), 1.1, Color("b9a68c"))  # far sidewalk
+	_slab(Vector3(92, 0.3, 3.6), Vector3(3, 0.0, WALK_FAR), 1, Color("d9c3a5"), 1.1, Color("b9a68c"))  # far sidewalk
 	_slab(Vector3(140, 0.2, 40), Vector3(-5, -0.12, 34.0), 2, Color("6fb35c"))                     # park on the near side
 	var kerb := StandardMaterial3D.new(); kerb.albedo_color = Color("c7c2b8"); kerb.roughness = 0.9
 	for z in [3.9, 11.1, -0.7]:
-		var k := MeshInstance3D.new(); var bm := BoxMesh.new(); bm.size = Vector3(76, 0.34, 0.25); k.mesh = bm; k.position = Vector3(-5, 0.02, z)
+		var k := MeshInstance3D.new(); var bm := BoxMesh.new(); bm.size = Vector3(92, 0.34, 0.25); k.mesh = bm; k.position = Vector3(3, 0.02, z)
 		k.material_override = kerb; add_child(k)
 	# lane markings and a crosswalk in front of the bakery
 	var paint := StandardMaterial3D.new(); paint.albedo_color = Color("f2efe6"); paint.roughness = 0.8
 	var x := -40.0
-	while x < 30.0:
+	while x < 46.0:
 		if absf(x - 1.0) > 3.0:
 			var d := MeshInstance3D.new(); var dm := BoxMesh.new(); dm.size = Vector3(1.8, 0.02, 0.18); d.mesh = dm; d.position = Vector3(x, 0.05, 7.5); d.material_override = paint; add_child(d)
 		x += 3.6
@@ -118,13 +122,14 @@ func _build_ground() -> void:
 
 func _place_building(b: Dictionary) -> void:
 	var holder := Node3D.new(); holder.position = Vector3(b["x"], 0, BACK_Z); holder.name = b["id"]; add_child(holder)
-	var bld := piece(b["model"]); holder.add_child(bld)
+	var bld := piece(b["model"]); holder.add_child(bld); holder.set_meta("bld_node", bld)
 	buildings[b["id"]] = holder
 	var lab := Label3D.new(); lab.font = Fonts.get_font(true); lab.font_size = 110; lab.pixel_size = 0.0055
 	lab.outline_size = 18; lab.outline_modulate = Color(0.12, 0.07, 0.04, 0.9); lab.modulate = Color("fff6ea")
 	lab.position = Vector3(b.get("sx", 0.0), b["sy"], b["sz"]); lab.text = Loc.t(b["sign"])
 	_fit(lab, float(b["bw"]) - 0.4)
 	lab.double_sided = false; lab.shaded = false
+	if b.has("owned_model"): lab.modulate = Color("e94b4b")          # a shop for rent until it is opened
 	holder.add_child(lab); signs[b["id"]] = lab
 	# tap area
 	var area := Area3D.new(); var cs := CollisionShape3D.new(); var bs := BoxShape3D.new(); bs.size = Vector3(b["w"], 9, 8)
@@ -138,28 +143,44 @@ func _fit(lab: Label3D, width: float) -> void:
 	var w := lab.font.get_string_size(lab.text, HORIZONTAL_ALIGNMENT_LEFT, -1, lab.font_size).x * 0.0055
 	lab.pixel_size = 0.0055 * minf(1.0, width / maxf(0.01, w))
 
-# Swaps the café between "for rent" and open, and so on. owned: {id: true}
+# Swaps a shop of ours between "for rent" and open (the café and the market). owned: {id: true}
 func show_owned(owned: Dictionary) -> void:
-	var cafe: Node3D = buildings["cafe"]
-	var want := "bld_cafe" if owned.has("cafe") else "bld_cafe_rent"
-	if cafe.get_meta("model", "") != want:
-		for c in cafe.get_children():
-			if c is Node3D and c.has_meta("bld"): c.queue_free()
-		if cafe.get_child_count() > 0 and cafe.get_child(0).name.begins_with("bld_cafe"): cafe.get_child(0).queue_free()
-		var bld := piece(want); bld.set_meta("bld", true); cafe.add_child(bld); cafe.move_child(bld, 0)
-		cafe.set_meta("model", want)
-		signs["cafe"].text = Loc.t("sign.cafe") if owned.has("cafe") else Loc.t("sign.for_rent")
-		signs["cafe"].position = Vector3(0, 5.0, 3.66) if owned.has("cafe") else Vector3(0, 2.2, 4.0)
-		_fit(signs["cafe"], 2.8)
-		signs["cafe"].modulate = Color("fff6ea") if owned.has("cafe") else Color("e94b4b")
-		for t in get_tree().get_nodes_in_group("cafe_tables"): t.visible = owned.has("cafe")
+	for b in BUILDINGS:
+		if b["id"] != "cafe" and not b.has("owned_model"): continue
+		var id: String = b["id"]; var has := owned.has(id)
+		var holder: Node3D = buildings[id]
+		var want: String = String(b.get("owned_model", "bld_cafe")) if has else String(b.get("rent_model", "bld_cafe_rent"))
+		if holder.get_meta("model", "") == want: continue
+		if holder.has_meta("bld_node") and is_instance_valid(holder.get_meta("bld_node")): (holder.get_meta("bld_node") as Node).queue_free()
+		var bld := piece(want)
+		if has and b.has("owned_tint"): _tint(bld, b["owned_tint"])
+		holder.add_child(bld); holder.move_child(bld, 0); holder.set_meta("bld_node", bld); holder.set_meta("model", want)
+		var lab: Label3D = signs[id]
+		lab.text = Loc.t(String(b.get("owned_sign", "sign.cafe"))) if has else Loc.t("sign.for_rent")
+		lab.position = Vector3(0, float(b.get("owned_sy", 5.0)), float(b.get("owned_sz", 3.66))) if has else Vector3(0, 2.2, 4.0)
+		_fit(lab, float(b.get("owned_bw", 2.8)) if has else 2.8)
+		lab.modulate = Color("fff6ea") if has else Color("e94b4b")
+		if id == "cafe": for t in get_tree().get_nodes_in_group("cafe_tables"): t.visible = has
+
+static var _tint_mats := {}
+
+# A copy of a building in another colour: the vertex colours are multiplied by the tint.
+static func _tint(n: Node, color: Color) -> void:
+	if n is MeshInstance3D and not String(n.name).begins_with("Glass_"):
+		var key := color.to_html()
+		if not _tint_mats.has(key):
+			var m := world_material().duplicate() as ShaderMaterial
+			m.set_shader_parameter("tint_amount", 0.85); m.set_shader_parameter("tint", color)
+			_tint_mats[key] = m
+		(n as MeshInstance3D).material_override = _tint_mats[key]
+	for c in n.get_children(): _tint(c, color)
 
 func _build_props() -> void:
-	for x in [-24.0, -14.0, -4.5, 5.0, 15.0, 23.0]:
+	for x in [-24.0, -14.0, -4.5, 5.0, 15.0, 23.0, 33.0]:
 		var l := piece("prop_lamp", false); l.position = Vector3(x, 0, 3.4); l.rotation.y = 0.0; add_child(l)
 		var ol := OmniLight3D.new(); ol.position = Vector3(x, 4.0, 2.6); ol.omni_range = 8.0; ol.light_color = Color("ffcf8a"); ol.light_energy = 0.0
 		ol.shadow_enabled = false; add_child(ol); lamps.append(ol)
-	for x in [-26.0, -15.0, -3.0, 6.0, 15.0, 26.0, -36.0]:
+	for x in [-26.0, -15.0, -3.0, 6.0, 15.0, 26.0, -36.0, 36.0]:
 		var t := piece("prop_tree" if int(x) % 2 == 0 else "prop_tree_b"); t.position = Vector3(x, 0, 13.6); t.rotation.y = x; add_child(t)
 	for x in [-20.0, 9.0]:
 		var bn := piece("prop_bench"); bn.position = Vector3(x, 0, 12.4); bn.rotation.y = PI; add_child(bn)

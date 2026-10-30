@@ -15,9 +15,11 @@ func _ready() -> void:
 	e.tonemap_mode = Environment.TONE_MAPPER_FILMIC; we.environment = e; add_child(we)
 	var sun := DirectionalLight3D.new(); sun.light_energy = 0.9; sun.light_color = Color("fff3e0"); add_child(sun); sun.rotation = Vector3(deg_to_rad(-35), deg_to_rad(20), 0)
 	var cam := Camera3D.new(); cam.fov = 26; add_child(cam)
+	var only_goods := "goods" in OS.get_cmdline_user_args()      # just the minimarket's goods, leaving every other picture as it is
 	var people := {}
-	for id in Game.content.world["people"]: people[id] = Game.content.world["people"][id]["look"]
-	for s in Game.content.world["staff_pool"]: people[s["id"]] = s["look"]
+	if not only_goods:
+		for id in Game.content.world["people"]: people[id] = Game.content.world["people"][id]["look"]
+		for s in Game.content.world["staff_pool"]: people[s["id"]] = s["look"]
 	for id in people:
 		var r := CharacterRig.make(people[id]); r.rotation.y = PI; add_child(r)
 		r.set_expression("smile")
@@ -25,9 +27,11 @@ func _ready() -> void:
 		await _frames(4)
 		_save(OUT_P + id + ".png")
 		r.queue_free(); await _frames(1)
-	var items := ["croissant", "challah", "carrot_cake", "strawberry_cake", "cup", "iced", "cookie", "base", "dairy", "sweet", "beans", "milk", "bag"]
+	var items: Array = ["croissant", "challah", "carrot_cake", "strawberry_cake", "cup", "iced", "cookie", "base", "dairy", "sweet", "beans", "milk", "bag"]
+	if only_goods: items = PrimGoods.IDS
 	for it in items:
 		var model: String = ("ing_" + it) if it in ["base", "dairy", "sweet", "beans", "milk"] else ("food_" + it)
+		if only_goods: model = "goods_" + it
 		var n := ShopRoom.food(model); add_child(n)
 		var box := _aabb(n); var c := box.get_center(); var size := box.size.length()
 		cam.fov = 30

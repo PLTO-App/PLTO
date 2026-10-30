@@ -4,12 +4,21 @@ extends RefCounted
 # (or careless) player would, and play whole seasons of the company without a screen.
 #
 # opts: idle, bake_factor (100 = the forecast), price_pct, marketing, max_bake, order_ahead, contract (accept offers),
-#       accountant, upgrades, cafe (open the café when possible), loan (borrow to open it), upkeep (clean and maintain), counter
+#       accountant, upgrades, cafe (open the café when possible), loan (borrow to open it), upkeep (clean and maintain), counter,
+#       market (open the minimarket when possible and put a salesperson there)
 
 static func plan_for(co: Company, bid: String, opts: Dictionary) -> Dictionary:
 	var b: Business = co.units[bid]
 	var plan := b.empty_plan()
 	if opts.get("idle", false): return plan
+	if b.is_retail():
+		plan = co.suggest_plan(bid)
+		var mk0: String = opts.get("marketing", "none")
+		if b.db["marketing"].has(mk0) and b.unlocked("marketing", mk0, co.level()) and mk0 != "promo": plan["marketing"] = mk0
+		if not opts.get("upkeep", true): plan["deep_clean"] = false; plan["maintenance"] = false
+		var ctx0 := co.plan_ctx(bid)
+		while not b.validate_plan(plan, ctx0).is_empty() and plan["marketing"] != "none": plan["marketing"] = "none"
+		return plan
 	var mk_id: String = opts.get("marketing", "none")
 	if not b.db["marketing"].has(mk_id) or not b.unlocked("marketing", mk_id, co.level()): mk_id = "none"
 	plan["marketing"] = mk_id
@@ -60,6 +69,10 @@ static func plan_for(co: Company, bid: String, opts: Dictionary) -> Dictionary:
 # Orders tomorrow's ingredients from the wholesaler (cheaper than buying in the morning).
 static func order_ahead(co: Company, bid: String) -> void:
 	var b: Business = co.units[bid]
+	if b.is_retail():
+		var shop_items := co.suggest_order(bid)
+		if not shop_items.is_empty(): co.place_order(bid, "wholesale", shop_items)
+		return
 	var want := co.forecast_items(bid, b.empty_plan())
 	var need := {}
 	for pid in b.db["products"]:
@@ -88,7 +101,7 @@ static func choose(co: Company, ev: Dictionary, opts: Dictionary) -> int:
 static func play(content: ContentDb, seed_value: int, days: int, opts: Dictionary) -> Dictionary:
 	var co := Company.new(content); co.new_game(seed_value)
 	var res := {"profit_per_day": 0, "cash": 0, "rep": 0, "served": 0, "lost": 0, "waste": 0, "bankrupt_days": 0, "min_cash": 1 << 30, "errors": [],
-		"cafe_day": 0, "level": 0, "inspections": 0, "fines": 0, "contract": 0, "days_played": 0, "late_profit": 0, "invested": 0}
+		"cafe_day": 0, "market_day": 0, "level": 0, "inspections": 0, "fines": 0, "contract": 0, "days_played": 0, "late_profit": 0, "invested": 0}
 	var late := []
 	var total_profit := 0
 	while co.day <= days:
@@ -100,6 +113,10 @@ static func play(content: ContentDb, seed_value: int, days: int, opts: Dictionar
 			if co.can_open("cafe").is_empty() and co.profile.cash >= int(co.world["openable"]["cafe"]["cost"]) + (1200 if not opts.get("loan", false) else 0):
 				co.open_business("cafe"); res["cafe_day"] = co.day
 		if co.owns("cafe") and co.staff.is_empty() and co.level() >= 2: co.hire("yossi", "cafe")
+		if opts.get("market", false):
+			if not co.owns("market") and co.level() >= 6 and co.can_open("market").is_empty() and co.profile.cash >= int(co.world["openable"]["market"]["cost"]) + 1500:
+				co.open_business("market"); res["market_day"] = co.day
+			if co.owns("market") and co.staff_at("market").is_empty() and co.level() >= 2: co.hire("maya", "market")
 		if opts.get("upgrades", false) and (co.owns("cafe") or not opts.get("cafe", false)):
 			for bid in co.units:
 				for uid in co.units[bid].db["upgrades"]:
