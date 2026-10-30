@@ -8,7 +8,7 @@ var content := ContentDb.new()
 var co: Company
 var profile: Profile
 var sfx: Sfx
-var settings := {"sound": true, "music": true, "locale": Loc.DEFAULT}
+var settings := {"sound": true, "music": true, "tips": true, "locale": Loc.DEFAULT}
 var save_path := "user://save.json"
 var test_mode := false
 var migrated_from := 0

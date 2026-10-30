@@ -251,6 +251,7 @@ func _notification(what: int) -> void:
 
 # A tip shown once per game (the flag is saved with the company), as a short hint at the bottom of the screen.
 func tip_once(key: String, seconds := 5.0) -> void:
+	if not Game.settings["tips"]: return
 	var f := "tip_" + key
 	if Game.co.flags.has(f): return
 	Game.co.flags[f] = 1
@@ -295,6 +296,7 @@ func open_screen(id: String, opts := {}) -> void:
 			var names: Array = []
 			for bid in Game.co.units: names.append(s.biz_name(bid))
 			sheet.open(Loc.t("upg.title"), s.upgrades, {"id": id, "tabs": names, "tab": opts.get("tab", 0)})
+		"setup_task": sheet.open("", func(sh): s.setup_task(sh, opts["task"]), {"id": id})
 		"goals": sheet.open(Loc.t("ui.goals"), s.goals, {"id": id})
 		"settings": sheet.open(Loc.t("set.title"), s.settings, {"id": id})
 		"building": sheet.open("", func(sh): s.building(sh, opts["building"]), {"id": id})

@@ -84,23 +84,80 @@ func today(sh: Sheet) -> void:
 # A morning of the setup period: the space is rented and being fitted out, so there is no working day yet. The checklist shows what
 # can still be done before the doors open; the day itself passes with the button at the bottom.
 func _setup_today(sh: Sheet) -> void:
-	var c := co(); var bid := c.setup_bid(); var left := c.setup_left(bid)
-	var total: int = int(c.format_def(bid, c.units[bid].format).get("setup_days", left))
+	var c := co(); var bid := c.setup_bid()
 	var weekly := 0
 	for k in c.units[bid].db["weekly_costs"]: weekly += int(c.units[bid].db["weekly_costs"][k])
+	var board := not c.setup.is_empty()
+	# what happened on the board since yesterday
+	var news: Array = []
+	for r in c.last_report.get("setup", []):
+		var t := SetupBoard.def_of(c, r["task"])
+		if r["result"] == "done": news.append(Loc.t("setup.news_done", {"task_k": t["name"]}))
+		else:
+			var line := Loc.t("setup.news_fail", {"task_k": t["name"], "note_k": r["note_k"]})
+			if int(r["cost"]) > 0: line += " " + Loc.t("setup.news_fail_cost", {"cost_m": r["cost"]})
+			news.append(line)
+	if not news.is_empty():
+		var nc := sh.card()
+		for n in news: nc.add_child(UiStyle.label(n, 14))
 	var card := sh.card()
 	card.add_child(UiStyle.label(Loc.t("setup.title", {"biz_k": c.units[bid].db["name"]}), 16, UiStyle.INK, true))
-	var bar := UiStyle.bar(maxi(0, total - left), maxi(1, total), UiStyle.TEAL, 12); bar.custom_minimum_size = Vector2(0, 12); card.add_child(bar)
-	card.add_child(UiStyle.label(Loc.t("setup.left_one" if left == 1 else "setup.left", {"n": left}), 14))
+	if board:
+		var pending := SetupBoard.pending_required(c).size()
+		card.add_child(UiStyle.label(Loc.t("setup.pending_one" if pending == 1 else "setup.pending", {"n": pending}), 14))
+	else:
+		var left := c.setup_left(bid)
+		card.add_child(UiStyle.label(Loc.t("setup.left_one" if left == 1 else "setup.left", {"n": left}), 14))
 	card.add_child(UiStyle.label(Loc.t("setup.rent", {"weekly_m": weekly}), 13, UiStyle.MUTED))
-	if c.day - c.units[bid].lease_day == 0: _tip_card(sh, "setup.tip")
-	var list := sh.card()
-	list.add_child(UiStyle.label(Loc.t("today.checklist"), 14, UiStyle.MUTED, true))
+	if board:
+		card.add_child(UiStyle.label(Loc.t("setup.board_note"), 12, UiStyle.MUTED))
+		if c.day - c.units[bid].lease_day == 0: _tip_card(sh, "setup.tip")
+		var list := sh.card()
+		list.add_child(UiStyle.label(Loc.t("setup.board"), 14, UiStyle.MUTED, true))
+		for t in SetupBoard.defs(c):
+			var stt := SetupBoard.status(c, t)
+			if stt == "blocked" and not bool(t.get("required", false)): continue
+			var tag := Loc.t("setup.tag_legal" if t["kind"] == "legal" else "setup.tag_choice")
+			var sub := ""
+			match stt:
+				"done": sub = Loc.t("setup.state_done")
+				"active": sub = Loc.t("setup.state_active", {"n": maxi(1, int(SetupBoard.st(c, t["id"])["due"]) - c.day)})
+				"ready": sub = Loc.t("setup.state_ready")
+				"retry": sub = Loc.t("setup.state_retry")
+				"blocked": sub = Loc.t("setup.state_blocked", {"names": ", ".join(SetupBoard.blockers(c, t).map(func(r): return Loc.t(SetupBoard.def_of(c, r)["name"])))})
+			var tid: String = t["id"]
+			var cb := Callable()
+			if stt in ["ready", "retry"]: cb = func(): ui.open_screen("setup_task", {"task": tid})
+			_task(list, stt == "done", tag + " · " + Loc.t(t["name"]), sub, cb)
+	var list2 := sh.card()
+	list2.add_child(UiStyle.label(Loc.t("today.checklist"), 14, UiStyle.MUTED, true))
 	var placed := 0
 	for o in c.orders: placed += int(o["cost"])
-	_task(list, placed > 0, Loc.t("setup.order"), Loc.t("setup.order_sub", {"amount_m": placed}) if placed > 0 else Loc.t("setup.order_none"), func(): ui.open_screen("orders"))
-	_task(list, false, Loc.t("setup.money"), Loc.t("setup.money_sub", {"cash_m": c.profile.cash}), func(): ui.open_screen("finance", {"tab": 1}))
+	_task(list2, placed > 0, Loc.t("setup.order"), Loc.t("setup.order_sub", {"amount_m": placed}) if placed > 0 else Loc.t("setup.order_none"), func(): ui.open_screen("orders"))
+	_task(list2, false, Loc.t("setup.money"), Loc.t("setup.money_sub", {"cash_m": c.profile.cash}), func(): ui.open_screen("finance", {"tab": 1}))
 	sh.add_footer(Loc.t("setup.end"), "cta", func(): flow.call("setup_day", {}))
+
+# One task of the setup file: what it is, and the ways to do it (cost, days, how risky it feels).
+func setup_task(sh: Sheet, id: String) -> void:
+	var c := co(); var t := SetupBoard.def_of(c, id)
+	if t.is_empty(): return
+	var legal: bool = t["kind"] == "legal"
+	sh.set_title(Loc.t(t["name"]), Loc.t("setup.tag_legal_real" if legal and bool(t.get("real", false)) else ("setup.tag_legal_game" if legal else "setup.tag_choice")))
+	var dc := sh.card(); dc.add_child(UiStyle.label(Loc.t(t["desc"]), 14))
+	for o in t["options"]:
+		var card := sh.card()
+		card.add_child(UiStyle.label(Loc.t(o["label"]), 16, UiStyle.INK, true))
+		card.add_child(UiStyle.label(Loc.t(o["desc"]), 13, UiStyle.MUTED))
+		var days := SetupBoard.option_days(c, o)
+		var facts := Loc.t("setup.opt_facts", {"cost_m": o["cost"], "days": days, "risk_k": SetupBoard.risk_label(SetupBoard.fail_pct(c, t, o))})
+		card.add_child(UiStyle.label(facts, 13))
+		var b := UiStyle.button(Loc.t("setup.choose"), "primary", 15, 44)
+		var oid: String = o["id"]
+		b.pressed.connect(func():
+			var e := SetupBoard.start(c, id, oid)
+			if not e.is_empty(): sh.note(Loc.msg(e)); return
+			Game.save_game(); Game.sfx.play("coin"); ui.hud.sync(); ui.open_screen("today"))
+		card.add_child(b)
 
 # The first mornings: one short sentence from Shira about the next step, following what was already done.
 func _today_tip() -> String:
@@ -109,6 +166,7 @@ func _today_tip() -> String:
 	return "tut.tip_open"
 
 func _tip_card(sh: Sheet, key: String) -> void:
+	if not Game.settings["tips"]: return
 	var tc := sh.card(); var th := sh.row(tc)
 	th.add_child(UiStyle.portrait("shira", 44, UiStyle.TEAL))
 	var tl := UiStyle.label(Loc.t(key), 14); tl.size_flags_horizontal = Control.SIZE_EXPAND_FILL; th.add_child(tl)
@@ -508,7 +566,7 @@ func goals(sh: Sheet) -> void:
 func settings(sh: Sheet) -> void:
 	sh.set_title(Loc.t("set.title"))
 	var cc := sh.card()
-	for key in ["sound", "music"]:
+	for key in ["sound", "music", "tips"]:
 		var on: bool = Game.settings[key]
 		var ch := UiStyle.chip(Loc.t("set." + key) + " · " + Loc.t("set.on" if on else "set.off"), on)
 		ch.pressed.connect(func(): Game.settings[key] = not on; Game.save_settings(); sh.refresh()); cc.add_child(ch)

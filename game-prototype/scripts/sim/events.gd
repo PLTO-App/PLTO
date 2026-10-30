@@ -33,25 +33,8 @@ static func _card(e: Dictionary, p := {}, choices := []) -> Dictionary:
 	else: ch = choices
 	return {"id": e["id"], "kind": e.get("kind", "generic"), "title_k": e["title"], "body_k": e["body"], "p": p, "who": e.get("who", ""), "choices": ch, "biz": e.get("biz", "")}
 
-# While a rented space is being fitted out there is no business to run, so the mornings bring decisions about the setup instead
-# (content/events.json, kind "setup"): one card a morning, each card once, in the order of the file.
-static func setup_cards(co: Company) -> Array:
-	var bid := co.setup_bid()
-	if bid == "": return []
-	var left := co.setup_left(bid)
-	for e in co.content.events:
-		if e.get("kind", "") != "setup": continue
-		if int(co.ev_state["times"].get(e["id"], 0)) > 0: continue
-		if left < int(e.get("min_left", 1)): continue
-		if e.has("biz_kind") and co.units[bid].db.get("kind", "") != e["biz_kind"]: continue
-		var card := _card(e, {"biz_k": co.units[bid].db["name"], "left": left})
-		card["biz"] = bid
-		_mark(co, e["id"])
-		return [card]
-	return []
-
 static func morning(co: Company, report: Dictionary) -> Array:
-	if co.in_setup(): return setup_cards(co)
+	if co.in_setup(): return []      # while a space is fitted out the mornings belong to the setup file (SetupBoard)
 	var cards: Array = []
 	var defs: Array = co.content.events
 	var by_id := {}
@@ -170,18 +153,12 @@ static func resolve(co: Company, ev: Dictionary, choice: int) -> Dictionary:
 	for e in defs: if e["id"] == ev["id"]: src = e
 	var effects: Array = src.get("choices", [])[clampi(choice, 0, src.get("choices", []).size() - 1)].get("effects", []) if not src.is_empty() and not src.get("choices", []).is_empty() else []
 	for fx in effects:
-		if fx.has("rep") and co.units.has(_at(fx["rep"]["biz"], biz)):
-			var b: Business = co.units[_at(fx["rep"]["biz"], biz)]; b.reputation = clampi(b.reputation + int(fx["rep"]["delta"]), 0, 100)
+		if fx.has("rep") and co.units.has(fx["rep"]["biz"]):
+			var b: Business = co.units[fx["rep"]["biz"]]; b.reputation = clampi(b.reputation + int(fx["rep"]["delta"]), 0, 100)
 		if fx.has("mod"):
-			co.add_mod(fx["mod"]["kind"], _at(str(fx["mod"].get("target", fx["mod"].get("biz", "*"))), biz), int(fx["mod"]["value"]), int(fx["mod"]["days"]))
-		if fx.has("launch_mod") and co.units.has(biz):
-			# a boost that starts when the doors open: it runs for `days` working days after the opening
-			var m: Dictionary = fx["launch_mod"]
-			co.add_mod(m["kind"], biz, int(m["value"]), co.setup_left(biz) + int(m["days"]))
-		if fx.has("setup_days"): co.shift_setup(biz, int(fx["setup_days"]))
-		if fx.has("cash"): co.book("event", int(fx["cash"]), biz, ev["id"])
-		if fx.has("equip") and co.units.has(_at(fx["equip"]["biz"], biz)): co.units[_at(fx["equip"]["biz"], biz)].equipment = int(fx["equip"]["set"])
-		if fx.has("clean") and co.units.has(_at(fx["clean"]["biz"], biz)): co.units[_at(fx["clean"]["biz"], biz)].cleanliness = int(fx["clean"]["set"])
+			co.add_mod(fx["mod"]["kind"], str(fx["mod"].get("target", fx["mod"].get("biz", "*"))), int(fx["mod"]["value"]), int(fx["mod"]["days"]))
+		if fx.has("equip") and co.units.has(fx["equip"]["biz"]): co.units[fx["equip"]["biz"]].equipment = int(fx["equip"]["set"])
+		if fx.has("clean") and co.units.has(fx["clean"]["biz"]): co.units[fx["clean"]["biz"]].cleanliness = int(fx["clean"]["set"])
 		if fx.has("order"):
 			var o: Dictionary = fx["order"]
 			co.special.append({"biz": o["biz"], "product": o["product"], "qty": int(o["qty"]), "price": int(o["price"]), "terms": int(o["terms_days"]),
@@ -190,5 +167,3 @@ static func resolve(co: Company, ev: Dictionary, choice: int) -> Dictionary:
 		if fx.has("flag"): co.flags[fx["flag"]] = co.day
 	return {"note": note}
 
-# "@" in the content file means the business the card is about (the one being set up).
-static func _at(name: String, card_biz: String) -> String: return card_biz if name == "@" else name

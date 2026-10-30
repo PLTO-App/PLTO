@@ -6,6 +6,7 @@
   "_comment": "Drinks are made to order (no waste, limited by the machine and the beans and milk on hand). Pastries are bought: from our own bakery at a transfer price, or from a supplier.",
 
   "start": {"reputation": 50, "stock": {"beans": 30, "milk": 30}},
+  "setup_packs": ["common", "food"],
   "slots": 14, "slots_friday": 10, "slot_minutes": 30, "day_start_hour": 7,
   "base_customers": 34, "patience": 1, "service_pct": 160,
   "capacity": {"name": "cap.machine", "amount": 70},

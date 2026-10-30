@@ -15,6 +15,7 @@ var events: Array = []
 var goals := {}
 var tracks := {}          # id -> Dictionary (where the company can start)
 var track_order: Array = []
+var setup_packs := {}      # pack id -> Array of tasks (content/setup/*.json)
 var _format_cache := {}   # "business/format" -> the business as that format
 var errors: Array[String] = []
 
@@ -55,8 +56,17 @@ func load_all() -> void:
 	if typeof(tr) == TYPE_DICTIONARY:
 		_intify(tr, "tracks"); tracks = tr.get("tracks", {}); track_order = tr.get("order", [])
 	else: errors.append("tracks.json missing or invalid")
+	setup_packs = {}
+	var sd := DirAccess.open("res://content/setup")
+	if sd != null:
+		for fn in sd.get_files():
+			if not fn.ends_with(".json"): continue
+			var sp = read_json("res://content/setup/" + fn)
+			if typeof(sp) != TYPE_DICTIONARY or not sp.has("id") or not sp.has("tasks"): errors.append("setup/" + fn + ": invalid"); continue
+			_intify(sp, fn); setup_packs[sp["id"]] = sp["tasks"]
 	_check_world()
 	_check_tracks()
+	_check_setup()
 
 # Turns every whole-number float into an int (JSON numbers arrive as floats) and reports any real fraction.
 func _intify(v: Variant, path: String) -> Variant:
@@ -128,6 +138,37 @@ func business_db(bid: String, fmt := "") -> Dictionary:
 		for k in f["set"]: d[k] = f["set"][k]
 		_format_cache[key] = d
 	return _format_cache[key]
+
+# The setup tasks of a business: its packs in order. A business with no packs has none.
+func setup_tasks_for(bid: String) -> Array:
+	var out: Array = []
+	if not businesses.has(bid): return out
+	for pack in businesses[bid].get("setup_packs", []): out.append_array(setup_packs.get(pack, []))
+	return out
+
+func _check_setup() -> void:
+	for bid in businesses:
+		var ids := {}
+		var tasks := setup_tasks_for(bid)
+		for pack in businesses[bid].get("setup_packs", []):
+			if not setup_packs.has(pack): errors.append("%s: unknown setup pack %s" % [bid, pack])
+		for t in tasks:
+			for k in ["id", "kind", "name", "desc", "requires", "options"]:
+				if not t.has(k): errors.append("setup task %s: missing %s" % [t.get("id", "?"), k])
+			if ids.has(t.get("id", "")): errors.append("%s: duplicate setup task %s" % [bid, t["id"]])
+			ids[t.get("id", "")] = true
+			if t.get("kind", "") not in ["legal", "business"]: errors.append("setup task %s: kind must be legal or business" % t.get("id", "?"))
+			if t.get("kind", "") == "legal" and not t.has("real"): errors.append("setup task %s: a legal task must say whether it is real" % t.get("id", "?"))
+			var free := false
+			for o in t.get("options", []):
+				for k in ["id", "label", "desc", "cost", "days", "fail_pct"]:
+					if not o.has(k): errors.append("setup task %s option: missing %s" % [t.get("id", "?"), k])
+				if int(o.get("cost", 1)) == 0: free = true
+			# a player with no cash must never be stuck: every required task has a free option
+			if bool(t.get("required", false)) and not free: errors.append("setup task %s: a required task needs a free option" % t.get("id", "?"))
+		for t in tasks:
+			for r in t.get("requires", []):
+				if not ids.has(r): errors.append("%s: setup task %s requires unknown %s" % [bid, t.get("id", "?"), r])
 
 func _check_tracks() -> void:
 	for tid in tracks:

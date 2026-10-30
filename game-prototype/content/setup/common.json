@@ -1,0 +1,16 @@
+{
+  "_comment": "Setup tasks every business has. kind: legal = cannot open without it; business = a choice of the owner. real: true = a requirement that exists in the real world in general terms; false = an illustration made up for the game. Every number (days, cost, failure chance) is an illustration, not the law and not advice. required: the doors do not open until it is done. Options with fail_pct can fail on the due day: the task returns to the board and must be done again. fail_mods change the chance (done = another task is done, opt = another task was done with that option, per_fail = less chance after each earlier failure). effects use the keys of events.json plus launch (stored and applied when the doors open).",
+  "id": "common",
+  "tasks": [
+    {"id": "tax_file", "kind": "legal", "real": true, "required": true, "name": "setup.tax_file", "desc": "setup.tax_file.desc", "requires": [],
+     "options": [
+       {"id": "self", "label": "setup.opt.self", "desc": "setup.tax_file.self", "cost": 0, "days": 1, "fail_pct": 25, "fail_note": "setup.tax_file.fail"},
+       {"id": "accountant", "label": "setup.opt.accountant", "desc": "setup.tax_file.acc", "cost": 250, "days": 1, "fail_pct": 0}
+     ]},
+    {"id": "launch", "kind": "business", "required": false, "name": "setup.launch", "desc": "setup.launch.desc", "requires": [],
+     "options": [
+       {"id": "flyers", "label": "setup.launch.flyers", "desc": "setup.launch.flyers.desc", "cost": 150, "days": 1, "fail_pct": 0, "effects": [{"launch": {"kind": "demand_pct", "value": 20, "days": 4}}]},
+       {"id": "post", "label": "setup.launch.post", "desc": "setup.launch.post.desc", "cost": 0, "days": 1, "fail_pct": 0, "effects": [{"launch": {"kind": "demand_pct", "value": 8, "days": 3}}]}
+     ]}
+  ]
+}

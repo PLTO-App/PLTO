@@ -125,9 +125,13 @@ func _run_owner() -> void:
 	await ui().screens._send_orders(ui().sheet)
 	check("an order was placed during the setup", not co.orders.is_empty())
 	ui().open_screen("finance", {"tab": 1}); await wait(0.4); await shot("o03_loans")
+	check("the setup file has tasks and nothing is blocked wrongly", SetupBoard.defs(co).size() >= 6 and SetupBoard.status(co, SetupBoard.def_of(co, "tax_file")) == "ready")
+	ui().open_screen("setup_task", {"task": "tax_file"}); await wait(0.5); await shot("o03b_task_tax")
+	ui().open_screen("setup_task", {"task": "equipment"}); await wait(0.5); await shot("o03c_task_equipment")
 	var n := 0
-	while co.in_setup() and n < 8:
+	while co.in_setup() and n < 14:
 		n += 1
+		SetupBoard.auto(co, "mixed")
 		ui().open_screen("today"); await wait(0.5); await shot("o04_setup_day%d" % n)
 		var day0 := co.day
 		main._flow("setup_day", {})

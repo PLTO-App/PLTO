@@ -1,0 +1,32 @@
+{
+  "_comment": "Setup tasks of a business that makes or sells food (bakery, cafe). See common.json for the fields. Requirements that exist in general terms: a business license from the local authority, a health inspection and fire safety approval. The order, the days and the chances are illustrations. A business with no food pack (an office, a delivery service) does not get these tasks.",
+  "id": "food",
+  "tasks": [
+    {"id": "equipment", "kind": "business", "required": true, "name": "setup.equipment", "desc": "setup.equipment.desc", "requires": [],
+     "options": [
+       {"id": "new", "label": "setup.equipment.new", "desc": "setup.equipment.new.desc", "cost": 0, "days": 2, "days_by_format": {"regular": 3}, "fail_pct": 0, "effects": [{"equip": {"biz": "@", "set": 100}}]},
+       {"id": "used", "label": "setup.equipment.used", "desc": "setup.equipment.used.desc", "cost": 0, "days": 2, "days_by_format": {"regular": 3}, "fail_pct": 0, "effects": [{"cash": 300}, {"equip": {"biz": "@", "set": 60}}]}
+     ]},
+    {"id": "cleaning", "kind": "business", "required": false, "name": "setup.cleaning", "desc": "setup.cleaning.desc", "requires": [],
+     "options": [
+       {"id": "deep", "label": "setup.cleaning.deep", "desc": "setup.cleaning.deep.desc", "cost": 120, "days": 1, "fail_pct": 0}
+     ]},
+    {"id": "license_application", "kind": "legal", "real": true, "required": true, "name": "setup.license", "desc": "setup.license.desc", "requires": ["tax_file"],
+     "options": [
+       {"id": "self", "label": "setup.opt.self", "desc": "setup.license.self", "cost": 0, "days": 2, "fail_pct": 30, "fail_mods": [{"per_fail": -15}], "fail_note": "setup.license.fail"},
+       {"id": "consultant", "label": "setup.license.consultant", "desc": "setup.license.consultant.desc", "cost": 350, "days": 1, "fail_pct": 5, "fail_note": "setup.license.fail"}
+     ]},
+    {"id": "health_inspection", "kind": "legal", "real": true, "required": true, "name": "setup.health", "desc": "setup.health.desc", "requires": ["license_application", "equipment"],
+     "options": [
+       {"id": "standard", "label": "setup.health.standard", "desc": "setup.health.standard.desc", "cost": 0, "days": 1, "fail_pct": 35, "fail_cost": 150,
+        "fail_mods": [{"done": "cleaning", "delta": -20}, {"opt": "equipment:used", "delta": 10}, {"per_fail": -15}], "fail_note": "setup.health.fail"},
+       {"id": "precheck", "label": "setup.health.precheck", "desc": "setup.health.precheck.desc", "cost": 200, "days": 1, "fail_pct": 15, "fail_cost": 150,
+        "fail_mods": [{"done": "cleaning", "delta": -10}, {"opt": "equipment:used", "delta": 10}, {"per_fail": -10}], "fail_note": "setup.health.fail"}
+     ]},
+    {"id": "fire_safety", "kind": "legal", "real": true, "required": true, "name": "setup.fire", "desc": "setup.fire.desc", "requires": ["equipment"],
+     "options": [
+       {"id": "self", "label": "setup.fire.self", "desc": "setup.fire.self.desc", "cost": 0, "days": 1, "fail_pct": 30, "fail_cost": 120, "fail_mods": [{"per_fail": -15}], "fail_note": "setup.fire.fail"},
+       {"id": "installer", "label": "setup.fire.installer", "desc": "setup.fire.installer.desc", "cost": 300, "days": 1, "fail_pct": 5, "fail_cost": 120, "fail_note": "setup.fire.fail"}
+     ]}
+  ]
+}

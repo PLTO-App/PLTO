@@ -197,6 +197,17 @@ func _owner(cash := -1) -> Company:
 	if cash >= 0: co.profile.cash = cash; co.ledger = Ledger.new(); co.ledger.start_cash = cash
 	return co
 
+# Plays the setup mornings by a style until the doors open; returns the days it took (or -1) and leaves the company on the opening morning.
+func _run_setup(co: Company, style: String, limit := 20) -> int:
+	var n := 0
+	while co.in_setup() and n < limit:
+		n += 1
+		co.start_morning()
+		if not co.in_setup(): break
+		SetupBoard.auto(co, style)
+		co.commit_day({}, co.worker); co.close_day()
+	return n if not co.in_setup() else -1
+
 func _test_owner() -> void:
 	# the formats: a small space is the same business with smaller numbers; the file itself is untouched
 	var small := content.business_db("bakery", "small")
@@ -204,68 +215,109 @@ func _test_owner() -> void:
 		small["capacity"]["amount"] == 50 and small["weekly_costs"]["rent"] == 700 and content.businesses["bakery"]["capacity"]["amount"] == 80 and content.business_db("bakery", "regular") == content.businesses["bakery"])
 	var co := _owner()
 	check("the owner track starts with cash and no business", co.track == "owner" and co.units.is_empty() and co.profile.cash == int(content.tracks["owner"]["cash"]) and co.ledger.balance() == co.profile.cash)
-	check("a new game is the existing bakery", fresh().track == "existing_bakery")
-	# funding: a regular bakery needs a loan; a small one does not
-	check("a regular bakery cannot be set up from the cash alone", not co.can_begin("bakery", "regular").is_empty())
-	check("with the small loan it can", co.can_begin("bakery", "regular", "small").is_empty())
+	check("a new game is the existing bakery", fresh().track == "existing_bakery" and fresh().setup.is_empty())
+	check("a regular bakery cannot be set up from a little cash alone", not _owner(2000).can_begin("bakery", "regular").is_empty())
+	check("with the small loan it can", _owner(2000).can_begin("bakery", "regular", "small").is_empty())
 	check("a loan is available on day one on this track only", co.loan_available("small") and not fresh().loan_available("small"))
 	check("the terms of a loan: amount, weekly payment, weeks, total, cost", co.loan_terms("small") == {"amount": 5000, "weekly": 540, "weeks": 10, "total": 5400, "cost": 400})
 	var cash0 := co.profile.cash
 	var e := co.begin_business("bakery", "small")
-	var cost := int(content.businesses["bakery"]["formats"]["small"]["setup_cost"]); var days := int(content.businesses["bakery"]["formats"]["small"]["setup_days"])
+	var cost := int(content.businesses["bakery"]["formats"]["small"]["setup_cost"])
 	check("setting up a small bakery costs its price and the books match", e.is_empty() and co.profile.cash == cash0 - cost and co.ledger.balance() == co.profile.cash)
-	check("the space is rented from today and opens after the setup days", co.units["bakery"].lease_day == 1 and co.units["bakery"].opened_day == 1 + days and co.in_setup() and co.setup_left("bakery") == days)
+	check("the space is rented from today and the opening waits for the setup file", co.units["bakery"].lease_day == 1 and co.in_setup() and co.setup_left("bakery") == -1 and not co.setup.is_empty())
 	check("a second business cannot be set up the same way", not co.begin_business("bakery", "small").is_empty())
-	# the mornings of the setup: one setup card, no ordinary events, no inspection
-	var rep := co.start_morning()
-	check("a setup morning brings one setup card and nothing else", rep["events"].size() == 1 and rep["events"][0]["kind"] == "setup" and co.inspection_today == "", str(rep["events"].size()))
-	check("a small setup is too short for the contractor card", rep["events"][0]["id"] != "setup_contractor")
-	# the card's effects: used equipment brings cash and wears the equipment; the launch boost starts at the opening
+	# the board of a food business: legal tasks and choices, in order; nothing opens until the required ones are done
+	var ids: Array = SetupBoard.defs(co).map(func(t): return t["id"])
+	check("a food business has the license chain", "health_inspection" in ids and "fire_safety" in ids and "license_application" in ids and "tax_file" in ids)
+	check("the required tasks are the legal ones and the equipment", SetupBoard.pending_required(co).size() == 5)
+	var tf := SetupBoard.def_of(co, "license_application")
+	check("a task waits for the one it depends on", SetupBoard.status(co, tf) == "blocked" and not SetupBoard.start(co, "license_application", "self").is_empty())
+	co.start_morning()
+	check("setup mornings bring no ordinary cards", co.pending_events.is_empty() and co.inspection_today == "")
 	var cash1 := co.profile.cash
-	var used := -1
-	for i in rep["events"][0]["choices"].size(): if rep["events"][0]["choices"][i]["label_k"] == "ev.setup.equipment.used": used = i
-	if rep["events"][0]["id"] == "setup_equipment":
-		co.resolve_event(rep["events"][0], used)
-		check("used equipment brings cash and a worn oven", co.profile.cash == cash1 + 300 and co.units["bakery"].equipment == 60)
-	# a setup day: no runners, rent runs, the week settles with rent for the whole week
+	check("a task with a price takes it from the cash", SetupBoard.start(co, "tax_file", "accountant").is_empty() and co.profile.cash == cash1 - 250 and co.ledger.balance() == co.profile.cash)
+	check("a started task cannot be started again", not SetupBoard.start(co, "tax_file", "self").is_empty())
+	var broke := _owner(3000); broke.begin_business("bakery", "small"); broke.start_morning()
+	check("a task you cannot afford is refused", not SetupBoard.start(broke, "tax_file", "accountant").is_empty())
+	broke.profile.cash = -300; broke.ledger = Ledger.new(); broke.ledger.start_cash = -300
+	check("with the cash box in the red a free option can still be started, so nobody is stuck", SetupBoard.start(broke, "tax_file", "self").is_empty())
+	# a day passes; the tax file comes through (the accountant never fails), the license can start
 	co.commit_day({}, "bakery"); var s := co.close_day()
-	check("a setup day has no business results and the books match", s["units"].is_empty() and co.ledger.balance() == co.profile.cash and co.day == 2)
-	rep = co.start_morning()
-	for ev in rep["events"]: if ev["id"] == "setup_launch": co.resolve_event(ev, 0)
-	check("the launch boost waits for the opening and then runs four working days", co.mod_value("demand_pct", "bakery") == 20 and co.setup_left("bakery") == 1)
-	co.commit_day({}, "bakery"); co.close_day()
-	check("the doors open after the setup days", not co.in_setup() and co.unit_ready("bakery") and co.day == 3)
-	var plans := {"bakery": co.suggest_plan("bakery")}
-	co.start_morning(); check("an ordinary morning follows the opening", co.commit_day(plans, "bakery").is_empty())
-	co.close_day()
-	for i in 3: co.start_morning(); co.commit_day({"bakery": co.suggest_plan("bakery")}, "bakery"); co.close_day()
-	check("the rent of the first week covers the setup days too (six days of 880)", co.ledger.total(-1, "rent") == -880, str(co.ledger.total(-1, "rent")))
-	check("the books still match", co.ledger.balance() == co.profile.cash)
-	# a faster contractor: a day less, never less than one day left
-	var r := _owner(); r.begin_business("bakery", "regular", "small")
-	check("a loan taken with the setup arrives with it", r.loan_open("small") and r.loans.size() == 1 and r.ledger.balance() == r.profile.cash)
-	var d0 := r.setup_left("bakery")
-	r.shift_setup("bakery", -1); check("a faster contractor opens a day earlier", r.setup_left("bakery") == d0 - 1)
-	r.shift_setup("bakery", -10); check("the setup never ends before tomorrow", r.setup_left("bakery") == 1)
-	# saving in the middle of a setup keeps the size, the lease and the track
-	var sv := _owner(); sv.begin_business("bakery", "small")
+	check("a setup day has no business results and the books match", s["units"].is_empty() and co.ledger.balance() == co.profile.cash)
+	co.start_morning()
+	check("the finished task is reported and done", SetupBoard.is_done(co, "tax_file") and co.last_report["setup"].size() == 1 and co.last_report["setup"][0]["result"] == "done")
+	check("the next task opens up", SetupBoard.status(co, tf) == "ready")
+	# the whole chain, by the careful style: it opens, and the doors open only when the required tasks are done
+	var p := _owner(); p.begin_business("bakery", "small")
+	var n := _run_setup(p, "pro")
+	check("a careful owner gets through the setup and opens", n > 0 and p.unit_ready("bakery") and SetupBoard.mandatory_done(p), str(n))
+	check("it takes more than the old fixed two days", n >= 4, str(n))
+	check("rent ran during the setup and the books match", p.ledger.balance() == p.profile.cash)
+	# a do-it-yourself owner is slower or the same, never faster, and can fail steps
+	var worst := 0; var fastest := 99; var fails := 0
+	for sd in range(1, 13):
+		var q := Company.new(content); q.start_owner(sd * 11); q.begin_business("bakery", "small")
+		var m := _run_setup(q, "diy"); worst = maxi(worst, m); fastest = mini(fastest, m)
+		for id in q.setup["tasks"]: fails += int(q.setup["tasks"][id]["fails"])
+	check("a do-it-yourself owner sometimes fails a step", fails > 0, str(fails))
+	check("a do-it-yourself owner is not faster than a careful one", fastest >= n, "%d vs %d" % [fastest, n])
+	# the same seed gives the same story
+	var a1 := Company.new(content); a1.start_owner(77); a1.begin_business("bakery", "small"); var d1 := _run_setup(a1, "diy")
+	var a2 := Company.new(content); a2.start_owner(77); a2.begin_business("bakery", "small"); var d2 := _run_setup(a2, "diy")
+	check("the same seed and choices give the same setup", d1 == d2 and a1.profile.cash == a2.profile.cash)
+	# the chances: cleaning and equipment change the health inspection; each failure makes the next try easier
+	var h := _owner(); h.begin_business("bakery", "small")
+	var ho: Dictionary = SetupBoard.option(SetupBoard.def_of(h, "health_inspection"), "standard")
+	var base := SetupBoard.fail_pct(h, SetupBoard.def_of(h, "health_inspection"), ho)
+	h.setup["tasks"]["cleaning"]["state"] = "done"
+	check("a deep clean lowers the chance of failing the health inspection", SetupBoard.fail_pct(h, SetupBoard.def_of(h, "health_inspection"), ho) == base - 20)
+	h.setup["tasks"]["equipment"]["state"] = "done"; h.setup["tasks"]["equipment"]["opt"] = "used"
+	check("used equipment raises it", SetupBoard.fail_pct(h, SetupBoard.def_of(h, "health_inspection"), ho) == base - 10)
+	h.setup["tasks"]["health_inspection"]["fails"] = 1
+	check("after a failure the next try is easier", SetupBoard.fail_pct(h, SetupBoard.def_of(h, "health_inspection"), ho) == base - 25)
+	# used equipment brings cash and a worn oven; new equipment is in perfect shape
+	var u := _owner(); u.begin_business("bakery", "small"); u.start_morning()
+	var cu := u.profile.cash
+	SetupBoard.start(u, "equipment", "used")
+	u.commit_day({}, "bakery"); u.close_day(); u.start_morning(); u.commit_day({}, "bakery"); u.close_day(); u.start_morning()
+	check("used equipment brings cash and a worn oven", u.profile.cash >= cu + 300 - 200 and u.units["bakery"].equipment == 60, "%d %d" % [u.profile.cash - cu, u.units["bakery"].equipment])
+	# a regular shop takes longer to fit out than a small one
+	var rg := _owner(9000); rg.begin_business("bakery", "regular", "small")
+	check("a regular shop takes longer to fit out", SetupBoard.option_days(rg, SetupBoard.option(SetupBoard.def_of(rg, "equipment"), "new")) == 3 and SetupBoard.option_days(p, SetupBoard.option(SetupBoard.def_of(p, "equipment"), "new")) == 2)
+	check("a loan taken with the setup arrives with it", rg.loan_open("small") and rg.loans.size() == 1 and rg.ledger.balance() == rg.profile.cash)
+	# the requirements follow the kind of business: no food pack, no health inspection
+	var saved: Array = content.businesses["bakery"]["setup_packs"]
+	content.businesses["bakery"]["setup_packs"] = ["common"]
+	var o2 := Company.new(content); o2.start_owner(5); o2.begin_business("bakery", "small")
+	var ids2: Array = SetupBoard.defs(o2).map(func(t): return t["id"])
+	check("a business without the food pack has no health inspection or fire safety", not ("health_inspection" in ids2) and not ("fire_safety" in ids2) and "tax_file" in ids2)
+	check("and it opens as soon as its own required tasks are done", _run_setup(o2, "pro") > 0 and o2.unit_ready("bakery"))
+	content.businesses["bakery"]["setup_packs"] = saved
+	# every legal task says whether it is a real requirement; every required task has a free option
+	var allgood := true
+	for t in content.setup_tasks_for("bakery"):
+		if t["kind"] == "legal" and not t.has("real"): allgood = false
+		if bool(t.get("required", false)) and not t["options"].any(func(o): return int(o["cost"]) == 0): allgood = false
+	check("legal tasks are marked real or illustrative, and nobody can get stuck without cash", allgood)
+	# saving in the middle of a setup keeps the board
+	var sv := _owner(); sv.begin_business("bakery", "small"); sv.start_morning(); SetupBoard.start(sv, "tax_file", "accountant")
 	var back := Company.new(content); back.from_dict(JSON.parse_string(JSON.stringify(sv.to_dict())))
 	check("a setup in progress survives saving and loading", back.track == "owner" and back.in_setup() and back.units["bakery"].format == "small" and back.units["bakery"].lease_day == 1
-		and back.units["bakery"].db["capacity"]["amount"] == 50 and back.ledger.balance() == back.profile.cash)
+		and back.units["bakery"].db["capacity"]["amount"] == 50 and back.ledger.balance() == back.profile.cash and back.setup["tasks"]["tax_file"]["state"] == "active" and typeof(back.setup["tasks"]["tax_file"]["due"]) == TYPE_INT)
 	# the owner track is not a shortcut: a careless owner loses money, and a balanced one does not
 	for sk in ["good", "poor"]:
 		var o := _owner(); o.begin_business("bakery", "small")
-		var t := 0
-		while o.day <= 40:
+		var after_setup := o.profile.cash
+		while o.day <= 45:
 			o.start_morning()
 			for ev in o.pending_events.duplicate(): o.resolve_event(ev, 0)
-			if o.in_setup(): o.commit_day({}, "bakery"); o.close_day(); continue
-			var p := SimPolicies.plan_for(o, "bakery", {"order_ahead": sk == "good"} if sk == "good" else {"max_bake": true, "upkeep": false})
-			if not o.commit_day({"bakery": p}, "bakery").is_empty(): o.commit_day({"bakery": o.units["bakery"].empty_plan()}, "bakery")
+			if o.in_setup(): SetupBoard.auto(o, "pro"); o.commit_day({}, "bakery"); o.close_day(); continue
+			var pl := SimPolicies.plan_for(o, "bakery", {"order_ahead": true} if sk == "good" else {"max_bake": true, "upkeep": false})
+			if not o.commit_day({"bakery": pl}, "bakery").is_empty(): o.commit_day({"bakery": o.units["bakery"].empty_plan()}, "bakery")
 			if sk == "good": SimPolicies.order_ahead(o, "bakery")
 			o.close_day()
-		if sk == "good": check("a balanced small owner is ahead after six weeks", o.profile.cash - o.debt() > 3500, str(o.profile.cash))
-		else: check("a careless owner is not", o.profile.cash - o.debt() < 3500, str(o.profile.cash))
+		if sk == "good": check("a balanced small owner has more than the cash left after paying for the setup", o.profile.cash - o.debt() > after_setup + 1500, "%d vs %d" % [o.profile.cash, after_setup])
+		else: check("a careless owner has less", o.profile.cash - o.debt() < after_setup, "%d vs %d" % [o.profile.cash, after_setup])
 
 func _test_events() -> void:
 	var co := fresh(); co.day = 6

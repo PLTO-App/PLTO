@@ -13,7 +13,7 @@ func play(seed_value: int, opts: Dictionary) -> Dictionary:
 	if opts.has("cash"): co.profile.cash = int(opts["cash"]); co.ledger = Ledger.new(); co.ledger.start_cash = co.profile.cash
 	var bid: String = opts["biz"]
 	var res := {"ok": false, "cash0": co.profile.cash, "open_day": 0, "profit_per_day": 0, "late_profit": 0, "worth": 0, "min_cash": 1 << 30, "broke_days": 0, "rep": 0,
-		"payback_day": 0, "setup_spend": 0, "errors": [], "served": 0, "lost": 0, "waste": 0, "fines": 0, "first_profit_week": 0}
+		"payback_day": 0, "setup_spend": 0, "errors": [], "served": 0, "lost": 0, "waste": 0, "fines": 0, "first_profit_week": 0, "cash_open": 0, "setup_fails": 0}
 	var e := co.begin_business(bid, opts["fmt"], opts.get("loan", ""))
 	if not e.is_empty(): res["errors"].append(Loc.msg(e)); return res
 	res["ok"] = true
@@ -37,15 +37,21 @@ func play(seed_value: int, opts: Dictionary) -> Dictionary:
 		for sh in opts.get("shocks", []):
 			if int(sh[0]) == co.day: co.book("event", -int(sh[1]), bid, "shock"); res["shock_total"] += int(sh[1])
 		if co.in_setup():
-			var left := co.setup_left(bid)
-			if left == 1 and opts.get("order_ahead", true): SimPolicies.order_ahead(co, bid)
+			# the setup file is played by a style (diy | mixed | pro); the launch task is started on the first morning if asked for
+			SetupBoard.auto(co, str(opts.get("setup_style", "mixed")))
+			if opts.has("launch") and SetupBoard.status(co, SetupBoard.def_of(co, "launch")) == "ready": SetupBoard.start(co, "launch", ["flyers", "post"][int(opts["launch"])])
+			if not res.get("ordered", false) and SetupBoard.pending_required(co).all(func(t): return SetupBoard.st(co, t["id"])["state"] == "active"):
+				res["ordered"] = true
+				if opts.get("order_ahead", true): SimPolicies.order_ahead(co, bid)
 			co.commit_day({}, bid)
 			var ss := co.close_day()
 			if int(ss["units"].size()) != 0: res["errors"].append("setup day with units")
 			res["min_cash"] = mini(res["min_cash"], co.profile.cash)
 			if co.ledger.balance() != co.profile.cash: res["errors"].append("day %d: ledger %d != cash %d" % [co.day, co.ledger.balance(), co.profile.cash])
 			continue
-		if res["open_day"] == 0: res["open_day"] = co.day
+		if res["open_day"] == 0:
+			res["open_day"] = co.day; res["cash_open"] = co.profile.cash
+			for id in co.setup.get("tasks", {}): res["setup_fails"] += int(co.setup["tasks"][id]["fails"])
 		var plans := {}
 		for b in co.units: if co.unit_ready(b): plans[b] = SimPolicies.plan_for(co, b, opts)
 		# mistakes: now and then the owner forgets to plan, bakes far too much, or skips ordering for tomorrow; or does nothing for the first days
@@ -115,10 +121,6 @@ func _skill(opts: Dictionary) -> Dictionary:
 	return o
 
 func _choose(ev: Dictionary, opts: Dictionary) -> int:
-	match ev["id"]:
-		"setup_contractor": return int(opts.get("contractor", 1))
-		"setup_equipment": return int(opts.get("equip", 1))
-		"setup_launch": return int(opts.get("launch", 0))
 	return SimPolicies.choose(null, ev, opts)
 
 func avg(opts: Dictionary, n := 4) -> Dictionary:
@@ -127,7 +129,7 @@ func avg(opts: Dictionary, n := 4) -> Dictionary:
 		var r := play(300 + sd, opts)
 		if not r["ok"]: errors.append_array(r["errors"]); continue
 		ok += 1
-		for k in ["profit_per_day", "late_profit", "worth", "rep", "open_day", "served", "lost", "waste", "fines", "first_profit_week", "cash_after_setup", "runway_weeks_x10", "min21", "neg_days", "cash_w1"]: sum[k] = int(sum.get(k, 0)) + int(r[k])
+		for k in ["profit_per_day", "late_profit", "worth", "rep", "open_day", "served", "lost", "waste", "fines", "first_profit_week", "cash_after_setup", "runway_weeks_x10", "min21", "neg_days", "cash_w1", "cash_open", "setup_fails"]: sum[k] = int(sum.get(k, 0)) + int(r[k])
 		sum["min21_worst"] = mini(int(sum.get("min21_worst", 1 << 30)), int(r["min21"]))
 		min_cash = mini(min_cash, r["min_cash"]); errors.append_array(r["errors"])
 		if r["broke_days"] > 0: broke += 1
@@ -170,13 +172,16 @@ func _sweep() -> void:
 					if avail < int(f["setup_cost"]): continue
 					line("%s %s cash %d loan %s (cost %d)" % [bid, fmt, cash, loan if loan != "" else "-", f["setup_cost"]], avg({"biz": bid, "fmt": fmt, "cash": cash, "loan": loan}))
 
-# The setup choices: no option should dominate
+# The setup file played three ways: do it yourself, a consultant for the license only, a professional for everything
 func _setup_choices() -> void:
-	print("--- setup choices (bakery regular, cash 3500, small loan) and (bakery small, cash 3500, no loan)")
-	for cfg in [{"biz": "bakery", "fmt": "regular", "cash": 3500, "loan": "small"}, {"biz": "bakery", "fmt": "small", "cash": 3500, "loan": ""}]:
-		for ch in [{"contractor": 1, "equip": 1, "launch": 2}, {"contractor": 0, "equip": 1, "launch": 2}, {"contractor": 1, "equip": 0, "launch": 2}, {"contractor": 1, "equip": 1, "launch": 0}, {"contractor": 1, "equip": 1, "launch": 1}, {"contractor": 0, "equip": 0, "launch": 0}]:
-			var o: Dictionary = cfg.duplicate(); o.merge(ch)
-			line("%s %s c%d e%d l%d" % [cfg["biz"], cfg["fmt"], ch["contractor"], ch["equip"], ch["launch"]], avg(o, 6))
+	print("--- setup file by style: 70 days x 12 seeds, opening cash 5000, with unexpected expenses")
+	for cfg in [{"fmt": "small", "loan": ""}, {"fmt": "regular", "loan": "small"}]:
+		for style in ["diy", "mixed", "pro"]:
+			var o := {"biz": "bakery", "cash": 5000, "setup_style": style, "shocks": SHOCKS}; o.merge(cfg)
+			var r := avg(o, 12)
+			if not r["ok"]: print("not possible"); continue
+			print("%-7s loan %-5s %-6s opens day %4.1f (setup days %4.1f) | step failures %4.1f | cash on opening day %5d | lowest in 3 weeks %5d (worst %5d) | days below zero %4.1f | late/day %4d | worth@70 %6d" % [
+				cfg["fmt"], cfg["loan"] if cfg["loan"] != "" else "-", style, float(r["open_day"]), float(r["open_day"]) - 1.0, float(r["setup_fails"]), r["cash_open"], r["min21"], r["min21_worst"], float(r["neg_days"]), r["late_profit"], r["worth"]])
 
 func _check() -> void:
 	var r := play(11, {"biz": "bakery", "fmt": "small", "cash": 3500, "loan": ""})
@@ -230,7 +235,7 @@ func room_line(label: String, r: Dictionary) -> void:
 func _room() -> void:
 	print("--- breathing room: 70 days x 6 seeds, unexpected expenses %s (days: 5, 12, 24)" % str(SHOCKS))
 	var cfgs := [{"fmt": "small", "loan": ""}, {"fmt": "small", "loan": "small"}, {"fmt": "regular", "loan": "small"}, {"fmt": "regular", "loan": "large"}]
-	for cash in [2500, 3000, 3500, 4000, 5000]:
+	for cash in [4000, 4500, 5000, 5500]:
 		print("== opening cash %d" % cash)
 		for cfg in cfgs:
 			var cost: int = 3000 if cfg["fmt"] == "small" else 6500

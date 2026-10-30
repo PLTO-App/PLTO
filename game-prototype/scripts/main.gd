@@ -117,16 +117,21 @@ func _choose_start() -> void:
 		if err.is_empty(): return
 		await ui.ask({"who": "shira", "who_name": Loc.t("npc.shira"), "title": Loc.t("start.fund_title"), "body": Loc.msg(err), "choices": [Loc.t("ui.continue")]})
 
+# The introduction can be skipped from its first card; it is not shown again either way.
 func _intro_owner() -> void:
 	for i in 2:
-		await ui.ask({"who": "shira", "who_name": Loc.t("npc.shira"), "title": Loc.t("start.owner%d.title" % (i + 1)), "body": Loc.t("start.owner%d.body" % (i + 1)),
-			"choices": [Loc.t("ui.continue") if i < 1 else Loc.t("start.go")]})
+		var choices: Array = [Loc.t("ui.continue") if i < 1 else Loc.t("start.go")]
+		if i == 0: choices.append(Loc.t("ui.skip_intro"))
+		var pick := await ui.ask({"who": "shira", "who_name": Loc.t("npc.shira"), "title": Loc.t("start.owner%d.title" % (i + 1)), "body": Loc.t("start.owner%d.body" % (i + 1)), "choices": choices})
+		if pick == 1: break
 	Game.co.flags["tut_intro"] = 1
 
 func _intro() -> void:
 	for i in 3:
-		await ui.ask({"who": "shira", "who_name": Loc.t("npc.shira"), "title": Loc.t("tut.intro%d.title" % (i + 1)), "body": Loc.t("tut.intro%d.body" % (i + 1)),
-			"choices": [Loc.t("ui.continue") if i < 2 else Loc.t("tut.lets_go")]})
+		var choices: Array = [Loc.t("ui.continue") if i < 2 else Loc.t("tut.lets_go")]
+		if i == 0: choices.append(Loc.t("ui.skip_intro"))
+		var pick := await ui.ask({"who": "shira", "who_name": Loc.t("npc.shira"), "title": Loc.t("tut.intro%d.title" % (i + 1)), "body": Loc.t("tut.intro%d.body" % (i + 1)), "choices": choices})
+		if pick == 1: break
 	Game.co.flags["tut_intro"] = 1
 
 # ================================================================ morning in town
@@ -303,9 +308,9 @@ func _run_day() -> void:
 	_update_strip()
 	if not co.flags.has("tut_day"):
 		co.flags["tut_day"] = 1
-		ui.show_hint(Loc.t("tut.day_hint"), 6.0)
+		if Game.settings["tips"]: ui.show_hint(Loc.t("tut.day_hint"), 6.0)
 	elif not co.staff_at(worker).is_empty():
-		ui.show_hint(Loc.t("tut.staff_hint", {"n": co.staff_at(worker).size()}), 4.0)
+		if Game.settings["tips"]: ui.show_hint(Loc.t("tut.staff_hint", {"n": co.staff_at(worker).size()}), 4.0)
 	var guard := 0
 	while not runner.finished() and not stopped and guard < 4000:
 		guard += 1

@@ -31,6 +31,7 @@ var special: Array = []         # one-off partner orders: {biz, product, qty, pr
 var mods: Array = []            # {kind, target, value, until}
 var services := {}              # service id -> true
 var flags := {}
+var setup := {}                 # the setup file of the business being set up (SetupBoard); empty when there is none
 var stats := {"sold_total": 0, "transfers": 0, "inspections_passed": 0, "supplier_orders": 0, "profit_weeks": 0, "best_no_stockout": 0,
 	"sold_product_day": {}, "week_profit": 0, "week_revenue": 0, "week_start_cash": 0}
 var goals_done: Array = []
@@ -55,7 +56,7 @@ func _init(content_db: ContentDb) -> void:
 
 # ---------------------------------------------------------------- start, save, load
 func new_game(new_seed: int, keep_profile := false) -> void:
-	seed_value = new_seed; day = 1; track = "existing_bakery"
+	seed_value = new_seed; day = 1; track = "existing_bakery"; setup = {}
 	if not keep_profile: profile.reset(content)
 	profile.cash = int(world["start"]["cash"]) if not keep_profile else profile.cash
 	ledger = Ledger.new(); ledger.start_cash = profile.cash
@@ -115,6 +116,10 @@ func begin_business(bid: String, fmt: String, loan_id := "") -> Dictionary:
 	book("investment", -int(f["setup_cost"]), bid, "setup")
 	var b := _add_unit(bid, fmt)
 	b.opened_day = day + int(f["setup_days"]); b.lease_day = day
+	setup = {}
+	if bool(track_def().get("setup_board", false)) and not content.setup_tasks_for(bid).is_empty():
+		b.opened_day = 1 << 28           # the doors open when the required tasks are done (SetupBoard._open)
+		SetupBoard.init(self, bid)
 	worker = bid
 	flags["opened_" + bid] = day
 	_snap()
@@ -130,17 +135,14 @@ func setup_bid() -> String:
 	for bid in units: if not unit_ready(bid): return bid
 	return ""
 
-func setup_left(bid: String) -> int: return maxi(0, units[bid].opened_day - day)
+# Days until the doors open; -1 while the opening depends on the setup file (the date is not known yet).
+func setup_left(bid: String) -> int: return -1 if units[bid].opened_day > (1 << 20) else maxi(0, units[bid].opened_day - day)
 
-# A faster (or slower) setup, at least one more day to go.
-func shift_setup(bid: String, delta: int) -> void:
-	if not units.has(bid) or unit_ready(bid): return
-	units[bid].opened_day = maxi(day + 1, units[bid].opened_day + delta)
 
 func to_dict() -> Dictionary:
 	var u := {}
 	for bid in units: u[bid] = units[bid].to_dict()
-	return {"v": SAVE_VERSION, "profile": profile.to_dict(), "day": day, "seed": seed_value, "units": u, "ledger": ledger.to_dict(), "worker": worker, "track": track,
+	return {"v": SAVE_VERSION, "profile": profile.to_dict(), "day": day, "seed": seed_value, "units": u, "ledger": ledger.to_dict(), "worker": worker, "track": track, "setup": setup.duplicate(true),
 		"staff": staff.duplicate(true), "receivables": receivables.duplicate(true), "payables": payables.duplicate(true), "loans": loans.duplicate(true),
 		"contracts": contracts.duplicate(true), "orders": orders.duplicate(true), "special": special.duplicate(true), "mods": mods.duplicate(true),
 		"services": services.duplicate(), "flags": flags.duplicate(true), "stats": stats.duplicate(true), "goals_done": goals_done.duplicate(),
@@ -155,7 +157,7 @@ func from_dict(d: Dictionary) -> void:
 	for bid in d.get("units", {}):
 		if content.businesses.has(bid):
 			var b := Business.new(content.business_db(bid, str(d["units"][bid].get("format", "")))); b.from_dict(d["units"][bid]); units[bid] = b
-	track = str(d.get("track", "existing_bakery"))
+	track = str(d.get("track", "existing_bakery")); setup = _ints(d.get("setup", {}))
 	if units.is_empty() and track != "owner": _add_unit("bakery")
 	ledger = Ledger.new(); ledger.from_dict(d.get("ledger", {}))
 	worker = str(d.get("worker", "bakery")) if units.has(str(d.get("worker", "bakery"))) else (units.keys()[0] if not units.is_empty() else "")
@@ -466,6 +468,7 @@ func start_morning() -> Dictionary:
 	mods = mods.filter(func(m): return int(m["until"]) >= day)
 	for s in staff: if int(s["sick_day"]) < day: s["sick_day"] = 0
 	r["relief"] = morning_relief()
+	if not setup.is_empty() and in_setup(): SetupBoard.advance(self, r)
 	pending_events = EventEngine.morning(self, r)
 	r["events"] = pending_events
 	last_report = r

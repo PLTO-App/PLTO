@@ -6,6 +6,7 @@
   "_comment": "Whole shekels and whole percents. Illustrative values for a game, not business advice. A new business type is a new file like this one.",
 
   "start": {"reputation": 50, "stock": {"base": 40, "dairy": 24, "sweet": 14}},
+  "setup_packs": ["common", "food"],
   "slots": 12, "slots_friday": 8, "slot_minutes": 30, "day_start_hour": 8,
   "base_customers": 16,
   "capacity": {"name": "cap.oven", "amount": 80},

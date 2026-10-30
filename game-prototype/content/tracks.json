@@ -3,6 +3,6 @@
   "order": ["owner", "existing_bakery"],
   "tracks": {
     "existing_bakery": {"name": "track.existing", "desc": "track.existing.desc", "world_start": true},
-    "owner": {"name": "track.owner", "desc": "track.owner.desc", "cash": 3500, "businesses": [], "loans_from_start": true, "choose": ["bakery"]}
+    "owner": {"name": "track.owner", "desc": "track.owner.desc", "cash": 5000, "businesses": [], "loans_from_start": true, "setup_board": true, "choose": ["bakery"]}
   }
 }
