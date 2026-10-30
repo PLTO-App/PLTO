@@ -15,6 +15,7 @@ var events: Array = []
 var goals := {}
 var tracks := {}          # id -> Dictionary (where the company can start)
 var track_order: Array = []
+var finance := {}
 var negotiation := {}
 var setup_packs := {}      # pack id -> Array of tasks (content/setup/*.json)
 var _format_cache := {}   # "business/format" -> the business as that format
@@ -57,6 +58,10 @@ func load_all() -> void:
 	if typeof(tr) == TYPE_DICTIONARY:
 		_intify(tr, "tracks"); tracks = tr.get("tracks", {}); track_order = tr.get("order", [])
 	else: errors.append("tracks.json missing or invalid")
+	var fj = read_json("res://content/finance.json")
+	finance = _intify(fj, "finance") if typeof(fj) == TYPE_DICTIONARY else {}
+	if finance.is_empty(): errors.append("finance.json missing or invalid")
+	elif not finance["backgrounds"].has(finance["default_background"]): errors.append("finance: unknown default background")
 	var ng = read_json("res://content/negotiation.json")
 	negotiation = _intify(ng, "negotiation") if typeof(ng) == TYPE_DICTIONARY else {}
 	if negotiation.is_empty(): errors.append("negotiation.json missing or invalid")

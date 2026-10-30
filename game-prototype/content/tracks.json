@@ -1,8 +1,8 @@
 {
-  "_comment": "Ways to begin the game. A track only says where the company starts (cash, which businesses exist, what the bank offers); the simulation does not know about tracks. existing_bakery is the game up to version 0.5 (its numbers stay in world.json under start). owner starts with an empty rented space: the player chooses a business and its size, and may borrow from the bank from day one. Provisional numbers until the balance run is approved.",
+  "_comment": "Ways to begin the game. A track only says where the company starts (cash, which businesses exist, what the bank offers); the simulation does not know about tracks. existing_bakery is the game up to version 0.5 (its numbers stay in world.json under start). owner starts with an empty rented space: the player chooses a business and its size, and may borrow from the bank from day one. The money of the owner track is not a number here: it comes from the background and the funding the player puts together (content/finance.json).",
   "order": ["owner", "existing_bakery"],
   "tracks": {
     "existing_bakery": {"name": "track.existing", "desc": "track.existing.desc", "world_start": true},
-    "owner": {"name": "track.owner", "desc": "track.owner.desc", "cash": 5000, "businesses": [], "loans_from_start": true, "setup_board": true, "choose": ["bakery"]}
+    "owner": {"name": "track.owner", "desc": "track.owner.desc", "businesses": [], "loans_from_start": true, "setup_board": true, "choose": ["bakery"]}
   }
 }

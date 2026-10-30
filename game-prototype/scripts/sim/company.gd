@@ -31,6 +31,11 @@ var special: Array = []         # one-off partner orders: {biz, product, qty, pr
 var mods: Array = []            # {kind, target, value, until}
 var services := {}              # service id -> true
 var flags := {}
+var finance := {}               # who the owner is as a borrower: background, savings, experience, the family (see Finance)
+var partners: Array = []         # {id, amount, share}: a partner takes a share of each profitable week
+var week_profits: Array = []     # the profit of the last weeks, which the bank looks at
+var failed := false              # the business closed: the cash box was empty and nothing could fill it
+var failure := {}
 var setup_report := {}          # the summary of the last setup (SetupBoard.report), shown when the doors open
 var setup := {}                 # the setup file of the business being set up (SetupBoard); empty when there is none
 var stats := {"sold_total": 0, "transfers": 0, "inspections_passed": 0, "supplier_orders": 0, "profit_weeks": 0, "best_no_stockout": 0,
@@ -57,7 +62,7 @@ func _init(content_db: ContentDb) -> void:
 
 # ---------------------------------------------------------------- start, save, load
 func new_game(new_seed: int, keep_profile := false) -> void:
-	seed_value = new_seed; day = 1; track = "existing_bakery"; setup = {}; setup_report = {}
+	seed_value = new_seed; day = 1; track = "existing_bakery"; setup = {}; setup_report = {}; finance = {}; partners = []; week_profits = []; failed = false; failure = {}
 	if not keep_profile: profile.reset(content)
 	profile.cash = int(world["start"]["cash"]) if not keep_profile else profile.cash
 	ledger = Ledger.new(); ledger.start_cash = profile.cash
@@ -82,14 +87,23 @@ func _add_unit(bid: String, fmt := "") -> Business:
 # ---------------------------------------------------------------- the owner track: an empty rented space, a business to build
 # Starts a company from the owner track: the cash of the track, no business yet. begin_business() then rents the space for the
 # chosen business and size; the doors open after the setup days (rent runs from day one).
-func start_owner(new_seed: int) -> void:
+# The owner starts with nothing in the cash box. Who the player is comes from a background (savings and experience); with
+# `invest_all` (tests, balance runs) all the savings go into the business at once, otherwise the player builds a funding plan first
+# (Finance.commit). `carry` is what comes from an earlier failed try: loans that still have to be paid, and a record.
+func start_owner(new_seed: int, bg_id := "", invest_all := true, carry := {}) -> void:
 	new_game(new_seed)
-	var t: Dictionary = content.tracks["owner"]
 	track = "owner"
-	profile.cash = int(t["cash"])
-	ledger = Ledger.new(); ledger.start_cash = profile.cash
-	stats["week_start_cash"] = profile.cash
+	profile.cash = 0
+	ledger = Ledger.new(); ledger.start_cash = 0
+	stats["week_start_cash"] = 0
 	units = {}; worker = ""
+	Finance.start_profile(self, bg_id if bg_id != "" else str(content.finance["default_background"]))
+	if not carry.is_empty():
+		for l in carry["loans"]: loans.append(l)
+		finance["failures"] = int(carry["failures"]); finance["trust"] = int(carry["trust"]); finance["family_used"] = int(carry["family_used"])
+		finance["exp"] = maxi(int(finance["exp"]), int(carry.get("exp", 0)))
+	if invest_all:
+		book("capital", int(finance["savings"]), "", "savings"); finance["invested"] = int(finance["savings"])
 	_snap()
 
 func track_def() -> Dictionary: return content.tracks.get(track, {})
@@ -145,7 +159,7 @@ func setup_left(bid: String) -> int: return -1 if units[bid].opened_day > (1 << 
 func to_dict() -> Dictionary:
 	var u := {}
 	for bid in units: u[bid] = units[bid].to_dict()
-	return {"v": SAVE_VERSION, "profile": profile.to_dict(), "day": day, "seed": seed_value, "units": u, "ledger": ledger.to_dict(), "worker": worker, "track": track, "setup": setup.duplicate(true), "setup_report": setup_report.duplicate(true),
+	return {"v": SAVE_VERSION, "profile": profile.to_dict(), "day": day, "seed": seed_value, "units": u, "ledger": ledger.to_dict(), "worker": worker, "track": track, "setup": setup.duplicate(true), "setup_report": setup_report.duplicate(true), "finance": finance.duplicate(true), "partners": partners.duplicate(true), "week_profits": week_profits.duplicate(), "failed": failed, "failure": failure.duplicate(true),
 		"staff": staff.duplicate(true), "receivables": receivables.duplicate(true), "payables": payables.duplicate(true), "loans": loans.duplicate(true),
 		"contracts": contracts.duplicate(true), "orders": orders.duplicate(true), "special": special.duplicate(true), "mods": mods.duplicate(true),
 		"services": services.duplicate(), "flags": flags.duplicate(true), "stats": stats.duplicate(true), "goals_done": goals_done.duplicate(),
@@ -161,6 +175,7 @@ func from_dict(d: Dictionary) -> void:
 		if content.businesses.has(bid):
 			var b := Business.new(content.business_db(bid, str(d["units"][bid].get("format", "")))); b.from_dict(d["units"][bid]); units[bid] = b
 	track = str(d.get("track", "existing_bakery")); setup = _ints(d.get("setup", {})); setup_report = _ints(d.get("setup_report", {}))
+	finance = _ints(d.get("finance", {})); partners = _ints(d.get("partners", [])); week_profits = _ints(d.get("week_profits", [])); failed = bool(d.get("failed", false)); failure = _ints(d.get("failure", {}))
 	if units.is_empty() and track != "owner": _add_unit("bakery")
 	ledger = Ledger.new(); ledger.from_dict(d.get("ledger", {}))
 	worker = str(d.get("worker", "bakery")) if units.has(str(d.get("worker", "bakery"))) else (units.keys()[0] if not units.is_empty() else "")
@@ -471,6 +486,7 @@ func start_morning() -> Dictionary:
 	mods = mods.filter(func(m): return int(m["until"]) >= day)
 	for s in staff: if int(s["sick_day"]) < day: s["sick_day"] = 0
 	r["relief"] = morning_relief()
+	if Finance.insolvent(self): Finance.fail(self)
 	if not setup.is_empty() and in_setup(): SetupBoard.advance(self, r)
 	pending_events = EventEngine.morning(self, r)
 	r["events"] = pending_events
@@ -493,6 +509,7 @@ func supplier_price_at(o: Dictionary, item: String) -> int:
 
 # If the cash is gone and there is nothing to sell or bake, the family helps once more, so the game never locks.
 func morning_relief() -> int:
+	if track == "owner": return 0           # no rescue on this track: money that is gone is gone
 	var has_stock := false
 	for bid in units:
 		var b: Business = units[bid]
@@ -781,6 +798,14 @@ func _settle_week() -> Dictionary:
 		if load > 0 and rng("paperwork").int_range(1, 100) <= int(acc["paperwork_pct"]) * load:
 			w["fine"] = int(acc["paperwork_fine"]); book("fine", -w["fine"], "", "paperwork")
 	if w["profit"] > 0: stats["profit_weeks"] = int(stats["profit_weeks"]) + 1
+	# a partner takes a share of a profitable week; the bank looks at the last weeks' profit
+	w["partners"] = 0
+	if int(w["profit"]) > 0:
+		for p in partners:
+			var share := int(w["profit"]) * int(p["share"]) / 100
+			if share > 0: book("partner_share", -share, "", p["id"]); w["partners"] += share
+	week_profits.append(int(w["profit"]))
+	if week_profits.size() > 8: week_profits.pop_front()
 	w["cash_end"] = profile.cash
 	w["receivables"] = receivables_total(); w["debt"] = debt()
 	w["notes"] = Coach.week_lines(w, self)

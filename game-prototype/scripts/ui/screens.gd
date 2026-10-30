@@ -44,6 +44,8 @@ func today(sh: Sheet) -> void:
 		for n in news: nc.add_child(UiStyle.label("• " + n, 14))
 	if c.in_setup():
 		_setup_today(sh); return
+	if c.track == "owner" and int(c.finance.get("frozen", 0)) > 0:
+		var fc := sh.card(); fc.add_child(UiStyle.label(Loc.t("fin.frozen", {"n": c.finance["frozen"]}), 13, UiStyle.BAD, true))
 	if c.day <= 2: _tip_card(sh, _today_tip())
 	var list := sh.card()
 	list.add_child(UiStyle.label(Loc.t("today.checklist"), 14, UiStyle.MUTED, true))
@@ -599,19 +601,25 @@ func finance(sh: Sheet) -> void:
 				sh.kv(pc, Loc.t("fin.rent_line", {"biz_k": c.units[bid].db["name"]}), Loc.money(wk))
 			sh.line(Loc.t("fin.hint"), 12, UiStyle.MUTED)
 		1:
-			for lid in c.world["bank"]["loans"]:
-				var L: Dictionary = c.world["bank"]["loans"][lid]; var card := sh.card()
-				card.add_child(UiStyle.label(Loc.t("fin.loan_title", {"amount_m": L["amount"]}), 16, UiStyle.INK, true))
-				card.add_child(UiStyle.label(Loc.t("fin.loan_terms", {"weeks": L["weeks"], "weekly_m": L["weekly"], "total_m": int(L["weekly"]) * int(L["weeks"]), "cost_m": int(L["weekly"]) * int(L["weeks"]) - int(L["amount"])}), 13, UiStyle.MUTED))
-				var open := c.loan_available(lid); var active := c.loan_open(lid)
-				var b := UiStyle.button(Loc.t("fin.loan_active") if active else (Loc.t("fin.loan_take") if open else Loc.t("err.level", {"n": L["unlock_level"]})), "gold", 15, 44)
-				b.disabled = active or not open
-				b.pressed.connect(func():
-					var e := c.take_loan(lid)
-					if not e.is_empty(): sh.note(Loc.msg(e))
-					else: Game.save_game(); Game.sfx.play("coin"); ui.hud.sync(); sh.refresh())
-				card.add_child(b)
-			for l in c.loans: sh.line(Loc.t("fin.loan_left", {"weeks": l["weeks_left"], "weekly_m": l["weekly"]}), 13, UiStyle.INK, true)
+			if c.track == "owner":
+				# on this track the bank is a review, not a price list: the same review that was made before the lease, from the real figures
+				var bc := sh.card(); bc.add_child(UiStyle.label(Loc.t("fin.bank.running_card"), 13, UiStyle.MUTED))
+				var bb := UiStyle.button(Loc.t("fin.bank.open"), "gold", 15, 46); bb.pressed.connect(func(): fplan = {"last": {}, "bank": {}}; bank_req = {"amount": 5000, "weeks": 52, "guar": false}; bank_note = ""; ui.open_screen("bank")); bc.add_child(bb)
+			else:
+				for lid in c.world["bank"]["loans"]:
+					var L: Dictionary = c.world["bank"]["loans"][lid]; var card := sh.card()
+					card.add_child(UiStyle.label(Loc.t("fin.loan_title", {"amount_m": L["amount"]}), 16, UiStyle.INK, true))
+					card.add_child(UiStyle.label(Loc.t("fin.loan_terms", {"weeks": L["weeks"], "weekly_m": L["weekly"], "total_m": int(L["weekly"]) * int(L["weeks"]), "cost_m": int(L["weekly"]) * int(L["weeks"]) - int(L["amount"])}), 13, UiStyle.MUTED))
+					var open := c.loan_available(lid); var active := c.loan_open(lid)
+					var b := UiStyle.button(Loc.t("fin.loan_active") if active else (Loc.t("fin.loan_take") if open else Loc.t("err.level", {"n": L["unlock_level"]})), "gold", 15, 44)
+					b.disabled = active or not open
+					b.pressed.connect(func():
+						var e := c.take_loan(lid)
+						if not e.is_empty(): sh.note(Loc.msg(e))
+						else: Game.save_game(); Game.sfx.play("coin"); ui.hud.sync(); sh.refresh())
+					card.add_child(b)
+			for l in c.loans:
+				sh.line(Loc.t("fin.loan_left", {"weeks": l["weeks_left"], "weekly_m": l["weekly"]}) + ((" · " + Loc.t("fin.src.%s" % str(l["source"]))) if l.has("source") else ""), 13, UiStyle.INK, true)
 			sh.line(Loc.t("fin.loan_hint"), 12, UiStyle.MUTED)
 		2:
 			for svc in c.world["services"]:
@@ -677,6 +685,157 @@ func settings(sh: Sheet) -> void:
 	rc.add_child(rb)
 	sh.line(Loc.t("set.disclaimer"), 12, UiStyle.MUTED)
 	sh.line(Loc.t("set.credits"), 11, UiStyle.MUTED)
+
+# ================================================================ funding: where the money comes from (owner track, before the lease)
+signal funding_done(chosen: Dictionary)
+var fplan := {}
+var bank_req := {"amount": 0, "weeks": 52, "guar": false}
+var bank_note := ""
+
+func begin_funding(biz: String, fmt: String) -> void:
+	fplan = Finance.new_plan(co(), biz, fmt)
+	var nd := Finance.need(co(), biz, fmt)
+	bank_req = {"amount": maxi(0, (int(nd["total"]) - int(co().finance["savings"])) / 500 * 500), "weeks": 52, "guar": false}
+	bank_note = ""
+
+# A row of buttons that change an amount: the player can ask for any sum.
+func _stepper(parent: Control, value: int, steps: Array, on_change: Callable) -> void:
+	var v := UiStyle.label(Loc.money(value), 20, UiStyle.INK, true); v.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; parent.add_child(v)
+	for sign in [-1, 1]:
+		var h := UiStyle.hbox(6)
+		for st in steps:
+			var b := UiStyle.button(Loc.t("fin.more" if sign > 0 else "fin.less", {"amount_m": int(st)}), "secondary", 13, 40); b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			var d: int = sign * int(st)
+			b.pressed.connect(func(): Game.sfx.play("tap", 1.0, -6.0); on_change.call(maxi(0, value + d)))
+			h.add_child(b)
+		parent.add_child(h)
+
+func funding(sh: Sheet) -> void:
+	var c := co(); var nd := Finance.need(c, fplan["biz"], fplan["fmt"])
+	var raised := Finance.raised(fplan)
+	var fd := c.format_def(fplan["biz"], fplan["fmt"])
+	sh.set_title(Loc.t("fin.plan.title"), Loc.t("fin.plan.sub", {"biz_k": c.content.businesses[fplan["biz"]]["name"], "fmt_k": fd["name"]}))
+	var nc := sh.card()
+	sh.kv(nc, Loc.t("fin.plan.cost"), Loc.money(int(nd["cost"])))
+	sh.kv(nc, Loc.t("fin.plan.reserve", {"n": int(c.content.finance["plan"]["reserve_weeks"])}), Loc.money(int(nd["reserve"])))
+	sh.kv(nc, Loc.t("fin.plan.raised"), Loc.money(raised), true, UiStyle.GOOD if raised >= int(nd["total"]) else (UiStyle.INK if raised >= int(nd["cost"]) else UiStyle.BAD))
+	if raised < int(nd["cost"]): nc.add_child(UiStyle.label(Loc.t("fin.plan.missing", {"amount_m": int(nd["cost"]) - raised}), 13, UiStyle.BAD))
+	elif raised < int(nd["total"]): nc.add_child(UiStyle.label(Loc.t("fin.plan.thin", {"amount_m": int(nd["total"]) - raised}), 13, UiStyle.MUTED))
+	match sh.tab:
+		0: _fund_savings(sh)
+		1: _fund_family(sh)
+		2: _fund_partner(sh)
+		3: _fund_bank(sh)
+	var b := raised >= int(nd["cost"])
+	sh.add_footer(Loc.t("fin.plan.start"), "cta", func():
+		if not b: sh.note(Loc.t("fin.plan.missing", {"amount_m": int(nd["cost"]) - Finance.raised(fplan)})); return
+		sh.close(); funding_done.emit(fplan))
+
+func _fund_savings(sh: Sheet) -> void:
+	var c := co(); var card := sh.card()
+	var bg := Finance.background(c, c.finance["bg"])
+	card.add_child(UiStyle.label(Loc.t("fin.sav.title"), 15, UiStyle.INK, true))
+	card.add_child(UiStyle.label(Loc.t("fin.sav.body", {"bg_k": bg["name"], "years": bg["years"], "yearly_m": bg["yearly"], "total_m": int(c.finance["savings"]), "exp": bg["exp"]}), 13, UiStyle.MUTED))
+	_stepper(card, int(fplan["savings"]), [500, 1000, 5000], func(v):
+		fplan["savings"] = mini(v, int(c.finance["savings"])); fplan["bank"] = {}; sh.refresh())
+	var all := UiStyle.button(Loc.t("fin.sav.all"), "secondary", 14, 40)
+	all.pressed.connect(func(): fplan["savings"] = int(c.finance["savings"]); fplan["bank"] = {}; sh.refresh())
+	card.add_child(all)
+
+func _fund_family(sh: Sheet) -> void:
+	var c := co(); var card := sh.card()
+	card.add_child(UiStyle.label(Loc.t("fin.fam.title"), 15, UiStyle.INK, true))
+	card.add_child(UiStyle.label(Loc.t("fin.fam.body"), 13, UiStyle.MUTED))
+	for kind in ["gift", "loan"]:
+		var key := "family_gift" if kind == "gift" else "family_loan"
+		var kc := sh.card(); kc.add_child(UiStyle.label(Loc.t("fin.fam.%s" % kind), 14, UiStyle.INK, true))
+		kc.add_child(UiStyle.label(Loc.t("fin.fam.%s_sub" % kind, {"weeks": int(c.content.finance["family"]["loan_weeks"])}), 12, UiStyle.MUTED))
+		var k: String = kind
+		_stepper(kc, int(fplan[key]), [500, 1000, 5000], func(v):
+			var r := Finance.family_ask(c, fplan, k, v)
+			bank_note = Loc.t(r["said_k"], {"amount_m": r["given"], "max_m": r["max"]}); sh.refresh())
+	if bank_note != "": sh.card().add_child(UiStyle.label(bank_note, 13, UiStyle.INK))
+
+func _fund_partner(sh: Sheet) -> void:
+	var c := co(); var card := sh.card()
+	card.add_child(UiStyle.label(Loc.t("fin.par.title"), 15, UiStyle.INK, true))
+	card.add_child(UiStyle.label(Loc.t("fin.par.body"), 13, UiStyle.MUTED))
+	_stepper(card, int(fplan["partner"]["amount"]), [500, 1000, 5000], func(v):
+		var r := Finance.partner_ask(c, fplan, v)
+		bank_note = Loc.t("fin.par.said", {"amount_m": r["given"], "share": r["share"], "max_m": r["max"]}); sh.refresh())
+	if int(fplan["partner"]["amount"]) > 0: card.add_child(UiStyle.label(Loc.t("fin.par.share", {"share": fplan["partner"]["share"]}), 14, UiStyle.INK, true))
+	if bank_note != "": card.add_child(UiStyle.label(bank_note, 13, UiStyle.MUTED))
+
+func _fund_bank(sh: Sheet) -> void:
+	_bank_panel(sh, false)
+
+# The bank: a request for any amount and term, the answer with its reasons, and the chance to improve the fplan and ask again.
+func _bank_panel(sh: Sheet, running: bool) -> void:
+	var c := co(); var card := sh.card()
+	card.add_child(UiStyle.label(Loc.t("fin.bank.title"), 15, UiStyle.INK, true))
+	card.add_child(UiStyle.label(Loc.t("fin.bank.body_running" if running else "fin.bank.body"), 13, UiStyle.MUTED))
+	card.add_child(UiStyle.label(Loc.t("fin.bank.amount"), 13, UiStyle.MUTED, true))
+	_stepper(card, int(bank_req["amount"]), [1000, 5000, 20000], func(v): bank_req["amount"] = v; sh.refresh())
+	card.add_child(UiStyle.label(Loc.t("fin.bank.term"), 13, UiStyle.MUTED, true))
+	var th := UiStyle.hbox(6)
+	for w in c.content.finance["bank"]["terms"]:
+		var ch := UiStyle.chip(Loc.t("fin.bank.weeks", {"n": w}), int(bank_req["weeks"]) == int(w)); ch.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var ww: int = int(w)
+		ch.pressed.connect(func(): bank_req["weeks"] = ww; sh.refresh())
+		th.add_child(ch)
+	card.add_child(th)
+	var gc := UiStyle.chip(Loc.t("fin.bank.guarantor") + " · " + Loc.t("set.on" if bank_req["guar"] else "set.off"), bool(bank_req["guar"]))
+	gc.pressed.connect(func():
+		if bank_req["guar"]: bank_req["guar"] = false
+		else:
+			var pl: Dictionary = fplan if not running else {"bank": {"amount": int(bank_req["amount"])}}
+			var saved: Dictionary = pl["bank"]; pl["bank"] = {"amount": int(bank_req["amount"])}
+			var g := Finance.family_guarantee(c, pl); pl["bank"] = saved
+			bank_note = Loc.t(g["said_k"]); bank_req["guar"] = bool(g["ok"])
+		fplan["last"] = {}; sh.refresh())
+	card.add_child(gc)
+	var sb := UiStyle.button(Loc.t("fin.bank.submit"), "cta", 15, 48)
+	sb.pressed.connect(func():
+		if int(bank_req["amount"]) <= 0: sh.note(Loc.t("fin.bank.zero")); return
+		fplan["last"] = Finance.bank_review(c, fplan, int(bank_req["amount"]), int(bank_req["weeks"]), bool(bank_req["guar"]), running)
+		Game.sfx.play("tap"); sh.refresh())
+	card.add_child(sb)
+	if bank_note != "": card.add_child(UiStyle.label(bank_note, 12, UiStyle.MUTED))
+	var r: Dictionary = fplan.get("last", {})
+	if r.is_empty(): return
+	var rc := sh.card()
+	rc.add_child(UiStyle.label(Loc.t("fin.verdict.%s" % r["verdict"]), 16, UiStyle.GOOD if r["verdict"] in ["full", "terms", "partial"] else UiStyle.BAD, true))
+	var o: Dictionary = r["offer"]
+	if not o.is_empty():
+		rc.add_child(UiStyle.label(Loc.t("fin.bank.offer", {"amount_m": o["amount"], "weekly_m": o["weekly"], "weeks": o["weeks"], "total_m": o["total"], "cost_m": o["cost"]}), 14))
+		if r["verdict"] != "need_guarantor":
+			var ab := UiStyle.button(Loc.t("fin.bank.accept"), "primary", 15, 46)
+			ab.pressed.connect(func():
+				if running:
+					var e := Finance.take_running_loan(c, r, bool(bank_req["guar"]))
+					if not e.is_empty(): sh.note(Loc.msg(e)); return
+					Game.save_game(); Game.sfx.play("coin"); ui.hud.sync(); fplan["last"] = {}; sh.close()
+				else:
+					Finance.take_offer(fplan, r, bool(bank_req["guar"])); fplan["last"] = {}; Game.sfx.play("coin"); sh.refresh())
+			rc.add_child(ab)
+	for w in r["reasons"]: rc.add_child(UiStyle.label(("+ " if w["good"] else "- ") + Loc.t(w["k"], w["p"]), 12, UiStyle.GOOD if w["good"] else UiStyle.MUTED))
+	if not fplan["bank"].is_empty() and not running: rc.add_child(UiStyle.label(Loc.t("fin.bank.taken", {"amount_m": fplan["bank"]["amount"], "weekly_m": fplan["bank"]["weekly"]}), 13, UiStyle.INK, true))
+
+# The bank with a business running: the same review, from the real figures.
+func bank(sh: Sheet) -> void:
+	sh.set_title(Loc.t("fin.bank.title_running"), Loc.t("fin.bank.sub_running"))
+	_bank_panel(sh, true)
+
+# The business closed: what is left to pay, and the way to try again.
+func failure(sh: Sheet) -> void:
+	var c := co(); var f := c.failure
+	sh.set_title(Loc.t("fail.title"), Loc.t("fail.sub", {"day": f.get("day", c.day)}))
+	var card := sh.card()
+	card.add_child(UiStyle.label(Loc.t("fail.body"), 14))
+	sh.kv(card, Loc.t("fail.debt"), Loc.money(int(f.get("debt", 0))), true, UiStyle.BAD)
+	if int(f.get("guaranteed", 0)) > 0: card.add_child(UiStyle.label(Loc.t("fail.guaranteed", {"amount_m": f["guaranteed"]}), 13, UiStyle.BAD))
+	card.add_child(UiStyle.label(Loc.t("fail.carry"), 13, UiStyle.MUTED))
+	sh.add_footer(Loc.t("fail.restart"), "cta", func(): flow.call("restart_failure", {}))
 
 # ================================================================ buildings in town
 func building(sh: Sheet, id: String) -> void:
@@ -820,6 +979,7 @@ func week(sh: Sheet, w: Dictionary) -> void:
 	if int(w["wages"]) > 0: sh.kv(nc, Loc.t("week.wages"), Loc.money(-int(w["wages"])))
 	if int(w["services"]) > 0: sh.kv(nc, Loc.t("week.services"), Loc.money(-int(w["services"])))
 	if int(w["loans"]) > 0: sh.kv(nc, Loc.t("week.loans"), Loc.money(-int(w["loans"])))
+	if int(w.get("partners", 0)) > 0: sh.kv(nc, Loc.t("week.partner"), Loc.money(-int(w["partners"])))
 	if int(w.get("fine", 0)) > 0: sh.kv(nc, Loc.t("week.fine"), Loc.money(-int(w["fine"])))
 	sh.kv(nc, Loc.t("week.profit_line"), Loc.money(int(w["profit"]), true), true, UiStyle.GOOD if int(w["profit"]) >= 0 else UiStyle.BAD)
 	sh.kv(nc, Loc.t("week.cash"), Loc.money(int(w["cash_end"])), true)

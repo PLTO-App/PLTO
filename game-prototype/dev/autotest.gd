@@ -61,6 +61,23 @@ func check(label: String, ok: bool, detail := "") -> void:
 
 func _run() -> void:
 	await wait(1.2)
+	if owner_test:
+		await answer_cards(0, "00_start")                       # the way to begin, the background and the size
+		await wait_until(func(): return ui().sheet.visible and ui().sheet.screen_id == "funding", 30.0)
+		await wait(0.5); await shot("f01_funding_savings")
+		var fpl: Dictionary = ui().screens.fplan; var fco: Company = Game.co
+		fpl["savings"] = fco.finance["savings"]
+		Finance.family_ask(fco, fpl, "loan", 5000)
+		ui().sheet.tab = 1; ui().sheet.refresh(); await wait(0.5); await shot("f02_funding_family")
+		ui().sheet.tab = 2; ui().sheet.refresh(); await wait(0.5); await shot("f03_funding_partner")
+		ui().sheet.tab = 3; ui().sheet.refresh(); await wait(0.5); await shot("f04_funding_bank")
+		var want := maxi(500, 3000 - Finance.raised(fpl) + 500)
+		var rv := Finance.bank_review(fco, fpl, want, 52, false)
+		fpl["last"] = rv; ui().sheet.refresh(); await wait(0.5); await shot("f05_funding_bank_answer")
+		if not rv["offer"].is_empty() and rv["verdict"] != "need_guarantor": Finance.take_offer(fpl, rv, false)
+		check("the funding plan reached the setup cost (family and bank, no free money)", Finance.raised(fpl) >= 3000, "%d (%s)" % [Finance.raised(fpl), rv["verdict"]])
+		ui().sheet.tab = 0; ui().sheet.refresh(); await wait(0.4)
+		ui().screens.funding_done.emit(fpl); ui().sheet.close()
 	await answer_cards(0, "00_intro")
 	await wait_until(func(): return ui().sheet.visible and ui().sheet.screen_id == "today")
 	await wait(0.5); await shot("01_today")

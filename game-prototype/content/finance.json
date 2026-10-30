@@ -1,0 +1,26 @@
+{
+  "_comment": "Where the money comes from, and how a lender decides. All money is whole shekels, all rates whole percents, every number is an illustration of how financing works, not real banking terms or advice, and not the product of any real bank. A background is what the player did before the business: savings = years of work x yearly saving (shown to the player), exp = years in the same field. family: how much relatives could help (a range drawn from the seed) and how much they trust the player. The bank scores the plan: equity, experience, ability to repay, a reserve in the plan, guarantee and collateral, less existing debts and earlier failures.",
+  "default_background": "mid",
+  "backgrounds": {
+    "fresh":  {"name": "fin.bg.fresh",  "desc": "fin.bg.fresh.desc",  "years": 1, "yearly": 1000, "exp": 0, "family": [500, 3000],  "trust": [45, 75]},
+    "junior": {"name": "fin.bg.junior", "desc": "fin.bg.junior.desc", "years": 2, "yearly": 1250, "exp": 2, "family": [1000, 4000], "trust": [45, 75]},
+    "mid":    {"name": "fin.bg.mid",    "desc": "fin.bg.mid.desc",    "years": 4, "yearly": 1250, "exp": 4, "family": [1500, 5000], "trust": [45, 75]},
+    "other":  {"name": "fin.bg.other",  "desc": "fin.bg.other.desc",  "years": 5, "yearly": 1300, "exp": 0, "family": [1500, 5000], "trust": [45, 75]}
+  },
+  "plan": {"reserve_weeks": 4},
+  "expected_weekly_profit": {"small": 1100, "regular": 1800},
+  "experience_factor": {"base": 55, "per_year": 9, "max": 100},
+  "family": {"gift_share": 50, "loan_weeks": 52, "trust_loan": -10, "trust_gift": -15, "guarantee_min_trust": 40, "guarantee_trust": -20, "failed_trust": 20},
+  "partner": {"premium": 130, "max_share": 49, "min_share": 5},
+  "bank": {
+    "points": {"equity": 40, "experience": 15, "capacity": 35, "reserve": 10},
+    "equity_full_pct": 35, "exp_pts_per_year": 3, "coverage_full_pct": 150, "reserve_weeks_full": 3,
+    "guarantor_pts": 6, "collateral_pts": 4, "collateral_pct": 40,
+    "debt_penalty_max": 20, "failure_penalty": 15,
+    "approve_full": 72, "approve_partial": 55, "counter": 40,
+    "cap_mult_pct": {"full": 300, "partial": 200, "counter": 120},
+    "surcharge": {"full": 0, "partial": 3, "counter": 6},
+    "capacity_share_pct": 50, "plan_slack_pct": 120, "min_partial_pct": 40, "min_amount": 500,
+    "terms": [26, 52, 78, 104], "default_term": 52, "base_cost": 5, "term_div": 5
+  }
+}

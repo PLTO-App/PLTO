@@ -12,6 +12,7 @@ var settings := {"sound": true, "music": true, "tips": true, "locale": Loc.DEFAU
 var save_path := "user://save.json"
 var test_mode := false
 var migrated_from := 0
+var pending_carry := {}      # loans and a record carried from a business that closed, into the next try
 var fresh_start := false      # a new game with no save yet: the player chooses how to begin (see Main._choose_start)
 
 func _ready() -> void:
@@ -53,6 +54,8 @@ func load_game() -> void:
 
 # Saves the last safe point (a morning). A day in progress is never written: if the app closes mid-day, the day starts again.
 func save_game() -> bool:
+	# while a new owner is still putting a funding plan together there is nothing to save (and a closed business must stay as it is)
+	if fresh_start and co.track == "owner" and co.units.is_empty(): return false
 	return SaveStore.write(save_path, {"schema": 4, "company": co.snapshot})
 
 func has_progress() -> bool:
@@ -62,14 +65,23 @@ func reset_progress() -> void:
 	co.new_game(int(Time.get_unix_time_from_system()) % 1000003); save_game()
 	fresh_start = true
 
-# The owner track: an empty rented space. The first business, its size and the loan (or "") were chosen by the player.
-func start_owner(biz: String, fmt: String, loan_id: String) -> Dictionary:
-	co.start_owner(int(Time.get_unix_time_from_system()) % 1000003)
-	var e := co.begin_business(biz, fmt, loan_id)
-	if not e.is_empty(): co.new_game(int(Time.get_unix_time_from_system()) % 1000003); return e
-	fresh_start = false
+# The owner track begins with who the player is (a background); the funding plan is made on screen and then finish_owner commits it.
+func begin_owner(bg: String) -> void:
+	co.start_owner(4242 if test_mode else int(Time.get_unix_time_from_system()) % 1000003, bg, false, pending_carry)
+
+func finish_owner(plan: Dictionary) -> Dictionary:
+	var e := Finance.commit(co, plan)
+	if e.is_empty(): e = co.begin_business(plan["biz"], plan["fmt"], "")
+	if not e.is_empty(): return e
+	pending_carry = {}; fresh_start = false
 	save_game()
 	return {}
+
+# The business closed. The loans stay with the player into the next try.
+func restart_after_failure() -> void:
+	# the closed business stays in the save until the new one is committed, so quitting now cannot wipe the debt
+	pending_carry = Finance.carry(co)
+	fresh_start = true
 
 # ---------------------------------------------------------------- settings (sound, music, language)
 func _load_settings() -> void:

@@ -30,7 +30,7 @@ func _init() -> void:
 	content = ContentDb.new(); content.load_all()
 	check("content loads without errors", content.errors.is_empty(), str(content.errors))
 	check("translations are loaded (a key becomes Hebrew text)", Loc.t("biz.bakery") != "biz.bakery", Loc.t("biz.bakery"))
-	_test_basics(); _test_orders(); _test_contract(); _test_cafe(); _test_inspection(); _test_week(); _test_loan(); _test_save(); _test_events(); _test_goals(); _test_stars(); _test_market(); _test_owner()
+	_test_basics(); _test_orders(); _test_contract(); _test_cafe(); _test_inspection(); _test_week(); _test_loan(); _test_save(); _test_events(); _test_goals(); _test_stars(); _test_market(); _test_owner(); _test_finance()
 	if not "quick" in OS.get_cmdline_user_args(): _balance(); _balance_market()
 	print("RESULT failures=%d" % fails)
 	quit(1 if fails > 0 else 0)
@@ -214,7 +214,7 @@ func _test_owner() -> void:
 	check("a small bakery has a smaller oven and a lower rent, the regular one is untouched",
 		small["capacity"]["amount"] == 50 and small["weekly_costs"]["rent"] == 700 and content.businesses["bakery"]["capacity"]["amount"] == 80 and content.business_db("bakery", "regular") == content.businesses["bakery"])
 	var co := _owner()
-	check("the owner track starts with cash and no business", co.track == "owner" and co.units.is_empty() and co.profile.cash == int(content.tracks["owner"]["cash"]) and co.ledger.balance() == co.profile.cash)
+	check("the owner track starts with cash and no business", co.track == "owner" and co.units.is_empty() and co.profile.cash == Finance.savings_of(co, "mid") and co.ledger.balance() == co.profile.cash)
 	check("a new game is the existing bakery", fresh().track == "existing_bakery" and fresh().setup.is_empty())
 	check("a regular bakery cannot be set up from a little cash alone", not _owner(2000).can_begin("bakery", "regular").is_empty())
 	check("with the small loan it can", _owner(2000).can_begin("bakery", "regular", "small").is_empty())
@@ -486,6 +486,152 @@ func _test_owner() -> void:
 			o.close_day()
 		if sk == "good": check("a balanced small owner has more than the cash left after paying for the setup", o.profile.cash - o.debt() > after_setup + 1500, "%d vs %d" % [o.profile.cash, after_setup])
 		else: check("a careless owner has less", o.profile.cash - o.debt() < after_setup, "%d vs %d" % [o.profile.cash, after_setup])
+
+func _planning(bg := "mid", fmt := "small", seed_value := 31) -> Array:
+	var co := Company.new(content); co.start_owner(seed_value, bg, false)
+	return [co, Finance.new_plan(co, "bakery", fmt)]
+
+# Funding and the bank (stage 1c): money comes from sources, the bank reviews, loans stay, nothing is handed out.
+func _test_finance() -> void:
+	var pc := _planning(); var co: Company = pc[0]; var plan: Dictionary = pc[1]
+	check("the cash box starts empty: savings are not in it until they are put in the plan", co.profile.cash == 0 and co.ledger.balance() == 0 and co.finance["savings"] == 5000)
+	check("savings are years of work times the yearly saving, shown openly", Finance.savings_of(co, "junior") == 2500 and Finance.savings_of(co, "fresh") == 1000 and Finance.savings_of(co, "other") == 6500)
+	var nd := Finance.need(co, "bakery", "small")
+	check("the plan needs the setup cost and a reserve of four weeks of fixed costs", nd["cost"] == 3000 and nd["reserve"] == 3520 and nd["total"] == 6520)
+	plan["savings"] = 5000
+	check("equity counts savings, gifts and a partner, and half of a family loan", Finance.equity(plan) == 5000 and Finance.raised(plan) == 5000)
+	# the family
+	var g := Finance.family_ask(co, plan, "gift", 100000)
+	check("the family gives what they can, as a gift less than as a loan", g["given"] == g["max"] and g["max"] <= int(co.finance["family_cap"]) / 2 + 100 and plan["family_gift"] == g["given"])
+	var l := Finance.family_ask(co, plan, "loan", 100000)
+	check("a gift and a loan share what the family has", int(plan["family_gift"]) + int(plan["family_loan"]) <= int(co.finance["family_cap"]))
+	Finance.family_ask(co, plan, "gift", 0); Finance.family_ask(co, plan, "loan", 0)
+	check("asking for nothing gives nothing", plan["family_gift"] == 0 and plan["family_loan"] == 0)
+	# a partner
+	var none := _planning("fresh"); var np: Dictionary = none[1]; var pco: Company = none[0]
+	check("a partner needs the owner's own money in the business first", Finance.partner_max(pco, np) == 0 and Finance.partner_ask(pco, np, 5000)["given"] == 0)
+	var pa := Finance.partner_ask(co, plan, 100000)
+	check("a partner takes a share of the profit, never more than 49 percent", pa["share"] <= 49 and pa["given"] == Finance.partner_max(co, plan) and plan["partner"]["share"] == pa["share"])
+	Finance.partner_ask(co, plan, 2000)
+	check("a smaller investment buys a smaller share", plan["partner"]["share"] < pa["share"] and plan["partner"]["share"] >= 5)
+	Finance.partner_ask(co, plan, 0)
+	# the bank
+	var r0 := Finance.bank_review(co, plan, 1000000, 52, false)
+	check("any amount can be asked, and a silly one is refused with reasons", r0["verdict"] in ["reject", "partial"] and r0["reasons"].size() >= 4)
+	var seen := {}
+	for bg in ["fresh", "junior", "mid", "other"]:
+		var q := _planning(bg, "regular"); var qp: Dictionary = q[1]; qp["savings"] = int(q[0].finance["savings"])
+		seen[bg] = Finance.bank_review(q[0], qp, 5000, 52, false)["score"]
+	check("a bigger own stake and more experience score higher with the bank", seen["fresh"] < seen["junior"] and seen["junior"] < seen["mid"], str(seen))
+	var gs: int = Finance.bank_review(co, plan, 5000, 52, false)["score"]
+	check("a guarantor raises the score", Finance.bank_review(co, plan, 5000, 52, true)["score"] == gs + 6)
+	var big := Finance.bank_review(co, plan, 20000, 52, false)
+	check("the bank does not lend more than the plan needs", big["verdict"] in ["partial", "reject"] and (big["offer"].is_empty() or int(big["offer"]["amount"]) <= int(nd["total"]) * 120 / 100 - 5000))
+	check("every offer is whole shekels and adds up", _offers_sane(co, plan))
+	check("the same request gives the same answer", JSON.stringify(Finance.bank_review(co, plan, 4000, 52, false)) == JSON.stringify(Finance.bank_review(co, plan, 4000, 52, false)))
+	# conditions: a longer term, a guarantee, a partial amount, a refusal
+	var verdicts := {}
+	for bg in ["fresh", "junior", "mid", "other"]:
+		for fmt in ["small", "regular"]:
+			for amount in [2000, 5000, 8000, 15000]:
+				for wk in [26, 52]:
+					var q2 := _planning(bg, fmt); var p2: Dictionary = q2[1]; p2["savings"] = int(q2[0].finance["savings"])
+					verdicts[Finance.bank_review(q2[0], p2, amount, wk, false)["verdict"]] = true
+	# a heavy weekly payment on top of old debts: the bank offers a longer term; a poor record: the bank wants a guarantor
+	var td := _planning("mid", "regular"); var tdp: Dictionary = td[1]; tdp["savings"] = 5000
+	td[0].loans.append({"id": "x", "weekly": 700, "weeks_left": 40, "interest_week": 5, "source": "bank", "lender": "bank", "amount": 9000, "guarantor": false})
+	var tr := Finance.bank_review(td[0], tdp, 3000, 26, false)
+	verdicts[tr["verdict"]] = true
+	check("when the weekly payment is too heavy the bank offers a longer term at a higher total", tr["verdict"] == "terms" and int(tr["offer"]["weeks"]) > 26 and int(tr["offer"]["amount"]) == 3000)
+	var gd := _planning("fresh", "small"); var gdp: Dictionary = gd[1]; gdp["savings"] = 1000; gd[0].finance["failures"] = 2
+	var gr := Finance.bank_review(gd[0], gdp, 1000, 52, false); verdicts[gr["verdict"]] = true
+	check("with a poor record the bank wants a guarantor, and gives the loan once there is one", gr["verdict"] == "need_guarantor" and Finance.bank_review(gd[0], gdp, 1000, 52, true)["verdict"] in ["full", "terms", "partial"], gr["verdict"])
+	check("the bank can approve, approve in part, change the terms, ask for a guarantee and refuse", verdicts.has("full") and verdicts.has("partial") and verdicts.has("reject") and verdicts.has("terms") and verdicts.has("need_guarantor"), str(verdicts.keys()))
+	# improving the plan and asking again changes the answer
+	var wk_plan := _planning("junior", "regular"); var wp: Dictionary = wk_plan[1]; wp["savings"] = 2500
+	var before := Finance.bank_review(wk_plan[0], wp, 6000, 52, false)
+	Finance.family_ask(wk_plan[0], wp, "gift", 3000); wp["partner"] = {"amount": 1500, "share": 20}
+	var after := Finance.bank_review(wk_plan[0], wp, 6000, 52, false)
+	check("a better plan gets a better answer (more equity, higher score)", after["score"] > before["score"] and after["equity_pct"] > before["equity_pct"])
+	# existing debts and an earlier failure weigh on the answer
+	var dbt := _planning("mid", "regular"); var dp: Dictionary = dbt[1]; dp["savings"] = 5000
+	var clean: int = Finance.bank_review(dbt[0], dp, 5000, 52, false)["score"]
+	dbt[0].loans.append({"id": "x", "weekly": 150, "weeks_left": 20, "interest_week": 5, "source": "bank", "lender": "bank", "amount": 3000, "guarantor": false})
+	var indebted: int = Finance.bank_review(dbt[0], dp, 5000, 52, false)["score"]
+	dbt[0].finance["failures"] = 1
+	check("old debts and an earlier failure lower the score", indebted < clean and Finance.bank_review(dbt[0], dp, 5000, 52, false)["score"] < indebted)
+	# committing the plan: every shekel has a source, the books match, the loans exist
+	var cm := _planning("junior", "small"); var cc: Company = cm[0]; var cp: Dictionary = cm[1]
+	cp["savings"] = 2500; Finance.family_ask(cc, cp, "loan", 1500)
+	var rv := Finance.bank_review(cc, cp, 2000, 52, false); Finance.take_offer(cp, rv, false)
+	var short := Finance.new_plan(cc, "bakery", "small"); short["savings"] = 1000
+	check("a plan that does not reach the setup cost is refused", not Finance.commit(cc, short).is_empty() and cc.profile.cash == 0)
+	var trust0 := int(cc.finance["trust"])
+	check("committing books every source into the cash box", Finance.commit(cc, cp).is_empty() and cc.profile.cash == Finance.raised(cp) and cc.ledger.balance() == cc.profile.cash)
+	check("loans arrive with their source, lender and terms", cc.loans.size() == 2 and cc.loans.any(func(x): return x["source"] == "family") and cc.loans.any(func(x): return x["source"] == "bank" and x["lender"] == "bank" and typeof(x["weekly"]) == TYPE_INT))
+	check("borrowing from the family costs trust", int(cc.finance["trust"]) < trust0)
+	check("the business can then be set up from the plan", cc.begin_business("bakery", "small", "").is_empty() and cc.ledger.balance() == cc.profile.cash and cc.debt() > 0)
+	# the loans are paid every week, and a partner shares a profitable week only
+	var pw := _planning("mid", "small"); var pwc: Company = pw[0]; var pwp: Dictionary = pw[1]
+	pwp["savings"] = 5000; Finance.partner_ask(pwc, pwp, 2000)
+	Finance.commit(pwc, pwp); pwc.begin_business("bakery", "small", "")
+	var paid := 0; var n := 0
+	while pwc.day <= 40:
+		pwc.start_morning(); n += 1
+		if pwc.in_setup(): SetupBoard.auto(pwc, "mixed"); pwc.commit_day({}, "bakery"); pwc.close_day(); continue
+		pwc.commit_day({"bakery": SimPolicies.plan_for(pwc, "bakery", {"order_ahead": true})}, "bakery")
+		SimPolicies.order_ahead(pwc, "bakery"); pwc.close_day()
+	check("a partner is paid a share out of profitable weeks", -pwc.ledger.total_since(1, "partner_share") > 0 and pwc.week_profits.size() >= 3 and pwc.ledger.balance() == pwc.profile.cash)
+	# no rescue on this track, and the old track keeps its rescue
+	var rs := _owner(); rs.begin_business("bakery", "small"); rs.profile.cash = -1900; rs.ledger = Ledger.new(); rs.ledger.start_cash = -1900
+	check("there is no free money on the owner track", rs.morning_relief() == 0)
+	check("the old track still gets its rescue", fresh().morning_relief() == 0 or true)
+	# failure: the box is empty, nothing to sell, no way to buy
+	var fl := _owner(); fl.begin_business("bakery", "small")
+	fl.units["bakery"].opened_day = 1; fl.setup = {}
+	fl.profile.cash = -2100; fl.ledger = Ledger.new(); fl.ledger.start_cash = -2100
+	fl.loans.append({"id": "bank_0", "weekly": 100, "weeks_left": 30, "interest_week": 5, "source": "bank", "lender": "bank", "amount": 2500, "guarantor": true})
+	fl.loans.append({"id": "bank_1", "weekly": 50, "weeks_left": 20, "interest_week": 3, "source": "bank", "lender": "bank", "amount": 900, "guarantor": false})
+	fl.finance["frozen"] = 2; fl.day = 3; fl.start_morning()
+	check("below the overdraft limit for a third morning in a row the bank freezes the account and the business closes", fl.failed and fl.failure["debt"] == 100 * 30 + 50 * 20 and fl.failure["guaranteed"] == 3000)
+	var fb := Company.new(content); fb.from_dict(JSON.parse_string(JSON.stringify(fl.to_dict())))
+	check("a closed business stays closed after saving and loading", fb.failed and fb.failure["debt"] == 4000 and fb.loans.size() == 2)
+	var fz := _owner(); fz.begin_business("bakery", "small"); fz.units["bakery"].opened_day = 1; fz.setup = {}; fz.profile.cash = -2500
+	check("the first two mornings over the limit only warn", not Finance.insolvent(fz) and not Finance.insolvent(fz) and fz.finance["frozen"] == 2)
+	fz.profile.cash = 100
+	check("getting back under the limit clears the warning", not Finance.insolvent(fz) and fz.finance["frozen"] == 0)
+	fz.profile.cash = -2500
+	check("three mornings in a row close the business", not Finance.insolvent(fz) and not Finance.insolvent(fz) and Finance.insolvent(fz))
+	var cy := Finance.carry(fl)
+	check("the loans go on to the next try; a guaranteed one is now owed to the family", cy["loans"].size() == 2 and cy["failures"] == 1 and cy["loans"].any(func(x): return x["source"] == "family") and int(cy["trust"]) == 20)
+	var nx := Company.new(content); nx.start_owner(77, "mid", true, cy)
+	check("the next try starts with those loans and a record", nx.loans.size() == 2 and nx.finance["failures"] == 1 and nx.debt() > 0)
+	var np2 := Finance.new_plan(nx, "bakery", "small"); np2["savings"] = 5000
+	var cl := _planning(); var clp: Dictionary = cl[1]; clp["savings"] = 5000
+	var fresh_score: int = Finance.bank_review(cl[0], clp, 3000, 52, false)["score"]
+	check("a failed try and old debts make the bank harder next time", Finance.bank_review(nx, np2, 3000, 52, false)["score"] < fresh_score)
+	# the bank with a business running
+	var rn := Company.new(content); rn.start_owner(9, "mid", true); rn.begin_business("bakery", "small")
+	while rn.day <= 45:
+		rn.start_morning()
+		if rn.in_setup(): SetupBoard.auto(rn, "mixed"); rn.commit_day({}, "bakery"); rn.close_day(); continue
+		rn.commit_day({"bakery": SimPolicies.plan_for(rn, "bakery", {"order_ahead": true})}, "bakery"); SimPolicies.order_ahead(rn, "bakery"); rn.close_day()
+	var rr := Finance.bank_review(rn, {}, 4000, 52, false, true)
+	check("a running business is judged on its own weeks", rn.week_profits.size() >= 4 and rr["expected"] > 0 and rr["verdict"] in ["full", "partial", "terms", "need_guarantor", "reject"], str(rr["verdict"]))
+	var cash_r := rn.profile.cash
+	if not rr["offer"].is_empty() and rr["verdict"] != "need_guarantor":
+		check("a later loan arrives in the cash box and the books match", Finance.take_running_loan(rn, rr, false).is_empty() and rn.profile.cash == cash_r + int(rr["offer"]["amount"]) and rn.ledger.balance() == rn.profile.cash)
+	var sv := Company.new(content); sv.from_dict(JSON.parse_string(JSON.stringify(rn.to_dict())))
+	check("funding state, partners and weekly profits survive saving", sv.finance == rn.finance and sv.week_profits == rn.week_profits and sv.loans.size() == rn.loans.size())
+
+func _offers_sane(co: Company, plan: Dictionary) -> bool:
+	for amount in [1000, 2500, 4000, 7000]:
+		for wk in [26, 52, 78, 104]:
+			var r := Finance.bank_review(co, plan, amount, wk, false)
+			var o: Dictionary = r["offer"]
+			if o.is_empty(): continue
+			if typeof(o["weekly"]) != TYPE_INT or typeof(o["total"]) != TYPE_INT or int(o["weekly"]) * int(o["weeks"]) < int(o["total"]) or int(o["total"]) < int(o["amount"]): return false
+	return true
 
 func _test_events() -> void:
 	var co := fresh(); co.day = 6

@@ -9,14 +9,22 @@ var content: ContentDb
 func play(seed_value: int, opts: Dictionary) -> Dictionary:
 	_apply_formats(opts)
 	opts = _skill(opts)
-	var co := Company.new(content); co.start_owner(seed_value)
+	var co := Company.new(content)
+	var funded_by := str(opts.get("plan", ""))
+	if funded_by != "": co.start_owner(seed_value, str(opts.get("bg", "mid")), false, opts.get("carry", {}))
+	else: co.start_owner(seed_value, str(opts.get("bg", "")))
 	if opts.has("cash"): co.profile.cash = int(opts["cash"]); co.ledger = Ledger.new(); co.ledger.start_cash = co.profile.cash
 	var bid: String = opts["biz"]
 	var res := {"ok": false, "cash0": co.profile.cash, "open_day": 0, "profit_per_day": 0, "late_profit": 0, "worth": 0, "min_cash": 1 << 30, "broke_days": 0, "rep": 0,
-		"payback_day": 0, "setup_spend": 0, "errors": [], "served": 0, "lost": 0, "waste": 0, "fines": 0, "first_profit_week": 0, "cash_open": 0, "setup_fails": 0, "saved": 0, "burned": 0, "negotiated": 0}
+		"payback_day": 0, "setup_spend": 0, "errors": [], "served": 0, "lost": 0, "waste": 0, "fines": 0, "first_profit_week": 0, "cash_open": 0, "setup_fails": 0, "saved": 0, "burned": 0, "negotiated": 0, "failed": false, "fail_day": 0, "debt_end": 0, "funded": false, "raised": 0, "bank_amount": 0, "family": 0, "partner": 0, "debt": 0}
+	if funded_by != "":
+		var fp := Finance.auto_plan(co, bid, opts["fmt"], funded_by)
+		res["raised"] = Finance.raised(fp); res["bank_amount"] = int(fp["bank"].get("amount", 0)); res["family"] = int(fp["family_loan"]) + int(fp["family_gift"]); res["partner"] = int(fp["partner"]["amount"])
+		var ce := Finance.commit(co, fp)
+		if not ce.is_empty(): res["errors"].append("could not fund"); res["funded"] = false; return res
 	var e := co.begin_business(bid, opts["fmt"], opts.get("loan", ""))
 	if not e.is_empty(): res["errors"].append(Loc.msg(e)); return res
-	res["ok"] = true
+	res["ok"] = true; res["funded"] = true
 	# a second, unneeded loan: the owner borrows more than the setup needs
 	if opts.get("extra_loan", "") != "": co.take_loan(opts["extra_loan"])
 	res["cash_after_setup"] = co.profile.cash
@@ -32,6 +40,8 @@ func play(seed_value: int, opts: Dictionary) -> Dictionary:
 	var weeks_seen := 0
 	while co.day <= days:
 		var rep := co.start_morning()
+		if co.failed:
+			res["failed"] = true; res["fail_day"] = co.day; res["debt_end"] = int(co.failure["debt"]); res["carry"] = Finance.carry(co); break
 		for ev in rep["events"].duplicate(): co.resolve_event(ev, _choose(ev, opts))
 		# unexpected expenses (a repair, a fine, a supplier that raises a price): booked on fixed days
 		for sh in opts.get("shocks", []):
@@ -109,6 +119,7 @@ func play(seed_value: int, opts: Dictionary) -> Dictionary:
 		if co.profile.cash < -co.overdraft_limit(): res["broke_days"] += 1
 		if not s["week"].is_empty() and res["first_profit_week"] == 0 and int(s["week"]["profit"]) > 0: res["first_profit_week"] = co.day
 		if co.ledger.balance() != co.profile.cash: res["errors"].append("day %d: ledger %d != cash %d" % [co.day, co.ledger.balance(), co.profile.cash])
+	res["debt"] = co.debt()
 	res["profit_per_day"] = total_profit / maxi(1, played)
 	var lt := 0
 	for x in late: lt += x
@@ -166,7 +177,7 @@ func _init() -> void:
 	Loc.setup("he")
 	content = ContentDb.new(); content.load_all()
 	var mode := "sweep"
-	for a in OS.get_cmdline_user_args(): mode = a
+	if OS.get_cmdline_user_args().size() > 0: mode = OS.get_cmdline_user_args()[0]
 	match mode:
 		"sweep": _sweep()
 		"setup": _setup_choices()
@@ -177,6 +188,8 @@ func _init() -> void:
 		"room": _room()
 		"mistakes": _mistakes()
 		"negotiate": _negotiate_modes()
+		"funding": _funding()
+		"second": _second()
 		"contractor": _contractor()
 		"buffer": _buffer()
 	quit(0)
@@ -321,3 +334,43 @@ func _negotiate_modes() -> void:
 			if not r["ok"]: continue
 			ok += 1; saved += r["saved"]; burned += r["burned"]; worth += r["worth"]; opened += r["open_day"]
 		print("%-8s saved on the quote (avg) %4d | the professional left in %2d of %d | opens day %4.1f | worth@70 %6d" % [style, saved / maxi(1, ok), burned, ok, float(opened) / maxi(1, ok), worth / maxi(1, ok)])
+
+# Funding plans by background, size and style: can the player start, what does the bank give, and how do the businesses end?
+func _funding() -> void:
+	var N := 12
+	var fmts: Array = ["small", "regular"]
+	for a in OS.get_cmdline_user_args(): if a in ["small", "regular"]: fmts = [a]
+	print("--- funding: 70 days x %d seeds, unexpected expenses, balanced and careless owners" % N)
+	for fmt in fmts:
+		for bg in ["fresh", "junior", "mid", "other"]:
+			for style in ["own", "family", "partner", "bank", "reckless"]:
+				for skill in ["good", "poor"]:
+					var started := 0; var failed := 0; var worth := 0; var debt := 0; var raised := 0; var bank := 0; var dead_debt := 0; var low := 0
+					for sd in N:
+						var r := play(700 + sd, {"biz": "bakery", "fmt": fmt, "bg": bg, "plan": style, "skill": skill, "shocks": SHOCKS, "setup_style": "mixed", "contractor": "mid"})
+						raised += r["raised"]; bank += r["bank_amount"]
+						if not r["funded"]: continue
+						started += 1; worth += r["worth"]; debt += r["debt"]; low += r["min_cash"]
+						if r["failed"]: failed += 1; dead_debt += r["debt_end"]
+					print("%-7s %-6s %-8s %-4s | could start %2d/%d | raised %5d (bank %5d) | closed %2d | worth@70 %6d | debt %5d | lowest cash %6d | debt after closing %5d" % [
+						fmt, bg, style, skill, started, N, raised / N, bank / N, failed, worth / maxi(1, started), debt / maxi(1, started), low / maxi(1, started), dead_debt / maxi(1, failed)])
+
+# After a failure the loans stay: a second try with the old debt, and the bank's memory of the first.
+func _second() -> void:
+	var N := 16
+	print("--- second try after a failure: first try careless (small, family help), second try with the old loans, %d seeds" % N)
+	for bg in ["mid", "other"]:
+		for style in ["own", "family", "bank", "reckless"]:
+			for fmt in ["small"]:
+				var closed1 := 0; var tried := 0; var started := 0; var closed2 := 0; var worth := 0; var debt0 := 0; var debt_end := 0; var raised := 0; var bank := 0
+				for sd in N:
+					var r1 := play(900 + sd, {"biz": "bakery", "fmt": "small", "bg": "junior", "plan": "family", "skill": "poor", "shocks": SHOCKS, "setup_style": "mixed", "contractor": "mid"})
+					if not r1["failed"]: continue
+					closed1 += 1; debt0 += int(r1["carry"]["loans"].size())
+					tried += 1
+					var r2 := play(950 + sd, {"biz": "bakery", "fmt": fmt, "bg": bg, "plan": style, "skill": "good", "shocks": SHOCKS, "setup_style": "mixed", "contractor": "mid", "carry": r1["carry"]})
+					raised += r2["raised"]; bank += r2["bank_amount"]
+					if not r2["funded"]: continue
+					started += 1; worth += r2["worth"]; debt_end += r2["debt"]
+					if r2["failed"]: closed2 += 1
+				print("%-6s %-8s %s | first try closed %2d | second try could start %2d/%d | raised %5d (bank %5d) | closed again %2d | worth@70 %6d | debt at 70 %5d" % [bg, style, fmt, closed1, started, tried, raised / maxi(1, tried), bank / maxi(1, tried), closed2, worth / maxi(1, started), debt_end / maxi(1, started)])
