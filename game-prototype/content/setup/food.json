@@ -16,12 +16,12 @@
        {"id": "self", "label": "setup.opt.self", "desc": "setup.license.self", "cost": 0, "days": 2, "fail_pct": 30, "fail_mods": [{"per_fail": -15}], "fail_note": "setup.license.fail"},
        {"id": "consultant", "label": "setup.license.consultant", "desc": "setup.license.consultant.desc", "cost": 350, "days": 1, "fail_pct": 5, "fail_note": "setup.license.fail"}
      ]},
-    {"id": "health_inspection", "kind": "legal", "real": true, "required": true, "name": "setup.health", "desc": "setup.health.desc", "requires": ["license_application", "equipment"],
+    {"id": "health_inspection", "kind": "legal", "real": true, "required": true, "name": "setup.health", "desc": "setup.health.desc", "requires": ["license_application", "equipment", "fit_out"],
      "options": [
        {"id": "standard", "label": "setup.health.standard", "desc": "setup.health.standard.desc", "cost": 0, "days": 1, "fail_pct": 35, "fail_cost": 150,
-        "fail_mods": [{"done": "cleaning", "delta": -20}, {"opt": "equipment:used", "delta": 10}, {"per_fail": -15}], "fail_note": "setup.health.fail"},
+        "fail_mods": [{"done": "cleaning", "delta": -20}, {"opt": "equipment:used", "delta": 10}, {"defect": "fit_out", "delta": 10}, {"per_fail": -15}], "fail_note": "setup.health.fail"},
        {"id": "precheck", "label": "setup.health.precheck", "desc": "setup.health.precheck.desc", "cost": 200, "days": 1, "fail_pct": 15, "fail_cost": 150,
-        "fail_mods": [{"done": "cleaning", "delta": -10}, {"opt": "equipment:used", "delta": 10}, {"per_fail": -10}], "fail_note": "setup.health.fail"}
+        "fail_mods": [{"done": "cleaning", "delta": -10}, {"opt": "equipment:used", "delta": 10}, {"defect": "fit_out", "delta": 10}, {"per_fail": -10}], "fail_note": "setup.health.fail"}
      ]},
     {"id": "fire_safety", "kind": "legal", "real": true, "required": true, "name": "setup.fire", "desc": "setup.fire.desc", "requires": ["equipment"],
      "options": [

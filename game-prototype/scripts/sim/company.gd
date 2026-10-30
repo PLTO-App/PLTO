@@ -113,7 +113,9 @@ func begin_business(bid: String, fmt: String, loan_id := "") -> Dictionary:
 	if loan_id != "":
 		var r := take_loan(loan_id)
 		if not r.is_empty(): return r
-	book("investment", -int(f["setup_cost"]), bid, "setup")
+	# with a setup file, the contractor's budget is held back and paid at the price of the quote that is chosen
+	var held := SetupBoard.reserve(content, bid, fmt) if (bool(track_def().get("setup_board", false)) and not content.setup_tasks_for(bid).is_empty()) else 0
+	book("investment", -(int(f["setup_cost"]) - held), bid, "setup")
 	var b := _add_unit(bid, fmt)
 	b.opened_day = day + int(f["setup_days"]); b.lease_day = day
 	setup = {}

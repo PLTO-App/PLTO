@@ -27,7 +27,7 @@
 
 ## בדיקות
 ```
-godot --headless --path . --script dev/test_sim.gd              # מנוע ואיזון (כולל מינימרקט ומסלול בעל עסק): 135 בדיקות וסימולציה של 6 שבועות
+godot --headless --path . --script dev/test_sim.gd              # מנוע ואיזון (כולל מינימרקט ומסלול בעל עסק): 146 בדיקות וסימולציה של 6 שבועות
 godot --headless --path . --script dev/sim_owner.gd -- grid     # איזון מסלול בעל עסק (גם: sweep, setup, long, baseline)
 godot --headless --path . res://dev/test_save.tscn              # שמירה, טעינה ושמירה מגרסה 0.4
 godot --headless --path . --script dev/test_saveload.gd         # שמירה וטעינה בכל בוקר וערב לא משנות את מהלך המשחק (5 עונות)

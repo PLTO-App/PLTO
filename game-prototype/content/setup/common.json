@@ -2,6 +2,17 @@
   "_comment": "Setup tasks every business has. kind: legal = cannot open without it; business = a choice of the owner. real: true = a requirement that exists in the real world in general terms; false = an illustration made up for the game. Every number (days, cost, failure chance) is an illustration, not the law and not advice. required: the doors do not open until it is done. Options with fail_pct can fail on the due day: the task returns to the board and must be done again. fail_mods change the chance (done = another task is done, opt = another task was done with that option, per_fail = less chance after each earlier failure). effects use the keys of events.json plus launch (stored and applied when the doors open).",
   "id": "common",
   "tasks": [
+    {"id": "fit_out", "kind": "business", "required": true, "name": "setup.fit_out", "desc": "setup.fit_out.desc", "requires": [],
+     "bids": {"budget": {"small": 900, "regular": 2000}, "days": {"small": 4, "regular": 5}, "check_cost": 60,
+              "bid_label": "setup.fit_out.bid", "bid_desc": "setup.fit_out.bid.desc",
+              "pool": ["setup.con.1", "setup.con.2", "setup.con.3", "setup.con.4", "setup.con.5", "setup.con.6"],
+              "tiers": [{"id": "cheap", "price_pct": 70, "days_delta": 1, "rel": [40, 55]},
+                        {"id": "mid", "price_pct": 100, "days_delta": 0, "rel": [65, 78]},
+                        {"id": "premium", "price_pct": 140, "days_delta": -1, "rel": [85, 95]}],
+              "problems": {"delay": 50, "overrun": 35, "defect": 15}},
+     "options": [
+       {"id": "friends", "label": "setup.fit_out.friends", "desc": "setup.fit_out.friends.desc", "cost": 0, "days_delta": 3, "rel": 30, "fail_pct": 0, "settle_pct": 40}
+     ]},
     {"id": "tax_file", "kind": "legal", "real": true, "required": true, "name": "setup.tax_file", "desc": "setup.tax_file.desc", "requires": [],
      "options": [
        {"id": "self", "label": "setup.opt.self", "desc": "setup.tax_file.self", "cost": 0, "days": 1, "fail_pct": 25, "fail_note": "setup.tax_file.fail"},

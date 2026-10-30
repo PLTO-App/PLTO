@@ -38,6 +38,15 @@ func play(seed_value: int, opts: Dictionary) -> Dictionary:
 			if int(sh[0]) == co.day: co.book("event", -int(sh[1]), bid, "shock"); res["shock_total"] += int(sh[1])
 		if co.in_setup():
 			# the setup file is played by a style (diy | mixed | pro); the launch task is started on the first morning if asked for
+			# the contractor: a fixed tier, or "checked" (pay for the reference checks, take the middle quote if it is reliable enough, else the dear one)
+			var ct := str(opts.get("contractor", ""))
+			if ct != "" and SetupBoard.status(co, SetupBoard.def_of(co, "fit_out")) == "ready":
+				if ct == "checked":
+					for q in ["mid", "premium"]: SetupBoard.check_bid(co, "fit_out", q)
+					var mid_rel := 0
+					for q in co.setup["bids"]["fit_out"]: if q["id"] == "mid": mid_rel = int(q["rel"])
+					ct = "mid" if mid_rel >= 70 else "premium"
+				SetupBoard.start(co, "fit_out", ct)
 			SetupBoard.auto(co, str(opts.get("setup_style", "mixed")))
 			if opts.has("launch") and SetupBoard.status(co, SetupBoard.def_of(co, "launch")) == "ready": SetupBoard.start(co, "launch", ["flyers", "post"][int(opts["launch"])])
 			if not res.get("ordered", false) and SetupBoard.pending_required(co).all(func(t): return SetupBoard.st(co, t["id"])["state"] == "active"):
@@ -157,6 +166,7 @@ func _init() -> void:
 		"long": _long()
 		"room": _room()
 		"mistakes": _mistakes()
+		"contractor": _contractor()
 		"buffer": _buffer()
 	quit(0)
 
@@ -263,3 +273,13 @@ func _buffer() -> void:
 			for skill in ["slow_start", "careless", "spree"]:
 				var o := {"biz": "bakery", "cash": cash, "skill": skill, "shocks": SHOCKS}; o.merge(cfg)
 				room_line("%-7s loan %-5s cash %d %-10s" % [cfg["fmt"], cfg["loan"] if cfg["loan"] != "" else "-", cash, skill], avg(o, 8))
+
+# The contractor choice with everything else played the same way (a consultant for the license): which quote pays?
+func _contractor() -> void:
+	print("--- contractor: 70 days x 16 seeds, opening cash 5000, unexpected expenses")
+	for cfg in [{"fmt": "small", "loan": ""}, {"fmt": "regular", "loan": "small"}]:
+		for ct in ["friends", "cheap", "mid", "premium", "checked"]:
+			var o := {"biz": "bakery", "cash": 5000, "setup_style": "mixed", "contractor": ct, "shocks": SHOCKS}; o.merge(cfg)
+			var r := avg(o, 16)
+			print("%-7s %-8s opens day %4.1f | step failures %4.1f | cash on opening day %5d | lowest in 3 weeks %5d (worst %5d) | days below zero %4.1f | worth@70 %6d" % [
+				cfg["fmt"], ct, float(r["open_day"]), float(r["setup_fails"]), r["cash_open"], r["min21"], r["min21_worst"], float(r["neg_days"]), r["worth"]])

@@ -128,6 +128,7 @@ func _run_owner() -> void:
 	check("the setup file has tasks and nothing is blocked wrongly", SetupBoard.defs(co).size() >= 6 and SetupBoard.status(co, SetupBoard.def_of(co, "tax_file")) == "ready")
 	ui().open_screen("setup_task", {"task": "tax_file"}); await wait(0.5); await shot("o03b_task_tax")
 	ui().open_screen("setup_task", {"task": "equipment"}); await wait(0.5); await shot("o03c_task_equipment")
+	ui().open_screen("setup_task", {"task": "fit_out"}); await wait(0.5); await shot("o03d_task_fit_out")
 	var n := 0
 	while co.in_setup() and n < 14:
 		n += 1

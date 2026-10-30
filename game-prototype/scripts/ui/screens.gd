@@ -93,6 +93,9 @@ func _setup_today(sh: Sheet) -> void:
 	for r in c.last_report.get("setup", []):
 		var t := SetupBoard.def_of(c, r["task"])
 		if r["result"] == "done": news.append(Loc.t("setup.news_done", {"task_k": t["name"]}))
+		elif r["result"] == "delayed": news.append(Loc.t("setup.news_delayed", {"task_k": t["name"], "n": r["days"]}))
+		elif r["result"] == "overrun": news.append(Loc.t("setup.news_overrun", {"task_k": t["name"], "cost_m": r["cost"]}))
+		elif r["result"] == "defect": news.append(Loc.t("setup.news_defect"))
 		else:
 			var line := Loc.t("setup.news_fail", {"task_k": t["name"], "note_k": r["note_k"]})
 			if int(r["cost"]) > 0: line += " " + Loc.t("setup.news_fail_cost", {"cost_m": r["cost"]})
@@ -111,6 +114,9 @@ func _setup_today(sh: Sheet) -> void:
 	card.add_child(UiStyle.label(Loc.t("setup.rent", {"weekly_m": weekly}), 13, UiStyle.MUTED))
 	if board:
 		card.add_child(UiStyle.label(Loc.t("setup.board_note"), 12, UiStyle.MUTED))
+		var fo: Dictionary = SetupBoard.st(c, "fit_out")
+		if not fo.is_empty() and fo["state"] != "todo":
+			card.add_child(UiStyle.label(Loc.t("setup.budget_line", {"budget_m": int(c.setup["reserve"]), "paid_m": int(fo["price"])}), 12, UiStyle.MUTED))
 		if c.day - c.units[bid].lease_day == 0: _tip_card(sh, "setup.tip")
 		var list := sh.card()
 		list.add_child(UiStyle.label(Loc.t("setup.board"), 14, UiStyle.MUTED, true))
@@ -144,13 +150,22 @@ func setup_task(sh: Sheet, id: String) -> void:
 	var legal: bool = t["kind"] == "legal"
 	sh.set_title(Loc.t(t["name"]), Loc.t("setup.tag_legal_real" if legal and bool(t.get("real", false)) else ("setup.tag_legal_game" if legal else "setup.tag_choice")))
 	var dc := sh.card(); dc.add_child(UiStyle.label(Loc.t(t["desc"]), 14))
-	for o in t["options"]:
+	for o in SetupBoard.options_of(c, t):
 		var card := sh.card()
-		card.add_child(UiStyle.label(Loc.t(o["label"]), 16, UiStyle.INK, true))
-		card.add_child(UiStyle.label(Loc.t(o["desc"]), 13, UiStyle.MUTED))
+		card.add_child(UiStyle.label(Loc.t(o["label"], o.get("p", {})), 16, UiStyle.INK, true))
+		card.add_child(UiStyle.label(Loc.t(o["desc"], o.get("p", {})), 13, UiStyle.MUTED))
 		var days := SetupBoard.option_days(c, o)
-		var facts := Loc.t("setup.opt_facts", {"cost_m": o["cost"], "days": days, "risk_k": SetupBoard.risk_label(SetupBoard.fail_pct(c, t, o))})
+		var risk: String = o["risk_k"] if o.has("risk_k") else SetupBoard.risk_label(SetupBoard.fail_pct(c, t, o))
+		var facts := Loc.t("setup.opt_facts", {"cost_m": o["cost"], "days": days, "risk_k": risk})
 		card.add_child(UiStyle.label(facts, 13))
+		if bool(o.get("bid", false)) and not bool(o["checked"]):
+			var cb := UiStyle.button(Loc.t("setup.check", {"cost_m": t["bids"]["check_cost"]}), "secondary", 13, 40)
+			var bid_id: String = o["id"]
+			cb.pressed.connect(func():
+				var e0 := SetupBoard.check_bid(c, id, bid_id)
+				if not e0.is_empty(): sh.note(Loc.msg(e0)); return
+				Game.save_game(); Game.sfx.play("coin"); ui.hud.sync(); sh.refresh())
+			card.add_child(cb)
 		var b := UiStyle.button(Loc.t("setup.choose"), "primary", 15, 44)
 		var oid: String = o["id"]
 		b.pressed.connect(func():

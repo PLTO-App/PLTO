@@ -223,13 +223,13 @@ func _test_owner() -> void:
 	var cash0 := co.profile.cash
 	var e := co.begin_business("bakery", "small")
 	var cost := int(content.businesses["bakery"]["formats"]["small"]["setup_cost"])
-	check("setting up a small bakery costs its price and the books match", e.is_empty() and co.profile.cash == cash0 - cost and co.ledger.balance() == co.profile.cash)
+	check("setting up a small bakery costs its price and the books match", e.is_empty() and co.profile.cash == cash0 - (cost - int(co.setup["reserve"])) and co.setup["reserve"] == 900 and co.ledger.balance() == co.profile.cash)
 	check("the space is rented from today and the opening waits for the setup file", co.units["bakery"].lease_day == 1 and co.in_setup() and co.setup_left("bakery") == -1 and not co.setup.is_empty())
 	check("a second business cannot be set up the same way", not co.begin_business("bakery", "small").is_empty())
 	# the board of a food business: legal tasks and choices, in order; nothing opens until the required ones are done
 	var ids: Array = SetupBoard.defs(co).map(func(t): return t["id"])
 	check("a food business has the license chain", "health_inspection" in ids and "fire_safety" in ids and "license_application" in ids and "tax_file" in ids)
-	check("the required tasks are the legal ones and the equipment", SetupBoard.pending_required(co).size() == 5)
+	check("the required tasks are the legal ones and the equipment", SetupBoard.pending_required(co).size() == 6)
 	var tf := SetupBoard.def_of(co, "license_application")
 	check("a task waits for the one it depends on", SetupBoard.status(co, tf) == "blocked" and not SetupBoard.start(co, "license_application", "self").is_empty())
 	co.start_morning()
@@ -238,6 +238,7 @@ func _test_owner() -> void:
 	check("a task with a price takes it from the cash", SetupBoard.start(co, "tax_file", "accountant").is_empty() and co.profile.cash == cash1 - 250 and co.ledger.balance() == co.profile.cash)
 	check("a started task cannot be started again", not SetupBoard.start(co, "tax_file", "self").is_empty())
 	var broke := _owner(3000); broke.begin_business("bakery", "small"); broke.start_morning()
+	broke.profile.cash = 100; broke.ledger = Ledger.new(); broke.ledger.start_cash = 100
 	check("a task you cannot afford is refused", not SetupBoard.start(broke, "tax_file", "accountant").is_empty())
 	broke.profile.cash = -300; broke.ledger = Ledger.new(); broke.ledger.start_cash = -300
 	check("with the cash box in the red a free option can still be started, so nobody is stuck", SetupBoard.start(broke, "tax_file", "self").is_empty())
@@ -267,7 +268,7 @@ func _test_owner() -> void:
 	check("the same seed and choices give the same setup", d1 == d2 and a1.profile.cash == a2.profile.cash)
 	# the chances: cleaning and equipment change the health inspection; each failure makes the next try easier
 	var h := _owner(); h.begin_business("bakery", "small")
-	var ho: Dictionary = SetupBoard.option(SetupBoard.def_of(h, "health_inspection"), "standard")
+	var ho: Dictionary = SetupBoard.option(h, SetupBoard.def_of(h, "health_inspection"), "standard")
 	var base := SetupBoard.fail_pct(h, SetupBoard.def_of(h, "health_inspection"), ho)
 	h.setup["tasks"]["cleaning"]["state"] = "done"
 	check("a deep clean lowers the chance of failing the health inspection", SetupBoard.fail_pct(h, SetupBoard.def_of(h, "health_inspection"), ho) == base - 20)
@@ -283,8 +284,51 @@ func _test_owner() -> void:
 	check("used equipment brings cash and a worn oven", u.profile.cash >= cu + 300 - 200 and u.units["bakery"].equipment == 60, "%d %d" % [u.profile.cash - cu, u.units["bakery"].equipment])
 	# a regular shop takes longer to fit out than a small one
 	var rg := _owner(9000); rg.begin_business("bakery", "regular", "small")
-	check("a regular shop takes longer to fit out", SetupBoard.option_days(rg, SetupBoard.option(SetupBoard.def_of(rg, "equipment"), "new")) == 3 and SetupBoard.option_days(p, SetupBoard.option(SetupBoard.def_of(p, "equipment"), "new")) == 2)
+	check("a regular shop takes longer to fit out", SetupBoard.option_days(rg, SetupBoard.option(rg, SetupBoard.def_of(rg, "equipment"), "new")) == 3 and SetupBoard.option_days(p, SetupBoard.option(p, SetupBoard.def_of(p, "equipment"), "new")) == 2)
 	check("a loan taken with the setup arrives with it", rg.loan_open("small") and rg.loans.size() == 1 and rg.ledger.balance() == rg.profile.cash)
+	# 1ב-ב: the contractor. Three quotes (cheap, middling, dear), the same for the same seed; reliability is hidden until a reference check
+	var cb := _owner(); cb.begin_business("bakery", "small")
+	var qs: Array = cb.setup["bids"]["fit_out"]
+	check("three quotes: cheap, middling and dear, and the dearer the more reliable", qs.size() == 3 and qs[0]["price"] < qs[1]["price"] and qs[1]["price"] < qs[2]["price"] and qs[0]["rel"] < qs[1]["rel"] and qs[1]["rel"] < qs[2]["rel"])
+	var cb2 := Company.new(content); cb2.start_owner(21); cb2.begin_business("bakery", "small")
+	check("the same seed gives the same quotes", JSON.stringify(cb2.setup["bids"]) == JSON.stringify(cb.setup["bids"]))
+	var fo := SetupBoard.def_of(cb, "fit_out")
+	var shown: Array = SetupBoard.options_of(cb, fo).filter(func(o): return o.get("bid", false))
+	check("before a reference check the risk is unknown, and the quotes do not give away the reliability", shown.all(func(o): return o["risk_k"] == "setup.risk_unknown"))
+	cb.start_morning()
+	var c0 := cb.profile.cash
+	check("a reference check costs money and shows how risky the quote is", SetupBoard.check_bid(cb, "fit_out", "cheap").is_empty() and cb.profile.cash == c0 - 60
+		and SetupBoard.options_of(cb, fo).filter(func(o): return o["id"] == "cheap")[0]["risk_k"] == "setup.risk_high" and not SetupBoard.check_bid(cb, "fit_out", "cheap").is_empty())
+	var c1 := cb.profile.cash
+	check("a quote is paid when it is chosen, at its price (the budget was held back)", SetupBoard.start(cb, "fit_out", "mid").is_empty() and cb.profile.cash == c1 - int(qs[1]["price"]) and cb.ledger.balance() == cb.profile.cash)
+	var fr := _owner(); fr.begin_business("bakery", "small"); fr.start_morning(); fr.profile.cash = -300; fr.ledger = Ledger.new(); fr.ledger.start_cash = -300
+	check("friends and family cost nothing, so a player with no cash is not stuck", SetupBoard.start(fr, "fit_out", "friends").is_empty() and fr.setup["tasks"]["fit_out"]["rel"] == 30)
+	# what goes wrong, by reliability: over many seeds the cheap quote has more trouble than the dear one
+	var troubles := {"cheap": 0, "mid": 0, "premium": 0}; var kinds := {"delayed": 0, "overrun": 0, "defect": 0}
+	for sd in range(1, 121):
+		for tier in ["cheap", "mid", "premium"]:
+			var w := Company.new(content); w.start_owner(sd * 13); w.begin_business("bakery", "small")
+			w.start_morning(); SetupBoard.start(w, "fit_out", tier)
+			var had := false; var g := 0
+			while not SetupBoard.is_done(w, "fit_out") and g < 12:
+				g += 1; w.commit_day({}, "bakery"); w.close_day(); w.start_morning()
+				for r in w.last_report.get("setup", []):
+					if r["task"] == "fit_out" and r["result"] in ["delayed", "overrun"]: had = true; kinds[r["result"]] += 1
+			if bool(w.setup["tasks"]["fit_out"]["defect"]): had = true; kinds["defect"] += 1
+			if had: troubles[tier] += 1
+	check("the cheap quote runs into trouble more than the middle one, and that more than the dear one", troubles["cheap"] > troubles["mid"] and troubles["mid"] > troubles["premium"], str(troubles))
+	check("the dear quote is not trouble free, and every kind of trouble happens", troubles["premium"] > 0 and kinds["delayed"] > 0 and kinds["overrun"] > 0 and kinds["defect"] > 0, str(kinds))
+	# a defect shows later: the health inspection is harder and the equipment is worn when the doors open
+	var df := _owner(); df.begin_business("bakery", "small")
+	var hd := SetupBoard.def_of(df, "health_inspection"); var ho2 := SetupBoard.option(df, hd, "standard")
+	var b0 := SetupBoard.fail_pct(df, hd, ho2)
+	df.setup["tasks"]["fit_out"]["state"] = "done"; df.setup["tasks"]["fit_out"]["defect"] = true
+	check("a defect in the work makes the health inspection harder", SetupBoard.fail_pct(df, hd, ho2) == b0 + 10)
+	var dfo: Array = []; df.setup["tasks"]["equipment"]["state"] = "done"
+	for id in ["tax_file", "license_application", "health_inspection", "fire_safety", "equipment"]: df.setup["tasks"][id]["state"] = "done"
+	df.units["bakery"].equipment = 100
+	df.day = 6; df.start_morning(); check("the doors open once all that is required is done", not df.in_setup())
+	check("a defect leaves the equipment worn", df.units["bakery"].equipment == 90 and df.last_report["setup"].any(func(r): return r["result"] == "defect"))
 	# the requirements follow the kind of business: no food pack, no health inspection
 	var saved: Array = content.businesses["bakery"]["setup_packs"]
 	content.businesses["bakery"]["setup_packs"] = ["common"]
@@ -307,7 +351,7 @@ func _test_owner() -> void:
 	# the owner track is not a shortcut: a careless owner loses money, and a balanced one does not
 	for sk in ["good", "poor"]:
 		var o := _owner(); o.begin_business("bakery", "small")
-		var after_setup := o.profile.cash
+		var after_setup := o.profile.cash - int(o.setup["reserve"])
 		while o.day <= 45:
 			o.start_morning()
 			for ev in o.pending_events.duplicate(): o.resolve_event(ev, 0)

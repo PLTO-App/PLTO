@@ -161,8 +161,9 @@ func _check_setup() -> void:
 			if t.get("kind", "") == "legal" and not t.has("real"): errors.append("setup task %s: a legal task must say whether it is real" % t.get("id", "?"))
 			var free := false
 			for o in t.get("options", []):
-				for k in ["id", "label", "desc", "cost", "days", "fail_pct"]:
+				for k in ["id", "label", "desc", "cost", "fail_pct"]:
 					if not o.has(k): errors.append("setup task %s option: missing %s" % [t.get("id", "?"), k])
+				if not (o.has("days") or o.has("days_delta")): errors.append("setup task %s option: missing days" % t.get("id", "?"))
 				if int(o.get("cost", 1)) == 0: free = true
 			# a player with no cash must never be stuck: every required task has a free option
 			if bool(t.get("required", false)) and not free: errors.append("setup task %s: a required task needs a free option" % t.get("id", "?"))
