@@ -17,6 +17,15 @@ func play(seed_value: int, opts: Dictionary) -> Dictionary:
 	var e := co.begin_business(bid, opts["fmt"], opts.get("loan", ""))
 	if not e.is_empty(): res["errors"].append(Loc.msg(e)); return res
 	res["ok"] = true
+	# a second, unneeded loan: the owner borrows more than the setup needs
+	if opts.get("extra_loan", "") != "": co.take_loan(opts["extra_loan"])
+	res["cash_after_setup"] = co.profile.cash
+	var weekly_fixed := 0
+	for k in co.units[bid].db["weekly_costs"]: weekly_fixed += int(co.units[bid].db["weekly_costs"][k])
+	for l in co.loans: weekly_fixed += int(l["weekly"])
+	res["runway_weeks_x10"] = co.profile.cash * 10 / maxi(1, weekly_fixed)
+	res["min21"] = 1 << 30; res["neg_days"] = 0; res["cash_w1"] = 0; res["shock_total"] = 0
+	var rnd := RandomNumberGenerator.new(); rnd.seed = seed_value * 7 + 1
 	var days: int = opts.get("days", 70)
 	var inv_total := -co.ledger.total_since(1, "investment")
 	var late: Array = []; var total_profit := 0; var played := 0; var cum_cash_from_ops := 0
@@ -24,6 +33,9 @@ func play(seed_value: int, opts: Dictionary) -> Dictionary:
 	while co.day <= days:
 		var rep := co.start_morning()
 		for ev in rep["events"].duplicate(): co.resolve_event(ev, _choose(ev, opts))
+		# unexpected expenses (a repair, a fine, a supplier that raises a price): booked on fixed days
+		for sh in opts.get("shocks", []):
+			if int(sh[0]) == co.day: co.book("event", -int(sh[1]), bid, "shock"); res["shock_total"] += int(sh[1])
 		if co.in_setup():
 			var left := co.setup_left(bid)
 			if left == 1 and opts.get("order_ahead", true): SimPolicies.order_ahead(co, bid)
@@ -36,14 +48,29 @@ func play(seed_value: int, opts: Dictionary) -> Dictionary:
 		if res["open_day"] == 0: res["open_day"] = co.day
 		var plans := {}
 		for b in co.units: if co.unit_ready(b): plans[b] = SimPolicies.plan_for(co, b, opts)
+		# mistakes: now and then the owner forgets to plan, bakes far too much, or skips ordering for tomorrow; or does nothing for the first days
+		var slip := -1
+		if rnd.randi_range(1, 100) <= int(opts.get("mistakes", 0)): slip = rnd.randi_range(0, 2)
+		if res["open_day"] != 0 and co.day < res["open_day"] + int(opts.get("idle_start", 0)): slip = 0
+		for b in plans:
+			if slip == 0: plans[b] = co.units[b].empty_plan()
+			elif slip == 1:
+				for pid in plans[b]["bake"]: plans[b]["bake"][pid] = int(plans[b]["bake"][pid]) * 16 / 10
 		var errs := co.commit_day(plans, bid)
 		if not errs.is_empty():
 			for b in plans: plans[b] = co.units[b].empty_plan()
 			errs = co.commit_day(plans, bid)
 			if not errs.is_empty(): res["errors"].append("day %d: %s" % [co.day, Loc.msg(errs[0])]); break
-		if opts.get("order_ahead", true):
+		if opts.get("order_ahead", true) and slip != 2:
 			for b in co.units: SimPolicies.order_ahead(co, b)
 		var s := co.close_day()
+		if co.day <= 22: res["min21"] = mini(res["min21"], co.profile.cash)
+		if co.profile.cash < 0: res["neg_days"] += 1
+		if res["cash_w1"] == 0 and not s["week"].is_empty(): res["cash_w1"] = co.profile.cash
+		if opts.get("spree", false):
+			for uid in co.units[bid].db["upgrades"]:
+				var u2: Dictionary = co.units[bid].db["upgrades"][uid]
+				if not co.units[bid].upgrades.has(uid) and co.level() >= int(u2["unlock_level"]) and co.profile.cash > int(u2["cost"]): co.buy_upgrade(bid, uid)
 		if opts.get("upgrades", false):
 			for uid in co.units[bid].db["upgrades"]:
 				var u: Dictionary = co.units[bid].db["upgrades"][uid]
@@ -80,6 +107,11 @@ func _skill(opts: Dictionary) -> Dictionary:
 		"good": o["order_ahead"] = true
 		"average": o["order_ahead"] = false
 		"poor": o["order_ahead"] = false; o["max_bake"] = true; o["upkeep"] = false
+		"overpriced": o["order_ahead"] = true; o["price_pct"] = 130
+		"underpriced": o["order_ahead"] = true; o["price_pct"] = 75
+		"careless": o["order_ahead"] = true; o["mistakes"] = 20
+		"slow_start": o["order_ahead"] = true; o["idle_start"] = 4
+		"spree": o["order_ahead"] = true; o["spree"] = true
 	return o
 
 func _choose(ev: Dictionary, opts: Dictionary) -> int:
@@ -95,7 +127,8 @@ func avg(opts: Dictionary, n := 4) -> Dictionary:
 		var r := play(300 + sd, opts)
 		if not r["ok"]: errors.append_array(r["errors"]); continue
 		ok += 1
-		for k in ["profit_per_day", "late_profit", "worth", "rep", "open_day", "served", "lost", "waste", "fines", "first_profit_week"]: sum[k] = int(sum.get(k, 0)) + int(r[k])
+		for k in ["profit_per_day", "late_profit", "worth", "rep", "open_day", "served", "lost", "waste", "fines", "first_profit_week", "cash_after_setup", "runway_weeks_x10", "min21", "neg_days", "cash_w1"]: sum[k] = int(sum.get(k, 0)) + int(r[k])
+		sum["min21_worst"] = mini(int(sum.get("min21_worst", 1 << 30)), int(r["min21"]))
 		min_cash = mini(min_cash, r["min_cash"]); errors.append_array(r["errors"])
 		if r["broke_days"] > 0: broke += 1
 	if ok == 0: return {"ok": false, "errors": errors}
@@ -120,6 +153,9 @@ func _init() -> void:
 		"grid": _grid()
 		"baseline": _baseline()
 		"long": _long()
+		"room": _room()
+		"mistakes": _mistakes()
+		"buffer": _buffer()
 	quit(0)
 
 # Business x size x funding x opening cash
@@ -182,3 +218,43 @@ func _long() -> void:
 	for cfg in [{"fmt": "small", "loan": ""}, {"fmt": "small", "loan": "small"}, {"fmt": "regular", "loan": "small"}, {"fmt": "regular", "loan": "large"}]:
 		var o := {"biz": "bakery", "cash": 3500, "days": 150, "upgrades": true, "skill": "good"}; o.merge(cfg)
 		line("%s loan %s" % [cfg["fmt"], cfg["loan"] if cfg["loan"] != "" else "-"], avg(o, 4))
+
+const SHOCKS := [[5, 500], [12, 700], [24, 600]]   # a repair, a fine, a price rise: 1,800 over the first four weeks
+
+func room_line(label: String, r: Dictionary) -> void:
+	if not r["ok"]: print("%-44s (not possible)" % label); return
+	print("%-44s after setup %5d (%4.1f weeks of fixed costs) | week-1 cash %5d | lowest in 3 weeks: avg %5d worst %5d | days below zero %4.1f | broke %d/%d | late/day %4d | worth@70 %6d" % [
+		label, r["cash_after_setup"], float(r["runway_weeks_x10"]) / 10.0, r["cash_w1"], r["min21"], r["min21_worst"], float(r["neg_days"]), r["broke"], r["n"], r["late_profit"], r["worth"]])
+
+# Does the opening cash leave room to breathe after the setup? Cash x size x funding x behaviour, with unexpected expenses.
+func _room() -> void:
+	print("--- breathing room: 70 days x 6 seeds, unexpected expenses %s (days: 5, 12, 24)" % str(SHOCKS))
+	var cfgs := [{"fmt": "small", "loan": ""}, {"fmt": "small", "loan": "small"}, {"fmt": "regular", "loan": "small"}, {"fmt": "regular", "loan": "large"}]
+	for cash in [2500, 3000, 3500, 4000, 5000]:
+		print("== opening cash %d" % cash)
+		for cfg in cfgs:
+			var cost: int = 3000 if cfg["fmt"] == "small" else 6500
+			var avail: int = cash + (int(content.world["bank"]["loans"][cfg["loan"]]["amount"]) if cfg["loan"] != "" else 0)
+			if avail < cost: continue
+			for skill in ["good", "careless", "average", "poor"]:
+				var o := {"biz": "bakery", "cash": cash, "skill": skill, "shocks": SHOCKS}; o.merge(cfg)
+				room_line("%-7s loan %-5s %-8s" % [cfg["fmt"], cfg["loan"] if cfg["loan"] != "" else "-", skill], avg(o, 6))
+
+# Mistakes, bad pricing, a slow start, unneeded loans and spending sprees (opening cash 3,500)
+func _mistakes() -> void:
+	print("--- mistakes and bad habits: opening cash 3500, 70 days x 6 seeds, with and without unexpected expenses")
+	for shocks in [[], SHOCKS]:
+		print("== unexpected expenses: %s" % ("none" if shocks.is_empty() else "yes"))
+		for cfg in [{"fmt": "small", "loan": ""}, {"fmt": "small", "loan": "", "extra_loan": "large"}, {"fmt": "small", "loan": "small", "extra_loan": "large"}, {"fmt": "regular", "loan": "small"}]:
+			for skill in ["good", "careless", "slow_start", "overpriced", "underpriced", "spree"]:
+				var o := {"biz": "bakery", "cash": 3500, "skill": skill, "shocks": shocks}; o.merge(cfg)
+				room_line("%-7s loan %-5s%s %-10s" % [cfg["fmt"], cfg["loan"] if cfg["loan"] != "" else "-", (" +extra " + cfg["extra_loan"]) if cfg.has("extra_loan") else "            ", skill], avg(o, 6))
+
+# The opening cash against a bad first weeks (a slow start, careless days, a spending spree) with the unexpected expenses
+func _buffer() -> void:
+	print("--- buffer: bad first weeks with unexpected expenses, 70 days x 8 seeds")
+	for cfg in [{"fmt": "small", "loan": ""}, {"fmt": "regular", "loan": "small"}]:
+		for cash in [3500, 4000, 4500, 5000]:
+			for skill in ["slow_start", "careless", "spree"]:
+				var o := {"biz": "bakery", "cash": cash, "skill": skill, "shocks": SHOCKS}; o.merge(cfg)
+				room_line("%-7s loan %-5s cash %d %-10s" % [cfg["fmt"], cfg["loan"] if cfg["loan"] != "" else "-", cash, skill], avg(o, 8))
