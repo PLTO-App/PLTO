@@ -44,6 +44,9 @@ godot --headless --path . --import
 godot --headless --path . --export-debug "Android Debug" build/noa-bakery-debug.apk
 ```
 
+## חתימה
+האפליקציה `app.plto.virtual` חתומה במפתח שלא נמצא ב-Git. איפה הוא וכיצד משתמשים בו: `plans/game-signing-key-howto.md`. בכל סשן להריץ `tools/install_git_hooks.sh`.
+
 ## כללים
 - נכס חיצוני נכנס רק עם רישיון ברור ואימות מול מקור רשמי. כרגע הנכס החיצוני היחיד הוא הגופן Noto (חבילת Ubuntu חתומה).
 - אין שירותי רשת, אנליטיקס או הרשאות באפליקציה.

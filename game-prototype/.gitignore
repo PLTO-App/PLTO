@@ -5,3 +5,12 @@ build/
 *.idsig
 *.keystore
 *.jks
+
+# signing keys, notes and credentials: never in Git (see plans/game-signing-key-howto.md)
+*.p12
+*.pfx
+*.pem
+*.key
+*signing-notes*
+.plto-secure/
+plto-secure/
