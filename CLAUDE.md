@@ -242,6 +242,8 @@ Product identity (owner decision, 22.10.2026): the product is being redefined as
 - Sales methods, psychology principles, call scripts, messages and processes per business type will be developed gradually with the owner. They must be practical, based on quality written content, honest (no misleading manipulation) and must not depend on paid AI.
 - Rebranding and capability changes are gradual and owner-approved. Do not rename the product, UI or identifiers, or start a redesign, on your own. Keep existing features and completed work.
 
+PLTO Virtual (owner decision, 01.11.2026): the game is frozen. It was meant to be a small, accessible game that teaches basic business and sales principles and leads people to PLTO Sales, not a large Tycoon. Do not develop it, propose expansions or open its stabilization phase unless the owner asks explicitly. State and reusable parts: `plans/game-freeze-2026-11-01.md`. Focus is PLTO Sales.
+
 Internal identifiers may differ from UI labels. Never change an internal identifier only because the public label changed.
 
 Current important internal vertical identifiers include:
