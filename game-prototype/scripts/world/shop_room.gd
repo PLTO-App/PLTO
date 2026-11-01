@@ -11,7 +11,8 @@ const LAYOUTS := {
 		"furniture": [
 			["f_breadshelf", Vector3(-4.6, 0, -3.95), 0.0], ["f_oven", Vector3(-1.4, 0, -3.6), 0.0], ["f_worktable", Vector3(1.6, 0, -3.2), 0.0],
 			["f_display", Vector3(-1.2, 0, 0.1), 0.0], ["f_register", Vector3(3.3, 0, 0.1), 0.0],
-			["f_plant_tall", Vector3(-5.6, 0, 3.4), 0.0], ["f_plant", Vector3(5.6, 0, -3.6), 0.0]],
+			["f_plant_tall", Vector3(-5.6, 0, 3.4), 0.0], ["f_plant", Vector3(5.6, 0, -3.6), 0.0],
+			["f_rug_bakery", Vector3(1.2, 0, 2.3), 0.0]],
 		"upgrades": {"fridge": [["f_fridge", Vector3(4.6, 0, -3.6), 0.0]],
 			"tables": [["f_table", Vector3(-4.2, 0, 2.6), 0.0], ["f_chair_teal", Vector3(-5.2, 0, 2.6), -PI / 2], ["f_chair_coral", Vector3(-3.2, 0, 2.6), PI / 2]],
 			"display": [["f_plant", Vector3(-3.6, 1.83, 0.1), 0.0]]},
@@ -34,7 +35,8 @@ const LAYOUTS := {
 			["f_espresso", Vector3(1.4, 0, -0.9), 0.0], ["f_pastrycase", Vector3(-1.6, 0, -0.9), 0.0],
 			["f_breadshelf", Vector3(-4.6, 0, -3.95), 0.0], ["f_plant_tall", Vector3(5.6, 0, -3.6), 0.0], ["f_plant", Vector3(-5.6, 0, 3.6), 0.0],
 			["f_table_wood", Vector3(-4.4, 0, 2.2), 0.0], ["f_chair_green", Vector3(-5.4, 0, 2.2), -PI / 2], ["f_chair_green", Vector3(-3.4, 0, 2.2), PI / 2],
-			["f_table_wood", Vector3(-0.8, 0, 2.9), 0.0], ["f_chair_green", Vector3(-1.8, 0, 2.9), -PI / 2], ["f_chair_green", Vector3(0.2, 0, 2.9), PI / 2]],
+			["f_table_wood", Vector3(-0.8, 0, 2.9), 0.0], ["f_chair_green", Vector3(-1.8, 0, 2.9), -PI / 2], ["f_chair_green", Vector3(0.2, 0, 2.9), PI / 2],
+			["f_rug_cafe", Vector3(2.6, 0, 2.2), 0.0]],
 		"upgrades": {"terrace": [["f_table_wood", Vector3(4.4, 0, 3.6), 0.0], ["f_chair_green", Vector3(3.4, 0, 3.6), -PI / 2]],
 			"fridge": [["f_fridge", Vector3(3.9, 0, -3.6), 0.0]], "machine": [["f_espresso", Vector3(4.6, 0, -0.9), 0.0]]},
 		"menu": [Vector3(1.4, 2.8, -4.17), 0.0], "cert": Vector3(-6.22, 2.9, 0.4),
@@ -51,7 +53,7 @@ const LAYOUTS := {
 			"cappuccino": {"model": "food_cup", "base": Vector3(-0.5, 1.3, -1.25), "dx": 0.28, "max": 4, "machine": true}}
 	},
 	"market": {
-		"room": "room_cafe", "floor": Color("a9bca4"), "floor_line": Color("8aa285"), "floor_tile": 1.2,
+		"room": "room_cafe", "floor": Color("a9bca4"), "floor_line": Color("8aa285"), "floor_tile": 1.2, "floor_kind": 1,
 		"furniture": [
 			["f_breadshelf", Vector3(-4.6, 0, -3.95), 0.0], ["f_breadshelf", Vector3(-2.0, 0, -3.95), 0.0],
 			["f_display", Vector3(-1.2, 0, 0.1), 0.0], ["f_register", Vector3(3.3, 0, 0.1), 0.0],
@@ -108,6 +110,7 @@ func build(p_biz: String) -> void:
 	add_child(bodies)
 	var room := kit(lay["room"]); add_child(room)
 	_floor()
+	_light()
 	for f in lay["furniture"]: _place(f, true)
 	for uid in lay["upgrades"]:
 		upgrade_nodes[uid] = []
@@ -122,10 +125,33 @@ func build(p_biz: String) -> void:
 	var light := OmniLight3D.new(); light.position = Vector3(0, 3.6, 0.5); light.omni_range = 12.0; light.light_color = Color("ffd8a8"); light.light_energy = 0.45
 	add_child(light)
 
+# The window light of the shop: a warm sun from the window wall with soft shadows, and a patch of light on the floor under each window.
+# (The town's own sun is hidden while we are inside, so this is the shop's key light.)
+const SUN_YAW := -62.0
+const SUN_PITCH := -48.0
+
+func _light() -> void:
+	var key := DirectionalLight3D.new(); key.light_color = Color("fff0d6"); key.light_energy = 0.68; key.shadow_enabled = true
+	key.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL; key.directional_shadow_max_distance = 26.0; key.shadow_blur = 1.4
+	key.rotation = Vector3(deg_to_rad(SUN_PITCH), deg_to_rad(SUN_YAW), 0); add_child(key)
+	var dir := Vector2(-sin(deg_to_rad(SUN_YAW)), -cos(deg_to_rad(SUN_YAW))).normalized()     # where the light travels across the floor
+	var t0 := 1.7 / tan(deg_to_rad(-SUN_PITCH)); var t1 := 3.5 / tan(deg_to_rad(-SUN_PITCH))  # the window spans heights 1.7 to 3.5
+	var mat := ShaderMaterial.new(); mat.shader = load("res://assets/shaders/beam.gdshader")
+	for zc in [-1.4, 1.6]:
+		var am := ArrayMesh.new(); var arr := []; arr.resize(Mesh.ARRAY_MAX)
+		var wx := -6.2
+		var pts := [Vector2(wx, zc - 0.95) + dir * t0, Vector2(wx, zc + 0.95) + dir * t0, Vector2(wx, zc + 0.95) + dir * t1, Vector2(wx, zc - 0.95) + dir * t1]
+		var uvs := [Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]
+		var verts := PackedVector3Array(); var uv := PackedVector2Array(); var norm := PackedVector3Array()
+		for i in [0, 1, 2, 0, 2, 3]: verts.append(Vector3(pts[i].x, 0.09, pts[i].y)); uv.append(uvs[i]); norm.append(Vector3.UP)
+		arr[Mesh.ARRAY_VERTEX] = verts; arr[Mesh.ARRAY_TEX_UV] = uv; arr[Mesh.ARRAY_NORMAL] = norm
+		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
+		var mi := MeshInstance3D.new(); mi.mesh = am; mi.material_override = mat; mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF; add_child(mi)
+
 func _floor() -> void:
 	var mi := MeshInstance3D.new(); var bm := BoxMesh.new(); bm.size = Vector3(12.6, 0.3, 8.6); mi.mesh = bm; mi.position = Vector3(0, -0.15, 0)
 	var m := ShaderMaterial.new(); m.shader = load("res://assets/shaders/pavement.gdshader")
-	m.set_shader_parameter("kind", 1); m.set_shader_parameter("base", lay["floor"]); m.set_shader_parameter("line", lay["floor_line"]); m.set_shader_parameter("tile", lay["floor_tile"])
+	m.set_shader_parameter("kind", int(lay.get("floor_kind", 3))); m.set_shader_parameter("base", lay["floor"]); m.set_shader_parameter("line", lay["floor_line"]); m.set_shader_parameter("tile", lay["floor_tile"])
 	m.set_shader_parameter("shadow_lift", 0.6); m.set_shader_parameter("rim_amount", 0.0)
 	mi.material_override = m; add_child(mi)
 	# the street beyond the open front

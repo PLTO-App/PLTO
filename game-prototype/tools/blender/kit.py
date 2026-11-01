@@ -32,6 +32,17 @@ def _finish(o, color, bevel=0.0, seg=2, kind='solid'):
     PARTS.append((o, kind))
     return o
 
+def vgrad(o, c_bottom, c_top, z_lo=None, z_hi=None):
+    """paints a vertical colour gradient over a part (vertex colours): foliage that is darker underneath, walls that fade, and so on"""
+    me = o.data; ca = me.color_attributes['Col']
+    zs = [(o.matrix_basis @ v.co).z for v in me.vertices]
+    lo = min(zs) if z_lo is None else z_lo; hi = max(zs) if z_hi is None else z_hi
+    a = lin(c_bottom); b = lin(c_top)
+    for li, lp in enumerate(me.loops):
+        t = 0.0 if hi <= lo else min(1.0, max(0.0, (zs[lp.vertex_index] - lo) / (hi - lo)))
+        ca.data[li].color = tuple(a[k] + (b[k] - a[k]) * t for k in range(4))
+    return o
+
 def box(size, loc, color, bevel=0.06, rot=(0, 0, 0), kind='solid', seg=2):
     bpy.ops.mesh.primitive_cube_add(size=1.0, location=loc, rotation=rot)
     o = bpy.context.active_object; o.scale = size
@@ -46,13 +57,34 @@ def cyl(r, h, loc, color, verts=16, rot=(0, 0, 0), bevel=0.03, kind='solid', r2=
     o = bpy.context.active_object
     return _finish(o, color, bevel, 2, kind)
 
-def ball(r, loc, color, scale=(1, 1, 1), segs=12, kind='solid'):
+def ball(r, loc, color, scale=(1, 1, 1), segs=12, kind='solid', grad=None):
     bpy.ops.mesh.primitive_uv_sphere_add(segments=segs, ring_count=max(6, segs // 2), radius=r, location=loc)
     o = bpy.context.active_object; o.scale = scale
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     o2 = _finish(o, color, 0, 2, kind)
     for p in o2.data.polygons: p.use_smooth = True
+    if grad: vgrad(o2, grad[0], grad[1])
     return o2
+
+def tri_flag(p0, p1, p2, color, thick=0.02):
+    """a small flat triangle (bunting flag) with its three corners given in space"""
+    me = bpy.data.meshes.new('flag'); bm = bmesh.new()
+    vs = [bm.verts.new(p) for p in (p0, p1, p2)]; bm.faces.new(vs); bm.to_mesh(me); bm.free()
+    o = bpy.data.objects.new('flag', me); bpy.context.scene.collection.objects.link(o)
+    bpy.context.view_layer.objects.active = o
+    sol = o.modifiers.new('s', 'SOLIDIFY'); sol.thickness = thick; bpy.ops.object.modifier_apply(modifier='s')
+    return _finish(o, color, 0)
+
+def wire(points, color, r=0.025, kind='solid'):
+    """a thin cable through the given points: one stretched cylinder per segment"""
+    for a, b in zip(points[:-1], points[1:]):
+        va = Vector(a); vb = Vector(b); d = vb - va; L = d.length
+        if L < 1e-4: continue
+        bpy.ops.mesh.primitive_cylinder_add(radius=r, depth=L, vertices=5, location=(va + vb) / 2)
+        o = bpy.context.active_object
+        o.rotation_mode = 'QUATERNION'; o.rotation_quaternion = d.to_track_quat('Z', 'Y')
+        bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
+        _finish(o, color, 0, kind=kind)
 
 def prism_roof(w, d, h, loc, color, overhang=0.35):
     """gable roof along X, ridge on top"""

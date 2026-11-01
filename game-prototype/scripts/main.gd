@@ -259,6 +259,7 @@ func _enter_town_now(time01: float) -> void:
 	Game.sfx.play_music("music_day"); Game.sfx.play_ambience("amb_town")
 	for bid in shops: shops[bid].visible = false
 	if player != null: player.visible = false
+	town.set_indoor(false)
 	town.set_time(time01)
 	marker.visible = false
 	_apply_view()
@@ -286,7 +287,8 @@ func _show_stock() -> void:
 func _enter_shop(bid: String) -> void:
 	await ui.fade_out(0.35)
 	town.visible = false; town.process_mode = Node.PROCESS_MODE_DISABLED
-	town.set_time(0.42)      # the shop shares the town's light: daytime inside
+	town.set_time(0.42)      # the shop shares the town's environment: daytime inside
+	town.set_indoor(true)
 	for k in shops: shops[k].visible = false
 	shop = _get_shop(bid); shop.visible = true
 	worker = bid

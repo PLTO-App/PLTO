@@ -44,6 +44,29 @@ def bakery():
     box((0.9, 0.08, 1.2), (-3.9, fy - 1.3, 0.75), '#2b2b2b', 0.03, rot=(0.25, 0, 0))
     box((1.0, 0.12, 1.3), (-3.9, fy - 1.25, 0.75), wood, 0.03, rot=(0.25, 0, 0))
     for sx in (-1, 1): box((0.08, 0.08, 1.5), (-3.9 + sx * 0.45, fy - 1.15, 0.7), wood, 0.02, rot=(0.25, 0, 0))
+    # ---- the details that make the front inviting: bunting, lanterns, topiary, bread on display, a roof ridge cap
+    flags = ['#e94b4b', '#fff6ea', '#2fb3a2', '#f0b44c']
+    n = 15; x0, x1 = -W / 2 + 0.3, W / 2 - 0.3; zb = H1 + 0.55
+    pts = [(x0 + (x1 - x0) * i / n, fy - 0.3, zb - 0.45 * math.sin(math.pi * i / n)) for i in range(n + 1)]
+    wire(pts, '#6b4a33', 0.03)
+    for i in range(n):
+        a = pts[i]; b = pts[i + 1]; mx = (a[0] + b[0]) / 2; mz = (a[2] + b[2]) / 2
+        tri_flag((a[0] + 0.05, a[1], a[2]), (b[0] - 0.05, b[1], b[2]), (mx, a[1] - 0.04, mz - 0.5), flags[i % 4])
+    for sx in (-1, 1):                                                           # wall lanterns beside the door, topiary pots
+        box((0.08, 0.2, 0.5), (sx * 1.25, fy - 0.12, 2.9), '#2f3b52', 0.02)
+        box((0.26, 0.26, 0.36), (sx * 1.25, fy - 0.3, 2.7), '#ffd27a', 0.03, kind='glass')
+        box((0.34, 0.34, 0.07), (sx * 1.25, fy - 0.3, 2.93), '#2f3b52', 0.02)
+        cyl(0.27, 0.42, (sx * 1.25, fy - 0.62, 0.21), '#c8734a', 12, r2=0.2)
+        ball(0.36, (sx * 1.25, fy - 0.62, 0.78), '#4aa65a', segs=10, grad=('#2f7a45', '#74c76a'))
+        ball(0.22, (sx * 1.25, fy - 0.62, 1.2), '#4aa65a', segs=8, grad=('#3a8a4c', '#82d273'))
+    # a trestle table of bread under the awning, left of the door (the bicycle with the bread basket is a separate prop)
+    for sx in (-1, 1): box((0.08, 0.7, 0.9), (-3.1 + sx * 0.95, fy - 1.0, 0.45), wood, 0.02)
+    box((2.2, 0.9, 0.1), (-3.1, fy - 1.0, 0.92), '#a0703f', 0.03)
+    box((2.0, 0.7, 0.04), (-3.1, fy - 1.0, 0.99), '#fff6ea', 0.01)
+    for i in range(5): ball(0.2, (-3.8 + i * 0.4, fy - 1.0, 1.12), '#e5a04a', (1.0, 0.7, 0.62), 10, grad=('#b9722f', '#f0bd62'))
+    for i in range(3): ball(0.17, (-3.65 + i * 0.5, fy - 0.75, 1.4), '#d98d3a', (1.0, 0.7, 0.62), 10, grad=('#b9722f', '#f0bd62'))
+    box((W - 0.4, 0.34, 0.2), (0, 0.1, H1 + H2 + 2.2), '#a64a2c', 0.05)         # ridge cap
+    box((0.6, 0.6, 0.18), (2.6, 1.2, H1 + H2 + 2.75), '#5b3a29', 0.03)         # chimney pot
     export('bld_bakery')
 
 def cafe(rented=False):
@@ -169,13 +192,94 @@ def lamp():
     ball(0.2, (0, -0.7, 4.1), '#fff2c9', segs=10, kind='glass')
     export('prop_lamp')
 
-def tree(name, h=4.2, col='#5cb85c'):
+def tree(name, h=4.2, col='#5cb85c', lobes=9, blossom=None):
+    """a rounder, fuller tree: a forked trunk, overlapping lobes that are dark underneath and light on top, a root flare"""
     new_asset()
-    cyl(0.22, h * 0.55, (0, 0, h * 0.27), '#8d6e63', 10, r2=0.16)
-    for (x, y, z, r) in [(0, 0, h * 0.7, 1.3), (0.7, 0.3, h * 0.6, 0.9), (-0.7, -0.2, h * 0.62, 0.95), (0.1, -0.6, h * 0.85, 0.85), (-0.2, 0.5, h * 0.9, 0.8)]:
-        ball(r, (x, y, z), shade(col, random.uniform(0.85, 1.08)), segs=12)
-    cyl(0.75, 0.25, (0, 0, 0.12), '#a1887f', 14)
+    cyl(0.24, h * 0.55, (0, 0, h * 0.27), '#7b5a47', 10, r2=0.15)
+    for sx in (-1, 1): cyl(0.1, h * 0.35, (sx * 0.22, 0.05, h * 0.56), '#7b5a47', 8, rot=(0, sx * 0.4, 0), r2=0.06)
+    cyl(0.62, 0.22, (0, 0, 0.11), '#8d7466', 14, r2=0.34)
+    dark = shade(col, 0.55); light = shade(col, 1.12)
+    spots = [(0, 0, 0.72, 1.35), (0.85, 0.3, 0.6, 0.95), (-0.85, -0.2, 0.62, 1.0), (0.15, -0.8, 0.82, 0.9), (-0.25, 0.7, 0.86, 0.88),
+             (0.6, -0.5, 0.95, 0.75), (-0.6, -0.4, 1.0, 0.7), (0.2, 0.2, 1.08, 0.82), (-0.3, 0.3, 0.55, 0.8), (0.45, 0.65, 0.78, 0.75)]
+    for (x, y, zf, r) in spots[:lobes]:
+        c = shade(col, random.uniform(0.9, 1.08))
+        ball(r, (x, y, h * zf), c, segs=11, grad=(shade(dark, random.uniform(0.95, 1.05)), shade(light, random.uniform(0.95, 1.05))))
+    if blossom:
+        for i in range(20):
+            a = random.uniform(0, math.tau); rr = random.uniform(0.7, 1.5); zz = h * random.uniform(0.62, 1.1)
+            ball(0.15, (math.cos(a) * rr, math.sin(a) * rr, zz), blossom if i % 3 else '#fff0f4', segs=5)
     export(name)
+
+def poplar(name='prop_tree_d', h=6.4):
+    new_asset()
+    cyl(0.2, 1.6, (0, 0, 0.8), '#7b5a47', 8, r2=0.14)
+    for i, (z, r) in enumerate([(1.8, 0.95), (2.7, 1.05), (3.7, 0.98), (4.7, 0.8), (5.5, 0.5)]):
+        ball(r, (random.uniform(-0.1, 0.1), 0, z), '#4f9d55', (1, 1, 1.5), 12, grad=('#2f6b3b', '#7fc272'))
+    export(name)
+
+def bush(name='prop_bush'):
+    new_asset()
+    for i, (x, r) in enumerate([(-0.9, 0.55), (-0.3, 0.7), (0.4, 0.65), (1.0, 0.5), (0.05, 0.55)]):
+        ball(r, (x, random.uniform(-0.1, 0.1), r * 0.8), '#4aa65a', (1, 1, 0.85), 10, grad=('#2f7a45', '#79cc6e'))
+    for i in range(7): ball(0.07, (random.uniform(-1.2, 1.2), -0.5, random.uniform(0.5, 1.0)), random.choice(['#ff7a8a', '#ffd23f', '#ffffff']), segs=5)
+    export(name)
+
+def hydrant():
+    new_asset()
+    cyl(0.2, 0.7, (0, 0, 0.35), '#d94b3d', 12)
+    ball(0.21, (0, 0, 0.72), '#d94b3d', segs=10)
+    cyl(0.08, 0.1, (0, 0, 0.96), '#a8352b', 8)
+    for sx in (-1, 1): cyl(0.07, 0.2, (sx * 0.24, 0, 0.5), '#a8352b', 8, rot=(0, math.pi / 2, 0))
+    cyl(0.26, 0.1, (0, 0, 0.05), '#a8352b', 12)
+    export('prop_hydrant')
+
+def mailbox():
+    new_asset()
+    cyl(0.06, 0.9, (0, 0, 0.45), '#2f3b52', 8)
+    box((0.7, 0.5, 0.42), (0, 0, 1.1), '#2f6fb3', 0.1)
+    cyl(0.25, 0.5, (0, 0, 1.31), '#2f6fb3', 14, rot=(math.pi / 2, 0, 0))
+    box((0.35, 0.03, 0.06), (0, -0.26, 1.15), '#10223d', 0.01)
+    export('prop_mailbox')
+
+def trash_bin():
+    new_asset()
+    cyl(0.32, 0.8, (0, 0, 0.4), '#3e8e63', 14, r2=0.37)
+    cyl(0.38, 0.1, (0, 0, 0.83), '#2f6f4c', 14)
+    cyl(0.07, 0.07, (0, 0, 0.92), '#2f6f4c', 8)
+    export('prop_bin')
+
+def bike():
+    """a bicycle with a bread basket"""
+    new_asset()
+    for x in (-0.62, 0.62):
+        bpy.ops.mesh.primitive_torus_add(major_radius=0.42, minor_radius=0.04, location=(x, 0, 0.46), rotation=(math.pi / 2, 0, 0), major_segments=20, minor_segments=6)
+        _finish(bpy.context.active_object, '#2b2b2b', 0)
+        cyl(0.05, 0.1, (x, 0, 0.46), '#c0c4c8', 8, rot=(math.pi / 2, 0, 0), bevel=0)
+    wire([(-0.62, 0, 0.46), (-0.1, 0, 0.5), (0.35, 0, 1.0), (-0.3, 0, 1.0), (-0.62, 0, 0.46)], '#2fb3a2', 0.04)
+    wire([(-0.1, 0, 0.5), (0.35, 0, 1.0)], '#2fb3a2', 0.04)
+    wire([(0.35, 0, 1.0), (0.62, 0, 0.46)], '#2fb3a2', 0.04)
+    wire([(0.3, 0, 1.0), (0.38, 0, 1.2), (0.3, 0.3, 1.25), (0.3, -0.3, 1.25)], '#2b2b2b', 0.03)
+    box((0.34, 0.18, 0.07), (-0.3, 0, 1.05), '#2b2b2b', 0.02)
+    box((0.5, 0.42, 0.34), (0.82, 0, 0.9), '#c9a06a', 0.05)
+    for i in range(3): cyl(0.05, 0.62, (0.82 + (i - 1) * 0.11, 0.0, 1.2), '#e3a24a', 8, rot=(0, 0.35, 0), bevel=0)
+    export('prop_bike')
+
+def festoon(lamp_x, y_wire=-4.15, z_top=4.55, sag=0.55, name='prop_lights'):
+    """string lights between the street lamps: a sagging cable and warm bulbs that glow at night (glass parts)"""
+    new_asset()
+    cols = ['#ffd27a', '#ffb7a0', '#ffe9a8', '#bfe3ff']
+    for a, b in zip(lamp_x[:-1], lamp_x[1:]):
+        n = 10
+        pts = [(a + (b - a) * i / n, y_wire, z_top - sag * math.sin(math.pi * i / n)) for i in range(n + 1)]
+        wire(pts, '#2f3b52', 0.025)
+        for i in range(1, n):
+            ball(0.11, (pts[i][0], pts[i][1], pts[i][2] - 0.14), cols[i % 4], segs=6, kind='glass')
+    export(name)
+
+def mix(c1, c2, k):
+    c1 = c1.lstrip('#'); c2 = c2.lstrip('#')
+    a = [int(c1[i:i + 2], 16) for i in (0, 2, 4)]; b = [int(c2[i:i + 2], 16) for i in (0, 2, 4)]
+    return '#%02x%02x%02x' % tuple(int(a[i] + (b[i] - a[i]) * k) for i in range(3))
 
 def bench():
     new_asset()
@@ -241,24 +345,50 @@ def fountain():
     export('prop_fountain')
 
 def skyline():
+    """three layers of distance: round hills far back, pale tall blocks, then nearer pastel buildings with roof details and windows
+    that glow at night (glass parts). The farther the layer, the closer its colours are to the haze, which gives depth."""
     new_asset()
-    cols = ['#a9c4dc', '#b9cfe3', '#9fb8d2', '#c6d6e6', '#98b3cc', '#d8c3ae', '#c9b29d', '#e0b9a0']
-    x = -60.0
-    while x < 60:
-        w = random.uniform(4, 8); h = random.uniform(7, 19)
-        c = random.choice(cols)
+    haze = '#cfe0ee'
+    def hz(c, k): return mix(c, haze, k)
+    x = -90.0
+    while x < 90:
+        r = random.uniform(11, 20)
+        ball(r, (x, 16, -r * 0.35), hz(random.choice(['#8fb98f', '#86b087', '#9cc29a']), 0.45), (1.0, 0.8, 0.5), 14, grad=(hz('#7fa883', 0.45), hz('#a6cc9f', 0.4)))
+        x += random.uniform(14, 22)
+    x = -80.0
+    while x < 80:
+        w = random.uniform(5, 9); h = random.uniform(10, 24); c = hz(random.choice(['#a9c4dc', '#b8cde0', '#c2d3e4']), 0.35)
+        box((w, 4, h), (x + w / 2, 8, h / 2), c, 0.1, seg=1)
+        x += w + random.uniform(0.2, 1.2)
+    cols = ['#b4cbe0', '#c6d6e6', '#a6bfd6', '#e6d3c0', '#dcc3ad', '#e8c6b0', '#cfd9c0', '#e9d8b6']
+    x = -62.0
+    while x < 62:
+        w = random.uniform(4.5, 8.5); h = random.uniform(8, 20); c = hz(random.choice(cols), 0.12)
         box((w, 5, h), (x + w / 2, 0, h / 2), c, 0.1, seg=1)
-        for fl in range(int(h / 2.6)):
-            for k in range(int(w / 1.6)):
-                if random.random() < 0.7:
-                    box((0.7, 0.1, 1.0), (x + 0.8 + k * 1.6, -2.55, 1.6 + fl * 2.6), shade(c, 0.82), 0, seg=1)
-        x += w + random.uniform(0.3, 1.5)
-    for i in range(14):
-        tree_x = random.uniform(-55, 55)
-        ball(random.uniform(1.6, 2.6), (tree_x, -3.5, 1.5), shade('#7cb87c', random.uniform(0.85, 1.05)), segs=8)
+        box((w + 0.4, 5.4, 0.45), (x + w / 2, 0, h + 0.1), shade(c, 0.86), 0.05, seg=1)
+        r = random.random()
+        if r < 0.3: cyl(0.8, 1.6, (x + w * 0.3, 0.5, h + 1.0), '#9b7a62', 10)
+        elif r < 0.55:
+            box((1.2, 1.2, 1.1), (x + w * 0.65, 0.5, h + 0.95), '#9aa7b3', 0.05)
+            cyl(0.05, 2.2, (x + w * 0.3, 0.5, h + 1.4), '#5f6b78', 6)
+        elif r < 0.7: box((w * 0.55, 3.0, 2.0), (x + w / 2, 0.4, h + 1.2), shade(c, 0.95), 0.08)
+        for fl in range(int(h / 2.7)):
+            for k in range(int(w / 1.7)):
+                xx = x + 0.9 + k * 1.7; zz = 1.7 + fl * 2.7
+                if zz > h - 1.2: continue
+                lit = random.random()
+                col = '#ffd68a' if lit < 0.35 else ('#7fa6c9' if lit < 0.75 else '#5f86ab')
+                box((0.8, 0.12, 1.2), (xx, -2.55, zz), col, 0, kind='glass', seg=1)
+                box((1.0, 0.14, 0.12), (xx, -2.55, zz - 0.68), shade(c, 0.78), 0, seg=1)
+        x += w + random.uniform(0.3, 1.4)
+    for i in range(26):
+        tx = random.uniform(-58, 58)
+        ball(random.uniform(1.6, 2.8), (tx, -3.6, 1.4), '#6fb36f', (1, 1, 0.9), 10, grad=(hz('#3f8a50', 0.12), hz('#86cc7c', 0.1)))
     export('town_skyline')
 
 os.makedirs(OUT, exist_ok=True)
 bakery(); cafe(False); cafe(True); minimarket(); office(); bank(); warehouse()
-lamp(); tree('prop_tree'); tree('prop_tree_b', 5.0, '#7cc36b'); bench(); planter(); umbrella_table()
+lamp(); tree('prop_tree'); tree('prop_tree_b', 5.0, '#7cc36b'); tree('prop_tree_c', 4.4, '#6dbd6a', 8, '#ff9fc0'); poplar(); bush()
+bench(); planter(); umbrella_table(); hydrant(); mailbox(); trash_bin(); bike()
+festoon([-24.0, -14.0, -4.5, 5.0, 15.0, 23.0, 33.0])
 car('prop_car_red', '#e74c3c'); car('prop_car_blue', '#3b7dd8'); truck(); fountain(); skyline()

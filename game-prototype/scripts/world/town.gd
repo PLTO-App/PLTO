@@ -22,6 +22,7 @@ const BUILDINGS := [
 const BACK_Z := -4.0          # building origins; their fronts are at about z = -0.5
 const WALK_NEAR := 1.6        # the sidewalk in front of the shops
 const WALK_FAR := 12.6        # the far sidewalk
+const LAMP_X := [-24.0, -14.0, -4.5, 5.0, 15.0, 23.0, 33.0]   # the string lights (make_town.py: festoon) hang between these
 const MIN_X := -34.0
 const MAX_X := 35.0
 
@@ -31,7 +32,9 @@ static var _mat_glass: ShaderMaterial
 
 var sun: DirectionalLight3D
 var env: Environment
-var sky_mat: ProceduralSkyMaterial
+var sky_mat: ShaderMaterial
+var cloud_clock := 0.0
+var indoor := false            # the camera is inside one of our shops: warm ambient light, no fog, a calm backdrop instead of the sky
 var lamps: Array[OmniLight3D] = []
 var buildings := {}            # id -> Node3D
 var signs := {}                # id -> Label3D
@@ -78,13 +81,14 @@ static func _apply(n: Node, shadows: bool) -> void:
 # ---------------------------------------------------------------- building the street
 func _build_env() -> void:
 	var we := WorldEnvironment.new(); env = Environment.new()
-	var sky := Sky.new(); sky_mat = ProceduralSkyMaterial.new(); sky.sky_material = sky_mat
+	var sky := Sky.new(); sky_mat = ShaderMaterial.new(); sky_mat.shader = load("res://assets/shaders/sky.gdshader"); sky.sky_material = sky_mat
+	sky.radiance_size = Sky.RADIANCE_SIZE_32
 	env.background_mode = Environment.BG_SKY; env.sky = sky
-	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY; env.ambient_light_energy = 0.35
-	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC; env.tonemap_exposure = 1.0
-	env.glow_enabled = true; env.glow_intensity = 0.25; env.glow_hdr_threshold = 1.2
-	env.adjustment_enabled = true; env.adjustment_saturation = 1.12; env.adjustment_contrast = 1.04
-	env.fog_enabled = true; env.fog_light_color = Color("cfe3f2"); env.fog_density = 0.0015; env.fog_sky_affect = 0.0
+	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR; env.ambient_light_color = Color("a9c4ee"); env.ambient_light_energy = 0.4
+	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC; env.tonemap_exposure = 1.0; env.tonemap_white = 6.0
+	env.glow_enabled = true; env.glow_intensity = 0.3; env.glow_hdr_threshold = 1.2
+	env.adjustment_enabled = true; env.adjustment_saturation = 1.22; env.adjustment_contrast = 1.14
+	env.fog_enabled = true; env.fog_light_color = Color("cfe3f2"); env.fog_density = 0.0032; env.fog_sky_affect = 0.0
 	we.environment = env; add_child(we)
 	sun = DirectionalLight3D.new(); sun.shadow_enabled = true; sun.directional_shadow_max_distance = 60.0
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL; sun.shadow_blur = 1.5
@@ -176,12 +180,15 @@ static func _tint(n: Node, color: Color) -> void:
 	for c in n.get_children(): _tint(c, color)
 
 func _build_props() -> void:
-	for x in [-24.0, -14.0, -4.5, 5.0, 15.0, 23.0, 33.0]:
+	for x in LAMP_X:
 		var l := piece("prop_lamp", false); l.position = Vector3(x, 0, 3.4); l.rotation.y = 0.0; add_child(l)
 		var ol := OmniLight3D.new(); ol.position = Vector3(x, 4.0, 2.6); ol.omni_range = 8.0; ol.light_color = Color("ffcf8a"); ol.light_energy = 0.0
 		ol.shadow_enabled = false; add_child(ol); lamps.append(ol)
+	add_child(piece("prop_lights", false))                                # string lights between the lamps, glowing at night
+	var trees := ["prop_tree", "prop_tree_b", "prop_tree_c", "prop_tree_b"]
+	var ti := 0
 	for x in [-26.0, -15.0, -3.0, 6.0, 15.0, 26.0, -36.0, 36.0]:
-		var t := piece("prop_tree" if int(x) % 2 == 0 else "prop_tree_b"); t.position = Vector3(x, 0, 13.6); t.rotation.y = x; add_child(t)
+		var t := piece(trees[ti % trees.size()]); ti += 1; t.position = Vector3(x, 0, 13.6); t.rotation.y = x; add_child(t)
 	for x in [-20.0, 9.0]:
 		var bn := piece("prop_bench"); bn.position = Vector3(x, 0, 12.4); bn.rotation.y = PI; add_child(bn)
 	for x in [-5.0, 4.6, 14.4]:
@@ -191,14 +198,38 @@ func _build_props() -> void:
 	for i in 16:
 		var px := prng.randf_range(-40.0, 30.0); var pz := prng.randf_range(16.5, 30.0)
 		if absf(px + 6.0) < 4.0 and pz < 23.0: continue
-		var tr := piece("prop_tree" if i % 2 == 0 else "prop_tree_b"); tr.position = Vector3(px, 0, pz); tr.rotation.y = px; tr.scale = Vector3.ONE * prng.randf_range(0.8, 1.25); add_child(tr)
+		var tr := piece(["prop_tree", "prop_tree_b", "prop_tree_d", "prop_tree_c"][i % 4]); tr.position = Vector3(px, 0, pz); tr.rotation.y = px; tr.scale = Vector3.ONE * prng.randf_range(0.8, 1.25); add_child(tr)
 	for x in [-12.0, 0.0, 12.0, -28.0]:
 		var bed := piece("prop_planter"); bed.position = Vector3(x, 0, 16.2); bed.scale = Vector3(1.6, 1.0, 1.2); add_child(bed)
+	for x in [-24.0, -16.0, -9.0, 3.0, 9.5, 18.0, 27.0]:                    # low hedges and flowers along the far sidewalk
+		var bs := piece("prop_bush"); bs.position = Vector3(x, 0.1, 15.0 + prng.randf_range(-0.3, 0.3)); bs.rotation.y = prng.randf_range(-0.2, 0.2); bs.scale = Vector3.ONE * prng.randf_range(0.9, 1.3); add_child(bs)
 	for x in [-11.5, -7.5]:
 		var tb := piece("prop_table"); tb.position = Vector3(x, 0.12, 1.4); tb.add_to_group("cafe_tables"); add_child(tb)
+	# small street life: a hydrant, a mailbox, bins and the baker's bicycle
+	var hy := piece("prop_hydrant"); hy.position = Vector3(-6.6, 0.12, 3.35); add_child(hy)
+	var mb := piece("prop_mailbox"); mb.position = Vector3(13.2, 0.12, 3.3); mb.rotation.y = PI; add_child(mb)
+	for bp in [Vector3(7.0, 0.12, 3.3), Vector3(-16.4, 0.12, 3.3), Vector3(24.8, 0.12, 3.3)]:
+		var bin := piece("prop_bin"); bin.position = bp; add_child(bin)
+	var bk := piece("prop_bike"); bk.position = Vector3(3.5, 0.12, 0.7); bk.rotation.y = 0.12; add_child(bk)
 	var c1 := piece("prop_car_red"); c1.position = Vector3(-17.0, 0, 9.4); add_child(c1)
 	var c2 := piece("prop_car_blue"); c2.position = Vector3(18.0, 0, 5.6); c2.rotation.y = PI; add_child(c2)
 	truck = piece("prop_truck"); truck.position = Vector3(-29.0, 0, 5.4); truck.rotation.y = PI; add_child(truck)
+	_build_smoke(Vector3(2.6, 10.95, -1.2), buildings["bakery"])
+
+# Steam rising from the bakery chimney: a few soft puffs that drift up, grow and fade (CPU particles, cheap on phones).
+func _build_smoke(at: Vector3, parent: Node3D) -> void:
+	var p := CPUParticles3D.new(); p.position = at; p.amount = 12; p.lifetime = 4.6; p.local_coords = false
+	var sm := SphereMesh.new(); sm.radius = 0.42; sm.height = 0.84; sm.radial_segments = 8; sm.rings = 4
+	var mat := StandardMaterial3D.new(); mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED; mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.vertex_color_use_as_albedo = true; mat.albedo_color = Color("ffffff")
+	sm.material = mat; p.mesh = sm
+	p.direction = Vector3(0.25, 1, 0.1); p.spread = 10.0; p.initial_velocity_min = 0.7; p.initial_velocity_max = 1.1; p.gravity = Vector3(0.12, 0.05, 0)
+	p.scale_amount_min = 0.7; p.scale_amount_max = 1.1
+	var curve := Curve.new(); curve.add_point(Vector2(0, 0.35)); curve.add_point(Vector2(1, 2.1)); p.scale_amount_curve = curve
+	var grad := Gradient.new(); grad.set_color(0, Color(1, 1, 1, 0.0)); grad.set_color(1, Color(1, 1, 1, 0.0))
+	grad.add_point(0.2, Color(1, 1, 1, 0.38)); grad.add_point(0.65, Color(0.95, 0.95, 1.0, 0.2))
+	p.color_ramp = grad; p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	parent.add_child(p)
 
 # The hub camera: from the front right, looking down along the street (like a corner view), centred on x.
 static func camera_pose(x: float, portrait: bool) -> Transform3D:
@@ -222,6 +253,8 @@ func spawn_walkers(looks: Array, n: int, seed_value: int) -> void:
 		walkers.append({"rig": rig, "dir": dir, "speed": rng.randf_range(1.3, 1.9), "pause": rng.randf_range(0.0, 3.0), "z": z})
 
 func _process(delta: float) -> void:
+	cloud_clock += delta * 0.004
+	sky_mat.set_shader_parameter("drift", cloud_clock)
 	for w in walkers:
 		var rig: CharacterRig = w["rig"]
 		if not is_instance_valid(rig): continue
@@ -237,25 +270,49 @@ func _process(delta: float) -> void:
 
 # ---------------------------------------------------------------- time of day
 # t: 0 early morning, 0.5 midday, 0.8 sunset, 1 night.
+# Key columns: t, sun colour, sun energy, sun elevation, sky top, sky horizon, ambient energy, window glow,
+#              ambient colour, cloud light, cloud shade, cloud amount, ground colour of the sky, night amount
+const TIME_KEYS := [
+	[0.0, Color("ffc88f"), 0.78, 16.0, Color("6f9fe0"), Color("f7c9a0"), 0.36, 0.25, Color("b9b4d8"), Color("fff0df"), Color("d8a9a8"), 0.46, Color("8a8f7a"), 0.0],
+	[0.35, Color("ffeccc"), 0.95, 50.0, Color("3f86df"), Color("c4e4fa"), 0.37, 0.0, Color("a4c2f0"), Color("ffffff"), Color("a9bfdc"), 0.5, Color("7da668"), 0.0],
+	[0.6, Color("ffeccc"), 0.95, 56.0, Color("3f86df"), Color("c4e4fa"), 0.37, 0.0, Color("a4c2f0"), Color("ffffff"), Color("a9bfdc"), 0.5, Color("7da668"), 0.0],
+	[0.82, Color("ff9a5c"), 0.78, 13.0, Color("4d5fb5"), Color("ffa67e"), 0.34, 0.45, Color("c3a3cf"), Color("ffd2b0"), Color("a2658f"), 0.55, Color("8a6a62"), 0.0],
+	[1.0, Color("7088d8"), 0.14, 30.0, Color("070d2a"), Color("1c2750"), 0.22, 1.25, Color("3b4a8f"), Color("5a6aa8"), Color("1a2246"), 0.3, Color("0d1428"), 1.0]]
+
 func set_time(t: float) -> void:
 	time01 = clampf(t, 0.0, 1.0)
-	var keys := [
-		[0.0, Color("ffcf9e"), 0.75, 18.0, Color("7fb0e0"), Color("f2c4a0"), 0.3, 0.25],
-		[0.35, Color("fff1db"), 0.95, 50.0, Color("4f97dd"), Color("bfe0f5"), 0.38, 0.0],
-		[0.6, Color("fff1db"), 0.95, 56.0, Color("4f97dd"), Color("bfe0f5"), 0.38, 0.0],
-		[0.82, Color("ffa66b"), 0.8, 14.0, Color("5f6fb8"), Color("ffad85"), 0.3, 0.45],
-		[1.0, Color("7088d8"), 0.12, 30.0, Color("0b1230"), Color("1f2950"), 0.12, 1.25]]
-	var a: Array = keys[0]; var b: Array = keys[keys.size() - 1]
-	for i in keys.size() - 1:
-		if time01 >= keys[i][0] and time01 <= keys[i + 1][0]: a = keys[i]; b = keys[i + 1]
+	var a: Array = TIME_KEYS[0]; var b: Array = TIME_KEYS[TIME_KEYS.size() - 1]
+	for i in TIME_KEYS.size() - 1:
+		if time01 >= TIME_KEYS[i][0] and time01 <= TIME_KEYS[i + 1][0]: a = TIME_KEYS[i]; b = TIME_KEYS[i + 1]
 	var k: float = 0.0 if b[0] == a[0] else (time01 - float(a[0])) / (float(b[0]) - float(a[0]))
 	sun.light_color = (a[1] as Color).lerp(b[1], k); sun.light_energy = lerpf(a[2], b[2], k)
 	var elev := deg_to_rad(lerpf(a[3], b[3], k))
 	sun.rotation = Vector3(-elev, deg_to_rad(150.0), 0)      # from the front left, so the shop fronts are in the light
-	sky_mat.sky_top_color = (a[4] as Color).lerp(b[4], k); sky_mat.sky_horizon_color = (a[5] as Color).lerp(b[5], k)
-	sky_mat.ground_horizon_color = sky_mat.sky_horizon_color; sky_mat.ground_bottom_color = Color("6a8f5a").lerp(Color("1a2433"), clampf((time01 - 0.8) * 5.0, 0, 1))
+	var horizon: Color = (a[5] as Color).lerp(b[5], k)
+	sky_mat.set_shader_parameter("top_color", (a[4] as Color).lerp(b[4], k))
+	sky_mat.set_shader_parameter("horizon_color", horizon)
+	sky_mat.set_shader_parameter("ground_color", (a[12] as Color).lerp(b[12], k))
+	sky_mat.set_shader_parameter("sun_color", (a[1] as Color).lerp(b[1], k))
+	sky_mat.set_shader_parameter("cloud_color", (a[9] as Color).lerp(b[9], k))
+	sky_mat.set_shader_parameter("cloud_shade", (a[10] as Color).lerp(b[10], k))
+	sky_mat.set_shader_parameter("cloud_amount", lerpf(a[11], b[11], k))
+	sky_mat.set_shader_parameter("night", lerpf(a[13], b[13], k))
+	env.ambient_light_color = (a[8] as Color).lerp(b[8], k)
 	env.ambient_light_energy = lerpf(a[6], b[6], k)
-	env.fog_light_color = sky_mat.sky_horizon_color
+	env.fog_light_color = horizon
 	var glow: float = lerpf(a[7], b[7], k)
 	glass_material().set_shader_parameter("glow", glow)
 	for l in lamps: l.light_energy = clampf((glow - 0.3) * 1.6, 0.0, 1.6)
+	_apply_indoor()
+
+# The shops light themselves (a window light inside ShopRoom), so inside only the ambient light and the backdrop come from here.
+func set_indoor(on: bool) -> void:
+	indoor = on; _apply_indoor()
+
+func _apply_indoor() -> void:
+	env.fog_enabled = not indoor
+	env.glow_enabled = not indoor
+	env.background_mode = Environment.BG_COLOR if indoor else Environment.BG_SKY
+	env.background_color = Color("1b2a47")
+	if indoor:
+		env.ambient_light_color = Color("ffe0c0"); env.ambient_light_energy = 0.42

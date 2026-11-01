@@ -35,6 +35,12 @@ def room(name, wall, wainscot, trim, accent, windows_left=True):
             box((0.1, 2.0, 1.8), (-W / 2 + 0.02, y, 2.6), '#cfeaff', 0, kind='glass')
             box((0.2, 2.3, 0.15), (-W / 2 + 0.05, y, 3.55), trim, 0.03); box((0.3, 2.4, 0.15), (-W / 2 + 0.08, y, 1.65), trim, 0.03)
             for yy in (-1.05, 0, 1.05): box((0.2, 0.12, 1.9), (-W / 2 + 0.05, y + yy, 2.6), trim, 0.02)
+        for y in (-1.6, 1.4):                                   # curtains: a rod and two tied-back panels per window
+            cyl(0.04, 3.0, (-W / 2 + 0.2, y, 3.82), '#8d5a3b', 8, rot=(math.pi / 2, 0, 0), bevel=0)
+            for sy in (-1, 1):
+                box((0.16, 0.5, 2.5), (-W / 2 + 0.2, y + sy * 1.3, 2.55), '#f2dcc2', 0.06)
+                box((0.12, 0.28, 2.3), (-W / 2 + 0.26, y + sy * 1.05, 2.5), '#fbead6', 0.05)
+                box((0.18, 0.56, 0.1), (-W / 2 + 0.22, y + sy * 1.3, 2.0), accent, 0.03)
     # picture frames and a clock on the back wall
     for (x, w, h, c) in [(-3.6, 1.4, 1.0, accent), (4.4, 1.0, 1.3, '#7fb3d5')]:
         box((w + 0.2, 0.1, h + 0.2), (x, D / 2 - 0.08, 3.0), '#8d5a3b', 0.03)
@@ -48,6 +54,17 @@ def room(name, wall, wainscot, trim, accent, windows_left=True):
         cyl(0.015, 1.0, (x, 0.2, H - 0.5), '#2f3b52', 6, bevel=0)
         cyl(0.45, 0.4, (x, 0.2, H - 1.1), accent, 16, r2=0.12)
         ball(0.15, (x, 0.2, H - 1.3), '#fff2c9', segs=10, kind='glass')
+    export(name)
+
+def rug(name, border, field, accent, w=5.2, d=2.8):
+    """a flat woven rug: a border, a lighter field and a stripe of accent colour (no collision, it is only 0.07 high)"""
+    new_asset()
+    box((w, d, 0.05), (0, 0, 0.03), border, 0.1, seg=3)
+    box((w - 0.5, d - 0.5, 0.05), (0, 0, 0.06), field, 0.08, seg=3)
+    for k in (-1, 1): box((w - 0.9, 0.12, 0.05), (0, k * (d / 2 - 0.55), 0.09), accent, 0.02, seg=1)
+    for k in range(6): box((0.5, 0.5, 0.05), (-1.4 + k * 0.56, 0, 0.09), accent if k % 2 else shade(field, 0.93), 0.05, seg=1)
+    for sx in (-1, 1):
+        for k in range(int(d / 0.18)): box((0.14, 0.05, 0.035), (sx * (w / 2 + 0.05), -d / 2 + 0.1 + k * 0.18, 0.025), border, 0, seg=1)
     export(name)
 
 # ------------------------------------------------------------------ furniture
@@ -299,6 +316,7 @@ os.makedirs(kit.OUT, exist_ok=True)
 ingredient_icons()
 room('room_bakery', '#f8e6cf', '#2fb3a2', '#fff6ea', '#ff7a59')
 room('room_cafe', '#efe0cc', '#5b3a29', '#f7e7d0', '#2e7d5b')
+rug('f_rug_bakery', '#2fb3a2', '#fff1dc', '#ffb88c'); rug('f_rug_cafe', '#2e7d5b', '#f3e6cf', '#d9a066')
 display_case(); oven(); work_table(); bread_shelf(); register_counter(); espresso_bar(); pastry_case()
 table('f_table', '#fff6ea'); table('f_table_wood', '#a0703f', '#5b3a29', 0.7)
 chair('f_chair_teal', '#2fb3a2'); chair('f_chair_coral', '#ff7a59'); chair('f_chair_green', '#2e7d5b')

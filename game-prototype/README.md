@@ -23,6 +23,8 @@
 - `tools/blender/make_town.py`: בנייני הרחוב והאביזרים. `tools/blender/make_interiors.py`: רהיטים, מאפים וחומרי גלם. `tools/blender/kit.py`: עזרי מידול.
 - `tools/make_music.py`: מוזיקה, אווירה וצלילים. `tools/make_sounds.py`: צלילי מגע ומטבעות. `tools/make_icons.py`: בועה וצל.
 - `dev/make_portraits.tscn`: דיוקנאות ואייקונים מתוך המודלים. `dev/make_icon.tscn`: אייקון האפליקציה.
+- `dev/town_preview.tscn` (הרחוב בשעות היום, כולל צילומי hero), `dev/bakery_preview.tscn` (פנים העסק כפי שהוא במשחק, עם `biz=bakery` או `biz=cafe`), `dev/sky_preview.tscn` (השמיים): צילומי בדיקה לגרפיקה. תמיד להריץ עם `timeout`, כי שגיאת פרסור משאירה את התהליך רץ.
+- שיידרים: `assets/shaders/sky.gdshader` (שמיים, עננים וכוכבים), `beam.gdshader` (כתם אור מהחלון), `pavement.gdshader` (אספלט, מרצפות, דשא וריצפת עץ), `world.gdshader` (צבעי קודקודים עם אפלה מזויפת), `glass.gdshader` (חלונות).
 - `tools/locale_tool.py`: הוספת מפתחות תרגום ובדיקה שלא חסר טקסט.
 
 ## בדיקות
