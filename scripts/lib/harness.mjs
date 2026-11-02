@@ -67,7 +67,10 @@ export async function startHarness({ touch = false, root = defaultRoot, supabase
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const BASE = `http://127.0.0.1:${server.address().port}`;
   const browser = await chromium.launch({ args: ['--no-sandbox', '--disable-dev-shm-usage'] });
-  const ctx = await browser.newContext({ locale: 'he-IL', viewport: { width: 390, height: 844 }, hasTouch: touch, isMobile: touch });
+  // serviceWorkers: 'block': sw.js נרשם ב-load ומעביר כל בקשה דרך fetch משלו. אחרי reload הדף
+  // נשלט בידיו, ובקשות ממנו לא עוברות את ה-routes של הבדיקה בכל סביבה (ב-runner של GitHub נטענה
+  // supabase-js האמיתית במקום המוק). בדיקות לא רצות מתחת למטמון.
+  const ctx = await browser.newContext({ locale: 'he-IL', viewport: { width: 390, height: 844 }, hasTouch: touch, isMobile: touch, serviceWorkers: 'block' });
   await ctx.route('**cdn.jsdelivr.net**supabase**', r => r.fulfill({ contentType: 'application/javascript; charset=utf-8', body: supabaseMock }));
   await ctx.route('**cdn.jsdelivr.net**chart.js**', r => r.fulfill({ contentType: 'application/javascript; charset=utf-8', body: CHART_MOCK }));
   await ctx.route(url => !url.href.startsWith(BASE) && !/cdn\.jsdelivr\.net/.test(url.href), r => r.abort());
