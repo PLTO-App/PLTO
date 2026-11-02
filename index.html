@@ -7990,6 +7990,19 @@ function parseCSV(text) {
 const SUPABASE_URL = 'https://scyfywvzoogfrlalgftv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjeWZ5d3Z6b29nZnJsYWxnZnR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MDA3MzAsImV4cCI6MjA5NjA3NjczMH0._D8ho0Yj8fEk7nd6-vmkjKkKyjfvHDmSq9Y8h5XzQCM';
 const DEMO_TENANT  = '00000000-0000-0000-0000-000000000001';
+// חזרה מ-Google OAuth: נבדק לפני createClient, כי supabase-js מנקה את פרטי ההתחברות
+// מהכתובת כשהוא מאותחל. כניסה טרייה כזו אינה session ישן ששוחזר מהמכשיר, ואסור
+// שבדיקת 30 הימים של AuthSession תנתק אותה (קרה למשתמשים חדשים בכניסה הראשונה).
+const OAUTH_RETURN = (() => {
+  const urlHasAuth = /(^|[#&?])(access_token|code)=/.test(location.hash + '&' + location.search.replace(/^\?/, ''));
+  let pending = false;
+  try {
+    const ts = Number(localStorage.getItem('plto_oauth_pending') || 0);
+    pending = ts > 0 && (Date.now() - ts) < 15 * 60 * 1000;
+    localStorage.removeItem('plto_oauth_pending');
+  } catch (_) {}
+  return urlHasAuth || pending;
+})();
 const sbClient     = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Fire-and-forget audit trail - calls the SECURITY DEFINER `append_audit`
@@ -9169,29 +9182,30 @@ const Onboarding = {
       },
     },
     {
-      title: 'היכרות עם הסוכן שלך 🤖',
-      subtitle: 'הסוכן החכם שמנטר ומניע אותך',
+      title: 'מסך "היום" שלך 📋',
+      subtitle: 'בכל כניסה רואים במקום אחד למי לחזור',
       render() {
-        const firstName = (Onboarding._data.agentName || 'יזם').split(' ')[0];
+        const firstName = escapeHtml((Onboarding._data.agentName || '').trim().split(' ')[0]);
         const ind = localStorage.getItem('plto_industry') || 'other';
-        const AGENT_TIPS = {
-          realestate:        'אני מסמנת לידים חדשים שעוד לא חזרו אליהם, כדי שאף פנייה לא תחכה יותר מדי.',
-          interior:          'לקוח עיצוב מחליט אחרי ראיית Portfolio. אני אזכיר לך מתי לשלוח דוגמאות עבודה לכל ליד.',
-          realestate_lawyer: 'כל תיק דורש מעקב צמוד אחרי מועדים ומסמכים. אני אעקוב אחרי כל תיק ואזהיר על עיכובים.',
-          other:             'אני מסמנת לידים חדשים שעוד לא חזרו אליהם, ולידים שהתקררו, כדי שתדע למי לחזור.',
+        // רק מה שמסך "היום" עושה בפועל (TodayScreen.compute), בלי AI ובלי הבטחות
+        const TODAY_TIPS = {
+          realestate:        'לידים חדשים שעוד לא קיבלו מענה מופיעים למעלה, כדי שאף פנייה לא תחכה יותר מדי.',
+          interior:          'לכל ליד אפשר לקבוע צעד הבא, למשל שליחת דוגמאות עבודה, והוא יופיע כאן ביום שנקבע.',
+          realestate_lawyer: 'לכל תיק אפשר לקבוע צעד הבא ותאריך, והוא יופיע כאן ביום שנקבע, כדי שקל יותר לעקוב אחרי מועדים.',
+          other:             'לידים חדשים שעוד לא קיבלו מענה ולידים שהתקררו מסומנים כאן, כדי שיהיה ברור למי לחזור.',
         };
-        const tip = AGENT_TIPS[ind] || AGENT_TIPS.other;
+        const tip = TODAY_TIPS[ind] || TODAY_TIPS.other;
         return `
           <div style="text-align:center;padding:4px 0 0;">
-            <div style="font-size:54px;margin-bottom:4px;line-height:1;">🤖</div>
-            <div style="font-size:17px;font-weight:900;color:var(--navy);margin-bottom:2px;">שלום ${firstName}, אני הסוכן שלך</div>
-            <div style="font-size:11px;color:var(--gray-400);margin-bottom:14px;letter-spacing:.3px;">מוטיבציה · ניתוח פייפליין · תזכורות חכמות</div>
-            <div style="background:var(--gray-50);border:1px solid var(--border);border-radius:16px 16px 16px 4px;padding:13px 15px;text-align:right;margin-bottom:16px;">
-              <div style="font-size:13px;color:var(--gray-600);line-height:1.75;">
-                אני מנטר את הפייפליין שלך, מזהה לידים שמסתכנים להיאבד, ונותן לך טיפ בכל כניסה למערכת.
+            <div style="font-size:54px;margin-bottom:4px;line-height:1;">📋</div>
+            <div style="font-size:17px;font-weight:900;color:var(--navy);margin-bottom:2px;">${firstName ? `${firstName}, הכל כמעט מוכן` : 'הכל כמעט מוכן'}</div>
+            <div style="font-size:12px;color:var(--gray-500);margin-bottom:14px;">באיחור · להיום · חדשים בלי מענה · שמירת קשר</div>
+            <div style="background:var(--gray-50);border:1px solid var(--border);border-radius:16px;padding:13px 15px;text-align:right;margin-bottom:16px;">
+              <div style="font-size:14px;color:var(--gray-700);line-height:1.75;">
+                בכל כניסה מחכה לך מסך "היום": מעקבים שעבר זמנם, מה שנקבע להיום, לידים חדשים ולקוחות שכדאי לשמור איתם על קשר.
               </div>
-              <div style="margin-top:10px;background:linear-gradient(135deg,rgba(37,99,235,0.07),rgba(124,58,237,0.07));border-radius:10px;padding:10px 12px;font-size:12.5px;color:var(--gray-700);line-height:1.7;text-align:right;">
-                💡 <strong>הטיפ הראשון שלי:</strong><br>${tip}
+              <div style="margin-top:10px;background:var(--blue-50,#EFF6FF);border-radius:10px;padding:10px 12px;font-size:13.5px;color:var(--gray-700);line-height:1.7;text-align:right;">
+                💡 ${tip}
               </div>
             </div>
             <button onclick="Onboarding._launchRocket()"
@@ -14992,6 +15006,7 @@ const App = {
     const REDIRECT = window.location.origin.includes('localhost')
       ? window.location.href
       : 'https://realestate.plto.app/';
+    try { localStorage.setItem('plto_oauth_pending', String(Date.now())); } catch (_) {}
     const { error } = await sbClient.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: REDIRECT },
@@ -20874,6 +20889,7 @@ const AuthSession = {
   touch() { localStorage.setItem(this._KEY, String(Date.now())); },
   clear() { localStorage.removeItem(this._KEY); },
 };
+const AuthBoot = { running: false };
 
 sbClient.auth.onAuthStateChange((event, session) => {
   if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session?.user) {
@@ -20882,7 +20898,8 @@ sbClient.auth.onAuthStateChange((event, session) => {
       // INITIAL_SESSION = Supabase auto-restored a session from localStorage.
       // Only trust it if this browser was active within the last 30 days -
       // otherwise force re-auth (protects a device that was simply forgotten).
-      if (event === 'INITIAL_SESSION') {
+      // חזרה טרייה מ-Google (OAUTH_RETURN) אינה session ישן, גם כשאין עדיין חותמת פעילות.
+      if (event === 'INITIAL_SESSION' && !OAUTH_RETURN) {
         if (!AuthSession.isTrusted()) {
           setTimeout(() => sbClient.auth.signOut(), 0);
           return;
@@ -20890,6 +20907,9 @@ sbClient.auth.onAuthStateChange((event, session) => {
       }
       // Refresh the activity timestamp on every successful auth event.
       AuthSession.touch();
+      // אחרי OAuth מגיעים גם SIGNED_IN וגם INITIAL_SESSION. טוענים פעם אחת בלבד.
+      if (AuthBoot.running) return;
+      AuthBoot.running = true;
       // User just signed in via OAuth redirect.
       // IMPORTANT: supabase-js holds an internal auth lock for the duration of
       // this callback - awaiting sbClient.rpc()/from() calls in here deadlocks
@@ -20943,6 +20963,8 @@ sbClient.auth.onAuthStateChange((event, session) => {
           } else {
             toast('שגיאה בטעינת הנתונים', 'error');
           }
+        } finally {
+          AuthBoot.running = false;
         }
       }, 0);
     }

@@ -15,7 +15,7 @@ async function loadChromium() {
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.json': 'application/json', '.png': 'image/png', '.txt': 'text/plain' };
 
-const SUPABASE_MOCK = `
+export const SUPABASE_MOCK = `
 (function(){
   var noop = function(){};
   var chain = function(){
@@ -53,7 +53,9 @@ const SUPABASE_MOCK = `
 const CHART_MOCK = `window.Chart=function(){this.destroy=function(){};this.data={datasets:[]};this.update=function(){};};window.Chart.register=function(){};`;
 
 
-export async function startHarness({ touch = false, root = defaultRoot } = {}) {
+// supabaseMock: להחלפת ה-mock (למשל לדמות חזרה מ-Google). urlPath: נתיב/fragment לטעינה.
+// demo: false משאיר את מסך הכניסה, בלי כניסה אוטומטית לדמו.
+export async function startHarness({ touch = false, root = defaultRoot, supabaseMock = SUPABASE_MOCK, urlPath = '/', demo = true } = {}) {
   const chromium = await loadChromium();
   const server = http.createServer((req, res) => {
     const path = decodeURIComponent(req.url.split('?')[0]);
@@ -66,7 +68,7 @@ export async function startHarness({ touch = false, root = defaultRoot } = {}) {
   const BASE = `http://127.0.0.1:${server.address().port}`;
   const browser = await chromium.launch({ args: ['--no-sandbox', '--disable-dev-shm-usage'] });
   const ctx = await browser.newContext({ locale: 'he-IL', viewport: { width: 390, height: 844 }, hasTouch: touch, isMobile: touch });
-  await ctx.route('**cdn.jsdelivr.net**supabase**', r => r.fulfill({ contentType: 'application/javascript; charset=utf-8', body: SUPABASE_MOCK }));
+  await ctx.route('**cdn.jsdelivr.net**supabase**', r => r.fulfill({ contentType: 'application/javascript; charset=utf-8', body: supabaseMock }));
   await ctx.route('**cdn.jsdelivr.net**chart.js**', r => r.fulfill({ contentType: 'application/javascript; charset=utf-8', body: CHART_MOCK }));
   await ctx.route(url => !url.href.startsWith(BASE) && !/cdn\.jsdelivr\.net/.test(url.href), r => r.abort());
   await ctx.route(`${BASE}/`, async r => {
@@ -78,8 +80,9 @@ export async function startHarness({ touch = false, root = defaultRoot } = {}) {
   const errors = [];
   page.on('pageerror', e => errors.push(`pageerror: ${e.message}`));
   page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push(`console: ${m.text().slice(0, 160)}`); });
-  await page.goto(BASE, { waitUntil: 'domcontentloaded' });
+  await page.goto(BASE + urlPath, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => typeof App !== 'undefined' && typeof App.loginDemo === 'function', null, { timeout: 15000 });
+  if (!demo) return { page, ctx, errors, browser, BASE, close: async () => { await browser.close(); server.close(); } };
   await page.evaluate(() => { App.loginDemo(); State.isDemo = false; });
   await page.waitForSelector('#app-shell:not(.hidden)', { timeout: 10000 });
   await page.evaluate(() => {

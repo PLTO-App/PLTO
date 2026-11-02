@@ -39,6 +39,8 @@ jobs:
         run: node scripts/test-ux-interactions.mjs
       - name: Tracking requests are really sent
         run: node scripts/test-tracking-requests.mjs
+      - name: Google sign-in return is not signed out
+        run: node scripts/test-oauth-return.mjs
       - name: Today screen, next step and lost deals
         run: node scripts/test-today.mjs
       - name: Industry persistence and general-business wizard
