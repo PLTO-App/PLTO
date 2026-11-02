@@ -8959,7 +8959,7 @@ const Billing = {
 
   openCheckout(planId = 'pro') {
     const _daysLeft = this.isActiveTrial() ? Math.ceil((new Date(State.tenant?.trial_ends_at) - Date.now()) / 86400000) : 0;
-    FunnelTracker.track('upgrade_intent', { plan: planId, days_left: _daysLeft, is_expired: !this.isActiveTrial() }, State.tenant?.id || null);
+    FunnelTracker.track('upgrade_intent', { plan: planId, days_left: _daysLeft, is_expired: !this.isActiveTrial() });
     if (this.isActiveTrial()) {
       this.showTrialNoCreditCardModal();
       return;
@@ -14880,20 +14880,20 @@ const FunnelTracker = {
     if (!sid) { sid = crypto.randomUUID(); sessionStorage.setItem(this._SESSION_KEY, sid); }
     return sid;
   },
-  track(eventName, data = {}, tenantId = null) {
+  track(eventName, data = {}) {
     try {
       // GA4
       if (typeof gtag === 'function') {
         gtag('event', eventName, { event_category: 'funnel', ...data });
       }
       // Supabase (fire-and-forget)
-      const tid = tenantId || State?.tenant?.id || null;
+      // ה-tenant נגזר בשרת (מיגרציה 129). לא שולחים p_tenant_id: לפני התחברות
+      // State.tenant הוא עסק הדמו עם id לא תקין ('t1'), והקריאה הייתה נדחית ב-400.
       if (typeof sbClient !== 'undefined') {
         sbClient.rpc('track_funnel_event', {
           p_session_id: this.sessionId,
           p_event_name: eventName,
           p_event_data: data,
-          p_tenant_id:  tid,
         }).then(() => {}, () => {});
       }
     } catch (_) {}
