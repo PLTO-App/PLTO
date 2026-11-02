@@ -817,6 +817,30 @@ footer {
       .feat-item { padding: 14px; }
     }
 
+
+/* ══ תיקוני QA (2.11.2026) ══ */
+/* 1. מצב נגישות: כרטיסי "מה עושים כל יום" נשארו לבנים עם טקסט בהיר */
+body.theme-accessible .feat-item { background: var(--gray-card); border-color: var(--border); box-shadow: none; }
+body.theme-accessible .feat-ico { background: #000; }
+body.theme-accessible .feat-item h3,
+body.theme-accessible .feat-section .section-title { color: #FFFFFF; }
+body.theme-accessible .feat-item p,
+body.theme-accessible .feat-section .section-sub { color: #E6E6E6; }
+body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
+/* 2. reduced motion: הפעימה של כפתור הגיבור נשארה בגלל !important בכלל בעל ספציפיות גבוהה */
+@media (prefers-reduced-motion: reduce) {
+  .hero .btn-primary.pulse-cta::after { animation: none !important; }
+}
+/* 3. שורות יתומות בטלפון קטן */
+.hero h1, .closing h2, .section-title { text-wrap: balance; }
+.hero-micro { text-wrap: balance; }
+.hero-sub, .feat-item p, .closing p { text-wrap: pretty; }
+/* שורת ההדגשה בכותרת הגיבור כבלוק משלה, כדי שהאיזון בין השורות יעבוד גם עם מעבר השורה הידני */
+.hero h1 br { display: none; }
+.hero h1 .highlight { display: block; text-wrap: balance; }
+/* 4. קישורי פוטר: יעד לחיצה של 44px לפחות, וצבע עם ניגודיות מספקת */
+.footer-links a { display: inline-flex; align-items: center; min-height: 44px; color: rgba(255,255,255,0.74); }
+.footer-copy { color: rgba(255,255,255,0.62); }
 </style>
 </head>
 <body>
@@ -932,10 +956,10 @@ footer {
     </div>
     <p class="closing-micro">בלי כרטיס אשראי · בלי התחייבות</p>
 <div id="a11y-statement" style="margin:24px auto 0;max-width:560px;padding:14px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);border-radius:12px;text-align:right;">
-      <div style="font-size:12px;font-weight:800;color:rgba(255,255,255,0.60);margin-bottom:6px;">♿ הצהרת נגישות</div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.38);line-height:1.7;">
+      <div style="font-size:12px;font-weight:800;color:rgba(255,255,255,0.82);margin-bottom:6px;">♿ הצהרת נגישות</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.72);line-height:1.7;">
         PLTO פועלת בהתאם לחוק שוויון זכויות לאנשים עם מוגבלות, תשנ"ח-1998, ולתקנות הנגישות לשירות באינטרנט.
-        רמת תאימות מוצהרת: <strong style="color:rgba(255,255,255,0.55);">WCAG 2.1 AA (חלקית)</strong> · תקן ת"י 5568.
+        רמת תאימות מוצהרת: <strong style="color:rgba(255,255,255,0.88);">WCAG 2.1 AA (חלקית)</strong> · תקן ת"י 5568.
         המערכת כוללת מצב ניגודיות גבוהה, הגדלת טקסט, וניווט מקלדת ותמיכה בקוראי מסך, באופן חלקי.
         לפניות בנושא נגישות: <a href="mailto:info@plto.app" style="color:rgba(255,255,255,0.6);">info@plto.app</a>
       </div>

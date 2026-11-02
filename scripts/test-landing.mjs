@@ -100,6 +100,64 @@ for (const [w, h, label] of [[390, 844, 'נייד 390px'], [768, 1024, 'טאבל
   await ctx.close();
 }
 
+// ניגודיות טקסט (4.5:1, או 3:1 לטקסט גדול) במצב רגיל ובמצב נגישות, ובמובייל ובדסקטופ
+const CONTRAST = () => {
+  const parse = s => { const m = s.match(/rgba?\(([^)]+)\)/); if (!m) return null; const a = m[1].split(',').map(Number); return { r: a[0], g: a[1], b: a[2], a: a.length > 3 ? a[3] : 1 }; };
+  const lum = ({ r, g, b }) => { const f = v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }; return .2126 * f(r) + .7152 * f(g) + .0722 * f(b); };
+  const over = (t, b) => ({ r: t.r * t.a + b.r * (1 - t.a), g: t.g * t.a + b.g * (1 - t.a), b: t.b * t.a + b.b * (1 - t.a), a: 1 });
+  const grad = bi => { const m = [...bi.matchAll(/rgba?\([^)]+\)/g)].map(x => parse(x[0])); if (!m.length) return null; const n = m.length; return { r: m.reduce((a, c) => a + c.r, 0) / n, g: m.reduce((a, c) => a + c.g, 0) / n, b: m.reduce((a, c) => a + c.b, 0) / n, a: 1 }; };
+  const bgOf = el => {
+    const layers = [];
+    for (let e = el; e; e = e.parentElement) {
+      const cs = getComputedStyle(e); const c = parse(cs.backgroundColor);
+      if (c && c.a > 0) layers.push(c);
+      if (c && c.a === 1) break;
+      if (cs.backgroundImage.includes('gradient')) { const g = grad(cs.backgroundImage); if (g) { layers.push(g); break; } }
+    }
+    let acc = layers.length ? layers[layers.length - 1] : { r: 255, g: 255, b: 255, a: 1 };
+    if (acc.a < 1) acc = over(acc, { r: 255, g: 255, b: 255, a: 1 });
+    for (let i = layers.length - 2; i >= 0; i--) acc = over(layers[i], acc);
+    return acc;
+  };
+  const bad = [];
+  document.querySelectorAll('main *, footer *, nav *').forEach(el => {
+    if (![...el.childNodes].some(n => n.nodeType === 3 && /[A-Za-zא-ת0-9@]/.test(n.textContent))) return;
+    const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || cs.display === 'none' || +cs.opacity === 0) return;
+    const bg = bgOf(el); const fg = over(parse(cs.color), bg);
+    const l1 = lum(fg), l2 = lum(bg); const ratio = (Math.max(l1, l2) + .05) / (Math.min(l1, l2) + .05);
+    const size = parseFloat(cs.fontSize), bold = +cs.fontWeight >= 700; const need = (size >= 24 || (size >= 18.66 && bold)) ? 3 : 4.5;
+    if (ratio < need) bad.push(`${el.textContent.trim().slice(0, 24)} (${ratio.toFixed(2)})`);
+  });
+  return bad;
+};
+for (const [w, h, label] of [[390, 844, 'נייד 390px'], [1280, 800, 'דסקטופ 1280px']]) {
+  const { page, ctx } = await open(w, h);
+  await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 400) { scrollTo(0, y); await new Promise(r => setTimeout(r, 60)); } scrollTo(0, 0); });
+  await page.waitForTimeout(500);
+  let bad = await page.evaluate(CONTRAST);
+  check(!bad.length, `${label}: ניגודיות הטקסט תקינה במצב רגיל${bad.length ? ': ' + bad.join(' | ') : ''}`);
+  await page.evaluate(() => toggleA11y());
+  await page.waitForTimeout(300);
+  bad = await page.evaluate(CONTRAST);
+  check(!bad.length, `${label}: ניגודיות הטקסט תקינה במצב נגישות${bad.length ? ': ' + bad.join(' | ') : ''}`);
+  const ov = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+  check(ov <= 0, `${label}: אין גלישה אופקית במצב נגישות`);
+  const foot = await page.evaluate(() => [...document.querySelectorAll('.footer-links a')].filter(a => a.getBoundingClientRect().height < 44).length);
+  check(foot === 0, `${label}: קישורי הפוטר בגובה 44px לפחות`);
+  await ctx.close();
+}
+// reduced motion: אף אנימציה אינסופית לא רצה
+{
+  const ctx = await browser.newContext({ locale: 'he-IL', viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+  await ctx.route(url => !url.href.startsWith(BASE), r => r.abort());
+  const page = await ctx.newPage();
+  await page.goto(`${BASE}/landing.html`, { waitUntil: 'load' });
+  await page.waitForTimeout(800);
+  const running = await page.evaluate(() => document.getAnimations().filter(a => a.playState === 'running' && a.effect.getComputedTiming().iterations === Infinity).map(a => a.animationName || a.constructor.name));
+  check(running.length === 0, `במצב reduced motion אין אנימציה אינסופית שרצה${running.length ? ': ' + running.join(', ') : ''}`);
+  await ctx.close();
+}
+
 // הקלקה על כפתור ההרשמה נשלחת למעקב ההמרות עם שם הסקשן, בלי p_tenant_id
 {
   const { page, ctx } = await open(390, 844);
