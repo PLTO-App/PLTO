@@ -25,8 +25,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&family=Heebo:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      /* ── מיובא מ-index.html כדי שדף הנחיתה ישתמש באותה מערכת עיצוב מדויקת ── */
+:root {
+      
       --navy:     #1C3E6B;
       --navy-900: #060F1C;
       --navy-800: #0A1A2E;
@@ -60,7 +60,7 @@
       --blue-50:  #EFF6FF;
       --blue:     #2563EB;
 
-      /* כפתור כחול כהה, אותו כיוון גרדיאנט כמו רקע ה-hero */
+      
       --btn-navy-grad: linear-gradient(145deg, var(--navy-600) 0%, var(--navy-400) 100%);
 
       --white: #FFFFFF;
@@ -74,7 +74,7 @@
       --radius-lg: 16px;
       --radius-xl: 24px;
 
-      /* ── ייחודי לדף הנחיתה, אין מקבילה ב-index ── */
+      
       --navy-mid:  var(--navy-600);
       --blue-light:var(--blue-400);
       --gray-bg:   #F1F5F9;
@@ -88,27 +88,21 @@
       --radius-sm: var(--radius-md);
       --shadow:    var(--shadow-md);
     }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; scroll-padding-top: 76px; }
-    :focus-visible {
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+:focus-visible {
       outline: 2px solid var(--blue, #2563EB);
       outline-offset: 3px;
       border-radius: 3px;
     }
-
-    body {
+body {
       font-family: 'Rubik', 'Heebo', sans-serif;
       background: var(--white);
       color: var(--text);
       direction: rtl;
       overflow-x: hidden;
     }
-
-    /* ══════════════════════════════
-       ניווט עליון
-    ══════════════════════════════ */
-    nav {
+nav {
       position: fixed;
       top: 0; right: 0; left: 0;
       z-index: 100;
@@ -119,14 +113,14 @@
       background: rgba(15,31,61,0.96);
       backdrop-filter: blur(12px);
     }
-    .nav-logo {
+.nav-logo {
       font-size: 22px;
       font-weight: 900;
       color: var(--white);
       letter-spacing: -0.5px;
     }
-    .nav-logo span { color: var(--white); }
-    .nav-cta {
+.nav-logo span { color: var(--white); }
+.nav-cta {
       min-height: 44px;
       background: var(--btn-navy-grad);
       color: var(--white);
@@ -140,8 +134,8 @@
       transition: all 0.2s;
       text-decoration: none;
     }
-    .nav-cta:hover { background: var(--blue-light); transform: translateY(-1px); }
-    .nav-a11y-btn {
+.nav-cta:hover { background: var(--blue-light); transform: translateY(-1px); }
+.nav-a11y-btn {
       background: transparent;
       color: rgba(255,255,255,0.80);
       border: 1px solid rgba(255,255,255,0.22);
@@ -157,64 +151,9 @@
       transition: all 0.2s;
       flex-shrink: 0;
     }
-    .nav-a11y-btn:hover { border-color: rgba(255,255,255,0.55); color: #fff; }
-    .nav-a11y-btn[aria-pressed="true"] { background: #FFFF00; color: #000; border-color: #FFFF00; font-weight: 800; }
-
-    .nav-menu-btn {
-      background: transparent;
-      color: rgba(255,255,255,0.80);
-      border: 1px solid rgba(255,255,255,0.22);
-      width: 44px;
-      height: 44px;
-      padding: 0;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 15px;
-      cursor: pointer;
-      transition: all 0.2s;
-      flex-shrink: 0;
-    }
-    .nav-menu-btn:hover { border-color: rgba(255,255,255,0.55); color: #fff; }
-    .nav-menu-btn[aria-expanded="true"] { background: var(--btn-navy-grad); border-color: var(--navy-500); color: #fff; }
-    .nav-menu-panel {
-      position: absolute;
-      top: 100%;
-      right: 0; left: 0;
-      background: rgba(10,20,38,0.98);
-      backdrop-filter: blur(14px);
-      border-bottom: 1px solid rgba(255,255,255,0.10);
-      padding: 8px 24px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      transform: translateY(-8px);
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s;
-      max-height: calc(100vh - 80px);
-      overflow-y: auto;
-    }
-    .nav-menu-panel.open { opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0); }
-    .nav-menu-panel a {
-      color: rgba(255,255,255,0.85);
-      text-decoration: none;
-      font-family: 'Rubik', 'Heebo', sans-serif;
-      font-size: 15.5px;
-      font-weight: 600;
-      padding: 13px 10px;
-      border-radius: 10px;
-      transition: background 0.15s, color 0.15s;
-    }
-    .nav-menu-panel a:hover { background: rgba(255,255,255,0.08); color: #fff; }
-    .nav-menu-panel a + a { border-top: 1px solid rgba(255,255,255,0.06); }
-
-    /* ═══════════════════════════════════════
-       ACCESSIBILITY MODE — High Contrast
-    ═══════════════════════════════════════ */
-    body.theme-accessible {
+.nav-a11y-btn:hover { border-color: rgba(255,255,255,0.55); color: #fff; }
+.nav-a11y-btn[aria-pressed="true"] { background: #FFFF00; color: #000; border-color: #FFFF00; font-weight: 800; }
+body.theme-accessible {
       --white:      #FFFFFF;
       --text:       #FFFFFF;
       --text-muted: #CCCCCC;
@@ -239,19 +178,15 @@
       color: #FFFFFF;
       zoom: 1.15;
     }
-    body.theme-accessible *:focus-visible {
+body.theme-accessible *:focus-visible {
       outline: 3px solid #FFFF00 !important;
       outline-offset: 2px;
     }
-    body.theme-accessible nav {
+body.theme-accessible nav {
       background: rgba(0,0,0,0.97);
       border-bottom: 1px solid #FFFF00;
     }
-
-    /* ══════════════════════════════
-       גיבור
-    ══════════════════════════════ */
-    .hero {
+.hero {
       background: linear-gradient(145deg, var(--navy-900) 0%, var(--navy-700) 60%, var(--navy-600) 100%);
       display: flex;
       flex-direction: column;
@@ -262,8 +197,10 @@
       position: relative;
       overflow: hidden;
     }
-    @media (min-width: 900px) { .hero { min-height: 88vh; } }
-    .hero::before {
+@media (min-width: 900px) {
+.hero { min-height: 88vh; }
+}
+.hero::before {
       content: '';
       position: absolute;
       width: 600px; height: 600px;
@@ -272,7 +209,7 @@
       top: -100px; left: -100px;
       animation: float 8s ease-in-out infinite;
     }
-    .hero::after {
+.hero::after {
       content: '';
       position: absolute;
       width: 400px; height: 400px;
@@ -281,12 +218,11 @@
       bottom: -80px; right: -60px;
       animation: float 10s ease-in-out infinite reverse;
     }
-    @keyframes float {
+@keyframes float {
       0%, 100% { transform: translateY(0px); }
       50% { transform: translateY(-30px); }
     }
-
-    .hero-badge {
+.hero-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -301,18 +237,17 @@
       position: relative;
       z-index: 1;
     }
-    .badge-dot {
+.badge-dot {
       width: 7px; height: 7px;
       border-radius: 50%;
       background: var(--green);
       animation: pulse 2s infinite;
     }
-    @keyframes pulse {
+@keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.6; transform: scale(1.3); }
     }
-
-    .hero h1 {
+.hero h1 {
       font-size: clamp(28px, 4.8vw, 50px);
       font-weight: 900;
       color: var(--white);
@@ -322,13 +257,14 @@
       z-index: 1;
       max-width: 780px;
     }
-    @media (max-width: 480px) { .hero h1 { font-size: 24px; } }
-    .hero h1 .highlight {
+@media (max-width: 480px) {
+.hero h1 { font-size: 24px; }
+}
+.hero h1 .highlight {
       color: var(--gold);
       position: relative;
     }
-
-    .hero-sub {
+.hero-sub {
       font-size: clamp(18px, 2.8vw, 23px);
       color: rgba(255,255,255,0.70);
       max-width: 560px;
@@ -338,9 +274,8 @@
       z-index: 1;
       font-weight: 400;
     }
-    .hero-sub strong { color: #fff; font-weight: 800; }
-
-    .hero-actions {
+.hero-sub strong { color: #fff; font-weight: 800; }
+.hero-actions {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
@@ -349,7 +284,7 @@
       z-index: 1;
       margin-bottom: 16px;
     }
-    .btn-primary {
+.btn-primary {
       background: var(--btn-navy-grad);
       color: var(--white);
       border: none;
@@ -364,241 +299,21 @@
       display: inline-block;
       box-shadow: 0 8px 32px rgba(21,47,82,0.40);
     }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(21,47,82,0.50); }
-    .btn-ghost {
-      background: transparent;
-      color: rgba(255,255,255,0.80);
-      border: 1.5px solid rgba(255,255,255,0.25);
-      padding: 16px 28px;
-      border-radius: 99px;
-      font-family: 'Rubik', 'Heebo', sans-serif;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
-      display: inline-block;
-    }
-    .btn-ghost:hover { border-color: rgba(255,255,255,0.60); color: var(--white); }
-
-    .hero-micro {
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(21,47,82,0.50); }
+.hero-micro {
       font-size: 13px;
       color: rgba(255,255,255,0.45);
       position: relative;
       z-index: 1;
     }
-
-    /* ══════════════════════════════
-       תצוגות מותאמות לתחום (mock UI)
-    ══════════════════════════════ */
-    .vertical-previews {
-      margin-top: 34px;
-      width: 100%;
-      max-width: 900px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      position: relative;
-      z-index: 1;
-    }
-    @media (max-width: 680px) {
-      .vertical-previews { gap: 8px; max-width: 420px; }
-    }
-    .vp-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .vp-label {
-      text-align: center;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      color: rgba(255,255,255,0.50);
-      text-transform: uppercase;
-    }
-    .vp-value {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.11);
-      border-radius: 14px;
-      padding: 16px 10px;
-      backdrop-filter: blur(10px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 6px;
-      height: 100%;
-    }
-    .vp-value-headline { font-size: 13px; font-weight: 800; color: #fff; line-height: 1.35; }
-    .vp-value-sub { font-size: 11px; color: rgba(255,255,255,0.48); line-height: 1.4; }
-    @media (max-width: 680px) {
-      .vp-label { font-size: 9px; }
-      .vp-value { padding: 10px 6px; gap: 4px; border-radius: 10px; }
-      .vp-value-headline { font-size: 10px; }
-      .vp-value-sub { font-size: 8.5px; line-height: 1.3; }
-      .vp-tap-hint { font-size: 13px; top: -6px; left: -4px; }
-    }
-    .vp-value.vp-clickable {
-      border: none;
-      font-family: 'Rubik', 'Heebo', sans-serif;
-      width: 100%;
-      cursor: pointer;
-      transition: background 0.2s, border-color 0.2s, transform 0.2s;
-      position: relative;
-    }
-    .vp-value.vp-clickable:hover, .vp-value.vp-clickable:focus-visible {
-      background: rgba(255,255,255,0.10);
-      border-color: rgba(255,255,255,0.22);
-      transform: translateY(-2px);
-    }
-    .vp-value.vp-clickable::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      border: 1.5px solid rgba(96,165,250,0.55);
-      opacity: 0;
-      pointer-events: none;
-      animation: vpRingPulse 3s ease-out infinite;
-    }
-    .vp-wrap:nth-child(2) .vp-value.vp-clickable::after { animation-delay: .5s; }
-    .vp-wrap:nth-child(3) .vp-value.vp-clickable::after { animation-delay: 1s; }
-    @keyframes vpRingPulse {
-      0%   { opacity: 0; transform: scale(1); }
-      12%  { opacity: .7; }
-      40%  { opacity: 0; transform: scale(1.045); }
-      100% { opacity: 0; transform: scale(1.045); }
-    }
-    .vp-tap-hint {
-      position: absolute;
-      top: -8px;
-      left: -6px;
-      font-size: 16px;
-      line-height: 1;
-      pointer-events: none;
-      filter: drop-shadow(0 1px 3px rgba(0,0,0,.5));
-      animation: vpTapBounce 2.2s ease-in-out infinite;
-    }
-    .vp-wrap:nth-child(2) .vp-tap-hint { animation-delay: .35s; }
-    .vp-wrap:nth-child(3) .vp-tap-hint { animation-delay: .7s; }
-    @keyframes vpTapBounce {
-      0%, 100% { transform: translateY(0) scale(1); opacity: .6; }
-      45%      { transform: translateY(4px) scale(.82); opacity: 1; }
-      60%      { transform: translateY(0) scale(1); opacity: .85; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .vp-value.vp-clickable::after { animation: none; opacity: 0; }
-      .vp-tap-hint { animation: none; }
-    }
-
-    /* ══════════════════════════════
-       חלונית מורחבת לתצוגות תחום (hero)
-    ══════════════════════════════ */
-    .vp-modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(6,15,28,0.72);
-      backdrop-filter: blur(6px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      z-index: 300;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.22s ease, visibility 0.22s;
-    }
-    .vp-modal-overlay.open { opacity: 1; visibility: visible; }
-    .vp-modal {
-      background: var(--white);
-      border-radius: var(--radius-xl);
-      padding: 36px 28px 28px;
-      max-width: 420px;
-      width: 100%;
-      text-align: center;
-      position: relative;
-      box-shadow: var(--shadow-xl);
-      transform: scale(0.94) translateY(10px);
-      transition: transform 0.25s ease;
-    }
-    .vp-modal-overlay.open .vp-modal { transform: scale(1) translateY(0); }
-    .vp-modal-close {
-      position: absolute;
-      top: 14px; left: 14px;
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      border: 1px solid var(--border);
-      background: var(--gray-card);
-      color: var(--text-muted);
-      font-size: 15px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s, color 0.2s;
-    }
-    .vp-modal-close:hover { background: var(--border); color: var(--text); }
-    .vp-modal-icon { font-size: 42px; margin-bottom: 14px; }
-    .vp-modal-title { font-size: clamp(20px, 3vw, 24px); font-weight: 900; color: var(--navy); margin-bottom: 18px; line-height: 1.3; }
-    .vp-modal-list { list-style: none; text-align: right; margin-bottom: 22px; }
-    .vp-modal-list li {
-      font-size: 15px;
-      color: var(--text-muted);
-      line-height: 1.6;
-      padding: 9px 0;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-    }
-    .vp-modal-list li:last-child { border-bottom: none; }
-    .vp-modal-list li::before { content: "✓"; color: var(--green); font-weight: 800; flex-shrink: 0; }
-    .vp-modal .btn-primary { font-size: 15px; padding: 12px 30px; box-shadow: none; }
-
-    /* ══════════════════════════════
-       רצועת מספרים
-    ══════════════════════════════ */
-    .stats-bar {
-      background: var(--navy-800);
-      padding: 28px 24px;
-    }
-    .stats-inner {
-      max-width: 900px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-    .stat-item {
-      text-align: center;
-    }
-    .stat-num {
-      font-size: 36px;
-      font-weight: 900;
-      color: var(--white);
-      line-height: 1;
-    }
-    .stat-num span { color: var(--gold); }
-    .stat-label {
-      font-size: 13px;
-      color: rgba(255,255,255,0.50);
-      margin-top: 4px;
-      font-weight: 400;
-    }
-
-    /* ══════════════════════════════
-       כאב (הזדהות)
-    ══════════════════════════════ */
-    .section {
+.section {
       padding: 34px 24px;
     }
-    .section-inner {
+.section-inner {
       max-width: 900px;
       margin: 0 auto;
     }
-    .section-label,
-    .section-title {
+.section-title {
       font-size: clamp(30px, 4.5vw, 46px);
       font-weight: 900;
       color: var(--text);
@@ -607,7 +322,7 @@
       margin-bottom: 12px;
       display: block;
     }
-    .section-sub {
+.section-sub {
       font-size: 18px;
       color: var(--text-muted);
       text-align: center;
@@ -615,472 +330,7 @@
       margin: 0 auto 24px;
       line-height: 1.7;
     }
-
-    .pain-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
-    }
-    .pain-card {
-      background: var(--gray-card);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.2s;
-    }
-    .pain-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
-    .pain-emoji {
-      font-size: 32px;
-      margin-bottom: 12px;
-      display: block;
-    }
-    .pain-quote {
-      font-size: 16.5px;
-      font-weight: 600;
-      color: var(--text);
-      line-height: 1.6;
-      margin-bottom: 12px;
-    }
-    .pain-after {
-      font-size: 14px;
-      color: var(--green);
-      font-weight: 700;
-    }
-    .pain-after::before { content: "✓ "; }
-
-    /* ══════════════════════════════
-       קרוסלת מסכים
-    ══════════════════════════════ */
-    .screen-reel { margin-top: 40px; }
-    .reel-window {
-      background: #fff;
-      border: 1.5px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 8px 32px rgba(15,31,61,0.12), 0 2px 8px rgba(15,31,61,0.06);
-      max-width: 640px;
-      margin: 0 auto;
-    }
-    .reel-bar {
-      background: #f8fafc;
-      border-bottom: 1px solid var(--border);
-      padding: 9px 14px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .reel-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    .reel-dot:nth-child(1) { background: #FF5F56; }
-    .reel-dot:nth-child(2) { background: #FFBD2E; }
-    .reel-dot:nth-child(3) { background: #27C93F; }
-    .reel-url {
-      flex: 1; background: #f1f5f9; border-radius: 6px;
-      padding: 3px 10px; font-size: 11px; color: #64748b;
-      margin: 0 12px; text-align: center;
-    }
-    .reel-slides { position: relative; height: 258px; overflow: hidden; }
-    @media (max-width: 480px) { .reel-slides { height: 290px; } }
-    .reel-slide {
-      position: absolute; inset: 0;
-      padding: 14px 16px;
-      opacity: 0; transition: opacity 0.45s ease;
-      pointer-events: none;
-      display: flex; flex-direction: column; gap: 10px;
-    }
-    .reel-slide.active { opacity: 1; pointer-events: auto; }
-    .reel-caption {
-      background: #f8fafc; border-top: 1px solid var(--border);
-      padding: 10px 16px; text-align: center;
-      font-size: 14px; font-weight: 700; color: var(--text);
-      min-height: 42px; display: flex; align-items: center; justify-content: center;
-    }
-    .reel-dots { display: flex; justify-content: center; gap: 10px; margin-top: 18px; }
-    .reel-pip {
-      width: 40px; height: 40px; border-radius: 50%;
-      background: var(--white);
-      border: 1.5px solid var(--border);
-      cursor: pointer;
-      font-size: 17px;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.25s;
-      padding: 0;
-      box-shadow: var(--shadow-sm);
-    }
-    .reel-pip:hover:not(.active) { border-color: var(--navy-400); background: var(--navy-50); }
-    .reel-pip.active { background: var(--btn-navy-grad); border-color: var(--navy-500); transform: scale(1.1); box-shadow: 0 4px 14px rgba(21,47,82,0.40); }
-
-    /* ── Mock UI: Dashboard ── */
-    .mock-ai-card {
-      background: linear-gradient(135deg,#eff6ff,#f0f9ff);
-      border: 1px solid #bfdbfe; border-radius: 10px;
-      padding: 8px 12px; display: flex; align-items: flex-start;
-      gap: 8px; font-size: 12px; color: #1e40af; line-height: 1.4;
-    }
-    .mock-ai-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-    .mock-ai-text { font-weight: 500; }
-    .mock-kpi-row { display: flex; gap: 8px; }
-    .mock-kpi {
-      flex: 1; background: #f8fafc; border: 1px solid var(--border);
-      border-radius: 8px; padding: 8px; text-align: center;
-    }
-    .mock-kpi-val { font-size: 15px; font-weight: 800; color: var(--navy); }
-    .mock-kpi-label { font-size: 9.5px; color: var(--text-muted); margin-top: 2px; }
-    .mock-lead-list { display: flex; flex-direction: column; gap: 5px; }
-    .mock-lead-row {
-      display: flex; align-items: center; gap: 7px;
-      padding: 5px 8px; background: #f8fafc; border-radius: 7px; font-size: 12px;
-    }
-    .mock-lead-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .mock-lead-dot.hot  { background: #ef4444; }
-    .mock-lead-dot.warm { background: #f97316; }
-    .mock-lead-dot.cool { background: #3b82f6; }
-    .mock-lead-name { flex: 1; font-weight: 600; color: var(--text); }
-    .mock-lead-val { font-size: 11px; color: var(--text-muted); }
-    .mock-stage {
-      font-size: 9px; font-weight: 700; border-radius: 4px; padding: 2px 6px;
-    }
-    .mock-s2 { background: rgba(37,99,235,0.1);  color: #1d4ed8; }
-    .mock-s3 { background: rgba(124,58,237,0.1); color: #6d28d9; }
-    .mock-s4 { background: rgba(234,88,12,0.1);  color: #c2410c; }
-
-    /* ── Mock UI: Pipeline ── */
-    .mock-kanban {
-      display: grid; grid-template-columns: repeat(4,1fr);
-      gap: 6px; height: 100%;
-    }
-    .mock-col { display: flex; flex-direction: column; gap: 5px; }
-    .mock-col-hdr {
-      font-size: 9px; font-weight: 700; border-radius: 5px;
-      padding: 4px 6px; text-align: center;
-    }
-    .mock-hdr-1 { background: #f1f5f9; color: #64748b; }
-    .mock-hdr-2 { background: rgba(37,99,235,0.1);  color: #1d4ed8; }
-    .mock-hdr-3 { background: rgba(124,58,237,0.1); color: #6d28d9; }
-    .mock-hdr-4 { background: rgba(22,163,74,0.1);  color: #15803d; }
-    .mock-card {
-      background: #fff; border: 1px solid var(--border);
-      border-radius: 6px; padding: 6px 7px;
-      font-size: 10px; font-weight: 600; color: var(--text);
-      line-height: 1.4; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }
-    .mock-card small { font-weight: 400; color: var(--text-muted); font-size: 9px; }
-    .mock-card-hot { border-right: 3px solid #ef4444; }
-    .mock-card-won { border-right: 3px solid #22c55e; }
-
-    /* ── Mock UI: Calendar ── */
-    .mock-cal { display: flex; flex-direction: column; gap: 8px; height: 100%; }
-    .mock-cal-hdr { font-size: 14px; font-weight: 700; color: var(--navy); text-align: center; }
-    .mock-cal-days {
-      display: grid; grid-template-columns: repeat(6,1fr);
-      text-align: center; font-size: 10px; font-weight: 600; color: var(--text-muted);
-    }
-    .mock-cal-grid {
-      display: grid; grid-template-columns: repeat(6,1fr);
-      gap: 2px; text-align: center; font-size: 11px; color: var(--text);
-    }
-    .mock-cal-grid span {
-      padding: 3px 0; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      aspect-ratio: 1;
-    }
-    .mock-today { background: var(--blue); color: #fff; font-weight: 700; }
-    .mock-event-day { background: #fef3c7; color: #92400e; font-weight: 700; }
-    .mock-event-card {
-      display: flex; align-items: flex-start; gap: 8px;
-      background: #eff6ff; border: 1px solid #bfdbfe;
-      border-radius: 8px; padding: 8px 10px; margin-top: auto;
-    }
-    .mock-event-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--blue); flex-shrink: 0; margin-top: 3px;
-    }
-    .mock-event-title { font-size: 11px; font-weight: 700; color: #1e40af; }
-    .mock-event-time  { font-size: 10px; color: #3b82f6; margin-top: 1px; }
-
-    /* ── Mock UI: Tools ── */
-    .mock-tools-header {
-      font-size: 13px; font-weight: 700; color: var(--navy); text-align: center;
-    }
-    .mock-tools-grid {
-      display: grid; grid-template-columns: repeat(3,1fr); gap: 8px;
-    }
-    .mock-tool {
-      background: #f8fafc; border: 1px solid var(--border);
-      border-radius: 10px; padding: 10px 8px;
-      display: flex; flex-direction: column; align-items: center; gap: 4px;
-    }
-    .mock-tool-icon { font-size: 20px; }
-    .mock-tool-name { font-size: 10px; font-weight: 600; color: var(--text); text-align: center; }
-    .mock-tool-badge { font-size: 8px; font-weight: 700; border-radius: 3px; padding: 1px 5px; }
-    .mock-tool-badge.pro { background: rgba(124,58,237,0.15); color: #6d28d9; }
-    .mock-tool-badge.new { background: rgba(22,163,74,0.15);  color: #15803d; }
-    /* ══════════════════════════════
-       רחוב, עגורן ושלטי חוצות (מעבר בין סקשנים)
-    ══════════════════════════════ */
-    .street-scene {
-      position: relative;
-      height: 260px;
-      background: linear-gradient(180deg, var(--navy-100) 0%, var(--gray-bg) 100%);
-      overflow: hidden;
-    }
-    .ss-skyline {
-      position: absolute; bottom: 36px; right: 5%;
-      display: flex; align-items: flex-end; gap: 10px;
-    }
-    .ss-building {
-      position: relative;
-      width: 46px;
-      border-radius: 4px 4px 0 0;
-      transform-origin: bottom;
-      background: linear-gradient(180deg, var(--blue-400), var(--navy-700));
-      box-shadow: 0 0 0 1px rgba(255,255,255,.08) inset;
-      opacity: 0;
-      transform: scaleY(0);
-    }
-    .ss-b1 { height: 70px; }
-    .ss-b2 { height: 110px; }
-    .ss-b3 { height: 140px; }
-    .ss-b4 { height: 90px; }
-    .ss-b5 { height: 120px; }
-    .street-scene.in-view .ss-building { animation: ss-rise 0.7s cubic-bezier(.34,1.56,.64,1) forwards; }
-    .street-scene.in-view .ss-b1 { animation-delay: 0s; }
-    .street-scene.in-view .ss-b2 { animation-delay: .12s; }
-    .street-scene.in-view .ss-b3 { animation-delay: .24s; }
-    .street-scene.in-view .ss-b4 { animation-delay: .36s; }
-    .street-scene.in-view .ss-b5 { animation-delay: .48s; }
-    @keyframes ss-rise { from { opacity: 0; transform: scaleY(0); } to { opacity: 1; transform: scaleY(1); } }
-    .ss-crane {
-      position: absolute; top: -38px; right: 14px;
-      width: 3px; height: 38px; background: var(--gold-400);
-      transform-origin: bottom; opacity: 0;
-    }
-    .street-scene.in-view .ss-crane {
-      animation: ss-crane-in .3s ease .9s forwards, ss-crane-swing 2.8s ease-in-out 1.3s infinite;
-    }
-    .ss-crane::before { content:''; position:absolute; top:0; right:-1px; width:36px; height:3px; background:var(--gold-400); }
-    .ss-crane::after  { content:''; position:absolute; top:0; right:-32px; width:3px; height:14px; background:var(--gold-400); }
-    @keyframes ss-crane-in { to { opacity: 1; } }
-    @keyframes ss-crane-swing { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
-    .ss-road {
-      position: absolute; bottom: 0; left: 0; right: 0; height: 40px;
-      background: #CBD5E1;
-    }
-    .ss-road::before {
-      content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 3px;
-      transform: translateY(-50%); opacity: .7;
-      background: repeating-linear-gradient(90deg, var(--white) 0 24px, transparent 24px 44px);
-    }
-    .ss-billboard { position: absolute; bottom: 40px; display: flex; flex-direction: column; align-items: center; }
-    .ss-bb1 { right: 40%; }
-    .ss-bb2 { right: 20%; }
-    .ss-bb3 { right: 2%; }
-    .bb-post { width: 5px; height: 38px; background: #94A3B8; }
-    .bb-face {
-      position: relative; width: 150px; height: 64px;
-      background: var(--white); border: 2px solid var(--gold-500);
-      border-radius: var(--radius-sm); box-shadow: var(--shadow-md);
-      display: flex; align-items: center; justify-content: center;
-      padding: 6px 10px; margin-bottom: -2px; text-align: center;
-    }
-    .bb-state {
-      position: absolute; inset: 6px 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 800; color: var(--navy);
-      opacity: 0; transform: translateY(4px);
-    }
-    .bb-state-a { animation: bb-cycle-a 7s ease-in-out infinite; }
-    .bb-state-b { animation: bb-cycle-b 7s ease-in-out infinite; }
-    .ss-bb2 .bb-state-a, .ss-bb2 .bb-state-b { animation-duration: 8.5s; }
-    .ss-bb3 .bb-state-a, .ss-bb3 .bb-state-b { animation-duration: 6.2s; }
-    @keyframes bb-cycle-a { 0%, 42% { opacity: 1; transform: translateY(0); } 50%, 100% { opacity: 0; transform: translateY(-4px); } }
-    @keyframes bb-cycle-b { 0%, 42% { opacity: 0; transform: translateY(4px); } 50%, 92% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(4px); } }
-    @media (max-width: 700px) {
-      .street-scene { height: 200px; }
-      .ss-skyline { right: 3%; gap: 5px; }
-      .ss-building { width: 26px; }
-      .ss-b1 { height: 40px; } .ss-b2 { height: 64px; } .ss-b3 { height: 82px; } .ss-b4 { height: 52px; } .ss-b5 { height: 70px; }
-      .ss-crane { display: none; }
-      .bb-face { width: 92px; height: 50px; }
-      .bb-state { font-size: 9.5px; inset: 5px 7px; }
-      .ss-bb1 { right: 66%; }
-      .ss-bb2 { right: 34%; }
-      .ss-bb3 { right: 2%; }
-    }
-
-    /* ══════════════════════════════
-       5 הסוכנים
-    ══════════════════════════════ */
-    .agents-section {
-      background: linear-gradient(160deg, var(--navy-900) 0%, var(--navy-700) 100%);
-      padding: 40px 24px;
-      position: relative;
-      overflow: hidden;
-    }
-    .agents-section::before {
-      content: '';
-      position: absolute;
-      width: 500px; height: 500px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%);
-      top: -100px; right: -100px;
-    }
-    .agents-section .section-title,
-    .agents-section .section-label { color: var(--white); }
-    .agents-section .section-sub { color: rgba(255,255,255,0.60); }
-
-    .agents-grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 16px;
-      max-width: 740px;
-      margin: 0 auto;
-      position: relative;
-      z-index: 1;
-    }
-    .agent-card {
-      flex: 0 1 228px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.10);
-      border-radius: var(--radius);
-      padding: 20px 18px;
-      backdrop-filter: blur(8px);
-      transition: transform 0.2s, background 0.2s;
-    }
-    .agent-card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.08); }
-    .agent-icon { font-size: 28px; display: block; margin-bottom: 10px; }
-    .agent-title { font-size: 17px; font-weight: 800; color: var(--white); margin-bottom: 6px; }
-    .agent-desc { font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.65; }
-    .agent-desc strong { color: #fff; font-weight: 800; }
-    .agents-closing {
-      text-align: center; font-size: 16px; font-weight: 800; color: var(--gold-400);
-      margin-top: 28px; position: relative; z-index: 1;
-    }
-    @media (max-width: 700px) {
-      .agents-grid { display: grid; grid-template-columns: 1fr; gap: 10px; max-width: 100%; }
-      .agent-card { flex-basis: auto; padding: 14px 14px; border-radius: var(--radius-sm); }
-      .agent-icon { font-size: 22px; margin-bottom: 6px; }
-      .agent-title { font-size: 15px; margin-bottom: 4px; line-height: 1.3; }
-      .agent-desc { font-size: 13px; line-height: 1.55; }
-    }
-
-    /* ══════════════════════════════
-       איך זה עובד
-    ══════════════════════════════ */
-    .steps-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 24px;
-      position: relative;
-    }
-    .step-card {
-      text-align: center;
-      padding: 32px 24px;
-      background: var(--white);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      transition: all 0.2s;
-      position: relative;
-    }
-    .step-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
-    .step-num {
-      width: 52px; height: 52px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--navy), var(--blue));
-      color: var(--white);
-      font-size: 20px;
-      font-weight: 900;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 16px;
-      box-shadow: 0 4px 16px rgba(37,99,235,0.30);
-    }
-    .step-title { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
-    .step-desc  { font-size: 15.5px; color: var(--text-muted); line-height: 1.65; }
-    .step-desc strong { color: var(--navy); font-weight: 800; }
-    .step-micro { font-size: 12px; color: var(--navy); font-weight: 700; margin-top: 10px; }
-
-    /* ══════════════════════════════
-       תמחור
-    ══════════════════════════════ */
-    .pricing-section {
-      background: var(--gray-bg);
-      padding: 40px 24px;
-    }
-    .plans-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 20px;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    .plan-card {
-      background: var(--white);
-      border: 2px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px 24px;
-      text-align: center;
-      transition: all 0.2s;
-      position: relative;
-    }
-    .plan-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
-    .plan-card.featured {
-      border-color: var(--blue);
-      background: linear-gradient(160deg, #EFF6FF 0%, var(--white) 100%);
-      box-shadow: 0 8px 32px rgba(37,99,235,0.15);
-    }
-    .plan-popular {
-      position: absolute;
-      top: -14px;
-      right: 50%;
-      transform: translateX(50%);
-      background: var(--blue);
-      color: var(--white);
-      font-size: 11px;
-      font-weight: 800;
-      padding: 4px 14px;
-      border-radius: 99px;
-    }
-    .plan-name  { font-size: 20px; font-weight: 900; color: var(--text); margin-bottom: 4px; }
-    .plan-desc  { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
-    .plan-price {
-      font-size: 42px;
-      font-weight: 900;
-      color: var(--navy);
-      line-height: 1;
-      margin-bottom: 4px;
-    }
-    .plan-price small { font-size: 16px; font-weight: 500; color: var(--text-muted); }
-    .plan-limit {
-      display: inline-block;
-      background: #EFF6FF;
-      color: var(--blue);
-      font-size: 12px;
-      font-weight: 700;
-      padding: 4px 12px;
-      border-radius: 99px;
-      margin: 12px 0;
-    }
-    .plan-features {
-      list-style: none;
-      text-align: right;
-      margin: 16px 0 24px;
-    }
-    .plan-features li {
-      font-size: 15px;
-      color: var(--text-muted);
-      padding: 6px 0;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .plan-features li:last-child { border-bottom: none; }
-    .plan-features li::before { content: "✓"; color: var(--green); font-weight: 800; flex-shrink: 0; }
-    .plan-btn {
+.plan-btn {
       width: 100%;
       padding: 14px;
       border-radius: 99px;
@@ -1093,77 +343,11 @@
       text-decoration: none;
       display: inline-block;
     }
-    .plan-btn.primary { background: var(--btn-navy-grad); color: var(--white); }
-    .plan-btn.primary:hover { background: #8B1A2B; transform: translateY(-1px); }
-    .plan-btn.outline { background: transparent; border: 2px solid var(--border); color: var(--text); animation: phoneVibrate 6s ease-in-out infinite; }
-    .plan-btn.outline:hover { background: #8B1A2B; border-color: #8B1A2B; color: var(--white); animation: none; }
-
-    .pricing-note {
-      text-align: center;
-      font-size: 14.5px;
-      color: var(--text-muted);
-      margin-top: 24px;
-      line-height: 1.7;
-      max-width: 620px;
-      margin-inline: auto;
-    }
-    .pricing-note strong { color: var(--navy); }
-
-    /* חיווי מושבים: הרחבת סוכנים בחבילות צוות/סוכנות */
-    .plan-seats {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      background: var(--navy-50);
-      border: 1.5px dashed var(--navy-300);
-      border-radius: 10px;
-      padding: 9px 12px;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--navy-600);
-      margin: 4px 0 8px;
-      line-height: 1.5;
-    }
-    .plan-trial-badge {
-      display: inline-block;
-      background: var(--green-100);
-      color: var(--green-600);
-      font-size: 12px;
-      font-weight: 800;
-      padding: 4px 12px;
-      border-radius: 99px;
-      margin-bottom: 8px;
-    }
-
-    /* חבילה מותאמת אישית: רצועת Enterprise */
-    .custom-plan-strip {
-      max-width: 900px;
-      margin: 28px auto 0;
-      background: linear-gradient(135deg, var(--navy-800) 0%, var(--navy-600) 100%);
-      border-radius: var(--radius);
-      padding: 28px 28px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      flex-wrap: wrap;
-      box-shadow: var(--shadow-lg);
-      position: relative;
-      overflow: hidden;
-    }
-    .custom-plan-strip::before {
-      content: '🏗️';
-      position: absolute;
-      font-size: 90px;
-      opacity: 0.10;
-      left: 18px;
-      bottom: -18px;
-      transform: rotate(-8deg);
-    }
-    .cps-title { font-size: 20px; font-weight: 900; color: var(--white); margin-bottom: 6px; }
-    .cps-desc  { font-size: 14.5px; color: rgba(255,255,255,0.70); line-height: 1.6; max-width: 520px; }
-    .cps-btn {
+.plan-btn.primary { background: var(--btn-navy-grad); color: var(--white); }
+.plan-btn.primary:hover { background: #8B1A2B; transform: translateY(-1px); }
+.plan-btn.outline { background: transparent; border: 2px solid var(--border); color: var(--text); animation: phoneVibrate 6s ease-in-out infinite; }
+.plan-btn.outline:hover { background: #8B1A2B; border-color: #8B1A2B; color: var(--white); animation: none; }
+.cps-btn {
       background: var(--gold-500);
       color: var(--navy-900);
       border: none;
@@ -1181,19 +365,15 @@
       overflow: visible;
       z-index: 1;
     }
-    .cps-btn:hover { background: var(--gold-400); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(196,154,42,0.40); }
-
-    /* ══════════════════════════════
-       סגירה חזקה
-    ══════════════════════════════ */
-    .closing {
+.cps-btn:hover { background: var(--gold-400); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(196,154,42,0.40); }
+.closing {
       background: linear-gradient(145deg, var(--navy-900) 0%, var(--navy-700) 100%);
       padding: 54px 24px;
       text-align: center;
       position: relative;
       overflow: hidden;
     }
-    .closing::before {
+.closing::before {
       content: '';
       position: absolute;
       width: 700px; height: 700px;
@@ -1202,7 +382,7 @@
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
     }
-    .closing h2 {
+.closing h2 {
       font-size: clamp(28px, 5vw, 52px);
       font-weight: 900;
       color: var(--white);
@@ -1211,135 +391,47 @@
       position: relative;
       z-index: 1;
     }
-    .closing h2 .gold { color: var(--white); }
-    .closing p {
+.closing h2 .gold { color: var(--white); }
+.closing p {
       font-size: 17px;
       color: rgba(255,255,255,0.60);
       margin-bottom: 40px;
       position: relative;
       z-index: 1;
     }
-    .closing p strong { color: #fff; font-weight: 800; }
-    .closing-actions {
+.closing p strong { color: #fff; font-weight: 800; }
+.closing-actions {
       position: relative;
       z-index: 1;
     }
-    .closing-micro {
+.closing-micro {
       font-size: 13px;
       color: rgba(255,255,255,0.35);
       margin-top: 16px;
     }
-
-    /* ══════════════════════════════
-       פוטר
-    ══════════════════════════════ */
-    footer {
+footer {
       background: #060D1A;
       padding: 28px 24px;
       text-align: center;
     }
-    .footer-logo { font-size: 18px; font-weight: 900; color: var(--white); margin-bottom: 8px; }
-    .footer-logo span { color: var(--white); }
-    .footer-links {
+.footer-logo { font-size: 18px; font-weight: 900; color: var(--white); margin-bottom: 8px; }
+.footer-logo span { color: var(--white); }
+.footer-links {
       display: flex;
       gap: 20px;
       justify-content: center;
       flex-wrap: wrap;
       margin-bottom: 12px;
     }
-    .footer-links a { font-size: 13px; color: rgba(255,255,255,0.40); text-decoration: none; transition: color 0.2s; display: inline-block; padding: 14px 6px; }
-    .footer-links a:hover { color: rgba(255,255,255,0.70); }
-    .footer-copy { font-size: 12px; color: rgba(255,255,255,0.20); }
-
-    /* ══════════════════════════════
-       רספונסיב
-    ══════════════════════════════ */
-    @media (max-width: 600px) {
-      .stats-inner { grid-template-columns: repeat(3, 1fr); }
-      .stat-num { font-size: 26px; }
-      .section, .agents-section, .pricing-section { padding: 28px 20px; }
-      .closing { padding: 40px 20px; }
-      .section-sub { margin-bottom: 22px; }
-      .feature-groups { gap: 24px; }
-    }
-
-    /* ══════════════════════════════
-       שירותי שיווק
-    ══════════════════════════════ */
-    .marketing-section {
-      background: linear-gradient(160deg, #FFFBEB 0%, #FFF7ED 100%);
-      border-top: 4px solid var(--gold);
-      border-bottom: 4px solid var(--gold);
-    }
-    .marketing-banner {
-      background: var(--white);
-      border: 2px solid var(--gold);
-      border-radius: 24px;
-      padding: 36px 32px;
-      max-width: 760px;
-      margin: 0 auto;
-      box-shadow: 0 8px 40px rgba(245,158,11,0.15);
-      text-align: center;
-    }
-    .mb-badge {
-      display: inline-block;
-      background: var(--gold);
-      color: var(--white);
-      font-size: 13px;
-      font-weight: 800;
-      padding: 6px 18px;
-      border-radius: 99px;
-      margin-bottom: 16px;
-      letter-spacing: 0.02em;
-    }
-    .mb-title {
-      font-size: clamp(20px, 3.5vw, 30px);
-      font-weight: 900;
-      color: var(--navy);
-      margin-bottom: 12px;
-      line-height: 1.3;
-    }
-    .mb-desc {
-      font-size: 16px;
-      color: var(--text-muted);
-      line-height: 1.7;
-      max-width: 560px;
-      margin: 0 auto 28px;
-    }
-    .mb-features {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-      margin-bottom: 28px;
-      text-align: right;
-    }
-    .mb-feature {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      background: #FFFBEB;
-      border: 1px solid rgba(245,158,11,0.25);
-      border-radius: 12px;
-      padding: 14px;
-    }
-    .mbf-icon {
-      font-size: 22px;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-    .mb-feature strong {
-      display: block;
-      font-size: 14px;
-      font-weight: 800;
-      color: var(--navy);
-      margin-bottom: 3px;
-    }
-    .mb-feature span {
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-    .btn-marketing {
+.footer-links a { font-size: 13px; color: rgba(255,255,255,0.40); text-decoration: none; transition: color 0.2s; display: inline-block; padding: 14px 6px; }
+.footer-links a:hover { color: rgba(255,255,255,0.70); }
+.footer-copy { font-size: 12px; color: rgba(255,255,255,0.20); }
+@media (max-width: 600px) {
+.section { padding: 28px 20px; }
+.closing { padding: 40px 20px; }
+.section-sub { margin-bottom: 22px; }
+}
+.btn-marketing {
       display: inline-block;
       position: relative;
       overflow: visible;
@@ -1356,349 +448,19 @@
       text-decoration: none;
       box-shadow: 0 8px 28px rgba(245,158,11,0.35);
     }
-    .btn-marketing:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(245,158,11,0.45); }
-    .plan-addon {
-      margin: 12px 0 16px;
-      background: #FFFBEB;
-      border: 1.5px dashed var(--gold);
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 13px;
-      color: #92400E;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .plan-addon strong { color: #B45309; font-size: 14px; }
-
-    /* ══════════════════════════════
-       רצועת אמון / אבטחה
-    ══════════════════════════════ */
-    .trust-strip {
-      background: var(--white);
-      border-top: 1px solid var(--border);
-      padding: 40px 24px;
-      text-align: center;
-    }
-    .trust-title {
-      font-size: 15px;
-      font-weight: 800;
-      color: var(--navy);
-      margin-bottom: 20px;
-    }
-    .trust-grid {
-      display: flex;
-      justify-content: center;
-      gap: 28px;
-      flex-wrap: wrap;
-      max-width: 720px;
-      margin: 0 auto 20px;
-    }
-    .trust-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-muted);
-    }
-    .trust-item .ti-icon { font-size: 18px; }
-    .trust-link {
-      font-size: 13px;
-      color: var(--blue);
-      font-weight: 700;
-      text-decoration: none;
-      display: inline-block;
-      padding: 12px 0;
-    }
-    .trust-link:hover { text-decoration: underline; }
-
-    /* ══════════════════════════════
-       קצת עלינו
-    ══════════════════════════════ */
-    .about-section { background: var(--white); border-top: 1px solid var(--border); }
-
-    /* ── Agent Pains Section ── */
-    .agent-pains-section { background: #F8FAFC; }
-    .ap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 28px; }
-    @media (max-width: 600px) { .ap-grid { grid-template-columns: 1fr; } }
-    .ap-card { background: white; border-radius: 16px; padding: 22px; box-shadow: 0 2px 12px rgba(15,31,61,0.07); border: 1px solid var(--border,#E2E8F0); }
-    .ap-emoji { font-size: 34px; margin-bottom: 10px; }
-    .ap-pain { font-size: 15px; color: var(--gray,#64748B); font-style: italic; line-height: 1.55; margin-bottom: 12px; border-right: 3px solid #E2E8F0; padding-right: 10px; }
-    .ap-solution { font-size: 14px; color: #1E40AF; font-weight: 600; line-height: 1.5; }
-    .ap-solution::before { content: "✓  "; }
-    #features { background: var(--gray-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .about-pre-title {
-      text-align: center;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text-muted);
-      letter-spacing: 0.09em;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-    .about-tagline {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin: 14px auto 32px;
-      flex-wrap: wrap;
-    }
-    .about-plto-badge {
-      background: var(--blue);
-      color: var(--white);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      padding: 4px 13px;
-      border-radius: 100px;
-      display: inline-block;
-    }
-    .about-tagline-words {
-      font-size: clamp(17px, 2vw, 20px);
-      font-weight: 700;
-      color: var(--navy);
-    }
-    .about-body {
-      max-width: 680px;
-      margin: 0 auto 40px;
-      font-size: 17px;
-      color: var(--text-muted);
-      line-height: 1.85;
-      text-align: center;
-    }
-    .about-body p { margin-bottom: 18px; }
-    .about-body p:last-child { margin-bottom: 0; }
-    .about-closing {
-      font-weight: 700;
-      color: var(--navy) !important;
-    }
-    .about-commitment {
-      max-width: 620px;
-      margin: 0 auto;
-      background: var(--gray-card);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: 32px 28px;
-      text-align: center;
-    }
-    .about-commit-title {
-      font-size: clamp(18px, 2.4vw, 22px);
-      font-weight: 800;
-      color: var(--navy);
-      margin-bottom: 16px;
-    }
-    .about-commit-text {
-      font-size: 16px;
-      color: var(--text-muted);
-      line-height: 1.8;
-      margin-bottom: 14px;
-    }
-    .about-commit-text:last-child {
-      margin-bottom: 0;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    /* ══════════════════════════════
-       שאלות ותשובות
-    ══════════════════════════════ */
-    .faq-section { background: var(--gray-bg); }
-    .faq-list {
-      max-width: 700px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .faq-item {
-      background: var(--white);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      overflow: hidden;
-    }
-    .faq-item summary {
-      cursor: pointer;
-      padding: 16px 20px;
-      font-size: 16.5px;
-      font-weight: 700;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      list-style: none;
-    }
-    .faq-item summary::-webkit-details-marker { display: none; }
-    .faq-item summary::after {
-      content: '+';
-      font-size: 22px;
-      font-weight: 400;
-      color: var(--blue);
-      flex-shrink: 0;
-      transition: transform 0.25s ease;
-    }
-    .faq-item[open] summary::after { transform: rotate(45deg); }
-    .faq-item[open] summary { border-bottom: 1px solid var(--border); }
-    .faq-answer {
-      padding: 4px 20px 18px;
-      font-size: 15px;
-      color: var(--text-muted);
-      line-height: 1.7;
-    }
-    .faq-answer strong { color: var(--navy); font-weight: 800; }
-
-    /* ══════════════════════════════
-       אנימציות כניסה
-    ══════════════════════════════ */
-    .fade-up {
+.btn-marketing:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(245,158,11,0.45); }
+#features { background: var(--gray-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.fade-up {
       opacity: 0;
       transform: translateY(24px);
       transition: opacity 0.6s ease, transform 0.6s ease;
     }
-    .fade-up.visible {
+.fade-up.visible {
       opacity: 1;
       transform: translateY(0);
     }
-
-    /* ══════════════════════════════
-       ויטרינת פיצ'רים
-    ══════════════════════════════ */
-    .feature-groups { display: flex; flex-direction: column; gap: 28px; }
-    .fg-title {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--navy);
-      margin-bottom: 16px;
-      text-align: center;
-    }
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 14px;
-    }
-    .feature-card {
-      background: var(--white);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 18px;
-      transition: all 0.25s;
-      position: relative;
-      overflow: hidden;
-    }
-    .feature-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow);
-      border-color: var(--blue);
-    }
-    .fc-icon { font-size: 26px; display: inline-block; position: relative; margin-bottom: 10px; }
-    .fc-title { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
-    .fc-desc { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
-
-    .feature-card-game .fc-icon::after {
-      content: '🎉';
-      position: absolute;
-      top: -8px;
-      left: -16px;
-      font-size: 15px;
-      opacity: 0;
-      transform: scale(0.3) rotate(-15deg);
-    }
-    .feature-group.visible .feature-card-game .fc-icon::after {
-      animation: confettiPop 1.1s ease-out 0.4s both;
-    }
-    @keyframes confettiPop {
-      0%   { opacity: 0; transform: scale(0.3) rotate(-15deg) translateY(6px); }
-      35%  { opacity: 1; transform: scale(1.15) rotate(8deg) translateY(-4px); }
-      60%  { opacity: 1; transform: scale(1) rotate(-4deg) translateY(-8px); }
-      100% { opacity: 0; transform: scale(0.85) rotate(0deg) translateY(-18px); }
-    }
-
-    /* ═══ FEATURES CAROUSEL ═══
-       display:grid + כל הקבוצות מוערמות באותו תא, כדי שגובה הקונטיינר
-       נשארות מוערמות זו על זו (grid-area משותף) כדי שהאנימציה בין קבוצות
-       תיראה חלקה, אבל גובה הקונטיינר עצמו מותאם דינמית לכל טאב ב-JS
-       (syncHeight) במקום להישאר קפוא לפי הקבוצה הגבוהה מכולן, כדי שלא
-       יישאר חלל ריק גדול בטאבים קצרים יותר. align-items:start מונע
-       stretch שהיה משטח את כל הקבוצות לאותו גובה ומטעה את המדידה. */
-    .feat-carousel { position: relative; display: grid; align-items: start; overflow: hidden; transition: height 0.35s ease; }
-    .feat-carousel .feature-group {
-      grid-area: 1 / 1 / 2 / 2;
-      display: block;
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-    .feat-carousel .feature-group.ft-active {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-      animation: featSlideIn 0.42s cubic-bezier(0.4,0,0.2,1) both;
-    }
-    .feat-carousel .feature-group.ft-prev {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-      animation: featSlideInRtl 0.42s cubic-bezier(0.4,0,0.2,1) both;
-    }
-    @keyframes featSlideIn    { from { opacity:0; transform:translateX(-26px); } to { opacity:1; transform:translateX(0); } }
-    @keyframes featSlideInRtl { from { opacity:0; transform:translateX( 26px); } to { opacity:1; transform:translateX(0); } }
-
-    .feat-tabs {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 18px;
-    }
-    .ft-tab {
-      width: 44px; height: 44px; border-radius: 50%;
-      background: var(--white);
-      border: 1.5px solid var(--border);
-      font-size: 18px;
-      color: var(--text-muted);
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      padding: 0;
-      box-shadow: var(--shadow-sm);
-      transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
-    }
-    .ft-tab.active {
-      background: var(--btn-navy-grad);
-      border-color: var(--navy-500);
-      color: #fff;
-      transform: scale(1.08);
-      box-shadow: 0 0 16px rgba(21,47,82,0.35);
-    }
-    .ft-tab:hover:not(.active) { border-color: var(--navy-400); color: var(--navy); }
-
-    /* ══════════════════════════════
-       תמחור: תג השקה וטיזר שנתי
-    ══════════════════════════════ */
-    .plan-launch-badge {
-      display: inline-block;
-      background: rgba(245,158,11,0.12);
-      color: #B45309;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 4px 12px;
-      border-radius: 99px;
-      margin-bottom: 10px;
-    }
-    .plan-annual-teaser {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--green);
-      margin-bottom: 8px;
-    }
-
-    /* ══════════════════════════════
-       רגעי "חיות": בהשראת אפקט הפטיש באונבורדינג
-    ══════════════════════════════ */
-    .btn-primary.pulse-cta { position: relative; }
-    .btn-primary.pulse-cta::after {
+.btn-primary.pulse-cta { position: relative; }
+.btn-primary.pulse-cta::after {
       content: '';
       position: absolute;
       inset: 0;
@@ -1706,32 +468,24 @@
       animation: ctaPulseRing 2.4s ease-out infinite;
       pointer-events: none;
     }
-    @keyframes ctaPulseRing {
+@keyframes ctaPulseRing {
       0%   { box-shadow: 0 0 0 0 rgba(37,99,235,0.65); }
       70%  { box-shadow: 0 0 0 22px rgba(37,99,235,0); }
       100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); }
     }
-
-    /* ══════════════════════════════
-       גלוֹ מוגבר + שימר — כפתורי הנעה לפעולה
-    ══════════════════════════════ */
-    .btn-primary.pulse-cta.has-rocket {
+.btn-primary.pulse-cta.has-rocket {
       animation: heroCtaGlow 2.6s ease-in-out infinite;
     }
-    .btn-primary.pulse-cta.has-rocket:hover { animation-play-state: paused; }
-    @keyframes heroCtaGlow {
+.btn-primary.pulse-cta.has-rocket:hover { animation-play-state: paused; }
+@keyframes heroCtaGlow {
       0%, 100% { box-shadow: 0 8px 32px rgba(37,99,235,0.40); }
       50%       { box-shadow: 0 12px 55px rgba(37,99,235,0.80), 0 0 35px rgba(37,99,235,0.35); }
     }
-
-    /* שימר (sweeping light) — כל btn-primary שאין לו has-rocket */
-    .btn-primary.shimmer-cta,
-    .btn-primary:not(.has-rocket):not(.pulse-cta) {
+.btn-primary.shimmer-cta, .btn-primary:not(.has-rocket):not(.pulse-cta) {
       overflow: hidden;
       position: relative;
     }
-    .btn-primary.shimmer-cta::before,
-    .btn-primary:not(.has-rocket):not(.pulse-cta)::before {
+.btn-primary.shimmer-cta::before, .btn-primary:not(.has-rocket):not(.pulse-cta)::before {
       content: '';
       position: absolute;
       top: -10%; left: -130%;
@@ -1741,129 +495,23 @@
       animation: btnShimmer 3.2s ease-in-out infinite;
       pointer-events: none;
     }
-    @keyframes btnShimmer {
+@keyframes btnShimmer {
       0%, 15%  { left: -130%; opacity: 0; }
       20%      { opacity: 1; }
       55%, 100% { left: 200%; opacity: 0; }
     }
-
-    /* גלוֹ לכפתורי תמחור */
-    .plan-btn.primary:not(.tractor-btn) {
+.plan-btn.primary:not(.tractor-btn) {
       animation: planBtnGlow 2.8s ease-in-out infinite;
     }
-    .plan-btn.primary:not(.tractor-btn):hover { animation-play-state: paused; }
-    @keyframes planBtnGlow {
+.plan-btn.primary:not(.tractor-btn):hover { animation-play-state: paused; }
+@keyframes planBtnGlow {
       0%, 100% { box-shadow: 0 4px 18px rgba(37,99,235,0.30); }
       50%       { box-shadow: 0 6px 32px rgba(37,99,235,0.65); }
     }
-
-    /* ═══ STAR TWINKLE ═══ */
-    @keyframes starTwinkle {
-      0%, 100% { transform: scale(1)    rotate(0deg);   opacity: 1;    }
-      20%      { transform: scale(1.4)  rotate(18deg);  opacity: 0.9;  }
-      40%      { transform: scale(0.82) rotate(-10deg); opacity: 0.75; }
-      65%      { transform: scale(1.25) rotate(12deg);  opacity: 1;    }
-      85%      { transform: scale(0.92) rotate(-6deg);  opacity: 0.85; }
-    }
-    .star-live {
-      display: inline-block;
-      animation: starTwinkle 2.8s ease-in-out infinite;
-      animation-delay: var(--star-d, 0s);
-      transform-origin: center;
-    }
-    .plan-addon:nth-child(1) .star-live { --star-d: 0s;    }
-    .plan-addon:nth-child(2) .star-live { --star-d: 0.9s;  }
-    .plan-addon:nth-child(3) .star-live { --star-d: 1.8s;  }
-    .marketing-section .star-live       { --star-d: 0.45s; }
-    @media (prefers-reduced-motion: reduce) { .star-live { animation: none; } }
-
-    /* ══════════════════════════════
-       עגורן מעל ה-CTA הראשי: מוריד "משקולת" על הכפתור להדגשה
-    ══════════════════════════════ */
-    .cta-stage { position: relative; display: inline-block; }
-    .cta-crane {
-      position: absolute;
-      bottom: calc(100% - 4px);
-      right: 6px;
-      width: 100px; height: 112px;
-      pointer-events: none;
-      z-index: 2;
-    }
-    .cta-crane::before { /* תורן */
-      content: '';
-      position: absolute; bottom: 0; right: 0;
-      width: 4px; height: 100%;
-      background: var(--gold-500);
-      border-radius: 2px;
-    }
-    .cta-crane::after { /* זרוע */
-      content: '';
-      position: absolute; top: 0; right: -2px;
-      width: 80px; height: 4px;
-      background: var(--gold-500);
-      border-radius: 2px;
-    }
-    .crane-cable {
-      position: absolute; top: 4px; right: 66px;
-      width: 2px; height: 18px;
-      background: rgba(255,255,255,0.55);
-      animation: craneCable 7s ease-in-out infinite;
-    }
-    .crane-load {
-      position: absolute; top: 22px; right: 48px;
-      min-width: 40px; padding: 3px 8px;
-      background: linear-gradient(135deg, var(--gold-400), var(--gold-600));
-      color: var(--navy-900);
-      font-size: 11px; font-weight: 900;
-      border-radius: 7px; text-align: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.35);
-      animation: craneLoad 7s ease-in-out infinite;
-      white-space: nowrap;
-    }
-    @keyframes craneCable {
-      0%, 50% { height: 18px; }
-      62%     { height: 62px; }
-      66%     { height: 57px; }
-      74%     { height: 62px; }
-      82%     { height: 62px; }
-      83%     { height: 18px; }
-      100%    { height: 18px; }
-    }
-    @keyframes craneLoad {
-      0%, 50% { transform: translateY(0); opacity: 1; }
-      62%     { transform: translateY(44px); }
-      66%     { transform: translateY(39px); }
-      74%     { transform: translateY(44px); opacity: 1; }
-      82%     { transform: translateY(44px); opacity: 0; }
-      83%     { transform: translateY(0); opacity: 0; }
-      90%, 100% { transform: translateY(0); opacity: 1; }
-    }
-    .cta-drop-target { animation: ctaImpact 7s ease-in-out infinite; }
-    @keyframes ctaImpact {
-      0%, 61% { transform: none; }
-      64%     { transform: scale(1.06, 0.88) translateY(3px); }
-      70%     { transform: scale(0.98, 1.03); }
-      76%, 100% { transform: none; }
-    }
-    .cta-stage::after { /* ענן אבק ברגע הפגיעה */
-      content: '💨';
-      position: absolute; bottom: 6px; right: 30px;
-      font-size: 16px; opacity: 0;
-      pointer-events: none;
-      animation: ctaDust 7s ease-out infinite;
-    }
-    @keyframes ctaDust {
-      0%, 62% { opacity: 0; transform: translate(0,0) scale(0.6); }
-      66%     { opacity: 0.9; transform: translate(12px,-8px) scale(1.1); }
-      78%     { opacity: 0; transform: translate(24px,-16px) scale(1.3); }
-      100%    { opacity: 0; }
-    }
-    @media (max-width: 480px) { .cta-crane { display: none; } .cta-drop-target { animation: none; } .cta-stage::after { display: none; } }
-    /* מרווח נוסף מעל הכפתור בכל רוחב שבו העגורן מוצג, כדי שהמשקולת לא תעבור על טקסט ה-hero-sub */
-    @media (min-width: 481px) { .hero-sub { margin-bottom: 130px; } }
-
-    /* ══ Hero CTA — בורדו זכוכית ══ */
-    .hero .btn-primary {
+@media (min-width: 481px) {
+.hero-sub { margin-bottom: 130px; }
+}
+.hero .btn-primary {
       background: rgba(100, 14, 28, 0.68);
       border: 1.5px solid rgba(210, 65, 80, 0.36);
       box-shadow: 0 6px 24px rgba(90, 12, 24, 0.38),
@@ -1873,31 +521,21 @@
       padding: 18px 46px;
       font-size: 18px;
     }
-    .hero .btn-primary:hover {
+.hero .btn-primary:hover {
       background: rgba(118, 18, 34, 0.82);
       border-color: rgba(220, 75, 90, 0.50);
       box-shadow: 0 10px 34px rgba(90, 12, 24, 0.52),
                   inset 0 1px 0 rgba(255,255,255,0.14);
     }
-    .hero .cta-drop-target {
-      animation: ctaImpact 7s ease-in-out infinite, heroCraneGlow 2.8s ease-in-out infinite;
-    }
-    .hero .cta-drop-target:hover { animation-play-state: paused; }
-    .hero .btn-primary.pulse-cta::after {
+.hero .btn-primary.pulse-cta::after {
       animation: heroBurgundyPulse 2.6s ease-out infinite !important;
     }
-    @keyframes heroBurgundyPulse {
+@keyframes heroBurgundyPulse {
       0%   { box-shadow: 0 0 0 0 rgba(170, 28, 50, 0.40); }
       70%  { box-shadow: 0 0 0 18px rgba(170, 28, 50, 0); }
       100% { box-shadow: 0 0 0 0 rgba(170, 28, 50, 0); }
     }
-    @keyframes heroCraneGlow {
-      0%, 100% { box-shadow: 0 6px 24px rgba(90,12,24,0.38), inset 0 1px 0 rgba(255,255,255,0.10); }
-      50%       { box-shadow: 0 10px 38px rgba(110,16,30,0.56), inset 0 1px 0 rgba(255,255,255,0.13); }
-    }
-
-    /* ══ CTA סגירה — אותו בורדו זכוכית כמו ה-hero ══ */
-    .closing .btn-primary {
+.closing .btn-primary {
       background: rgba(100, 14, 28, 0.68);
       border: 1.5px solid rgba(210, 65, 80, 0.36);
       box-shadow: 0 6px 24px rgba(90, 12, 24, 0.38),
@@ -1905,289 +543,33 @@
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
     }
-    .closing .btn-primary:hover {
+.closing .btn-primary:hover {
       background: rgba(118, 18, 34, 0.82);
       border-color: rgba(220, 75, 90, 0.50);
       box-shadow: 0 10px 34px rgba(90, 12, 24, 0.52),
                   inset 0 1px 0 rgba(255,255,255,0.14);
     }
-
-    /* ══════════════════════════════
-       רצועת אתר בנייה: טרקטור, משאית ופועל (מעבר לתמחור)
-    ══════════════════════════════ */
-    .construction-divider {
-      position: relative;
-      height: 130px;
-      background: linear-gradient(180deg, var(--white) 0%, var(--gray-bg) 100%);
-      overflow: hidden;
-    }
-    .cd-sign {
-      position: absolute; top: 18px; left: 0; right: 0;
-      text-align: center;
-      font-size: 14.5px; font-weight: 800;
-      color: var(--text-muted);
-      letter-spacing: 0.02em;
-    }
-    .cd-road {
-      position: absolute; bottom: 0; left: 0; right: 0; height: 26px;
-      background: #CBD5E1;
-    }
-    .cd-road::before {
-      content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 2px;
-      transform: translateY(-50%); opacity: 0.7;
-      background: repeating-linear-gradient(90deg, var(--white) 0 18px, transparent 18px 34px);
-    }
-    .cd-vehicle {
-      position: absolute; bottom: 16px; right: -70px;
-      font-size: 34px;
-      filter: drop-shadow(0 3px 3px rgba(0,0,0,0.15));
-    }
-    .cd-truck { font-size: 38px; }
-    .construction-divider.in-view .cd-tractor { animation: cdDrive 13s linear infinite; }
-    .construction-divider.in-view .cd-truck   { animation: cdDrive 13s linear 6s infinite; }
-    @keyframes cdDrive {
-      from { transform: translateX(0); }
-      to   { transform: translateX(calc(-100vw - 160px)); }
-    }
-    .cd-worker {
-      position: absolute; bottom: 20px; right: 38%;
-      font-size: 30px;
-      transform-origin: bottom center;
-    }
-    .construction-divider.in-view .cd-worker { animation: cdDig 1.6s ease-in-out infinite; }
-    @keyframes cdDig {
-      0%, 100% { transform: rotate(0); }
-      50%      { transform: rotate(-14deg) translateY(2px); }
-    }
-    .cd-cone { position: absolute; bottom: 19px; font-size: 19px; }
-
-    /* מעברי צבע רכים בין סקשנים כהים לבהירים */
-    .sect-blend-light { height: 64px; background: linear-gradient(180deg, var(--navy-700) 0%, var(--navy-50) 55%, var(--white) 100%); }
-    .sect-blend-dark  { height: 64px; background: linear-gradient(180deg, var(--gray-bg) 0%, var(--navy-100) 45%, var(--navy-900) 100%); }
-
-    /* ══════════════════════════════
-       מחבר סקשנים מונפש: ליד עובר מסוכן לקולגה
-       (בין "איך זה עובד" ל"כאב ההפניות")
-    ══════════════════════════════ */
-    .how-section { padding-bottom: 16px; }
-    .handoff-divider {
-      position: relative;
-      height: 84px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 22px;
-      overflow: hidden;
-    }
-    .ho-figure {
-      width: 50px; height: 50px;
-      border-radius: 50%;
-      background: var(--white);
-      border: 2px solid var(--border, #E2E8F0);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 26px;
-      box-shadow: var(--shadow-sm);
-      position: relative; z-index: 2;
-      flex-shrink: 0;
-    }
-    .ho-track {
-      position: relative;
-      width: 130px; height: 0;
-      border-top: 2px dashed #CBD5E1;
-      flex-shrink: 0;
-    }
-    .ho-card {
-      position: absolute; top: 50%; right: 0;
-      transform: translateY(-50%) scale(0.8);
-      font-size: 21px;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.16));
-      opacity: 0;
-    }
-    .handoff-divider.in-view .ho-card { animation: hoTravel 3.8s ease-in-out infinite; }
-    @keyframes hoTravel {
-      0%      { right: 0; opacity: 0; transform: translateY(-50%) scale(0.8); }
-      10%     { opacity: 1; transform: translateY(-50%) scale(1); }
-      48%     { right: calc(100% - 21px); opacity: 1; transform: translateY(-62%) scale(1.05); }
-      58%     { right: calc(100% - 21px); opacity: 1; transform: translateY(-50%) scale(1); }
-      66%     { opacity: 0; }
-      100%    { opacity: 0; right: calc(100% - 21px); }
-    }
-    .handoff-divider.in-view .ho-to { animation: hoReceive 3.8s ease-in-out infinite; }
-    @keyframes hoReceive {
-      0%, 54%   { transform: scale(1); }
-      60%       { transform: scale(1.18); }
-      68%, 100% { transform: scale(1); }
-    }
-    .ho-caption {
-      text-align: center;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-muted);
-      margin: -4px 0 0;
-      padding: 0 24px;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .ho-card { opacity: 1 !important; animation: none !important; right: calc(50% - 10px) !important; transform: translateY(-50%) scale(1) !important; }
-      .ho-to   { animation: none !important; }
-    }
-    @media (max-width: 480px) {
-      .handoff-divider { gap: 14px; height: 72px; }
-      .ho-track { width: 84px; }
-      .ho-figure { width: 42px; height: 42px; font-size: 22px; }
-    }
-    .referral-pain-section { padding-top: 16px; }
-
-    /* ═══ DOC FUNNEL DIVIDER ═══ */
-    .doc-funnel {
-      position: relative;
-      height: 200px;
-      background: linear-gradient(to bottom, var(--gray-bg, #F1F5F9), #fff);
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .df-paper {
-      position: absolute;
-      width: 46px; height: 60px;
-      background: #fff;
-      border-radius: 3px 8px 3px 3px;
-      box-shadow: 0 4px 14px rgba(15,31,61,0.14);
-      display: flex; flex-direction: column;
-      padding: 10px 8px; gap: 5px;
-      opacity: 0;
-      will-change: transform, opacity;
-      transition: transform 0.7s cubic-bezier(.23,1.01,.32,1), opacity 0.6s ease;
-      border: 1px solid #E5E7EB;
-    }
-    .dp-l { height: 4px; background: #CBD5E1; border-radius: 2px; }
-    .dp-s  { width: 55%; }
-
-    .df-p1 { transform: translate(-220px, -50px) rotate(-28deg); }
-    .df-p2 { transform: translate(-150px,  60px) rotate( 18deg); }
-    .df-p3 { transform: translate( -90px, -80px) rotate(-12deg); }
-    .df-p4 { transform: translate( 160px, -40px) rotate( 22deg); }
-    .df-p5 { transform: translate( 110px,  55px) rotate(-18deg); }
-
-    .doc-funnel.in-view .df-p1 { transform: translate(-38px, -8px) rotate(-4deg); opacity:1; transition-delay:0.05s; }
-    .doc-funnel.in-view .df-p2 { transform: translate(-22px,  6px) rotate( 3deg); opacity:1; transition-delay:0.18s; }
-    .doc-funnel.in-view .df-p3 { transform: translate(  -8px,-12px) rotate(-2deg); opacity:1; transition-delay:0.30s; }
-    .doc-funnel.in-view .df-p4 { transform: translate(  20px,  4px) rotate( 2deg); opacity:1; transition-delay:0.40s; }
-    .doc-funnel.in-view .df-p5 { transform: translate(  34px, -6px) rotate(-3deg); opacity:1; transition-delay:0.50s; }
-
-    .df-folder {
-      position: relative; z-index: 10;
-      width: 76px; height: 68px;
-      transform: scale(0.35);
-      transition: transform 0.55s cubic-bezier(.34,1.56,.64,1);
-    }
-    .doc-funnel.in-view .df-folder { transform: scale(1); transition-delay: 0.75s; }
-
-    .df-fold-tab {
-      position: absolute; top: 0; right: 14px;
-      width: 34px; height: 14px;
-      background: #C49A2A;
-      border-radius: 5px 5px 0 0;
-    }
-    .df-fold-body {
-      position: absolute; top: 12px;
-      width: 100%; height: 56px;
-      background: #C49A2A;
-      border-radius: 2px 2px 4px 4px;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: inset 0 3px 8px rgba(0,0,0,0.12);
-    }
-    .df-fold-logo {
-      font-size: 26px; font-weight: 900;
-      color: #0F1F3D;
-      font-family: 'Rubik','Heebo',sans-serif;
-    }
-    .df-fold-lid {
-      position: absolute; top: 12px;
-      width: 100%; height: 56px;
-      background: #B8860B;
-      border-radius: 2px 2px 4px 4px;
-      transform-origin: top center;
-      transform: rotateX(0deg);
-      transition: transform 0.45s ease;
-    }
-    .doc-funnel.folding .df-fold-lid { transform: rotateX(-100deg); }
-
-    @keyframes dfAbsorb {
-      0%   { opacity: 1; }
-      80%  { opacity: 0.6; }
-      100% { transform: translate(0,0) scale(0) rotate(0deg); opacity: 0; }
-    }
-    .doc-funnel.folding .df-p1 { animation: dfAbsorb 0.4s 0.10s ease-in forwards; }
-    .doc-funnel.folding .df-p2 { animation: dfAbsorb 0.4s 0.16s ease-in forwards; }
-    .doc-funnel.folding .df-p3 { animation: dfAbsorb 0.4s 0.22s ease-in forwards; }
-    .doc-funnel.folding .df-p4 { animation: dfAbsorb 0.4s 0.08s ease-in forwards; }
-    .doc-funnel.folding .df-p5 { animation: dfAbsorb 0.4s 0.14s ease-in forwards; }
-
-    .df-caption {
-      position: absolute; bottom: 14px; left: 0; right: 0;
-      text-align: center;
-      font-size: 13px; color: var(--text-muted, #64748B);
-      font-family: 'Rubik','Heebo',sans-serif;
-      opacity: 0;
-      transition: opacity 0.5s 0.6s ease;
-    }
-    .doc-funnel.folding .df-caption { opacity: 1; }
-
-    @media (prefers-reduced-motion: reduce) {
-      .df-paper  { transition: none; opacity: 1; }
-      .df-folder { transform: scale(1); transition: none; }
-      .df-fold-lid { transition: none; }
-      .doc-funnel.folding .df-caption { opacity: 1; }
-    }
-    /* ═══ end DOC FUNNEL ═══ */
-
-    /* ══════════════════════════════
-       אנימציות CTA: חללית · כדור הריסה · טרקטור
-    ══════════════════════════════ */
-
-    /* חללית — Hero CTA */
-    .btn-primary.has-rocket { position: relative; overflow: visible; }
-    .rocket-icon {
-      position: absolute;
-      font-size: 1.35rem;
-      bottom: 50%; left: 50%;
-      transform: translate(-50%, 50%) rotate(-45deg);
-      opacity: 0;
-      pointer-events: none;
-      z-index: 3;
-    }
-    .btn-primary.has-rocket:hover .rocket-icon {
-      animation: rocketLaunch 0.75s ease-out forwards;
-    }
-    @keyframes rocketLaunch {
-      0%   { opacity: 1; transform: translate(-50%, 50%) rotate(-45deg) scale(0.8); }
-      20%  { opacity: 1; transform: translate(-50%, 20%) rotate(-45deg) scale(1.1); }
-      70%  { opacity: 1; transform: translate(-50%, -65px) rotate(-45deg) scale(1); }
-      100% { opacity: 0; transform: translate(-50%, -110px) rotate(-45deg) scale(0.7); }
-    }
-
-    /* כדור הריסה — Closing CTA */
-    .wrecking-wrap {
+.btn-primary.has-rocket { position: relative; overflow: visible; }
+.wrecking-wrap {
       position: relative;
       display: inline-block;
       padding-top: 68px;
     }
-    .pendulum {
+.pendulum {
       position: absolute;
       top: 0; left: 16%;
       width: 2px; height: 44px;
       transform-origin: top center;
       animation: pendulumSwing 2.6s ease-in-out infinite;
     }
-    .wrecking-chain {
+.wrecking-chain {
       width: 2px; height: 44px;
       background: repeating-linear-gradient(
         to bottom,
         var(--gold) 0px 4px, rgba(220,220,220,0.5) 4px 7px
       );
     }
-    .wrecking-ball {
+.wrecking-ball {
       position: absolute;
       bottom: -25px; left: -12px;
       width: 25px; height: 25px;
@@ -2195,31 +577,29 @@
       border-radius: 50%;
       box-shadow: inset 0 0 7px rgba(0,0,0,0.45), 0 4px 10px rgba(0,0,0,0.55);
     }
-    @keyframes pendulumSwing {
+@keyframes pendulumSwing {
       0%, 100% { transform: rotate(-32deg); }
       50%       { transform: rotate(20deg); }
     }
-    .wrecking-wrap .btn-primary {
+.wrecking-wrap .btn-primary {
       animation: wreckImpact 2.6s ease-in-out infinite;
     }
-    .wrecking-wrap .btn-primary:hover { animation-play-state: paused; }
-    @keyframes wreckImpact {
+.wrecking-wrap .btn-primary:hover { animation-play-state: paused; }
+@keyframes wreckImpact {
       0%, 43%, 57%, 100% { transform: translateX(0) scale(1); }
       50%                 { transform: translateX(4px) scale(0.965, 1.025); }
     }
-    @media (max-width: 480px) {
-      .wrecking-wrap { padding-top: 0; }
-      .pendulum { display: none; }
-      .wrecking-wrap .btn-primary { animation: none; }
-    }
-
-    /* טרקטור מכרסם — Team Plan CTA */
-    .plan-btn.tractor-btn {
+@media (max-width: 480px) {
+.wrecking-wrap { padding-top: 0; }
+.pendulum { display: none; }
+.wrecking-wrap .btn-primary { animation: none; }
+}
+.plan-btn.tractor-btn {
       overflow: visible;
       position: relative;
       animation: btnBite 3.6s ease-in-out infinite;
     }
-    .plan-btn.tractor-btn::before {
+.plan-btn.tractor-btn::before {
       content: '🚜';
       position: absolute;
       font-size: 1.05rem;
@@ -2229,480 +609,35 @@
       animation: tractorNibble 3.6s ease-in-out infinite;
       pointer-events: none;
     }
-    @keyframes tractorNibble {
+@keyframes tractorNibble {
       0%, 100% { left: calc(100% + 8px); }
       35%, 65% { left: calc(100% - 5px); }
     }
-    @keyframes btnBite {
+@keyframes btnBite {
       0%, 100% { transform: translateX(0) scale(1); }
       35%, 65% { transform: translateX(3px) scale(0.975, 1); }
     }
-    .plan-btn.tractor-btn:hover { animation-play-state: paused; }
-    .plan-btn.tractor-btn:hover::before { animation-play-state: paused; }
-    @media (max-width: 480px) {
-      .plan-btn.tractor-btn::before { display: none; }
-      .plan-btn.tractor-btn { animation: none; }
-    }
-
-    /* ══════════════════════════════
-       סקשן תחומי עיסוק
-    ══════════════════════════════ */
-    .industry-section {
-      background: var(--navy-800);
-      padding: 46px 0;
-      position: relative;
-    }
-    .industry-section::before {
-      content: '';
-      position: absolute;
-      top: 0; right: 15%; left: 15%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(212,168,67,0.55), transparent);
-    }
-    .industry-section .section-title,
-    .industry-section .section-label { color: var(--white); }
-    .industry-section .section-sub   { color: rgba(255,255,255,0.60); }
-    .industry-cards {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-    @media (max-width: 700px) { .industry-cards { grid-template-columns: 1fr; } }
-    .ind-card {
-      background: rgba(255,255,255,0.045);
-      border: 1px solid rgba(255,255,255,0.13);
-      border-radius: var(--radius);
-      padding: 2rem 1.5rem;
-      text-align: center;
-      transition: transform 0.25s, border-color 0.25s;
-    }
-    .ind-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.28); }
-    .ind-icon-row { font-size: 2rem; margin-bottom: 0.75rem; line-height: 1.4; }
-    .ind-title {
-      font-size: 1.15rem; font-weight: 800;
-      color: var(--white); margin-bottom: 0.35rem;
-    }
-    .ind-sub {
-      font-size: 0.82rem; font-weight: 700;
-      color: var(--blue-400); margin-bottom: 1rem;
-      letter-spacing: 0.03em;
-    }
-    .ind-terms {
-      font-size: 0.78rem;
-      color: rgba(255,255,255,0.42);
-      line-height: 2;
-    }
-    /* אנימציות אייקונים */
-    .key-anim {
-      display: inline-block;
-      animation: keyRock 3.2s ease-in-out infinite;
-      transform-origin: 50% 80%;
-    }
-    @keyframes keyRock {
-      0%, 100% { transform: rotate(0deg); }
-      35% { transform: rotate(22deg); }
-      55% { transform: rotate(14deg); }
-    }
-    .scale-anim {
-      display: inline-block;
-      animation: scaleBalance 4s ease-in-out infinite;
-    }
-    @keyframes scaleBalance {
-      0%, 100% { transform: rotate(0deg); }
-      28% { transform: rotate(-11deg); }
-      72% { transform: rotate(11deg); }
-    }
-    .pencil-anim {
-      display: inline-block;
-      animation: pencilDraw 2.8s ease-in-out infinite;
-    }
-    @keyframes pencilDraw {
-      0%, 100% { transform: rotate(0deg) translate(0, 0); }
-      25% { transform: rotate(-18deg) translate(-3px, 2px); }
-      75% { transform: rotate(12deg) translate(3px, -1px); }
-    }
-    /* רקע תכנית אדריכלית לעיצוב פנים */
-    .ind-card.interior-card {
-      background-color: var(--navy-900);
-      background-image:
-        linear-gradient(rgba(99,179,237,0.09) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(99,179,237,0.09) 1px, transparent 1px);
-      background-size: 22px 22px;
-      transition: transform 0.25s, border-color 0.25s,
-                  background-color 1.4s ease, background-size 1.4s ease;
-    }
-    .ind-card.interior-card:hover {
-      background-color: #1b1040;
-      background-size: 46px 46px;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
+.plan-btn.tractor-btn:hover { animation-play-state: paused; }
+.plan-btn.tractor-btn:hover::before { animation-play-state: paused; }
+@media (max-width: 480px) {
+.plan-btn.tractor-btn::before { display: none; }
+.plan-btn.tractor-btn { animation: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+*, *::before, *::after {
         animation-duration: 0.001ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.001ms !important;
       }
-    }
-
-    /* ── המשולש הקדוש ─────────────────────────── */
-    .holy-triangle-section {
-      background: var(--white);
-      padding: 32px 24px 36px;
-      overflow-x: clip; /* צמתי האנימציה מתחילים מחוץ למסך ומרחיבים את הדף ב-5px */
-    }
-
-    /* ═══ TRI-STAGE: ANIMATED TRIANGLE ═══ */
-    .tri-stage {
-      position: relative;
-      height: 370px;
-      margin: 0 auto 8px;
-      max-width: 640px;
-    }
-    @media (max-width: 600px) { .tri-stage { height: 280px; } }
-
-    .tri-svg {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
-    }
-    .tri-edge {
-      stroke: rgba(15,31,61,0.2);
-      stroke-width: 2.5;
-      fill: none;
-      transition: stroke-dashoffset 1.0s ease;
-    }
-    .tri-stage.drawing .tri-edge:nth-child(1) { stroke-dashoffset: 0; transition-delay: 0.1s; }
-    .tri-stage.drawing .tri-edge:nth-child(2) { stroke-dashoffset: 0; transition-delay: 0.55s; }
-    .tri-stage.drawing .tri-edge:nth-child(3) { stroke-dashoffset: 0; transition-delay: 1.0s; }
-
-    .tri-node {
-      position: absolute;
-      background: #fff;
-      border: 2px solid var(--gray-200, #E5E7EB);
-      border-radius: 16px;
-      padding: 14px 16px;
-      text-align: center;
-      width: 132px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      opacity: 0;
-      transition: transform 0.65s cubic-bezier(.34,1.56,.64,1), opacity 0.5s ease;
-    }
-    /* ימין עליון — סוכן */
-    .tri-n1 { top: 8px; right: 5%; transform: translateX(60px) scale(0.7); }
-    /* שמאל עליון — עו"ד */
-    .tri-n2 { top: 8px; left: 5%;  transform: translateX(-60px) scale(0.7); }
-    /* תחתון מרכז — עיצוב */
-    .tri-n3 { bottom: 2px; left: 50%; transform: translateX(-50%) translateY(40px) scale(0.7); }
-
-    .tri-stage.drawing .tri-n1 { transform: translateX(0) scale(1); opacity: 1; transition-delay: 0s; }
-    .tri-stage.drawing .tri-n2 { transform: translateX(0) scale(1); opacity: 1; transition-delay: 0.25s; }
-    .tri-stage.drawing .tri-n3 { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; transition-delay: 0.5s; }
-
-    .tri-node:hover { border-color: var(--blue, #2563EB); box-shadow: 0 8px 24px rgba(37,99,235,0.14); }
-
-    .tn-icon  { font-size: 26px; margin-bottom: 5px; }
-    .tn-role  { font-size: 13px; font-weight: 800; color: var(--navy, #0F1F3D); margin-bottom: 3px; }
-    .tn-hint  { font-size: 10px; color: var(--text-muted, #64748B); line-height: 1.4; }
-
-    @media (max-width: 600px) {
-      .tri-node { width: 96px; padding: 10px 10px; }
-      .tn-icon  { font-size: 20px; }
-      .tn-role  { font-size: 11px; }
-      .tn-hint  { display: none; }
-    }
-
-    /* Flows — רצועת scroll אנכית אינסופית */
-    .tri-flows {
-      overflow: hidden;
-      padding: 0;
-      margin: 0 auto 28px;
-      max-width: 700px;
-    }
-    .tri-flows-track {
-      display: flex;
-      gap: 10px;
-      width: max-content;
-      animation: triFlowScroll 20s linear infinite;
-    }
-    .tri-flows:hover .tri-flows-track { animation-play-state: paused; }
-    @keyframes triFlowScroll {
-      0%   { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
-    .tf-pill {
-      background: var(--gray-bg, #F1F5F9);
-      border: 1px solid var(--gray-200, #E5E7EB);
-      border-radius: 20px;
-      padding: 7px 16px;
-      font-size: 12px;
-      color: var(--text-muted, #64748B);
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .tri-node { transform: scale(1) !important; opacity: 1 !important; transition: none; }
-      .tri-n3   { transform: translateX(-50%) scale(1) !important; }
-      .tri-edge { stroke-dashoffset: 0; transition: none; }
-      .tri-flows-track { animation: none; }
-      .tri-bubble { animation: none !important; display: none; }
-    }
-
-    /* בועות שיתוף פעולה צפות בתוך המשולש */
-    .tri-bubbles {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 3;
-      overflow: hidden;
-    }
-    .tri-bubble {
-      position: absolute;
-      background: var(--white);
-      border: 1.5px solid var(--blue-200);
-      border-radius: 20px;
-      padding: 5px 12px;
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--navy);
-      white-space: nowrap;
-      box-shadow: 0 3px 14px rgba(37,99,235,0.22);
-      opacity: 0;
-    }
-    .tb-1 { right: 28%; top: 48%; animation: tribubble 9s ease-out 3.5s infinite; }
-    .tb-2 { right: 46%; top: 56%; animation: tribubble 9s ease-out 7s   infinite; }
-    .tb-3 { right: 36%; top: 40%; animation: tribubble 9s ease-out 10.5s infinite; }
-    .tb-4 { right: 24%; top: 60%; animation: tribubble 9s ease-out 14s   infinite; }
-    @keyframes tribubble {
-      0%   { opacity: 0; transform: translateY(0)    scale(0.75); }
-      10%  { opacity: 1; transform: translateY(-10px) scale(1);   }
-      68%  { opacity: 1; transform: translateY(-42px) scale(1);   }
-      92%  { opacity: 0; transform: translateY(-60px) scale(0.95);}
-      100% { opacity: 0; transform: translateY(-60px);            }
-    }
-    @media (max-width: 600px) {
-      .tri-bubble { font-size: 10.5px; padding: 4px 9px; }
-    }
-    /* ═══ end TRI-STAGE ═══ */
-
-    .triangle-flow {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0;
-      max-width: 860px;
-      margin: 0 auto 40px;
-      flex-wrap: wrap;
-    }
-    .tf-node {
-      flex: 1;
-      min-width: 160px;
-      max-width: 220px;
-      background: var(--gray-bg);
-      border: 2px solid var(--gray-200);
-      border-radius: 20px;
-      padding: 28px 16px 22px;
-      text-align: center;
-      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
-    }
-    .tf-node:hover {
-      transform: translateY(-6px);
-      border-color: var(--blue-500);
-      box-shadow: 0 12px 32px rgba(37,99,235,0.13);
-    }
-    .tf-node-gold {
-      border-color: var(--gold-400, #D97706);
-      background: #FFFBEB;
-    }
-    .tf-node-gold:hover { border-color: #B45309; }
-    .tf-icon { font-size: 2.4rem; margin-bottom: 10px; line-height: 1; }
-    .tf-role {
-      font-size: 1rem; font-weight: 800;
-      color: var(--navy-700); margin-bottom: 6px;
-    }
-    .tf-action {
-      font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;
-    }
-    .tf-arrow {
-      font-size: 1.8rem;
-      color: var(--blue-400);
-      padding: 0 12px;
-      flex-shrink: 0;
-      align-self: center;
-      line-height: 1;
-    }
-    @media (max-width: 640px) {
-      .triangle-flow { flex-direction: column; gap: 6px; }
-      .tf-arrow { transform: rotate(90deg); padding: 4px 0; }
-      .tf-node { max-width: 100%; min-width: 0; width: 100%; }
-    }
-    .opp-explainer {
-      max-width: 680px;
-      margin: 0 auto;
-      background: var(--navy-700);
-      border-radius: 20px;
-      padding: 28px 28px 24px;
-      text-align: center;
-    }
-    .oe-title {
-      font-size: 1.05rem; font-weight: 800;
-      color: #fff; margin-bottom: 10px;
-    }
-    .oe-desc {
-      font-size: 0.9rem; color: rgba(255,255,255,0.72);
-      line-height: 1.7; margin-bottom: 20px;
-    }
-    .oe-desc strong { color: #fff; font-weight: 800; }
-    .oe-ex-label {
-      font-size: 0.78rem; color: var(--gold-400, #D97706);
-      font-weight: 700; margin-bottom: 8px;
-      text-transform: uppercase; letter-spacing: 0.06em;
-    }
-    .oe-ex-card {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 12px;
-      padding: 14px 18px;
-      font-size: 0.86rem;
-      color: rgba(255,255,255,0.88);
-      line-height: 1.6;
-      text-align: right;
-      direction: rtl;
-    }
-    .oe-examples { text-align: right; }
-    /* 6 נתיבי הפניה */
-    .referral-flows {
-      max-width: 860px;
-      margin: 0 auto 36px;
-    }
-    .rf-title {
-      font-size: 0.82rem; font-weight: 800;
-      color: var(--gray-500); text-align: center;
-      margin-bottom: 14px; letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-    .rf-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-    @media (max-width: 640px) { .rf-grid { grid-template-columns: 1fr; } }
-    .rf-item {
-      background: var(--gray-bg);
-      border: 1px solid var(--gray-200);
-      border-radius: 12px;
-      padding: 12px 14px;
-      text-align: center;
-    }
-    .rf-from { font-size: 0.82rem; font-weight: 700; color: var(--navy-600); }
-    .rf-arr  { font-size: 1rem; color: var(--blue-500); margin: 0 4px; }
-    .rf-to   { font-size: 0.82rem; font-weight: 700; color: var(--navy-600); }
-    .rf-desc { font-size: 0.76rem; color: var(--text-muted); margin-top: 5px; line-height: 1.45; }
-
-    /* ══════════════════════════════
-       שורת יתרונות Hero — מודגשת ובולטת
-    ══════════════════════════════ */
-    .hero-trust {
+}
+.hero-trust {
       font-size: 16px !important;
       font-weight: 800 !important;
       color: rgba(255,255,255,0.88) !important;
       letter-spacing: 0.015em;
       margin-top: 4px;
     }
-
-    /* ══════════════════════════════
-       שורת כותרת + אייקון אקסל
-    ══════════════════════════════ */
-    .excel-title-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 12px;
-    }
-    .excel-title-row .section-title {
-      margin-bottom: 0;
-      max-width: 600px;
-      text-align: center;
-      font-size: clamp(24px, 3.6vw, 36px);
-    }
-    @media (max-width: 480px) {
-      .excel-title-row .section-title {
-        font-size: 21px;
-        max-width: none;
-        text-align: center;
-      }
-    }
-
-    /* ══════════════════════════════
-       היררכיית כותרות — section-subtitle
-    ══════════════════════════════ */
-    .section-subtitle {
-      font-size: clamp(20px, 3vw, 26px);
-      font-weight: 800;
-      color: var(--text);
-      text-align: center;
-      line-height: 1.3;
-      margin-bottom: 10px;
-    }
-    .industry-section .section-subtitle { color: var(--white); }
-    .holy-triangle-section .section-title { font-size: clamp(26px, 4vw, 40px); }
-
-    /* ══════════════════════════════
-       כאב הפניות מחוץ לאזור
-    ══════════════════════════════ */
-    .referral-pain-section {
-      background: var(--navy-50);
-    }
-    .rp-inner {
-      max-width: 760px;
-    }
-    .rp-heading {
-      font-size: clamp(21px, 3.2vw, 28px);
-      font-weight: 900;
-      color: var(--navy);
-      line-height: 1.4;
-      text-align: center;
-      margin-bottom: 28px;
-    }
-    .rp-body {
-      font-size: clamp(16px, 1.9vw, 17px);
-      color: var(--text-muted);
-      line-height: 1.9;
-      text-align: center;
-    }
-    .rp-body strong { color: var(--navy); font-weight: 800; }
-    .rp-body p { margin-bottom: 16px; }
-    .rp-body p:last-child { margin-bottom: 0; }
-    .rp-hook {
-      font-size: clamp(17px, 2.1vw, 19px);
-      color: var(--navy);
-      font-weight: 700;
-    }
-    .rp-cta-hint {
-      font-style: italic;
-      color: var(--blue);
-      font-weight: 600;
-    }
-
-    /* ══════════════════════════════
-       כפתור גרסה: tf-sep (מחליף tf-arrow)
-    ══════════════════════════════ */
-    .tf-sep {
-      font-size: 1.4rem;
-      color: var(--blue-400);
-      padding: 0 10px;
-      flex-shrink: 0;
-      align-self: center;
-      line-height: 1;
-    }
-    @media (max-width: 640px) {
-      .tf-sep { transform: none; padding: 4px 0; }
-    }
-
-    /* ═══ WAND ANIMATION (btn-marketing) ═══ */
-    @keyframes wandRide {
+@keyframes wandRide {
       0%, 3%    { left: calc(100% + 14px); opacity: 0; transform: translateY(-50%) rotate(-35deg) scale(1.1); }
       8%        { opacity: 1; }
       38%       { left: 46%; opacity: 1; transform: translateY(-50%) rotate(-18deg) scale(1.3); }
@@ -2710,7 +645,7 @@
       70%       { left: -10%; opacity: 0.5; transform: translateY(-50%) rotate(-8deg) scale(1); }
       80%, 100% { left: -12%; opacity: 0; transform: translateY(-50%) rotate(-5deg) scale(0.9); }
     }
-    @keyframes wandGlow {
+@keyframes wandGlow {
       0%, 33%, 50%, 100% {
         box-shadow: 0 8px 30px rgba(245,158,11,0.38), 0 2px 8px rgba(0,0,0,0.25);
       }
@@ -2722,8 +657,8 @@
           0 8px 20px rgba(245,158,11,0.5);
       }
     }
-    .btn-marketing { animation: wandGlow 7s ease-in-out infinite; }
-    .btn-marketing::before {
+.btn-marketing { animation: wandGlow 7s ease-in-out infinite; }
+.btn-marketing::before {
       content: '🪄';
       position: absolute;
       left: calc(100% + 14px);
@@ -2736,13 +671,11 @@
       z-index: 10;
       animation: wandRide 7s ease-in-out infinite;
     }
-    @media (prefers-reduced-motion: reduce) {
-      .btn-marketing { animation: none; }
-      .btn-marketing::before { display: none; }
-    }
-
-    /* ═══ PHONE VIBRATE (plan-btn.outline) ═══ */
-    @keyframes phoneVibrate {
+@media (prefers-reduced-motion: reduce) {
+.btn-marketing { animation: none; }
+.btn-marketing::before { display: none; }
+}
+@keyframes phoneVibrate {
       0%, 8%, 100% { transform: translateX(0) rotate(0deg) scale(1); }
       1%  { transform: translateX(-5px) rotate(-1.5deg) scale(1.01); }
       2%  { transform: translateX( 5px) rotate( 1.5deg) scale(1.01); }
@@ -2752,12 +685,10 @@
       6%  { transform: translateX( 2px) rotate( 0.5deg) scale(1); }
       7%  { transform: translateX(0)    rotate(0deg)    scale(1); }
     }
-    @media (prefers-reduced-motion: reduce) {
-      .plan-btn.outline { animation: none; }
-    }
-
-    /* ═══ ROCKET LAND (cps-btn) ═══ */
-    @keyframes rocketArrive {
+@media (prefers-reduced-motion: reduce) {
+.plan-btn.outline { animation: none; }
+}
+@keyframes rocketArrive {
       0%        { transform: translateX(180px) translateY(-50%) rotate(8deg) scale(0.7);   opacity: 0; }
       5%        { opacity: 0; }
       10%       { opacity: 1; transform: translateX(180px) translateY(-50%) rotate(8deg)   scale(0.7); }
@@ -2769,14 +700,14 @@
       93%       { opacity: 0;   transform: translateX(0)    translateY(-80%) scale(0.5); }
       100%      { opacity: 0;   transform: translateX(180px) translateY(-50%) rotate(8deg) scale(0.7); }
     }
-    @keyframes rocketBtnBounce {
+@keyframes rocketBtnBounce {
       0%, 50%, 70%, 100% { transform: scale(1); }
       53%  { transform: scale(1.06); }
       61%  { transform: scale(0.97); }
       65%  { transform: scale(1); }
     }
-    .cps-btn { animation: rocketBtnBounce 9s ease-in-out infinite; }
-    .cps-btn::before {
+.cps-btn { animation: rocketBtnBounce 9s ease-in-out infinite; }
+.cps-btn::before {
       content: '🚀';
       position: absolute;
       right: calc(100% + 10px);
@@ -2789,816 +720,218 @@
       z-index: 10;
       animation: rocketArrive 9s ease-in-out infinite;
     }
-    @media (prefers-reduced-motion: reduce) {
-      .cps-btn { animation: none; }
-      .cps-btn::before { display: none; }
+@media (prefers-reduced-motion: reduce) {
+.cps-btn { animation: none; }
+.cps-btn::before { display: none; }
+}
+.section-cta-wrap { text-align: center; margin-top: 36px; }
+[hidden] { display: none !important; }
+.hero { min-height: 100svh; padding-top: 96px; }
+.hero h1 { max-width: 980px; }
+.hero .hero-sub { margin-bottom: 32px; }
+@media (max-width: 480px) {
+.hero { padding: 88px 18px 32px; }
+.hero h1 { font-size: 27px; }
+.hero-sub { font-size: 17px; }
+}
+
+    /* ══ גרסה ממוקדת: שלושה סקשנים (2.11.2026) ══ */
+    nav .nav-actions { display: flex; align-items: center; gap: 10px; }
+    nav a.nav-logo { text-decoration: none; }
+    main { display: block; }
+
+    /* גיבור: טקסט וצילום מסך */
+    .hero { min-height: 100svh; padding: 96px 24px 48px; }
+    .hero-grid {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 1120px;
+      display: grid; grid-template-columns: 1fr; gap: 28px;
+      align-items: center; justify-items: center;
+    }
+    .hero-text { display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .hero .hero-sub { margin-bottom: 28px; }
+    .hero-actions { margin-bottom: 0; }
+    @media (min-width: 900px) {
+      .hero { padding: 104px 32px 56px; }
+      .hero-grid { grid-template-columns: 1.15fr 0.85fr; gap: 48px; }
+      .hero-text { align-items: flex-start; text-align: right; }
+      .hero h1 { max-width: none; }
+      .hero-badge { margin-bottom: 20px; }
     }
 
-    /* ── CRO additions ── */
-    .pain-free-list { margin: 28px auto 0; max-width: 480px; }
-    .pain-free-item { font-size: 1rem; color: var(--navy-700); margin: 9px 0; line-height: 1.5; }
-    .pain-free-yes { font-weight: 700; color: var(--green-500); margin-top: 14px; }
-    .section-cta-wrap { text-align: center; margin-top: 36px; }
-    .section-pre-cta { font-size: 1rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.6; }
-    .cta-trust-line { font-size: 0.8rem; color: var(--text-muted); margin-top: 10px; }
-    [hidden] { display: none !important; }
-
-    /* ══ מסך ראשון: מסר אחד, כפתור אחד ══ */
-    .hero { min-height: 100svh; padding-top: 96px; }
-    .hero h1 { max-width: 980px; }
-    .hero .hero-sub { margin-bottom: 32px; }
-    .hero-points {
-      list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 10px;
-      margin-top: 26px; position: relative; z-index: 1; padding: 0;
+    /* מסגרת טלפון עם צילום מסך אמיתי */
+    .phone-wrap { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; position: relative; z-index: 1; }
+    .phone {
+      width: min(264px, 68vw);
+      padding: 9px;
+      background: linear-gradient(160deg, #1a2b45, #0a1424);
+      border-radius: 40px;
+      box-shadow: 0 28px 60px rgba(2,8,20,0.45), 0 0 0 1px rgba(255,255,255,0.10) inset;
     }
-    .hero-points li {
-      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 99px; padding: 8px 14px; font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.86);
+    .phone img { display: block; width: 100%; height: auto; border-radius: 32px; background: #EEF2F7; }
+    .phone-cap { font-size: 13px; color: rgba(255,255,255,0.62); text-align: center; line-height: 1.5; max-width: 280px; }
+    .hero-visual .phone { animation: phoneFloat 7s ease-in-out infinite; }
+    @keyframes phoneFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    @media (prefers-reduced-motion: reduce) { .hero-visual .phone { animation: none; } }
+    @media (min-width: 900px) { .phone { width: 300px; } }
+
+    /* סקשן 2: מה עושים כל יום */
+    .feat-section { background: var(--gray-bg); }
+    .feat-split { display: grid; grid-template-columns: 1fr; gap: 36px; align-items: center; }
+    .feat-section .section-title { text-align: right; font-size: clamp(26px, 3.4vw, 38px); }
+    .feat-section .section-sub { text-align: right; margin: 0 0 24px; max-width: none; }
+    .feat-list { list-style: none; display: grid; gap: 14px; padding: 0; }
+    .feat-item {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: var(--white); border: 1px solid var(--border); border-radius: 16px;
+      padding: 16px 18px; box-shadow: var(--shadow-sm);
+    }
+    .feat-ico {
+      flex: 0 0 44px; width: 44px; height: 44px; border-radius: 12px;
+      background: var(--blue-50); display: flex; align-items: center; justify-content: center; font-size: 22px;
+    }
+    .feat-item h3 { font-size: 17px; font-weight: 800; color: var(--navy-700); margin-bottom: 4px; }
+    .feat-item p { font-size: 15px; line-height: 1.65; color: var(--text-muted); }
+    .feat-cta { margin-top: 22px; }
+    .btn-light { display: inline-block; }
+    .feat-visual .phone-cap { color: var(--text-muted); }
+    .feat-visual .phone { box-shadow: 0 24px 50px rgba(15,36,64,0.28), 0 0 0 1px rgba(255,255,255,0.10) inset; }
+    @media (min-width: 900px) {
+      .feat-split { grid-template-columns: 1.1fr 0.9fr; gap: 56px; }
+      .feat-visual { order: 2; }
+    }
+    @media (max-width: 899px) { .feat-visual { order: 2; } }
+
+    /* סקשן 3: למי זה מתאים וסגירה */
+    .who-chips {
+      list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+      margin: 0 auto 24px; padding: 0; max-width: 760px; position: relative; z-index: 1;
+    }
+    .who-chips li {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 99px; padding: 9px 16px; font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.92);
     }
     @media (max-width: 480px) {
-      .hero { padding: 88px 18px 32px; }
-      .hero h1 { font-size: 27px; }
-      .hero-sub { font-size: 17px; }
-      .hero-points li { font-size: 13px; padding: 7px 12px; }
+      .hero { padding: 88px 18px 36px; }
+      .who-chips li { font-size: 14px; padding: 8px 13px; }
+      .feat-item { padding: 14px; }
     }
-    .plan-cta-reassure { font-size: 0.76rem; color: var(--text-muted); margin-top: 8px; text-align: center; }
 
-  </style>
+</style>
 </head>
 <body>
 
 <!-- ניווט -->
 <nav>
-  <div class="nav-logo">PLT<span>O</span></div>
-  <div style="display:flex;align-items:center;gap:10px;">
-    <button class="nav-menu-btn" onclick="toggleNavMenu()" aria-expanded="false"
-            aria-controls="navMenuPanel" aria-label="פתיחת תפריט ניווט">☰</button>
+  <a class="nav-logo" href="#top" aria-label="PLTO">PLT<span>O</span></a>
+  <div class="nav-actions">
     <button class="nav-a11y-btn" data-a11y-btn
             onclick="toggleA11y()" aria-pressed="false"
             aria-label="הפעלת מצב נגישות">♿</button>
-    <a href="https://realestate.plto.app" class="nav-cta">מתחילים בחינם</a>
-  </div>
-  <div class="nav-menu-panel" id="navMenuPanel" aria-hidden="true">
-    <a href="#agents">מה עושים כל יום</a>
-    <a href="#industries">התחומים שלנו</a>
-    <a href="#features">מה מקבלים בפנים</a>
-    <a href="#how">איך זה עובד</a>
-    <a href="#pricing">תמחור</a>
-    <a href="#faq">שאלות נפוצות</a>
+    <a href="https://realestate.plto.app" class="nav-cta" data-cta-section="nav">מתחילים בחינם</a>
   </div>
 </nav>
 
-<!-- גיבור -->
+<main id="top">
+
+<!-- 1. גיבור -->
 <section class="hero">
-  <div class="hero-badge">
-    <span class="badge-dot"></span>
-    PLTO Sales · מערכת המכירות לעסקים
+  <div class="hero-grid">
+    <div class="hero-text">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        PLTO Sales · מערכת המכירות לעסקים
+      </div>
+      <h1>הלידים כבר אצלך.<br><span class="highlight">עכשיו הופכים אותם ללקוחות משלמים.</span></h1>
+      <p class="hero-sub">PLTO מראה למי לחזור היום, נותנת הודעה מוכנה לשליחה, ודואגת <strong>שאף ליד לא ייפול בין הכיסאות.</strong></p>
+      <div class="hero-actions">
+        <a href="https://realestate.plto.app" id="hero-cta-btn" class="btn-primary pulse-cta" data-cta-section="hero">מתחילים בחינם</a>
+      </div>
+      <p class="hero-micro hero-trust">30 יום חינם &bull; בלי כרטיס אשראי &bull; מוכן תוך דקה</p>
+    </div>
+    <figure class="phone-wrap hero-visual">
+      <div class="phone">
+        <img src="icons/landing/app-today.webp" width="640" height="1411"
+             alt="מסך &quot;היום&quot; ב-PLTO: לידים באיחור, לידים להיום ולידים חדשים בלי מענה, עם כפתורי שיחה, הודעה וסימון בוצע"
+             fetchpriority="high" decoding="async">
+      </div>
+      <figcaption class="phone-cap">מסך &quot;היום&quot; במערכת, עם נתוני דוגמה</figcaption>
+    </figure>
   </div>
-  <h1>הלידים כבר אצלך.<br><span class="highlight">עכשיו הופכים אותם ללקוחות משלמים.</span></h1>
-  <p class="hero-sub">PLTO מראה למי לחזור היום, נותנת הודעה מוכנה לשליחה, ודואגת <strong>שאף ליד לא ייפול בין הכיסאות.</strong></p>
-  <div class="hero-actions">
-    <a href="https://realestate.plto.app" id="hero-cta-btn" class="btn-primary pulse-cta">מתחילים בחינם</a>
+</section>
+
+<!-- 2. מה עושים כל יום -->
+<section class="section feat-section" id="features">
+  <div class="section-inner feat-split">
+    <div class="feat-copy">
+      <h2 class="section-title fade-up">מה עושים ב-PLTO כל יום</h2>
+      <p class="section-sub fade-up">ארבעה דברים פשוטים שעושים את ההבדל בין ליד שנשכח ללקוח שסוגר.</p>
+      <ul class="feat-list">
+        <li class="feat-item fade-up">
+          <span class="feat-ico" aria-hidden="true">📅</span>
+          <div>
+            <h3>רואים למי לחזור היום</h3>
+            <p>מסך &quot;היום&quot; מרכז את מי שבאיחור, את מי שצריך לחזור אליו היום ואת הלידים החדשים שעוד בלי מענה.</p>
+          </div>
+        </li>
+        <li class="feat-item fade-up">
+          <span class="feat-ico" aria-hidden="true">💬</span>
+          <div>
+            <h3>הודעה מוכנה, בלחיצה</h3>
+            <p>הודעת WhatsApp, אימייל או תסריט שיחה לפי המטרה: פנייה ראשונה, פולואפ, אחרי הצעת מחיר ועוד. עורכים מה שצריך ושולחים בעצמכם.</p>
+          </div>
+        </li>
+        <li class="feat-item fade-up">
+          <span class="feat-ico" aria-hidden="true">🔔</span>
+          <div>
+            <h3>לכל ליד יש צעד הבא</h3>
+            <p>קובעים מתי חוזרים ורואים מתי היה הקשר האחרון. ליד שלא נסגר עכשיו נשאר ברשימה, ואפשר לפתוח אותו מחדש.</p>
+          </div>
+        </li>
+        <li class="feat-item fade-up">
+          <span class="feat-ico" aria-hidden="true">📋</span>
+          <div>
+            <h3>מתחילים ממה שכבר יש</h3>
+            <p>ייבוא לידים מקובץ, ושלבי המכירה מותאמים לסוג העסק.</p>
+          </div>
+        </li>
+      </ul>
+      <div class="feat-cta fade-up">
+        <a href="https://realestate.plto.app" class="btn-primary btn-light" data-cta-section="features">מתחילים בחינם</a>
+      </div>
+    </div>
+    <figure class="phone-wrap feat-visual fade-up">
+      <div class="phone">
+        <img src="icons/landing/app-messages.webp" width="640" height="1411"
+             alt="חלון ההודעות והתסריטים המוכנים ב-PLTO: בחירת ערוץ, מטרה וסגנון, והודעת WhatsApp מוכנה לעריכה ושליחה"
+             loading="lazy" decoding="async">
+      </div>
+      <figcaption class="phone-cap">הודעות ותסריטים מוכנים (נתוני דוגמה)</figcaption>
+    </figure>
   </div>
-  <p class="hero-micro hero-trust">30 יום חינם &bull; בלי כרטיס אשראי &bull; מוכן תוך דקה</p>
-  <ul class="hero-points" aria-label="מה מקבלים">
-    <li><span aria-hidden="true">📅</span> למי לחזור היום</li>
-    <li><span aria-hidden="true">💬</span> הודעה מוכנה בלחיצה</li>
-    <li><span aria-hidden="true">🔔</span> אף ליד לא נשכח</li>
+</section>
+
+<!-- 3. למי זה מתאים + סגירה -->
+<section class="closing" id="who">
+  <h2>מתאים לכל מי שהעסק שלו<br>חי <span class="gold">מלידים</span></h2>
+  <ul class="who-chips" aria-label="תחומים שמתאימים">
+    <li>🏠 סוכני נדל״ן</li>
+    <li>⚖️ עורכי דין</li>
+    <li>🎨 עיצוב פנים ואדריכלות</li>
+    <li>💼 יועצים ונותני שירות</li>
+    <li>🏢 בעלי עסקים</li>
   </ul>
-</section>
-<!-- מעבר מכהה לבהיר -->
-<!-- רצועת מספרים -->
-<div class="stats-bar">
-  <div class="stats-inner">
-    <div class="stat-item">
-      <div class="stat-num">30<span> ימים</span></div>
-      <div class="stat-label">ניסיון חינם</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num">3</div>
-      <div class="stat-label">תחומים עם מונחים ושלבים מותאמים</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num">0<span> ₪</span></div>
-      <div class="stat-label">כרטיס אשראי להתחלה</div>
-    </div>
-  </div>
-</div>
-
-<!-- עידן האקסל נגמר -->
-<section class="section">
-  <div class="section-inner">
-    <div class="excel-title-row fade-up">
-      <h2 class="section-title" style="margin-bottom:0;">במקום להתעסק עם כמה מערכות<br>הכל מגיע במערכת אחת</h2>
-    </div>
-    <p class="section-sub fade-up">אקסל, קבוצת וואטסאפ ופתקים בראש, הכל מתגבש ל<strong>פייפליין אחד שמכניס לידים ומוציא עסקאות סגורות</strong>.</p>
-    <div class="pain-grid">
-      <div class="pain-card fade-up">
-        <span class="pain-emoji">😵</span>
-        <div class="pain-quote">"יש לי 4 אקסלים, 2 קבוצות וואטסאפ ודוקטור גוגל."</div>
-        <div class="pain-after">כל הלידים במקום אחד. סוף סוף.</div>
-      </div>
-      <div class="pain-card fade-up">
-        <span class="pain-emoji">😬</span>
-        <div class="pain-quote">"שלחתי הצעה לפני שבועיים. אני חושב. אולי שלושה."</div>
-        <div class="pain-after">המערכת מזכירה בדיוק מתי לחזור, בלי צורך לזכור לבד</div>
-      </div>
-      <div class="pain-card fade-up">
-        <span class="pain-emoji">🤦</span>
-        <div class="pain-quote">"הליד הזה היה חם. בטוח. סתם שכחתי לחזור."</div>
-        <div class="pain-after">לידים שלא היה איתם קשר שבועיים מסומנים בדשבורד, לפני שהם נשכחים</div>
-      </div>
-    </div>
-    <p style="text-align:center;font-size:14px;color:var(--text-muted);margin-top:28px;">אם זה נשמע מוכר מדי, אפשר להמשיך לקרוא.</p>
-
-    <div class="section-cta-wrap">
-      <p class="section-pre-cta">הזמן לבנות פייפליין שעובד בשבילך הגיע</p>
-      <a href="https://realestate.plto.app" class="btn-primary">מתחילים לסגור יותר עסקאות</a>
-      <p class="cta-trust-line">פתיחת החשבון אורכת כדקה · 30 ימי ניסיון בחינם · ללא כרטיס אשראי</p>
-    </div>
-  </div>
-</section>
-
-<!-- רחוב, עגורן ושלטי חוצות -->
-<div class="street-scene" id="streetScene" aria-hidden="true">
-  <div class="ss-sky"></div>
-  <div class="ss-skyline">
-    <div class="ss-building ss-b1"></div>
-    <div class="ss-building ss-b2"></div>
-    <div class="ss-building ss-b3"><div class="ss-crane"></div></div>
-    <div class="ss-building ss-b4"></div>
-    <div class="ss-building ss-b5"></div>
-  </div>
-  <div class="ss-road"></div>
-  <div class="ss-billboard ss-bb1">
-    <div class="bb-post"></div>
-    <div class="bb-face">
-      <div class="bb-state bb-state-a">🏠 למכירה · דירת 4 חדרים</div>
-      <div class="bb-state bb-state-b">✅ נמכר!</div>
-    </div>
-  </div>
-  <div class="ss-billboard ss-bb2">
-    <div class="bb-post"></div>
-    <div class="bb-face">
-      <div class="bb-state bb-state-a">📐 תוכניות אושרו</div>
-      <div class="bb-state bb-state-b">✓ פרויקט הושלם</div>
-    </div>
-  </div>
-  <div class="ss-billboard ss-bb3">
-    <div class="bb-post"></div>
-    <div class="bb-face">
-      <div class="bb-state bb-state-a">💰 משכנתה אושרה</div>
-      <div class="bb-state bb-state-b">🎉 עסקה נסגרה</div>
-    </div>
-  </div>
-</div>
-
-<!-- מעבר מבהיר לכהה -->
-<div class="sect-blend-dark" aria-hidden="true"></div>
-
-<!-- מה עושים כל יום -->
-<section class="agents-section" id="agents">
-  <div class="section-inner">
-    <h2 class="section-title fade-up">5 כלים שעוזרים לסגור יותר עסקאות</h2>
-    <p class="section-sub fade-up">כל כלי עונה על שאלה אחת ביום העבודה: למי לחזור, מה לכתוב ומה לתעד.</p>
-    <div class="agents-grid fade-up">
-      <div class="agent-card">
-        <span class="agent-icon">📅</span>
-        <div class="agent-title">מסך "היום"</div>
-        <div class="agent-desc">לידים באיחור, מעקבים להיום, חדשים בלי מענה ולקוחות לשמירת קשר, <strong>במקום אחד, עם שיחה, WhatsApp וסימון כטופל בלחיצה.</strong></div>
-      </div>
-      <div class="agent-card">
-        <span class="agent-icon">🔔</span>
-        <div class="agent-title">צעד הבא לכל ליד</div>
-        <div class="agent-desc">אחרי כל שיחה קובעים מתי חוזרים, <strong>והליד מופיע במסך "היום" בזמן.</strong> בלי לזכור לבד.</div>
-      </div>
-      <div class="agent-card">
-        <span class="agent-icon">💬</span>
-        <div class="agent-title">הודעות WhatsApp מוכנות</div>
-        <div class="agent-desc">פנייה ראשונה, פולואפ, אחרי הצעת מחיר ועוד, בשלושה סגנונות. <strong>הנוסח מתמלא בשם הלקוח ובפרטי העסק, ואפשר לערוך לפני שליחה.</strong></div>
-      </div>
-      <div class="agent-card">
-        <span class="agent-icon">📞</span>
-        <div class="agent-title">אימיילים ותסריטי שיחה</div>
-        <div class="agent-desc">מייל היכרות, שליחת הצעה ומעקב, ותסריט לשיחת היכרות, בירור צרכים והתנגדות למחיר. <strong>המייל נפתח בתוכנת המייל שלך, ושום דבר לא נשלח בלי שבדקת.</strong></div>
-      </div>
-      <div class="agent-card">
-        <span class="agent-icon">⚡</span>
-        <div class="agent-title">יומן מהיר</div>
-        <div class="agent-desc">כותבים בחופשיות מה היה בשיחה, <strong>והרשומה נשמרת בכרטיס הליד שמופיע בטקסט, אחרי אישור שלך.</strong></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- תחומי עיסוק -->
-<section class="industry-section" id="industries">
-  <div class="section-inner">
-    <h2 class="section-title fade-up">המשולש הקדוש</h2>
-    <p class="section-sub fade-up" style="font-size:clamp(18px,2.6vw,24px);font-weight:800;color:rgba(255,255,255,0.80);margin-bottom:36px;">שלושה תחומים שמשלימים כל עסקה מוצלחת</p>
-    <div class="industry-cards fade-up">
-
-      <!-- סוכני נדל"ן -->
-      <div class="ind-card">
-        <div class="ind-icon-row">🏠 <span class="key-anim">🔑</span> 📊</div>
-        <div class="ind-title">סוכני נדל"ן</div>
-        <div class="ind-sub">עסקאות · לידים · בלעדיות</div>
-        <div class="ind-terms">נכס · קונה · מוכר · ביקור · עמלה · פייפליין</div>
-      </div>
-
-      <!-- עו"ד -->
-      <div class="ind-card">
-        <div class="ind-icon-row"><span class="scale-anim">⚖️</span> 📋 🛡️</div>
-        <div class="ind-title">עו"ד</div>
-        <div class="ind-sub">תיקים · חוזים · ייעוץ משפטי</div>
-        <div class="ind-terms">ייעוץ · חוזים · תיקים · לקוחות · זכויות</div>
-      </div>
-
-      <!-- עיצוב פנים -->
-      <div class="ind-card interior-card">
-        <div class="ind-icon-row"><span class="pencil-anim">✏️</span> 🎨 💡</div>
-        <div class="ind-title">עיצוב פנים ואדריכלות</div>
-        <div class="ind-sub">קונספט · הדמיה · סטיילינג</div>
-        <div class="ind-terms">סקיצה · חומרים · תאורה · לוח השראה · Mood board</div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- מעבר מכהה לבהיר -->
-<div class="sect-blend-light" aria-hidden="true"></div>
-
-<!-- המשולש הקדוש — זרימת עסקה -->
-<section class="section holy-triangle-section" id="holy-triangle">
-  <div class="section-inner">
-    <h2 class="section-title fade-up">איך עובד השילוב המיוחד הזה</h2>
-
-    <!-- משולש הפניות אנימטיבי -->
-    <div class="tri-stage fade-up" id="triStage">
-      <svg class="tri-svg" viewBox="0 0 600 360" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path id="triE1" class="tri-edge" d="M 470,55 L 130,55" stroke-dasharray="345" stroke-dashoffset="345"/>
-        <path id="triE2" class="tri-edge" d="M 130,55 L 300,308" stroke-dasharray="415" stroke-dashoffset="415"/>
-        <path id="triE3" class="tri-edge" d="M 300,308 L 470,55" stroke-dasharray="415" stroke-dashoffset="415"/>
-        <g opacity="0">
-          <animateMotion dur="2.8s" repeatCount="indefinite" begin="2.2s" rotate="none"><mpath href="#triE1"/></animateMotion>
-          <animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="2.2s" fill="freeze"/>
-          <circle r="20" fill="rgba(255,255,255,0.92)"/>
-          <circle r="16" fill="#2563EB"/>
-          <text font-size="16" text-anchor="middle" dy="0.36em">🙋</text>
-        </g>
-        <g opacity="0">
-          <animateMotion dur="3.5s" repeatCount="indefinite" begin="3.8s" rotate="none"><mpath href="#triE2"/></animateMotion>
-          <animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="3.8s" fill="freeze"/>
-          <circle r="20" fill="rgba(255,255,255,0.92)"/>
-          <circle r="16" fill="#1D4ED8"/>
-          <text font-size="16" text-anchor="middle" dy="0.36em">🙋</text>
-        </g>
-        <g opacity="0">
-          <animateMotion dur="3.2s" repeatCount="indefinite" begin="5.4s" rotate="none"><mpath href="#triE3"/></animateMotion>
-          <animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="5.4s" fill="freeze"/>
-          <circle r="20" fill="rgba(255,255,255,0.92)"/>
-          <circle r="16" fill="#60A5FA"/>
-          <text font-size="16" text-anchor="middle" dy="0.36em">🙋</text>
-        </g>
-      </svg>
-      <div class="tri-node tri-n1">
-        <div class="tn-icon">🏠</div>
-        <div class="tn-role">סוכן נדל״ן</div>
-        <div class="tn-hint">מחבר קונים, מוכרים ונכסים</div>
-      </div>
-      <div class="tri-node tri-n2">
-        <div class="tn-icon">⚖️</div>
-        <div class="tn-role">עו״ד</div>
-        <div class="tn-hint">בדיקה, חוזה, הגנה משפטית</div>
-      </div>
-      <div class="tri-node tri-n3">
-        <div class="tn-icon">🎨</div>
-        <div class="tn-role">עיצוב ואדריכלות</div>
-        <div class="tn-hint">הופך את הבית לחלום</div>
-      </div>
-
-      <!-- בועות שיתוף פעולה צפות בתוך המשולש -->
-      <div class="tri-bubbles" aria-hidden="true">
-        <div class="tri-bubble tb-1">🤝 הפניה בין קולגות, בלי מאמץ</div>
-        <div class="tri-bubble tb-2">🔗 מחוזה חתום לפרויקט עיצוב</div>
-        <div class="tri-bubble tb-3">✓ ליד הועבר בהצלחה</div>
-        <div class="tri-bubble tb-4">👥 שלושה מקצוענים, לקוח אחד</div>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<!-- כאבי הסוכן — נבנה מהשטח -->
-<section class="section agent-pains-section" id="agent-pains">
-  <div class="section-inner">
-    <p class="section-label fade-up">נבנה מהשטח, לא מחדר ישיבות</p>
-    <h2 class="section-title fade-up">הכאבים שסוכן נדל"ן מכיר מאוד</h2>
-    <p class="section-sub fade-up">שיחות עם סוכנים ברחבי הארץ לימדו אותנו מה באמת עוצר אתכם. בנינו פתרון לכל אחד מהם.</p>
-    <div class="ap-grid fade-up">
-      <div class="ap-card">
-        <div class="ap-emoji">⏰</div>
-        <p class="ap-pain">"שעות על לידים שלעולם לא יסגרו, ובסוף גם הלקוח הלך."</p>
-        <p class="ap-solution">זיהוי אוטומטי של לידים קרים, והודעת חיזור מוכנה לעריכה ולשליחה שמשמרת את הקשר. ליד קר שמרגיש מכובד הופך למפרסם הכי טוב שלכם.</p>
-      </div>
-      <div class="ap-card">
-        <div class="ap-emoji">🏠</div>
-        <p class="ap-pain">"שכחתי איזה נכסים הראיתי ללקוח הזה ומה חשב על כל אחד."</p>
-        <p class="ap-solution">מעקב נכסים שהוצגו בכרטיס הליד: כתובת, מחיר, תגובת הלקוח (מעוניין, אולי, לא מתאים). הכל במקום אחד.</p>
-      </div>
-      <div class="ap-card">
-        <div class="ap-emoji">📋</div>
-        <p class="ap-pain">"לא זכרתי לחדש את הבלעדיות בזמן."</p>
-        <p class="ap-solution">תאריך חידוש בלעדיות לכל ליד, ותזכורת בדשבורד כבר 30 ימים לפני, עם ספירת ימים. פחות הסכמים נופלים בין הכיסאות.</p>
-      </div>
-      <div class="ap-card">
-        <div class="ap-emoji">📁</div>
-        <p class="ap-pain">"בלאגן עם מסמכים וחתימות, אין מושג איפה מה."</p>
-        <p class="ap-solution">תיק דיגיטלי לכל ליד: העלאת חוזים, מסמכים, אישורים. הכל מאורגן, מאובטח, ומוצמד לאותו לקוח.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- קצת עלינו -->
-<section class="section about-section" id="about">
-  <div class="section-inner">
-    <h2 class="section-title fade-up">מכל המערכות הקיימות, למה שנבחר ב-PLTO?</h2>
-    <div class="about-body fade-up">
-      <p>אחרי יותר מעשור בשיווק ומכירות, הבנו דבר אחד פשוט: בעלי מקצוע לא צריכים עוד מערכת CRM. הם צריכים מערכת שעובדת בשבילם, לא כזו שדורשת לעבוד בשבילה.</p>
-      <p>מתוך זה נולדה PLTO: פלטפורמת ניהול לידים ומכירות שנבנתה עבור סוכני נדל"ן, עורכי דין ומעצבי פנים ואדריכלים.</p>
-      <p>כל מסך וכל פיצ'ר נועדו לתת יותר שליטה על העסק, פחות זמן על ניהול ויותר זמן עם לקוחות.</p>
-      <p>אנחנו לא עוצרים. מקשיבים למשתמשים ומפתחים את PLTO כל הזמן, כדי ש-PLTO תמשיך לייצר ערך גם מחר.</p>
-      <p>המטרה שלנו היא לא רק לנהל לידים. היא לעזור לבנות עסק שמתקדם מהר יותר, ומתמקד במה שבאמת מניע הצלחה.</p>
-      <p class="about-closing">פחות בלגן. יותר שליטה.<br>ומשם, מגיעה גם הצמיחה.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ויטרינת פיצ'רים -->
-<section class="section" id="features">
-  <div class="section-inner">
-    <h2 class="section-title fade-up">מה מקבלים בפנים</h2>
-    <p class="section-subtitle fade-up" style="font-size:clamp(19px,2.8vw,26px);font-weight:800;color:var(--navy);text-align:center;margin-bottom:12px;">מערכת שלמה, בדיוק בשבילך</p>
-    <p class="section-sub fade-up">טעימה מהכלים שמחכים בפנים, במערכת שמשתפרת כל הזמן בלי שתצטרכו ללמוד שום דבר מחדש.</p>
-
-    <div class="screen-reel fade-up">
-      <div class="reel-window">
-        <div class="reel-bar">
-          <span class="reel-dot"></span><span class="reel-dot"></span><span class="reel-dot"></span>
-          <span class="reel-url">realestate.plto.app</span>
-        </div>
-
-        <div class="reel-slides">
-          <!-- שקף 1: דשבורד -->
-          <div class="reel-slide active">
-            <div class="mock-ai-card">
-              <span class="mock-ai-icon">🔔</span>
-              <span class="mock-ai-text">נחמן כהן מחכה למענה, כדאי לחזור אליו היום</span>
-            </div>
-            <div class="mock-kpi-row">
-              <div class="mock-kpi"><div class="mock-kpi-val">₪3.3M</div><div class="mock-kpi-label">שווי צינור</div></div>
-              <div class="mock-kpi"><div class="mock-kpi-val">12</div><div class="mock-kpi-label">פגישות פתוחות</div></div>
-              <div class="mock-kpi"><div class="mock-kpi-val">2</div><div class="mock-kpi-label">לידים חדשים</div></div>
-            </div>
-            <div class="mock-lead-list">
-              <div class="mock-lead-row"><span class="mock-lead-dot hot"></span><span class="mock-lead-name">נחמן כהן</span><span class="mock-lead-val">₪2.1M</span><span class="mock-stage mock-s2">יצרנו קשר</span></div>
-              <div class="mock-lead-row"><span class="mock-lead-dot warm"></span><span class="mock-lead-name">שרית לוי</span><span class="mock-lead-val">₪860K</span><span class="mock-stage mock-s3">הצעה נשלחה</span></div>
-              <div class="mock-lead-row"><span class="mock-lead-dot cool"></span><span class="mock-lead-name">גיל שפירא</span><span class="mock-lead-val">₪480K</span><span class="mock-stage mock-s4">במשא ומתן</span></div>
-            </div>
-          </div>
-
-          <!-- שקף 2: פייפליין -->
-          <div class="reel-slide">
-            <div class="mock-kanban">
-              <div class="mock-col">
-                <div class="mock-col-hdr mock-hdr-1">ליד חדש</div>
-                <div class="mock-card">יעקב לוי<br><small>₪300K</small></div>
-                <div class="mock-card">רינת פרידמן<br><small>₪180K</small></div>
-              </div>
-              <div class="mock-col">
-                <div class="mock-col-hdr mock-hdr-2">יצרנו קשר</div>
-                <div class="mock-card mock-card-hot">נחמן כהן<br><small>₪2.1M</small></div>
-                <div class="mock-card">אלה מורחי<br><small>₪70K</small></div>
-              </div>
-              <div class="mock-col">
-                <div class="mock-col-hdr mock-hdr-3">הצעה נשלחה</div>
-                <div class="mock-card">שרית לוי<br><small>₪860K</small></div>
-              </div>
-              <div class="mock-col">
-                <div class="mock-col-hdr mock-hdr-4">סגירה ✓</div>
-                <div class="mock-card mock-card-won">ניר לוין<br><small>₪1.1M</small></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- שקף 3: לוח שנה -->
-          <div class="reel-slide">
-            <div class="mock-cal">
-              <div class="mock-cal-hdr">יולי 2026</div>
-              <div class="mock-cal-days"><span>א</span><span>ב</span><span>ג</span><span>ד</span><span>ה</span><span>ו</span></div>
-              <div class="mock-cal-grid">
-                <span></span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
-                <span>6</span><span>7</span><span class="mock-today">8</span><span>9</span><span>10</span><span>11</span>
-                <span>12</span><span>13</span><span class="mock-event-day">14</span><span>15</span><span>16</span><span>17</span>
-                <span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span>
-              </div>
-              <div class="mock-event-card">
-                <span class="mock-event-dot"></span>
-                <div><div class="mock-event-title">פגישה: נחמן כהן</div><div class="mock-event-time">יום ב' 14/7 · 14:00</div></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- שקף 4: כלים -->
-          <div class="reel-slide">
-            <div class="mock-tools-header">כלים לסגירת עסקאות</div>
-            <div class="mock-tools-grid">
-              <div class="mock-tool"><span class="mock-tool-icon">📞</span><span class="mock-tool-name">תסריטי שיחה</span></div>
-              <div class="mock-tool"><span class="mock-tool-icon">💬</span><span class="mock-tool-name">הודעות מוכנות</span></div>
-              <div class="mock-tool"><span class="mock-tool-icon">📥</span><span class="mock-tool-name">ייבוא לידים</span></div>
-              <div class="mock-tool"><span class="mock-tool-icon">🔗</span><span class="mock-tool-name">לולאת הפניות</span><span class="mock-tool-badge new">חדש</span></div>
-              <div class="mock-tool"><span class="mock-tool-icon">🏦</span><span class="mock-tool-name">מחשבון משכנתא</span></div>
-              <div class="mock-tool"><span class="mock-tool-icon">⚡</span><span class="mock-tool-name">יומן מהיר</span></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="reel-caption"><span class="reel-caption-text">הדשבורד. כל מה שחשוב, במבט אחד.</span></div>
-      </div>
-
-      <div class="reel-dots">
-        <button class="reel-pip active" aria-label="דשבורד">📊</button>
-        <button class="reel-pip" aria-label="פייפליין">📋</button>
-        <button class="reel-pip" aria-label="לוח שנה">📅</button>
-        <button class="reel-pip" aria-label="כלים">⚡</button>
-      </div>
-    </div>
-
-    <div class="feat-tabs fade-up" role="tablist">
-      <button class="ft-tab active" data-ftab="0" role="tab" aria-selected="true" aria-label="פייפליין">📋</button>
-      <button class="ft-tab" data-ftab="1" role="tab" aria-selected="false" aria-label="גיימיפיקציה">🎮</button>
-      <button class="ft-tab" data-ftab="2" role="tab" aria-selected="false" aria-label="כלים ואינטגרציות">🏠</button>
-    </div>
-
-    <div class="feature-groups feat-carousel">
-      <div class="feature-group fade-up" data-tab-panel="0">
-        <h3 class="fg-title">📋 ניהול פייפליין</h3>
-        <div class="feature-grid">
-          <div class="feature-card">
-            <span class="fc-icon">🗂️</span>
-            <div class="fc-title">לוח קנבן בגרירה</div>
-            <div class="fc-desc">גוררים ליד בין שלבים בנגיעה אחת, בלי טפסים ובלי קליקים מיותרים</div>
-          </div>
-          <div class="feature-card">
-            <span class="fc-icon">🎯</span>
-            <div class="fc-title">ציון ליד</div>
-            <div class="fc-desc">דירוג הלידים הפעילים לפי שלב, שווי ופעילות אחרונה, כדי לדעת על מי כדאי להתמקד</div>
-          </div>
-          <div class="feature-card">
-            <span class="fc-icon">⏰</span>
-            <div class="fc-title">מעקב ומשימות</div>
-            <div class="fc-desc">לכל ליד תאריך מעקב ומשימות, ולידים שהתקררו מסומנים בדשבורד</div>
-          </div>
-          <div class="feature-card">
-            <span class="fc-icon">📥</span>
-            <div class="fc-title">ייבוא וייצוא מהיר</div>
-            <div class="fc-desc">מעבירים את כל הלידים מאקסל בלחיצה אחת, בלי הקלדה ידנית</div>
-          </div>
-          <div class="feature-card">
-            <span class="fc-icon">📍</span>
-            <div class="fc-title">מעקב נכסים שהוצגו</div>
-            <div class="fc-desc">לכל ליד, רשימת נכסים שהוצגו בפועל, עם תגובת הלקוח ותאריך</div>
-          </div>
-          <div class="feature-card">
-            <span class="fc-icon">📋</span>
-            <div class="fc-title">תזכורת חידוש בלעדיות</div>
-            <div class="fc-desc">ספירה לאחור לתאריך חידוש הבלעדיות, מוצגת בדשבורד 30 ימים מראש</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="feature-group fade-up" data-tab-panel="1">
-        <h3 class="fg-title">🎮 גיימיפיקציה שהופכת ניהול לידים לכיף</h3>
-        <div class="feature-grid">
-          <div class="feature-card feature-card-game">
-            <span class="fc-icon">⭐</span>
-            <div class="fc-title">נקודות XP</div>
-            <div class="fc-desc">כל פעולה במערכת, מהוספת ליד ועד סגירת עסקה, שווה נקודות</div>
-          </div>
-          <div class="feature-card">
-            <span class="fc-icon">🏆</span>
-            <div class="fc-title">הישגים ואבני דרך</div>
-            <div class="fc-desc">תגי הצלחה שנפתחים ככל שמתקדמים, כי מגיע לך הכרה</div>
-          </div>
-          <div class="feature-card">
-            <span class="fc-icon">🎁</span>
-            <div class="fc-title">חנות פרסים</div>
-            <div class="fc-desc">צוברים XP ופותחים פרסים לאורך הדרך</div>
-          </div>
-          <div class="feature-card">
-            <span class="fc-icon">🔥</span>
-            <div class="fc-title">סטריקים יומיים</div>
-            <div class="fc-desc">שומרים על רצף פעילות, והמערכת חוגגת איתך כל הישג</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="feature-group fade-up" data-tab-panel="2">
-        <h3 class="fg-title">🧰 כלים ואינטגרציות לכל תחום</h3>
-        <div class="feature-grid">
-          <div class="feature-card">
-            <span class="fc-icon">🔗</span>
-            <div class="fc-title">מעקב חי ללקוח</div>
-            <div class="fc-desc">קישור אישי שבו הלקוח רואה את שלב הטיפול ועדכונים שכתבת, לסוכני נדל"ן, לעו"ד ולעיצוב פנים ואדריכלות</div>
-          </div>
-          <div class="feature-card">
-            <span class="fc-icon">🪟</span>
-            <div class="fc-title">ויטרינה דיגיטלית</div>
-            <div class="fc-desc">עמוד ציבורי לסוכן נדל"ן ולעיצוב פנים ואדריכלות, מציג נכסים או פרויקטים ומתעדכן אוטומטית</div>
-          </div>
-          <div class="feature-card">
-            <span class="fc-icon">🏦</span>
-            <div class="fc-title">מחשבון משכנתא</div>
-            <div class="fc-desc">כלי ייחודי לסוכן נדל"ן ולעו"ד, ישירות בתוך כרטיס הליד</div>
-          </div>
-          <div class="feature-card">
-            <span class="fc-icon">📲</span>
-            <div class="fc-title">WhatsApp בלחיצה</div>
-            <div class="fc-desc">הודעה מוכנה נפתחת ב-WhatsApp עם המספר של הלקוח, ושולחים מהטלפון</div>
-          </div>
-          <div class="feature-card">
-            <span class="fc-icon">🔒</span>
-            <div class="fc-title">שיתוף ליד מאובטח עם PIN</div>
-            <div class="fc-desc">משתפים ליד ספציפי עם קולגה, מוגן בקוד אישי בלבד וללא גישה לשאר המערכת</div>
-          </div>
-          <div class="feature-card">
-            <span class="fc-icon">🤝</span>
-            <div class="fc-title">לולאת הפניות בין קולגות</div>
-            <div class="fc-desc">סגרת עסקה? מפנים את הלקוח לעו"ד, לעיצוב פנים או לאדריכלות בוואטסאפ, והליד נכנס ישר לפייפליין הרלוונטי</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- איך זה עובד -->
-<section class="section how-section" id="how">
-  <div class="section-inner">
-    <p class="section-label fade-up">פשוט כמו שזה נשמע</p>
-    <h2 class="section-title fade-up">שלושה צעדים לא יותר</h2>
-    <p class="section-sub fade-up">נרשמים, מכניסים לידים ומתחילים לעבוד עם תמונה ברורה</p>
-
-    <div class="steps-grid">
-      <div class="step-card fade-up">
-        <div class="step-num">1</div>
-        <div class="step-title">נרשמים בלי כרטיס אשראי</div>
-        <div class="step-desc">אימייל, סיסמה, שם העסק. <strong>בלי טפסים ארוכים, בלי אימות זהות, בלי המתנה.</strong></div>
-        <div class="step-micro">אפשר גם להירשם עם Google.</div>
-      </div>
-      <div class="step-card fade-up">
-        <div class="step-num">2</div>
-        <div class="step-title">מכניסים את הלידים</div>
-        <div class="step-desc">מקלידים ידנית, מייבאים מאקסל או מתחילים מאפס. <strong>המערכת מסתדרת עם כולם.</strong></div>
-        <div class="step-micro">ייבוא מ-CSV בלחיצה אחת.</div>
-      </div>
-      <div class="step-card fade-up">
-        <div class="step-num">3</div>
-        <div class="step-title">PLTO עוזרת לך להתקדם</div>
-        <div class="step-desc">מסמנת לידים שהתקררו, מרכזת משימות ומעקבים, ויש הודעות מוכנות לעריכה ולשליחה. <strong>ההחלטה והשליחה נשארות אצלך.</strong></div>
-        <div class="step-micro">שום הודעה לא יוצאת בלי שבדקת אותה.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- מחבר סקשנים מונפש: ליד עובר מסוכן לקולגה -->
-<div class="handoff-divider" aria-hidden="true">
-  <div class="ho-figure ho-from">🙋</div>
-  <div class="ho-track">
-    <span class="ho-card">📇</span>
-  </div>
-  <div class="ho-figure ho-to">🤝</div>
-</div>
-<p class="ho-caption fade-up">מעבירים ליד שלא מתאים לקולגה, בלוח ההזדמנויות</p>
-
-<!-- לוח ההזדמנויות — ממש לפני התמחור -->
-<section class="section referral-pain-section">
-  <div class="section-inner rp-inner">
-    <h2 class="rp-heading fade-up">כמה פעמים ויתרת על ליד שלא היה בתחום שלך ובסוף לא הרווחת עליו כלום</h2>
-    <p class="rp-body" style="text-align:center;font-size:clamp(16px,1.9vw,18px);color:var(--text-muted);margin-top:12px;">יש פתרון, <strong>לוח ההזדמנויות של PLTO מאפשר להפנות ליד לקולגה</strong> בתחום או באזור מתאים, במקום לוותר עליו לגמרי.</p>
-    <div class="opp-explainer" style="margin-top:28px;">
-      <div class="oe-title">📋 לוח ההזדמנויות · שוק ההפניות הפנימי של PLTO</div>
-      <div class="oe-desc">יש לקוח שצריך מישהו מחוץ לתחום שלך או מחוץ לאזור? מפרסמים הזדמנות בלוח הפנימי, בעל המקצוע המתאים מגיב, <strong>והליד עובר ישירות לפייפליין שלו</strong>. בלי הודעות שהולכות לאיבוד בוואטסאפ, בלי לשכוח לחזור ללקוח שממתין.</div>
-      <div class="oe-examples">
-        <div class="oe-ex-label">דוגמאות מהמערכת</div>
-        <div class="oe-ex-card">🏠 <strong>סוכן נדל"ן:</strong> "יש לי קונה שמחפש 4 חדרים בנתניה, אבל אני לא מכסה את האזור. מחפש סוכן מתאים לשיתוף, שהליד יעבור ישר לפייפליין שלו."</div>
-        <div class="oe-ex-card" style="margin-top:10px;">⚖️ <strong>עו"ד:</strong> "קיבלתי לקוח שרוצה למכור דירה בתל אביב ומחפש סוכן אמין באזור. מוכן לשתף ליד, ללא עמלה, בהתאם לכללי האתיקה המקצועית."</div>
-        <div class="oe-ex-card" style="margin-top:10px;">🎨 <strong>עיצוב פנים ואדריכלות:</strong> "לקוח שמחפש לקנות 3 חדרים ברמת גן, צריך סוכן מנוסה באזור. אשמח להפנות, ושהליד ימשיך אצלו."</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- תמחור -->
-<section class="pricing-section" id="pricing">
-  <div class="section-inner">
-    <p class="section-label fade-up">שקוף לחלוטין</p>
-    <h2 class="section-title fade-up">הגודל שמתאים לך</h2>
-    <p class="section-sub fade-up">אפשר לשדרג בכל עת. <strong>אי אפשר לאבד את הנתונים.</strong></p>
-
-    <div class="plans-grid">
-      <div class="plan-card fade-up">
-        <div class="plan-name">Solo</div>
-        <div class="plan-desc">לעצמאי: סוכן נדל"ן, עו"ד, עיצוב פנים ואדריכלות</div>
-        <div class="plan-price">₪179<small>/חודש</small></div>
-        <div class="plan-annual-teaser">📅 שנתי · ₪124/חודש · חיסכון ₪658</div>
-        <div class="plan-limit">1 סוכן · עד 200 לידים</div>
-        <div><span class="plan-trial-badge">🎁 כולל 30 ימי ניסיון חינם</span></div>
-        <ul class="plan-features">
-          <li>לוח Kanban מלא</li>
-          <li>שליחה מהירה ב-WhatsApp</li>
-          <li>הודעות, אימיילים ותסריטי שיחה מוכנים</li>
-          <li>אפליקציה למובייל</li>
-          <li>מסך "היום" ויומן מהיר</li>
-        </ul>
-        <div class="plan-addon" hidden><span class="star-live">✨</span> <span>+ <strong>₪100/חודש</strong> לשירותי שיווק מלאים</span></div>
-        <a href="https://realestate.plto.app" class="plan-btn outline" data-cta-section="pricing_solo">מתחילים בחינם</a>
-        <p class="plan-cta-reassure">ניסיון 30 ימים בחינם · ללא כרטיס אשראי · ביטול בכל עת</p>
-      </div>
-
-      <div class="plan-card featured fade-up">
-        <div class="plan-popular">⭐ הכי פופולרי</div>
-        <div class="plan-name">צוות</div>
-        <div class="plan-desc">לצוות שסוגר ביחד</div>
-        <div class="plan-price">₪349<small>/חודש</small></div>
-        <div class="plan-annual-teaser">📅 שנתי · ₪249/חודש · חיסכון ₪1,198</div>
-        <div class="plan-limit">3 סוכנים כלולים · עד 1,000 לידים</div>
-        <div class="plan-seats">👥 מצרפים עוד סוכנים עד 7 סה"כ · כל סוכן נוסף רק ₪40/חודש</div>
-        <ul class="plan-features">
-          <li>כל מה שב-Solo</li>
-          <li>3 סוכנים כלולים, ניתן להרחיב עד 7</li>
-          <li>אנליטיקס צוות</li>
-          <li>דוחות ביצועים</li>
-        </ul>
-        <div class="plan-addon" hidden><span class="star-live">✨</span> <span>+ <strong>₪100/חודש</strong> לשירותי שיווק מלאים</span></div>
-        <a href="https://realestate.plto.app" class="plan-btn primary tractor-btn">בוחרים בצוות</a>
-        <p class="plan-cta-reassure">הצוות מתחיל ביחד · ביטול בכל עת</p>
-      </div>
-
-      <div class="plan-card fade-up">
-        <div class="plan-name">סוכנות</div>
-        <div class="plan-desc">לסוכנות או משרד גדול</div>
-        <div class="plan-price">₪549<small>/חודש</small></div>
-        <div class="plan-annual-teaser">📅 שנתי · ₪399/חודש · חיסכון ₪1,798</div>
-        <div class="plan-limit">10 סוכנים כלולים · לידים ללא הגבלה</div>
-        <div class="plan-seats">👥 מצרפים עוד סוכנים עד 25 סה"כ · כל סוכן נוסף רק ₪40/חודש</div>
-        <ul class="plan-features">
-          <li>כל מה שב-צוות</li>
-          <li>10 סוכנים כלולים, ניתן להרחיב עד 25</li>
-          <li>לידים ללא הגבלה</li>
-        </ul>
-        <div class="plan-addon" hidden><span class="star-live">✨</span> <span>+ <strong>₪100/חודש</strong> לשירותי שיווק מלאים</span></div>
-        <a href="https://realestate.plto.app" class="plan-btn outline" data-cta-section="pricing_agency">בוחרים בסוכנות</a>
-        <p class="plan-cta-reassure">ביטול ללא קנסות</p>
-      </div>
-    </div>
-
-    <div class="custom-plan-strip fade-up">
-      <div>
-        <div class="cps-title">צריך חבילה גדולה יותר?</div>
-        <p class="cps-desc">מעל 25 סוכנים, צרכים מיוחדים או סוכנות בצמיחה מהירה? דברו איתנו ונתאים לכם את החבילה המושלמת, בדיוק לפי הצרכים שלכם.</p>
-      </div>
-      <a href="mailto:info@plto.app" class="cps-btn">דברו איתנו 💬</a>
-    </div>
-
-    <p class="pricing-note">🎁 <strong>תקופת הניסיון החינם (30 ימים) תקפה לחבילת הבסיס בלבד.</strong> בסיום הניסיון בוחרים חבילה, ואנחנו חוזרים אליך כדי לסגור את המנוי. אפשר לצרף סוכנים נוספים, וביטול בכל עת, ללא קנסות וללא שאלות.</p>
-  </div>
-</section>
-
-<!-- שירותי שיווק: מוסתר כל עוד ה-AI כבוי (החלטת דוד, 22.10.2026). להחזרה: להסיר hidden כאן ובשורות plan-addon -->
-<section class="section marketing-section" hidden>
-  <div class="section-inner">
-    <h2 class="section-title fade-up" style="color:var(--navy);"><span class="star-live">✨</span> תוספת פרימיום<br><small style="font-size:0.52em;font-weight:700;color:var(--gold-600);display:block;margin-top:6px;">100 ₪ לחודש על כל חבילה</small></h2>
-    <p class="section-subtitle fade-up" style="font-size:clamp(18px,2.6vw,24px);font-weight:800;color:#B45309;text-align:center;margin-bottom:10px;">כלי שיווק מקצועיים</p>
-    <div class="marketing-banner fade-up">
-      <div class="mb-badge">תוספת שיווק: ₪100 לחודש על כל חבילה</div>
-      <h3 class="mb-title">תוכן שיווקי בלחיצה אחת מותאם אישית לכל לקוח</h3>
-      <p class="mb-desc">
-        3 כלים מובנים בתוך ה-CRM: מחולל הצעה מיוחדת לכל ליד, יוצר פוסטים לסושיאל לכל לקוח או פרויקט, ומחולל קמפיין WhatsApp לרשימת לקוחות. כותבים, מעתיקים, שולחים, הכל תוך שניות.
-      </p>
-
-      <div class="mb-features">
-        <div class="mb-feature">
-          <span class="mbf-icon">🎯</span>
-          <div>
-            <strong>הצעה מיוחדת לכל ליד</strong>
-            <span>בוחר ליד, בוחר סוג הצעה, והמערכת כותבת הודעה אישית לשליחה מיידית</span>
-          </div>
-        </div>
-        <div class="mb-feature">
-          <span class="mbf-icon">📸</span>
-          <div>
-            <strong>פוסט לסושיאל מותאם לתחום שלך</strong>
-            <span>פוסט על נכס לסוכן, תוכן מקצועי לעו"ד והשראה עיצובית לעיצוב פנים ואדריכלות, בוחרים פלטפורמה ומקבלים פוסט מוכן</span>
-          </div>
-        </div>
-        <div class="mb-feature">
-          <span class="mbf-icon">📢</span>
-          <div>
-            <strong>קמפיין WhatsApp מוכן</strong>
-            <span>בוחר נושא (עדכון, מבצע, חג) ומקבל הודעת שידור לכל הלקוחות</span>
-          </div>
-        </div>
-        <div class="mb-feature">
-          <span class="mbf-icon">🌟</span>
-          <div>
-            <strong>שירות מלא: נציג יפנה אליך</strong>
-            <span>רוצים שנבנה דפי מכירה ותוכן מותאם? אפשר לשלוח בקשה מתוך המערכת</span>
-          </div>
-        </div>
-      </div>
-
-      <a href="https://realestate.plto.app" class="btn-marketing">מוסיפים שיווק לחבילה</a>
-      <p style="font-size:12px;color:var(--text-muted);margin-top:14px;">ניתן להוסיף בכל עת · ביטול ללא קנסות · שינוי תמיד אפשרי</p>
-    </div>
-
-  </div>
-</section>
-
-<!-- שאלות ותשובות -->
-<section class="section faq-section" id="faq">
-  <div class="section-inner">
-    <h2 class="section-title fade-up">יש תשובה לכל השאלות שלך</h2>
-    <p class="section-sub fade-up">ואם לא ראית כאן את התשובה שלך, תמיד אפשר לפנות אלינו לתמיכה (גם מתוך המערכת).</p>
-
-    <div class="faq-list fade-up">
-      <details class="faq-item">
-        <summary>יש התחייבות לתקופה מסוימת?</summary>
-        <div class="faq-answer">לא. <strong>אפשר לבטל בכל עת, ללא קנסות וללא שאלות.</strong> מתחילים עם 30 ימי ניסיון חינם, ובסיומם אפשר להצטרף לכל חבילה שמתאימה לכם ולצרף סוכנים נוספים.</div>
-      </details>
-      <details class="faq-item">
-        <summary>מה קורה לנתונים שלי אחרי שהניסיון החינמי נגמר?</summary>
-        <div class="faq-answer">הנתונים נשארים שמורים אצלך במערכת. כדי להמשיך להשתמש בהם צריך לשדרג לחבילה בתשלום, אבל <strong>שום דבר לא נמחק או הולך לאיבוד.</strong></div>
-      </details>
-      <details class="faq-item">
-        <summary>המערכת מתאימה לעצמאי או רק לצוותים גדולים?</summary>
-        <div class="faq-answer">גם וגם. חבילת Solo נבנתה בדיוק בשביל עצמאי: סוכן נדל"ן, עו"ד ועיצוב פנים ואדריכלות. <strong>חבילות צוות וסוכנות גדלות איתך,</strong> מצרפים סוכנים נוספים ב-₪40 לחודש לסוכן, עד 7 בחבילת צוות ועד 25 בחבילת סוכנות.</div>
-      </details>
-      <details class="faq-item">
-        <summary>כמה זמן לוקח להתחיל לעבוד בפועל?</summary>
-        <div class="faq-answer">נרשמים, מכניסים את הלידים הראשונים (ידנית או בייבוא מאקסל), והפייפליין כבר פעיל.</div>
-      </details>
-      <details class="faq-item">
-        <summary>הממשק באמת בעברית מלאה?</summary>
-        <div class="faq-answer">כן, כל המערכת בנויה מההתחלה בעברית וב-RTL מלא, לא תרגום שנדבק על מערכת זרה.</div>
-      </details>
-      <details class="faq-item">
-        <summary>איך הנתונים שלי ושל הלקוחות שלי מאובטחים?</summary>
-        <div class="faq-answer"><strong>הצפנת HTTPS/TLS ובידוד נתונים בין חשבונות</strong>, וסיסמאות מוצפנות שלא נשמרות כטקסט גלוי. אפשר לקרוא עוד בעמוד מדיניות הפרטיות.</div>
-      </details>
-      <details class="faq-item">
-        <summary>יש לי כבר קובץ אקסל עם מאות לידים, אפשר להעביר בלי להתחיל מאפס?</summary>
-        <div class="faq-answer">כן. ייבוא מ-CSV בלחיצה אחת, כל הלידים עולים למערכת בלי להקליד שורה אחת ידנית.</div>
-      </details>
-      <details class="faq-item">
-        <summary>ההודעות והתסריטים נכתבים אוטומטית על ידי בינה מלאכותית?</summary>
-        <div class="faq-answer">לא. ההודעות, האימיילים והתסריטים הם תבניות שנכתבו מראש, לפי מטרה וסגנון. הן מתמלאות בשם הלקוח ובפרטי העסק, ואפשר לערוך אותן לפני שימוש. <strong>שום דבר לא נשלח בלי שבדקת אותו.</strong></div>
-      </details>
-    </div>
-  </div>
-</section>
-
-<!-- רצועת אמון / אבטחה -->
-<section class="trust-strip" id="trust-section">
-  <div class="trust-title">🛡️ איך אנחנו שומרים על הנתונים שלך ושל הלקוחות שלך</div>
-  <div class="trust-grid fade-up">
-    <div class="trust-item"><span class="ti-icon">🔐</span> הצפנת HTTPS/TLS מלאה</div>
-    <div class="trust-item"><span class="ti-icon">🧩</span> בידוד נתונים בין חשבונות</div>
-    <div class="trust-item"><span class="ti-icon">🇪🇺</span> מסד הנתונים מאוחסן באירופה</div>
-    <div class="trust-item"><span class="ti-icon">🔑</span> סיסמאות מוצפנות, לא נשמרות כטקסט גלוי</div>
-  </div>
-  <a href="https://realestate.plto.app/privacy-policy.html#security" class="trust-link">לקריאה על מדיניות האבטחה שלנו</a>
-</section>
-
-<div class="sect-blend-dark" aria-hidden="true"></div>
-
-<!-- סגירה -->
-<section class="closing">
-  <h2>העסקה הבאה שלך<br>כבר <span class="gold">מחכה</span></h2>
-  <p>30 ימים על חשבוננו, <strong>ללא כרטיס אשראי, ללא שאלות, ללא סיבוכים.</strong> אחרי שהפייפליין מסודר בפעם הראשונה, קשה לחזור לאקסל.</p>
+  <p>30 ימים על חשבוננו, <strong>בלי כרטיס אשראי ובלי התחייבות.</strong> נרשמים עם Google או אימייל, ותוך דקה אפשר להוסיף את הליד הראשון.</p>
   <div class="closing-actions">
     <div class="wrecking-wrap">
       <div class="pendulum" aria-hidden="true">
         <div class="wrecking-chain"></div>
         <div class="wrecking-ball"></div>
       </div>
-      <a href="https://realestate.plto.app" class="btn-primary shimmer-cta" style="font-size:18px;padding:18px 48px;">מתחילים עכשיו, בחינם</a>
+      <a href="https://realestate.plto.app" class="btn-primary shimmer-cta" data-cta-section="closing" style="font-size:18px;padding:18px 48px;">מתחילים עכשיו, בחינם</a>
     </div>
-    <p class="closing-micro">ללא כרטיס אשראי · ללא התחייבות</p>
-    <div id="a11y-statement" style="margin:24px auto 0;max-width:560px;padding:14px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);border-radius:12px;text-align:right;">
+    <p class="closing-micro">בלי כרטיס אשראי · בלי התחייבות</p>
+<div id="a11y-statement" style="margin:24px auto 0;max-width:560px;padding:14px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);border-radius:12px;text-align:right;">
       <div style="font-size:12px;font-weight:800;color:rgba(255,255,255,0.60);margin-bottom:6px;">♿ הצהרת נגישות</div>
       <div style="font-size:12px;color:rgba(255,255,255,0.38);line-height:1.7;">
         PLTO פועלת בהתאם לחוק שוויון זכויות לאנשים עם מוגבלות, תשנ"ח-1998, ולתקנות הנגישות לשירות באינטרנט.
@@ -3608,7 +941,10 @@
       </div>
     </div>
   </div>
+
 </section>
+
+</main>
 
 <!-- פוטר -->
 <footer>
@@ -3623,111 +959,15 @@
 
 <script>
   // אנימציית fade-up בגלילה
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-        observer.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
-
-  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
-
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // סצנות נדל"ן (רחוב + אתר בנייה): מתעוררות רק כשנכנסות לתצוגה
   (function () {
-    const scenes = document.querySelectorAll('.street-scene, .construction-divider, .handoff-divider');
-    if (!scenes.length) return;
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) { e.target.classList.add('in-view'); io.unobserve(e.target); }
+    var els = document.querySelectorAll('.fade-up');
+    if (!('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('visible'); }); return; }
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
       });
-    }, { threshold: 0.2 });
-    scenes.forEach(s => io.observe(s));
-  })();
-
-  // ═══ קרוסלת מסכים ═══
-  (function () {
-    const slides = document.querySelectorAll('.reel-slide');
-    const pips   = document.querySelectorAll('.reel-pip');
-    const capEl  = document.querySelector('.reel-caption-text');
-    if (!slides.length) return;
-    const captions = [
-      'הדשבורד. כל מה שחשוב, במבט אחד.',
-      'הפייפליין. גוררים, לא מתעדכנים ידנית.',
-      'לוח השנה. שום פגישה לא נשכחת.',
-      'הכלים. מוכנים לשימוש.'
-    ];
-    let cur = 0, timer = null;
-    function goTo(n) {
-      slides[cur].classList.remove('active');
-      pips[cur] && pips[cur].classList.remove('active');
-      cur = ((n % slides.length) + slides.length) % slides.length;
-      slides[cur].classList.add('active');
-      pips[cur] && pips[cur].classList.add('active');
-      if (capEl) capEl.textContent = captions[cur];
-    }
-    function play()  { if (!timer) timer = setInterval(() => goTo(cur + 1), 8000); }
-    function pause() { clearInterval(timer); timer = null; }
-    const win = document.querySelector('.reel-window');
-    if (win) { win.addEventListener('mouseenter', pause); win.addEventListener('mouseleave', play); }
-    pips.forEach((p, i) => p.addEventListener('click', () => { pause(); goTo(i); play(); }));
-    if (prefersReducedMotion) { goTo(0); } else { goTo(0); play(); }
-  })();
-
-  // ═══ משולש הפניות אנימטיבי ═══
-  (function () {
-    const ts = document.getElementById('triStage');
-    if (!ts) return;
-    const tsObs = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (!e.isIntersecting) return;
-        ts.classList.add('drawing');
-        tsObs.unobserve(ts);
-      });
-    }, { threshold: 0.2 });
-    tsObs.observe(ts);
-  })();
-
-  // ═══ Features Carousel (מעבר ידני בלבד, בלי טיימר אוטומטי) ═══
-  (function () {
-    const groups = Array.from(document.querySelectorAll('[data-tab-panel]'));
-    const tabs   = Array.from(document.querySelectorAll('.ft-tab'));
-    const carousel = document.querySelector('.feat-carousel');
-    if (!groups.length || !tabs.length) return;
-
-    let current = 0;
-
-    // גובה הקונטיינר מותאם לתוכן הטאב הפעיל בלבד, כדי שלא יישאר חלל
-    // ריק גדול כשעוברים לטאב עם פחות כרטיסים מהטאב הגבוה ביותר
-    function syncHeight(grp) {
-      if (!carousel || !grp) return;
-      carousel.style.height = grp.scrollHeight + 'px';
-    }
-
-    function showTab(idx, dir) {
-      groups.forEach(g => g.classList.remove('ft-active', 'ft-prev'));
-      tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
-      const grp = groups[idx];
-      if (grp) grp.classList.add(dir === 'prev' ? 'ft-prev' : 'ft-active');
-      if (tabs[idx]) { tabs[idx].classList.add('active'); tabs[idx].setAttribute('aria-selected', 'true'); }
-      current = idx;
-      syncHeight(grp);
-    }
-
-    tabs.forEach((tab, i) => {
-      tab.addEventListener('click', () => showTab(i, i < current ? 'prev' : 'next'));
-    });
-
-    showTab(0, 'next');
-
-    let resizeTimer;
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => syncHeight(groups[current]), 150);
-    });
+    }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
+    els.forEach(function (el) { observer.observe(el); });
   })();
 </script>
 
@@ -3942,48 +1182,6 @@
 })();
 </script>
 
-<script>
-/* תפריט ניווט עליון — קפיצה לכל סקשן בדף */
-(function() {
-  var panel = document.getElementById('navMenuPanel');
-  var btn = document.querySelector('.nav-menu-btn');
-  if (!panel || !btn) return;
-
-  window.toggleNavMenu = function() {
-    var isOpen = panel.classList.toggle('open');
-    btn.setAttribute('aria-expanded', String(isOpen));
-    panel.setAttribute('aria-hidden', String(!isOpen));
-  };
-  window.closeNavMenu = function() {
-    panel.classList.remove('open');
-    btn.setAttribute('aria-expanded', 'false');
-    panel.setAttribute('aria-hidden', 'true');
-  };
-  document.addEventListener('click', function(e) {
-    if (panel.classList.contains('open') && !panel.contains(e.target) && e.target !== btn) {
-      closeNavMenu();
-    }
-  });
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeNavMenu();
-  });
-
-  // גלילה לסקשן בלי לשנות את כתובת ה-URL (בלי #hash)
-  var NAV_OFFSET = 76;
-  panel.querySelectorAll('a[href^="#"]').forEach(function(link) {
-    link.addEventListener('click', function(e) {
-      e.preventDefault();
-      var target = document.querySelector(link.getAttribute('href'));
-      if (target) {
-        var y = target.getBoundingClientRect().top + window.scrollY - NAV_OFFSET;
-        window.scrollTo({ top: y, behavior: 'smooth' });
-      }
-      closeNavMenu();
-    });
-  });
-})();
-
-</script>
 
 </body>
 </html>

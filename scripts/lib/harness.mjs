@@ -53,7 +53,7 @@ const SUPABASE_MOCK = `
 const CHART_MOCK = `window.Chart=function(){this.destroy=function(){};this.data={datasets:[]};this.update=function(){};};window.Chart.register=function(){};`;
 
 
-export async function startHarness({ touch = false, root = defaultRoot } = {}) {
+export async function startHarness({ touch = false, root = defaultRoot, scale = 1 } = {}) {
   const chromium = await loadChromium();
   const server = http.createServer((req, res) => {
     const path = decodeURIComponent(req.url.split('?')[0]);
@@ -65,7 +65,7 @@ export async function startHarness({ touch = false, root = defaultRoot } = {}) {
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const BASE = `http://127.0.0.1:${server.address().port}`;
   const browser = await chromium.launch({ args: ['--no-sandbox', '--disable-dev-shm-usage'] });
-  const ctx = await browser.newContext({ locale: 'he-IL', viewport: { width: 390, height: 844 }, hasTouch: touch, isMobile: touch });
+  const ctx = await browser.newContext({ locale: 'he-IL', viewport: { width: 390, height: 844 }, deviceScaleFactor: scale, hasTouch: touch, isMobile: touch });
   await ctx.route('**cdn.jsdelivr.net**supabase**', r => r.fulfill({ contentType: 'application/javascript; charset=utf-8', body: SUPABASE_MOCK }));
   await ctx.route('**cdn.jsdelivr.net**chart.js**', r => r.fulfill({ contentType: 'application/javascript; charset=utf-8', body: CHART_MOCK }));
   await ctx.route(url => !url.href.startsWith(BASE) && !/cdn\.jsdelivr\.net/.test(url.href), r => r.abort());
