@@ -238,6 +238,14 @@
        "+ ליד" FAB on every other screen — activating it once already applies
        system-wide via body.theme-accessible. */
     #a11y-fab.a11y-fab-hidden { display: none !important; }
+    /* במסך הכניסה אין סרגל תחתון, ולכן הכפתור ישב על הטופס ("שכחתי סיסמה", כפתור הכניסה).
+       שם הוא עובר לפינה העליונה. בזמן שחלון פתוח (קליטה, טפסים) הכפתורים הצפים מוסתרים,
+       כדי שלא יכסו את תוכן החלון. מצב נגישות זמין תמיד גם מההגדרות. */
+    body:has(#screen-login:not(.hidden)) #a11y-fab {
+      top: calc(14px + env(safe-area-inset-top, 0px)); bottom: auto; left: 14px; right: auto;
+    }
+    body:has(.modal-overlay:not(.hidden)) #a11y-fab,
+    body:has(.modal-overlay:not(.hidden)) .support-fab { display: none !important; }
     /* Settings accessibility card */
     .a11y-declaration {
       background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-600) 100%);
@@ -981,7 +989,7 @@
       border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10;
       gap: 12px;
     }
-    .screen-title { font-size: 18px; font-weight: 800; color: var(--gray-900); }
+    .screen-title { font-size: 20px; font-weight: 800; color: var(--gray-900); }
     .screen-body { padding: 20px; }
 
     /* ═══════════════════════════════════════
@@ -1039,8 +1047,8 @@
     .lh-badge {
       display: inline-flex; align-items: center; gap: 6px;
       background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.38);
-      color: #F59E0B; font-size: 11px; font-weight: 800;
-      letter-spacing: 2px; text-transform: uppercase;
+      color: #F59E0B; font-size: 12px; font-weight: 800;
+      letter-spacing: 0; text-transform: uppercase;
       padding: 5px 14px; border-radius: 99px; margin: 6px 0 4px;
       text-shadow: 0 0 12px rgba(245,158,11,.25);
       animation: lh-enter .7s .12s cubic-bezier(.34,1.56,.64,1) both;
@@ -1431,7 +1439,7 @@
       display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;
     }
     .info-item { }
-    .info-label { font-size: 11px; color: var(--gray-400); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .info-label { font-size: 12px; color: var(--gray-500); font-weight: 600; }
     .info-value { font-size: 14px; color: var(--gray-800); font-weight: 600; margin-top: 2px; }
 
     /* ═══════════════════════════════════════
@@ -1484,13 +1492,13 @@
       background: var(--surface); border-radius: var(--radius-lg);
       border: 1px solid var(--border); overflow: hidden; margin-bottom: 16px;
     }
+    /* כותרת קבוצה: ריווח אותיות ו-uppercase מתאימים לאנגלית ומפרקים מילים בעברית */
     .settings-section-title {
-      padding: 14px 16px; font-size: 12px; font-weight: 700; color: var(--gray-500);
-      text-transform: uppercase; letter-spacing: 0.8px;
-      border-bottom: 1px solid var(--border); background: var(--gray-50);
+      padding: 16px; font-size: 15px; font-weight: 700; color: var(--gray-900);
+      border-bottom: 1px solid var(--border); background: var(--surface);
     }
     .settings-row {
-      display: flex; align-items: center; padding: 14px 16px;
+      display: flex; align-items: center; padding: 16px;
       border-bottom: 1px solid var(--gray-100); gap: 12px; cursor: pointer;
       transition: var(--transition); min-height: 56px;
     }
@@ -1498,8 +1506,8 @@
     .settings-row:hover { background: var(--gray-50); }
     .settings-row-icon { font-size: 22px; width: 30px; text-align: center; }
     .settings-row-body { flex: 1; }
-    .settings-row-label { font-size: 15px; font-weight: 600; }
-    .settings-row-sub { font-size: 13px; color: var(--gray-400); margin-top: 2px; }
+    .settings-row-label { font-size: 16px; font-weight: 600; color: var(--gray-900); }
+    .settings-row-sub { font-size: 14px; color: var(--gray-600); margin-top: 3px; line-height: 1.45; }
     .settings-arrow { color: var(--gray-300); font-size: 20px; line-height: 1; }
 
     /* ═══════════════════════════════════════
@@ -1668,19 +1676,21 @@
     .pipeline-flow-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
     .pipeline-flow-lane-total { font-weight: 800; color: var(--gray-900); }
     .pipeline-flow-track {
-      position: relative; overflow: hidden; border-radius: 10px;
+      position: relative; overflow: hidden; border-radius: 10px; direction: ltr;
       background: var(--gray-50); border: 1px solid var(--border);
       -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
       mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
     }
+    /* הלולאה (translateX עד -50% על תוכן כפול) בנויה לפריסה משמאל לימין. ב-RTL הצ'יפים
+       יצאו מהמסגרת והנתיב נשאר ריק לחלק מהזמן, ולכן הרצועה ב-ltr וכל צ'יפ ב-rtl. */
     .pipeline-flow-chips {
       display: flex; align-items: center; gap: 8px; padding: 7px 10px;
-      width: max-content; will-change: transform;
+      width: max-content; will-change: transform; direction: ltr;
       animation: pipeline-flow-scroll linear infinite;
     }
     .pipeline-flow-track:hover .pipeline-flow-chips { animation-play-state: paused; }
     .pipeline-flow-chip {
-      display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+      display: flex; align-items: center; gap: 6px; flex-shrink: 0; direction: rtl;
       background: var(--surface); border-radius: 999px; padding: 5px 12px 5px 6px;
       font-size: 12.5px; font-weight: 600; color: var(--gray-800);
       border: 1.5px solid var(--chip-color, var(--border));
@@ -1831,6 +1841,7 @@
     .lr-score { width: 34px; height: 34px; font-size: 12px; flex-shrink: 0; }
     /* ── היום ── */
     .today-wrap { margin: 0 20px 16px; }
+    .today-status .ts-part { unicode-bidi: isolate; }
     .today-status { font-size: 13px; color: var(--gray-600); background: var(--surface, #fff); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; margin-bottom: 10px; line-height: 1.6; }
     .today-group { margin-bottom: 12px; }
     .today-group-title { font-size: 14px; font-weight: 800; color: var(--navy-500); margin: 4px 2px 6px; }
@@ -2909,6 +2920,17 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.2); z-index: 2;
     }
     .prop-share-btn:active { transform: scale(0.96); }
+    /* אזורי לחיצה של 44px במובייל בלי לשנות את המראה: שכבה שקופה סביב אלמנטים קטנים.
+       רוחב max(100%,44px) לא מתפשט לשכנים שכבר רחבים מ-44px. */
+    @media (max-width: 767px) {
+      .section-link, .back-btn, .filter-chip, .pipeline-stage-tab, .cal-today-btn, .lead-action-btn { position: relative; }
+      .section-link::after, .back-btn::after, .filter-chip::after, .pipeline-stage-tab::after,
+      .cal-today-btn::after, .lead-action-btn::after, .prop-share-btn::after {
+        content: ''; position: absolute; left: 50%; top: 50%;
+        width: max(100%, 44px); height: max(100%, 44px); transform: translate(-50%, -50%);
+      }
+      .cal-nav-btn { width: 44px; height: 44px; }
+    }
 
     /* Gamify prizes grid */
     .gamify-prizes-title {
@@ -4324,7 +4346,7 @@
 </head>
 <body>
 
-<a href="#main-content" class="skip-link">דלג לתוכן הראשי</a>
+<a href="#main-content" class="skip-link">מעבר לתוכן הראשי</a>
 
 <!-- ═══════════════════════════════════════
      LOADING OVERLAY
@@ -4496,9 +4518,9 @@
 
   <!-- Vertical pills -->
   <div class="login-pills">
-    <span class="login-pill">🏠 סוכני נדל"ן</span>
+    <span class="login-pill">🏠 נדל"ן</span>
     <span class="login-pill">🎨 עיצוב ואדריכלות</span>
-    <span class="login-pill">⚖️ עורכי דין</span>
+    <span class="login-pill">⚖️ עריכת דין</span>
     <span class="login-pill">ועוד</span>
   </div>
 
@@ -4528,7 +4550,7 @@
 <div id="screen-setup" class="hidden">
   <div style="font-size:54px;margin-bottom:20px;">⚙️</div>
   <div class="setup-logo">PLT<span>O</span></div>
-  <div class="setup-subtitle">מכין עבורך את המערכת כעת</div>
+  <div class="setup-subtitle">מכינים עבורך את המערכת</div>
   <div class="setup-bar-wrap"><div id="setup-bar"></div></div>
   <div id="setup-steps" style="display:flex;flex-direction:column;gap:12px;min-width:230px;"></div>
 </div>
@@ -4899,7 +4921,7 @@
            gamification widget on purpose (same reasoning as gamify-widget itself):
            a bonus/reward layer, not the first thing seen on dashboard load. -->
       <div class="motivation-card" id="motivation-card" style="margin-top:16px;">
-        <button class="motivation-card-dismiss" onclick="document.getElementById('motivation-card').style.display='none'" title="הסתר">×</button>
+        <button class="motivation-card-dismiss" onclick="document.getElementById('motivation-card').style.display='none'" title="הסתרה">×</button>
         <div class="motivation-card-header">
           <div class="motivation-card-icon">🚀</div>
           <div>
@@ -5073,7 +5095,7 @@
             <div class="tool-card-icon tool-icon-gold">🧮</div>
             <div>
               <div class="tool-card-title">מחשבון עמלה</div>
-              <div class="tool-card-sub">חשב עמלה ורווח נקי בשניות</div>
+              <div class="tool-card-sub">חישוב עמלה ורווח נקי בשניות</div>
             </div>
           </div>
           <div class="tool-card-body">
@@ -5185,7 +5207,7 @@
             <div class="tool-card-icon tool-icon-gold">📋</div>
             <div>
               <div class="tool-card-title">מחולל הצעת מחיר טקסטואלית</div>
-              <div class="tool-card-sub">AI מייצר הצעת מחיר מקצועית להעתקה לאיפה שתרצה</div>
+              <div class="tool-card-sub">AI מייצר הצעת מחיר מקצועית להעתקה לכל מקום</div>
             </div>
           </div>
           <div class="tool-card-body">
@@ -5307,7 +5329,7 @@
         <div style="padding:28px 16px 8px;text-align:center;">
           <div style="font-size:48px;margin-bottom:12px;">🔑</div>
           <div style="font-size:16px;font-weight:700;color:var(--navy-500);margin-bottom:6px;">יש לכם קוד שיתוף?</div>
-          <div style="font-size:13px;color:var(--gray-500);margin-bottom:20px;line-height:1.5;">שותף שעובד עם PLTO שלח קוד ו-PIN, אפשר להזין אותם כאן</div>
+          <div style="font-size:13px;color:var(--gray-500);margin-bottom:20px;line-height:1.5;">התקבלו קוד ו-PIN משותף ב-PLTO? אפשר להזין אותם כאן</div>
           <button class="btn btn-primary" style="width:100%;max-width:280px;" onclick="openModal('modal-accept-share')">🔑 הזנת קוד שיתוף</button>
         </div>
         <div style="padding:8px 16px 16px;" id="partners-joined-list"></div>
@@ -5582,7 +5604,7 @@
         <div style="font-size:22px;margin-bottom:8px;">💡</div>
         <div style="font-size:15px;font-weight:800;color:var(--navy-500);margin-bottom:4px;">יש לך רעיון לשיפור?</div>
         <div style="font-size:13px;color:var(--gray-500);line-height:1.55;margin-bottom:14px;">רעיון טוב שיאושר = <strong>+300 XP</strong> אוטומטי ✨</div>
-        <button class="btn btn-primary btn-sm" onclick="IdeaBox.open()" style="font-size:14px;padding:10px 24px;">💡 הצע רעיון</button>
+        <button class="btn btn-primary btn-sm" onclick="IdeaBox.open()" style="font-size:14px;padding:10px 24px;">💡 הצעת רעיון</button>
       </div>
     </div>
 
@@ -5603,7 +5625,7 @@
           <button class="ref-btn-wa" onclick="Referral.shareWhatsApp()">
             <span>📲</span> שליחה בוואטסאפ
           </button>
-          <button class="ref-btn-copy" onclick="Referral.copyLink()">🔗 העתק קישור</button>
+          <button class="ref-btn-copy" onclick="Referral.copyLink()">🔗 העתקת קישור</button>
         </div>
       </div>
       <div class="ref-reward-card">
@@ -5711,7 +5733,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" style="flex:1;" onclick="closeModal('modal-inbox-compose')">ביטול</button>
-        <button class="btn btn-primary" id="compose-send-btn" style="flex:1;" onclick="GmailInbox.sendNew()">📤 שלח</button>
+        <button class="btn btn-primary" id="compose-send-btn" style="flex:1;" onclick="GmailInbox.sendNew()">📤 שליחה</button>
       </div>
     </div>
   </div>
@@ -5849,7 +5871,7 @@
               <option value="">בחירת תחום...</option>
               <option value="realestate_lawyer">⚖️ עו"ד</option>
               <option value="interior">🎨 עיצוב פנים ואדריכלות</option>
-              <option value="realestate">🏠 סוכן נדל"ן</option>
+              <option value="realestate">🏠 נדל"ן</option>
             </select>
           </div>
           <div class="form-group hidden" id="lref-profession-wrap">
@@ -5910,7 +5932,7 @@
           </div>
           <div id="lref-msg-preview" style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:10px;padding:12px;font-size:12.5px;color:var(--gray-600);line-height:1.6;white-space:pre-wrap;direction:rtl;margin-bottom:12px;"></div>
           <button class="btn btn-primary" style="width:100%;background:#25D366;border:none;margin-bottom:8px;" onclick="LeadReferral.shareWhatsApp()">💬 שליחה בוואטסאפ</button>
-          <button id="lref-copy-btn" class="btn btn-ghost" style="width:100%;" onclick="LeadReferral.copyLink()">🔗 העתק קישור</button>
+          <button id="lref-copy-btn" class="btn btn-ghost" style="width:100%;" onclick="LeadReferral.copyLink()">🔗 העתקת קישור</button>
           <button id="lref-page-btn" class="btn btn-ghost hidden" style="width:100%;margin-top:8px;" onclick="PageBuilder.generateFromReferral()">🎨 יצירת עמוד הזמנה</button>
           <div id="lref-page-result" class="hidden" style="margin-top:10px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:10px;padding:12px;">
             <div style="font-size:12px;color:var(--gray-500);margin-bottom:6px;">קישור לעמוד ההזמנה שנוצר</div>
@@ -5941,12 +5963,12 @@
         <div style="text-align:center;padding:4px 0 10px;font-size:44px;">🤝</div>
         <p id="lref-accept-text" style="font-size:14px;color:var(--gray-600);line-height:1.7;text-align:center;margin-bottom:14px;"></p>
         <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:11px;font-size:12px;color:#1E40AF;line-height:1.6;">
-          בלחיצה על "קבל את הליד", הליד ייכנס לפייפליין שלך עם כל הפרטים, מוכן לעבודה.
+          בלחיצה על "קבלת הליד", הליד ייכנס לפייפליין שלך עם כל הפרטים, מוכן לעבודה.
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" style="flex:1;" onclick="LeadReferral.dismissInbound()">לא עכשיו</button>
-        <button id="lref-btn-accept" class="btn btn-primary" style="flex:2;" onclick="LeadReferral.acceptOrOpenAgreement()">✅ קבל את הליד</button>
+        <button id="lref-btn-accept" class="btn btn-primary" style="flex:2;" onclick="LeadReferral.acceptOrOpenAgreement()">✅ קבלת הליד</button>
       </div>
     </div>
   </div>
@@ -6012,7 +6034,7 @@
         <div class="form-group">
           <label class="form-label">תחום מבוקש</label>
           <select id="opp-vertical" class="form-input" onchange="OppBoard.onVerticalChange()">
-            <option value="realestate">🏠 סוכן נדל"ן</option>
+            <option value="realestate">🏠 נדל"ן</option>
             <option value="realestate_lawyer">⚖️ עו"ד</option>
             <option value="interior">🎨 עיצוב פנים ואדריכלות</option>
           </select>
@@ -6078,7 +6100,7 @@
     <div class="modal">
       <div class="modal-handle"></div>
       <div class="modal-header">
-        <div class="modal-title">🔑 הצטרף לשיתוף</div>
+        <div class="modal-title">🔑 הצטרפות לשיתוף</div>
         <button class="modal-close" onclick="closeModal('modal-accept-share')">✕</button>
       </div>
       <div class="modal-body">
@@ -6100,7 +6122,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" onclick="closeModal('modal-accept-share')">ביטול</button>
-        <button class="btn btn-primary" style="flex:1;" onclick="Partners.acceptShare()">הצטרף לשיתוף</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="Partners.acceptShare()">הצטרפות לשיתוף</button>
       </div>
     </div>
   </div>
@@ -6151,7 +6173,7 @@
 
     <!-- פעולות -->
     <div class="paywall-actions">
-      <button class="btn btn-ghost btn-sm" onclick="if(Billing.isExpired()||(Billing.retentionEndsAt()&&new Date()>Billing.retentionEndsAt())){App.logout();}else{document.getElementById('screen-paywall').classList.add('hidden');document.getElementById('app-shell').classList.remove('hidden');App.go('dashboard');}" style="color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.15);flex:1;max-width:160px;">🏠 חזור לבית</button>
+      <button class="btn btn-ghost btn-sm" onclick="if(Billing.isExpired()||(Billing.retentionEndsAt()&&new Date()>Billing.retentionEndsAt())){App.logout();}else{document.getElementById('screen-paywall').classList.add('hidden');document.getElementById('app-shell').classList.remove('hidden');App.go('dashboard');}" style="color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.15);flex:1;max-width:160px;">🏠 חזרה לבית</button>
       <button class="btn btn-ghost btn-sm" onclick="App.logout()" style="color:rgba(255,255,255,0.35);border-color:rgba(255,255,255,0.1);flex:1;max-width:160px;">יציאה</button>
     </div>
 
@@ -6223,7 +6245,7 @@
 <div id="modal-idea-box" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-idea-box')">
   <div class="modal-sheet" style="max-width:420px;">
     <div class="modal-header">
-      <div class="modal-title">💡 הצע רעיון למערכת</div>
+      <div class="modal-title">💡 הצעת רעיון למערכת</div>
       <button class="modal-close" onclick="closeModal('modal-idea-box')">×</button>
     </div>
     <div style="padding:0 20px 16px;">
@@ -6269,7 +6291,7 @@
     </div>
     <div id="modal-roadmap-list" style="padding:8px 20px 4px;max-height:50vh;overflow-y:auto;"></div>
     <div class="modal-footer">
-      <button class="btn btn-primary" style="flex:1;" onclick="closeModal('modal-roadmap'); IdeaBox.open();">💡 הצע רעיון משלך</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="closeModal('modal-roadmap'); IdeaBox.open();">💡 הצעת רעיון משלך</button>
     </div>
   </div>
 </div>
@@ -6293,7 +6315,7 @@
         </select>
         <button class="btn btn-primary btn-sm" style="width:100%;" onclick="Team.invite()">📨 שליחת הזמנה</button>
         <div id="team-invite-link-section" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
-          <div style="font-size:11.5px;color:var(--gray-500);margin-bottom:7px;text-align:center;">או שתף קישור גיוס ישירות</div>
+          <div style="font-size:11.5px;color:var(--gray-500);margin-bottom:7px;text-align:center;">או לשתף קישור גיוס ישירות</div>
           <button id="team-invite-link-btn" class="btn btn-ghost btn-sm" style="width:100%;font-size:12px;" onclick="Team.generateInviteLink()">🔗 יצירת קישור גיוס לסוכן חדש</button>
           <div id="team-invite-link-locked" style="display:none;font-size:11.5px;color:var(--gray-400);text-align:center;padding:6px 0;"></div>
           <div id="team-invite-link-result" style="display:none;margin-top:10px;background:var(--gray-50);border-radius:10px;padding:10px 12px;">
@@ -6319,7 +6341,7 @@
 <div class="call-sheet" id="call-result-sheet" onclick="if(event.target===this)CallLog.hide()">
   <div class="call-sheet-inner">
     <div style="text-align:center;font-size:16px;font-weight:800;color:var(--navy);margin-bottom:18px;">מה היה התוצאה?</div>
-    <button class="call-result-btn" style="background:#DCFCE7;color:#166534;" onclick="CallLog.log('talked')">✅ &nbsp;שוחח/שוחחנו, הכל טוב</button>
+    <button class="call-result-btn" style="background:#DCFCE7;color:#166534;" onclick="CallLog.log('talked')">✅ &nbsp;דיברנו, הכל טוב</button>
     <button class="call-result-btn" style="background:#DBEAFE;color:#1D4ED8;" onclick="CallLog.log('meeting')">📅 &nbsp;קבענו פגישה</button>
     <button class="call-result-btn" style="background:#FEE2E2;color:#991B1B;" onclick="CallLog.log('no_answer')">❌ &nbsp;לא ענה / לא זמין</button>
     <button class="call-result-btn" style="background:var(--gray-100);color:var(--gray-500);font-weight:600;" onclick="CallLog.hide()">ביטול</button>
@@ -6331,7 +6353,7 @@
   <div class="call-sheet-inner">
     <div style="text-align:center;margin-bottom:6px;font-size:22px;">⚠️</div>
     <div style="text-align:center;font-size:16px;font-weight:800;color:var(--navy);margin-bottom:4px;">לא שמרת את הפרטים</div>
-    <div style="text-align:center;font-size:13px;color:var(--gray-500);margin-bottom:20px;">הפרטים שהקלדת יימחקו לגמרי אם תצא עכשיו</div>
+    <div style="text-align:center;font-size:13px;color:var(--gray-500);margin-bottom:20px;">הפרטים שהוקלדו יימחקו לגמרי ביציאה עכשיו</div>
     <button class="call-result-btn" style="background:#DCFCE7;color:#166534;font-size:15px;" onclick="addLead()">💾 &nbsp;שמירת ליד עכשיו</button>
     <button class="call-result-btn" style="background:#DBEAFE;color:#1D4ED8;font-size:15px;" onclick="closeDiscardSheet()">חזרה לטופס</button>
     <button class="call-result-btn" style="background:#FEE2E2;color:#991B1B;font-size:15px;" onclick="discardAndClose()">🗑 &nbsp;מחיקה ויציאה בלי שמירה</button>
@@ -6393,7 +6415,7 @@
           placeholder='לדוגמה: "שוחחתי עם אבי לוי, הצעתי לו נכסים לפי האיזור שביקש. מוכן להעלות טיפה בתקציב אם תבוא עסקה טובה..."'
           style="width:100%;height:128px;border:1.5px solid var(--border);border-radius:var(--radius-md);padding:10px 12px;font-size:13px;font-family:inherit;resize:none;direction:rtl;color:var(--gray-900);background:var(--surface);transition:border-color .15s;"
           onfocus="this.style.borderColor='var(--blue-400)'" onblur="this.style.borderColor='var(--border)'"></textarea>
-        <button onclick="QuickLog.process()" class="btn btn-primary" style="width:100%;margin-top:10px;"><span data-ai>✨ עיבוד הרשומה</span><span data-noai>המשך לבחירת הליד</span></button>
+        <button onclick="QuickLog.process()" class="btn btn-primary" style="width:100%;margin-top:10px;"><span data-ai>✨ עיבוד הרשומה</span><span data-noai>מעבר לבחירת הליד</span></button>
       </div>
 
       <!-- State: loading -->
@@ -6424,7 +6446,7 @@
         <div id="ql-meeting-preview"   class="ql-preview-box hidden" style="background:#eff6ff;border-color:#93c5fd;color:#1d4ed8;"></div>
 
         <div style="display:flex;gap:8px;margin-top:4px;">
-          <button onclick="QuickLog._resetToInput()" class="btn btn-ghost" style="flex:1;font-size:13px;">✏️ ערוך</button>
+          <button onclick="QuickLog._resetToInput()" class="btn btn-ghost" style="flex:1;font-size:13px;">✏️ עריכה</button>
           <button onclick="QuickLog.confirm()" class="btn btn-primary" style="flex:2;font-size:13px;">✅ אישור ושמירה בליד</button>
         </div>
       </div>
@@ -6443,7 +6465,7 @@
              style="font-size:13px;text-decoration:none;display:block;text-align:center;background:#fff;border:1.5px solid #25D366;color:#128C7E;border-radius:var(--radius-md);padding:10px;font-weight:700;">💬 שליחת אישור פגישה ב-WhatsApp</a>
         </div>
         <button onclick="QuickLog.openNew()" class="btn btn-primary" style="margin-top:14px;width:100%;">⚡ רישום נוסף</button>
-        <button onclick="closeModal('modal-quicklog')" class="btn btn-ghost" style="margin-top:8px;width:100%;font-size:13px;">סגור</button>
+        <button onclick="closeModal('modal-quicklog')" class="btn btn-ghost" style="margin-top:8px;width:100%;font-size:13px;">סגירה</button>
       </div>
 
     </div>
@@ -6475,7 +6497,7 @@
 <!-- ── Demo Lock Modal ── -->
 <div id="modal-demo-lock" class="demo-lock-overlay hidden">
   <div class="demo-lock-box">
-    <button class="modal-close" onclick="DemoLock.hide()" aria-label="סגור" style="position:absolute;top:12px;left:12px;">✕</button>
+    <button class="modal-close" onclick="DemoLock.hide()" aria-label="סגירה" style="position:absolute;top:12px;left:12px;">✕</button>
     <div style="font-size:52px;margin-bottom:10px;">🔒</div>
     <div style="font-size:19px;font-weight:900;color:var(--navy);margin-bottom:8px;">פיצ'ר זה נעול בדמו</div>
     <div id="demo-lock-lead-msg" style="font-size:13px;color:var(--gray-500);margin-bottom:4px;line-height:1.6;">חשבון ניסיון חינמי ל-30 יום<br>עם גישה מלאה לכל הכלים</div>
@@ -6487,7 +6509,7 @@
       <li>✅ ייצוא נתונים וכלים מקצועיים</li>
     </ul>
     <button onclick="DemoLock.signup()" style="width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,var(--navy),#2563EB);color:white;font-size:15px;font-weight:800;border:none;cursor:pointer;margin-bottom:12px;">🚀 פתיחת חשבון ניסיון, חינם</button>
-    <button type="button" onclick="DemoLock.hide()" style="background:none;border:none;color:var(--gray-400);font-size:12px;cursor:pointer;padding:6px;text-decoration:underline;font-family:inherit;">המשך לסייר בדמו</button>
+    <button type="button" onclick="DemoLock.hide()" style="background:none;border:none;color:var(--gray-400);font-size:12px;cursor:pointer;padding:6px;text-decoration:underline;font-family:inherit;">להמשיך לסייר בדמו</button>
   </div>
 </div>
 
@@ -6500,7 +6522,7 @@
       <div class="demo-save-sub">הרשמה ב-30 שניות לשמור אותם לצמיתות</div>
     </div>
     <button class="demo-save-cta" onclick="DemoLock.signup()">להרשמה</button>
-    <button class="demo-save-dismiss" onclick="DemoSaveHook.dismiss()" title="סגור">×</button>
+    <button class="demo-save-dismiss" onclick="DemoSaveHook.dismiss()" title="סגירה">×</button>
   </div>
 </div>
 
@@ -6600,7 +6622,7 @@
         <input class="form-input" id="pro-tmpl-name-input" type="text" placeholder="שם התבנית (למשל: פולואפ ראשון)" />
       </div>
       <div class="form-group">
-        <textarea class="form-input" id="pro-tmpl-text-input" rows="3" placeholder="תוכן ההודעה... ניתן להשתמש בـ {שם}"></textarea>
+        <textarea class="form-input" id="pro-tmpl-text-input" rows="3" placeholder="תוכן ההודעה... ניתן להשתמש ב-{שם}"></textarea>
       </div>
       <button class="btn btn-primary w-full" onclick="ProHub._addTemplate()">💾 שמירת תבנית</button>
     </div>
@@ -6611,7 +6633,7 @@
 <div id="modal-pro-locked" class="modal-overlay hidden" onclick="closeModalOnBg(event,'modal-pro-locked')">
   <div class="modal" style="padding:0;overflow:hidden;">
     <div class="pro-locked-hero" style="position:relative;">
-      <button onclick="closeModal('modal-pro-locked')" aria-label="סגור" style="position:absolute;top:10px;left:12px;background:rgba(255,255,255,.18);border:none;width:28px;height:28px;border-radius:50%;font-size:14px;font-weight:700;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      <button onclick="closeModal('modal-pro-locked')" aria-label="סגירה" style="position:absolute;top:10px;left:12px;background:rgba(255,255,255,.18);border:none;width:28px;height:28px;border-radius:50%;font-size:14px;font-weight:700;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
       <div style="font-size:46px;margin-bottom:8px;" id="pro-locked-icon">⚡</div>
       <div style="font-size:18px;font-weight:900;margin-bottom:4px;" id="pro-locked-title">פיצ'ר PRO</div>
       <div style="font-size:13px;opacity:0.85;" id="pro-locked-sub">תיאור הפיצ'ר</div>
@@ -6624,7 +6646,7 @@
         <div id="pro-locked-perks"></div>
       </div>
       <button id="pro-locked-cta-btn" onclick="ProHub._lockedCta()" style="width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#7C3AED,#2563EB);color:white;font-size:15px;font-weight:800;border:none;cursor:pointer;margin-bottom:10px;"></button>
-      <button onclick="closeModal('modal-pro-locked')" style="width:100%;padding:10px;border-radius:12px;background:var(--gray-100);color:var(--gray-500);font-size:13px;font-weight:600;border:none;cursor:pointer;">חזור לרשימת הפיצ'רים</button>
+      <button onclick="closeModal('modal-pro-locked')" style="width:100%;padding:10px;border-radius:12px;background:var(--gray-100);color:var(--gray-500);font-size:13px;font-weight:600;border:none;cursor:pointer;">חזרה לרשימת הפיצ'רים</button>
     </div>
   </div>
 </div>
@@ -6681,7 +6703,7 @@
       <div id="mtg-result"></div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('modal-mortgage')">סגור</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-mortgage')">סגירה</button>
       <button class="btn btn-primary" style="flex:1;" onclick="MortgageCalc.shareWhatsApp()">📤 שיתוף ב-WhatsApp</button>
     </div>
   </div>
@@ -6776,7 +6798,7 @@
       </div>
     </div>
     <div class="modal-footer" style="flex-direction:column;gap:8px;">
-      <button class="btn btn-primary" style="width:100%;" onclick="document.getElementById('modal-lead-quality').classList.add('hidden');addLead(true)">המשך ללא הערות</button>
+      <button class="btn btn-primary" style="width:100%;" onclick="document.getElementById('modal-lead-quality').classList.add('hidden');addLead(true)">להמשיך בלי הערות</button>
       <button class="btn btn-ghost" style="width:100%;" onclick="document.getElementById('modal-lead-quality').classList.add('hidden');document.getElementById('new-lead-notes')?.focus()">חזרה להוספת הערות</button>
     </div>
   </div>
@@ -6832,7 +6854,7 @@
       <div style="font-weight:700;font-size:15px;color:var(--navy);margin-bottom:10px;">לא נמצא קשר קודם עם ליד זה</div>
       <div id="wa-consent-target" style="font-size:14px;font-weight:700;color:var(--navy-500);direction:ltr;margin-bottom:10px;"></div>
       <div style="font-size:13.5px;color:var(--gray-500);line-height:1.8;">
-        לפני שליחת הודעת WhatsApp, יש לוודא שהלקוח יודע שתפנה אליו.<br><br>
+        לפני שליחת הודעת WhatsApp, יש לוודא שהלקוח מצפה לפנייה.<br><br>
         <strong style="color:var(--navy);">שלחו רק לאחר שיש הסכמה מפורשת או שיחה קודמת.</strong>
       </div>
     </div>
@@ -6903,7 +6925,7 @@
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-header">
-      <div class="modal-title">🔄 העבר שלב</div>
+      <div class="modal-title">🔄 העברת שלב</div>
       <button class="modal-close" onclick="closeModal('modal-move-stage')">×</button>
     </div>
     <div id="move-stage-lead-name" style="font-weight:600; margin-bottom:12px; color:var(--gray-600);"></div>
@@ -7049,7 +7071,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-property-shown')">ביטול</button>
-      <button class="btn btn-primary" style="flex:1;" onclick="PropertyShown.save()">שמור</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="PropertyShown.save()">שמירה</button>
     </div>
   </div>
 </div>
@@ -7406,7 +7428,7 @@
       נתונים שהוזנו למערכת (שמות לקוחות, מספרי טלפון, ערכי עסקאות, הערות מקצועיות) מאוחסנים על שרתי הפלטפורמה. בניגוד לנתונים האישיים, תוכן שנוצר ע"י AI ושימש לשיפור המערכת עשוי להישמר בצורה אנונימית.</p>
 
       <p><strong>הסכמה מפורשת</strong><br>
-      שימוש במערכת, לרבות בתקופת הניסיון החינמי, מהווה הסכמה מפורשת ומלאה לתנאים אלו. אם אינך מסכים, אנא הפסק את השימוש ופנה אלינו למחיקת נתוניך.</p>
+      שימוש במערכת, לרבות בתקופת הניסיון החינמי, מהווה הסכמה מפורשת ומלאה לתנאים אלו. אם אין הסכמה לתנאים, יש להפסיק את השימוש ולפנות אלינו למחיקת הנתונים.</p>
 
       <p><strong>דין חל</strong><br>
       השירות כפוף לחוקי מדינת ישראל, כולל חוק הגנת הפרטיות, תשמ"א-1981 ותקנות אבטחת המידע.</p>
@@ -7535,7 +7557,7 @@
   <div class="modal" style="max-width:520px;">
     <div class="modal-header" style="border-bottom:none;padding-bottom:0;">
       <div style="width:100%;text-align:center;position:relative;">
-        <button class="modal-close" onclick="Onboarding.skip()" aria-label="סגור" style="position:absolute;top:0;left:0;">✕</button>
+        <button class="modal-close" onclick="Onboarding.skip()" aria-label="סגירה" style="position:absolute;top:0;left:0;">✕</button>
         <div id="ob-step-indicator" style="display:flex;gap:8px;justify-content:center;margin-bottom:16px;">
           <!-- step dots rendered by JS -->
         </div>
@@ -7545,7 +7567,7 @@
     </div>
     <div class="modal-body" id="ob-body" style="min-height:220px;"></div>
     <div class="modal-footer" style="display:flex;gap:12px;justify-content:space-between;">
-      <button class="btn btn-ghost" id="ob-back-btn" onclick="Onboarding.back()" style="display:none;">חזור</button>
+      <button class="btn btn-ghost" id="ob-back-btn" onclick="Onboarding.back()" style="display:none;">חזרה</button>
       <button class="btn btn-primary" id="ob-next-btn" onclick="Onboarding.next()" style="margin-right:auto;">הבא</button>
     </div>
   </div>
@@ -7568,9 +7590,9 @@
       <strong>שמירה כ-App בנייד</strong>
       <span id="pwa-install-msg">גישה מהירה מהמסך הראשי</span>
     </div>
-    <button class="pwa-close" id="pwa-install-close" aria-label="סגור">×</button>
+    <button class="pwa-close" id="pwa-install-close" aria-label="סגירה">×</button>
   </div>
-  <button class="pwa-btn" id="pwa-install-btn">התקן</button>
+  <button class="pwa-btn" id="pwa-install-btn">התקנה</button>
 </div>
 
 <!-- Property comparison picker + hidden print template — live outside the
@@ -7930,7 +7952,7 @@ async function aiQuotaMessage(error) {
       if (body?.error === 'ai_disabled') return 'שירותי ה-AI מושבתים כרגע';
       if (body?.error === 'quota_exceeded') {
         if (body?.reason === 'cooling_down') {
-          return 'הסוכן עדיין בקירור, נסה שוב בעוד כמה רגעים';
+          return 'הסוכן עדיין בקירור, אפשר לנסות שוב בעוד כמה רגעים';
         }
         if (body?.reason === 'weekly_limit') {
           const when = body?.available_at ? new Date(body.available_at).toLocaleDateString('he-IL', { day: 'numeric', month: 'long' }) : null;
@@ -8862,7 +8884,7 @@ const Billing = {
                 : `⏳ ${days} ימים`;
     const tickerMsg = [
       `🎉 נשארו לך ${days === 1 ? 'יום אחד' : days + ' ימים'} בניסיון החינמי`,
-      `💎 שדרג עכשיו ותשמור על כל הנתונים שלך`,
+      `💎 שדרוג עכשיו שומר על כל הנתונים שלך`,
       `🚀 פתיחת כל הפיצ׳רים המתקדמים`
     ].join('&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;');
     banner.innerHTML = `
@@ -8891,8 +8913,8 @@ const Billing = {
     if (days > 3) { el.innerHTML = ''; return; }
     const pct = Math.max(4, Math.round(days / 30 * 100));
     const urgMsg = days <= 3
-      ? '⚠️ עוד מעט הגישה נעצרת, שמור על הלידים שלך'
-      : `נשארו ${days} ימים, אל תפסיד את הלידים שלך`;
+      ? '⚠️ עוד מעט הגישה נעצרת, כדאי לשמור על הלידים שלך'
+      : `נשארו ${days} ימים, חבל לאבד את הלידים שלך`;
     el.innerHTML = `
       <div class="dash-trial-card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
@@ -9031,7 +9053,7 @@ const Billing = {
     return this.PLANS.map(plan => {
       const isFeatured = plan.featured;
       const btnLabel = this.PAYMENTS_LIVE
-        ? `התחל עם ${plan.name}`
+        ? `מתחילים עם ${plan.name}`
         : `📬 שמרו לי מקום, ${plan.name}`;
       return `
       <div class="paywall-plan ${isFeatured ? 'paywall-plan--featured' : ''}">
@@ -9070,7 +9092,7 @@ const Onboarding = {
       subtitle: 'נגדיר את המערכת בדיוק עבורך, תוך 2 דקות',
       render() {
         const INDUSTRIES = [
-          { id: 'realestate',        icon: '🏠', label: 'סוכן נדל"ן' },
+          { id: 'realestate',        icon: '🏠', label: 'נדל"ן' },
           { id: 'realestate_lawyer', icon: '⚖️', label: 'עו"ד' },
           { id: 'interior',          icon: '🎨', label: 'עיצוב פנים ואדריכלות' },
           { id: 'other',             icon: '💼', label: 'שירותים ועסקים' },
@@ -9268,18 +9290,18 @@ const Onboarding = {
 
   _VERTICAL_COPY: {
     realestate: {
-      greeting:  'מעולה! נגדיר עבורך מסלול לסוכן נדל"ן 🏠',
-      step1sub:  'כמה פרטים ותתחיל לסגור יותר עסקאות',
+      greeting:  'מעולה! נגדיר עבורך מסלול לנדל"ן 🏠',
+      step1sub:  'כמה פרטים, ומתחילים לסגור יותר עסקאות',
       step1hint: 'כל ליד הוא קונה פוטנציאלי, נמצא לו את הנכס המושלם.',
     },
     realestate_lawyer: {
       greeting:  'מעולה! נגדיר עבורך מסלול לעו"ד ⚖️',
-      step1sub:  'כמה פרטים ותוכל להתמקד בתיקים, לא בניהול',
+      step1sub:  'כמה פרטים, ואפשר להתמקד בתיקים ולא בניהול',
       step1hint: 'כל תיק הוא לקוח שסומך עליך לטפל בעניין שלו מקצועית עד הסוף.',
     },
     interior: {
       greeting:  'מעולה! נגדיר עבורך מסלול לעיצוב פנים 🎨',
-      step1sub:  'כמה פרטים ותוכל להתמקד ביצירה, לא בניהול',
+      step1sub:  'כמה פרטים, ואפשר להתמקד ביצירה ולא בניהול',
       step1hint: 'כל לקוח הוא פרויקט עם פוטנציאל ל-Pinterest שלם.',
     },
     other: {
@@ -9369,7 +9391,7 @@ const Onboarding = {
         if (stepsEl) {
           stepsEl.innerHTML = '';
           [
-            { icon: '📋', text: 'בונה את הפייפליין שלך...' },
+            { icon: '📋', text: 'בונים את הפייפליין שלך...' },
             { icon: '👤', text: 'שמירת פרטי חשבון...' },
             { icon: '🎯', text: 'כיוון המערכת לסוג העסק שלך...' },
             { icon: '🚀', text: 'הכל מוכן, נתחיל!' },
@@ -9823,11 +9845,44 @@ function discardAndClose() {
   closeModal('modal-add-lead');
 }
 
+// שגיאות מ-Supabase, מהרשת או קודי שרת מגיעות באנגלית. כאן הן הופכות להודעה בעברית,
+// במקום אחד, כדי שלא יוצג למשתמש טקסט טכני. הודעה בעברית עוברת כמו שהיא.
+const ERR_HE = [
+  [/failed to fetch|networkerror|load failed|network request failed|err_network|err_internet/i, 'אין חיבור לשרת כרגע, כדאי לבדוק את האינטרנט ולנסות שוב'],
+  [/password should be at least (\d+)/i, m => `הסיסמה צריכה להכיל לפחות ${m[1]} תווים`],
+  [/invalid login credentials/i, 'האימייל או הסיסמה שגויים'],
+  [/user already registered|already been registered/i, 'כבר קיים חשבון עם האימייל הזה'],
+  [/unable to validate email|invalid email|email address .* is invalid/i, 'כתובת האימייל לא תקינה'],
+  [/rate limit|too many requests|over_email_send_rate_limit|rate_limited/i, 'יותר מדי ניסיונות, אפשר לנסות שוב בעוד כמה דקות'],
+  [/jwt expired|invalid jwt|auth session missing|not authenticated|refresh token/i, 'פג תוקף ההתחברות, יש להתחבר מחדש'],
+  [/permission denied|row-level security|not authorized|admin access required|forbidden/i, 'אין הרשאה לפעולה הזו'],
+  [/timed? ?out|timeout/i, 'הפעולה לקחה יותר מדי זמן, אפשר לנסות שוב'],
+  [/duplicate key|already exists/i, 'הפריט הזה כבר קיים'],
+  [/payload too large|entity too large|file size/i, 'הקובץ גדול מדי'],
+];
+function heError(msg) {
+  const m = String(msg ?? '');
+  for (const [re, he] of ERR_HE) {
+    const hit = m.match(re);
+    if (hit) {
+      const text = typeof he === 'function' ? he(hit) : he;
+      // שומרים את ההקשר בעברית שלפני השגיאה ("שגיאה בהעלאה: ...")
+      const ctx = m.match(/^([\u0590-\u05FF][^:]{0,40}):\s/);
+      return ctx && !/^שגיאה$/.test(ctx[1].trim()) ? `${ctx[1]}: ${text}` : text;
+    }
+  }
+  const hasHe = /[\u0590-\u05FF]/.test(m);
+  if (!hasHe && /[A-Za-z]{3,}/.test(m)) return 'משהו השתבש, אפשר לנסות שוב';
+  // "שגיאה: <טקסט טכני באנגלית>" או קוד שרת אחרי הנקודתיים
+  const pre = m.match(/^([\u0590-\u05FF][^:]{0,40}):\s*([^\u0590-\u05FF]+)$/);
+  if (pre && /[A-Za-z_]{3,}/.test(pre[2])) return `${pre[1].trim() === 'שגיאה' ? 'משהו השתבש' : pre[1]}, אפשר לנסות שוב`;
+  return m;
+}
 function toast(msg, type='', duration=3200) {
   const c = document.getElementById('toast-container');
   const t = document.createElement('div');
   t.className = 'toast' + (type ? ' toast-'+type : '');
-  t.textContent = msg;
+  t.textContent = (type === 'error' || type === 'warning') ? heError(msg) : msg;
   c.appendChild(t);
   setTimeout(() => t.remove(), duration);
   if (State?.isAccessibleMode && (type === 'success' || type === 'error' || type === 'warning' || type === 'alert')) {
@@ -10451,7 +10506,7 @@ const Tools = {
       res.classList.add('visible');
       if (acts) acts.style.display = 'flex';
     } catch(e) {
-      res.textContent = 'שגיאה: ' + e.message;
+      res.textContent = heError('שגיאה: ' + e.message);
       res.classList.add('visible');
     }
     btn.textContent = '✨ יצירת הצעת מחיר'; btn.disabled = false;
@@ -10699,7 +10754,7 @@ const Partners = {
     } catch(e) {
       toast(e.message || 'שגיאה, יש לבדוק קוד ו-PIN', 'error');
     }
-    if (btn) { btn.disabled = false; btn.textContent = 'הצטרף לשיתוף'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'הצטרפות לשיתוף'; }
   },
 
   async revoke(shareId) {
@@ -10987,11 +11042,11 @@ const OppBoard = {
       const actionHtml = applied
         ? `<div style="font-size:12px;color:var(--gray-500);margin-top:8px;">${
             applied === 'pending'
-              ? `⏳ הוגשה מועמדות, בהמתנה לתשובה<br><button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px;margin-top:6px;color:#991B1B;width:100%;" onclick="OppBoard.withdraw('${o.id}')">🚫 בטל מועמדות</button>`
+              ? `⏳ הוגשה מועמדות, בהמתנה לתשובה<br><button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px;margin-top:6px;color:#991B1B;width:100%;" onclick="OppBoard.withdraw('${o.id}')">🚫 ביטול מועמדות</button>`
               : applied === 'selected' ? '✅ המועמדות אושרה!' : 'לא התקדמנו הפעם'
           }</div>`
         : `<textarea id="opp-apply-msg-${o.id}" class="form-input" rows="2" placeholder="הודעה קצרה למפרסם (לא חובה)" style="margin-top:8px;font-size:12.5px;"></textarea>
-           <button class="btn btn-primary" style="width:100%;margin-top:6px;font-size:12.5px;padding:8px;" onclick="OppBoard.apply('${o.id}')">✋ הגש מועמדות</button>`;
+           <button class="btn btn-primary" style="width:100%;margin-top:6px;font-size:12.5px;padding:8px;" onclick="OppBoard.apply('${o.id}')">✋ הגשת מועמדות</button>`;
       return `
         <div style="background:var(--surface);border:1px solid var(--gray-100);border-radius:12px;padding:12px 14px;margin-bottom:10px;">
           <div style="font-size:13.5px;font-weight:700;color:var(--navy-500);">${escapeHtml(o.title)}</div>
@@ -11014,7 +11069,7 @@ const OppBoard = {
       const m = e.message || '';
       const msgOut = m.includes('already_applied') ? 'כבר הגשת מועמדות להזדמנות הזו'
         : m.includes('opportunity_vertical_mismatch') ? 'ההזדמנות הזו לא בתחום שלך'
-        : m.includes('application_rate_limit') ? 'הגעת למקסימום מועמדויות ביום, נסה שוב מחר'
+        : m.includes('application_rate_limit') ? 'הגעת למקסימום מועמדויות ביום, אפשר לנסות שוב מחר'
         : 'שגיאה: ' + m;
       toast(msgOut, 'error');
     }
@@ -11049,7 +11104,7 @@ const OppBoard = {
           ${o.status === 'open' ? `
             <div style="display:flex;gap:8px;margin-top:8px;">
               <button class="btn btn-ghost" style="flex:1;font-size:12px;padding:7px;" onclick="OppBoard.viewApplications('${o.id}')">👥 צפייה במועמדים</button>
-              <button class="btn btn-ghost" style="flex:1;font-size:12px;padding:7px;color:#991B1B;" onclick="OppBoard.close('${o.id}')">סגור</button>
+              <button class="btn btn-ghost" style="flex:1;font-size:12px;padding:7px;color:#991B1B;" onclick="OppBoard.close('${o.id}')">סגירה</button>
             </div>` : ''}
         </div>`;
     }).join('');
@@ -11177,7 +11232,7 @@ const OppBoard = {
       OppBoard.switchSubTab('mine');
     } catch (e) {
       const m = e.message || '';
-      const msgOut = m.includes('opportunity_rate_limit') ? 'הגעת למקסימום 5 פרסומים ביום, נסה שוב מחר' : 'שגיאה: ' + m;
+      const msgOut = m.includes('opportunity_rate_limit') ? 'הגעת למקסימום 5 פרסומים ביום, אפשר לנסות שוב מחר' : 'שגיאה: ' + m;
       toast(msgOut, 'error');
     }
     btn.disabled = false; btn.textContent = '📤 פרסם';
@@ -11237,7 +11292,7 @@ const FeatureGate = {
         <div style="color:#fff;font-size:17px;font-weight:900;margin-bottom:6px;">הפיצ'ר ייפתח אוטומטית</div>
         <div style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:18px;line-height:1.7;">
           הוספת עוד ${leadsLeft > 0 ? leadsLeft + ' לידים לפתיחה מיידית' : ''}<br>
-          ${leadsLeft > 0 ? 'או המתן עד לסיום מבחן 7 ימים' : ''}
+          ${leadsLeft > 0 ? 'או להמתין עד לסיום מבחן 7 הימים' : ''}
         </div>
         <div style="color:#60A5FA;font-size:22px;font-weight:900;letter-spacing:2px;margin-bottom:16px;">⏳ ${fmt(ms)}</div>
         <div style="width:100%;max-width:240px;margin-bottom:14px;">
@@ -11317,11 +11372,11 @@ const Marketing = {
     const trialBanner = !AI.ENABLED ? '' : !hasAccess ? `
       <div style="background:linear-gradient(90deg,#7C3AED,#2563EB);color:#fff;padding:10px 18px;border-radius:var(--radius-md);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
         <span style="font-weight:600;font-size:0.9rem;">🔒 זה מה שכלול בתוסף השיווק, ₪100/חודש</span>
-        <span onclick="toast('לרכישת התוסף פנה אלינו: info@plto.app','info')" style="cursor:pointer;font-size:0.82rem;text-decoration:underline;white-space:nowrap;">הפעלה עכשיו</span>
+        <span onclick="toast('לרכישת התוסף אפשר לפנות אלינו: info@plto.app','info')" style="cursor:pointer;font-size:0.82rem;text-decoration:underline;white-space:nowrap;">הפעלה עכשיו</span>
       </div>` : (!isAddon && trialLeft > 0) ? `
       <div style="background:linear-gradient(90deg,#f59e0b,#d97706);color:#fff;padding:10px 18px;border-radius:var(--radius-md);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
         <span style="font-weight:600;font-size:0.9rem;">⏰ ניסיון חינמי, ${trialLeft} ימים נותרו</span>
-        <span onclick="toast('לשדרוג פנה אלינו: info@plto.app','info')" style="cursor:pointer;font-size:0.82rem;text-decoration:underline;white-space:nowrap;">שדרוג ל-₪100/חודש</span>
+        <span onclick="toast('לשדרוג אפשר לפנות אלינו: info@plto.app','info')" style="cursor:pointer;font-size:0.82rem;text-decoration:underline;white-space:nowrap;">שדרוג ל-₪100/חודש</span>
       </div>` : '';
 
     el.innerHTML = `
@@ -11433,7 +11488,7 @@ const Marketing = {
             </div>` : `
             <div>
               <label class="tool-label">בחירת ${getLabel('property')}</label>
-              <select class="form-input" id="mktg-post-prop">${properties.length ? properties.map(p=>`<option value="${p.id}">${p.title||p.city}</option>`).join('') : `<option>אין ${getLabel('properties')} עדיין</option>`}</select>
+              <select class="form-input" id="mktg-post-prop">${properties.length ? properties.map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.title||p.city)}</option>`).join('') : `<option>אין ${getLabel('properties')} עדיין</option>`}</select>
             </div>`}
             <div>
               <label class="tool-label">פלטפורמה</label>
@@ -11482,7 +11537,7 @@ const Marketing = {
             </div>
             <div>
               <label class="tool-label">שם ${isLawyer ? 'המשרד' : 'העסק'} / חתימה</label>
-              <input class="form-input" id="mktg-campaign-sig" type="text" placeholder="${State.tenant?.name || (isLawyer ? 'המשרד שלי' : 'העסק שלי')}" />
+              <input class="form-input" id="mktg-campaign-sig" type="text" placeholder="${escapeHtml(State.tenant?.name || (isLawyer ? 'המשרד שלי' : 'העסק שלי'))}" />
             </div>
             <button class="tool-btn tool-btn-primary" onclick="Marketing.genCampaign()">✨ יצירת הודעה</button>
             <div class="mktg-output" id="mktg-campaign-out"></div>
@@ -12680,7 +12735,7 @@ const Gamify = {
     }
     this.save();
     this.closeMilestone();
-    toast('🎯 שמרנו! תוכל לממש מהחנות בכל עת, המשך לצבור XP לפרס גדול יותר!', 'success', 4000);
+    toast('🎯 שמרנו! אפשר לממש מהחנות בכל עת ולהמשיך לצבור XP לפרס גדול יותר!', 'success', 4000);
   },
 
   renderStore() {
@@ -13951,7 +14006,7 @@ const ClientConsent = {
         <button class="btn btn-ghost" style="width:100%;" onclick="ClientConsent.respond(false)">לדחות</button>
       `;
     } catch (_e) {
-      body.innerHTML = `<div style="font-size:13px;color:var(--gray-500,#64748B);">שגיאה בטעינה, נסה שוב מאוחר יותר</div>`;
+      body.innerHTML = `<div style="font-size:13px;color:var(--gray-500,#64748B);">שגיאה בטעינה, אפשר לנסות שוב מאוחר יותר</div>`;
     }
   },
 
@@ -14043,7 +14098,7 @@ const LeadReferral = {
     if (!name)     { toast('יש להזין את שם הקולגה', 'error'); return; }
     if (isExternal && !profession) { toast('יש לציין את תחום המקצוע', 'error'); return; }
     if (commType !== 'none') { toast('עמלת הפניה אינה זמינה כרגע', 'error'); return; }
-    if (!this._consentMode) { toast('יש לבחור כיצד קיבלת/תקבל את הסכמת הלקוח', 'error'); return; }
+    if (!this._consentMode) { toast('יש לבחור איך התקבלה, או תתקבל, הסכמת הלקוח', 'error'); return; }
 
     let commValue = null;
     if (commType !== 'none') {
@@ -14080,7 +14135,7 @@ const LeadReferral = {
       if (requireConsent && data.consent_token) {
         const consentLink = `https://realestate.plto.app/?consent=${data.consent_token}`;
         this._waTargetPhone = lead.phone;
-        this._lastMsg = `היי ${lead.name.split(' ')[0]} 👋\nלצורך המשך טיפול מקצועי, אני מבקש להעביר את פרטיך (שם וטלפון בלבד) ל${profession || LeadReferral.VERTICALS[vertical]} שותף.\nלאישור:\n${consentLink}`;
+        this._lastMsg = `היי ${lead.name.split(' ')[0]} 👋\nלצורך המשך טיפול מקצועי, אבקש להעביר את פרטיך (שם וטלפון בלבד) ל${profession || LeadReferral.VERTICALS[vertical]} שותף.\nלאישור:\n${consentLink}`;
         document.getElementById('lref-step2-emoji').textContent = '📨';
         document.getElementById('lref-step2-title').textContent = 'נשלחת בקשת אישור ללקוח';
         document.getElementById('lref-step2-sub').textContent = 'יש לשלוח את הקישור ללקוח בוואטסאפ. ברגע שיאשר, ניתן יהיה לשלוח את קישור ההפניה לקולגה ממסך "ההפניות שלי".';
@@ -14112,7 +14167,7 @@ const LeadReferral = {
       toast('🔗 ההפניה נוצרה!', 'success');
     } catch (e) {
       const msg = (e.message || '').includes('referral_rate_limit')
-        ? 'הגעת למקסימום 10 הפניות ביום, נסה שוב מחר'
+        ? 'הגעת למקסימום 10 הפניות ביום, אפשר לנסות שוב מחר'
         : 'שגיאה: ' + (e.message || e);
       toast(msg, 'error');
     }
@@ -14156,12 +14211,12 @@ const LeadReferral = {
       const lead = escapeHtml(data.lead_first_name || 'לקוח');
       if (data.locked) {
         document.getElementById('lref-accept-text').innerHTML =
-          `<strong>${who}</strong> הפנה אליך לקוח: <strong>${lead}</strong>, בכפוף לעמלת הפניה של <strong>${escapeHtml(data.commission_label||'')}</strong>.<br>יש לחתום על הסכם קצר לפני שהליד ייחשף.`;
+          `הפניית לקוח מ-<strong>${who}</strong>: <strong>${lead}</strong>, בכפוף לעמלת הפניה של <strong>${escapeHtml(data.commission_label||'')}</strong>.<br>יש לחתום על הסכם קצר לפני שהליד ייחשף.`;
       } else {
         document.getElementById('lref-accept-text').innerHTML =
-          `<strong>${who}</strong> הפנה אליך לקוח: <strong>${lead}</strong>.<br>קבל את הליד והוא ייכנס ישר לפייפליין שלך.`;
+          `הפניית לקוח מ-<strong>${who}</strong>: <strong>${lead}</strong>.<br>אחרי קבלת הליד הוא ייכנס ישר לפייפליין שלך.`;
       }
-      document.getElementById('lref-btn-accept').textContent = data.locked ? '✍️ צפייה בהסכם וחתימה' : '✅ קבל את הליד';
+      document.getElementById('lref-btn-accept').textContent = data.locked ? '✍️ צפייה בהסכם וחתימה' : '✅ קבלת הליד';
       setTimeout(() => openModal('modal-lead-referral-accept'), 1200);
     } catch (_e) {}
   },
@@ -14209,7 +14264,7 @@ const LeadReferral = {
         toast('שגיאה: ' + m, 'error');
       }
     }
-    btn.disabled = false; btn.textContent = '✅ קבל את הליד';
+    btn.disabled = false; btn.textContent = '✅ קבלת הליד';
   },
 
   // ── הסכם עמלה + חתימה דיגיטלית ──────────────────────────────────────
@@ -14422,7 +14477,7 @@ const GmailInbox = {
       this._threads = data.threads || [];
       this._renderList();
     } catch (e) {
-      container.innerHTML = `<div class="inbox-empty">❌ ${escapeHtml(e.message)}<br><span style="font-size:12px;margin-top:8px;display:block;">יש לוודא שתיבת הדואר מחוברת</span></div>`;
+      container.innerHTML = `<div class="inbox-empty">❌ ${escapeHtml(heError(e.message))}<br><span style="font-size:12px;margin-top:8px;display:block;">יש לוודא שתיבת הדואר מחוברת</span></div>`;
     }
   },
 
@@ -14491,7 +14546,7 @@ const GmailInbox = {
       const t = this._threads.find(x => x.id === threadId);
       if (t) { t.unread = false; this._renderList(); }
     } catch (e) {
-      msgsEl.innerHTML = `<div class="inbox-empty">❌ ${escapeHtml(e.message)}</div>`;
+      msgsEl.innerHTML = `<div class="inbox-empty">❌ ${escapeHtml(heError(e.message))}</div>`;
     }
   },
 
@@ -14570,7 +14625,7 @@ const GmailInbox = {
     } catch (e) {
       toast(e.message || 'שגיאה בשליחה', 'error');
     } finally {
-      if (btn) { btn.disabled = false; btn.textContent = '📤 שלח'; }
+      if (btn) { btn.disabled = false; btn.textContent = '📤 שליחה'; }
     }
   },
 };
@@ -14630,7 +14685,7 @@ const AnnualUpsell = {
             <div class="aum-roi-item"><div class="aum-roi-val aum-roi-green">12 חודש</div><div>במערכת</div></div>
           </div>
           <p style="color:var(--gray-500);font-size:12px;margin:10px 0 0;text-align:center;">מחיר מוזל לנרשמים מראש, לפני שנגדיל את המחיר 🔒</p>`,
-        cta:   'בדיוק מה שאני צריך, עדכנו אותי 📬',
+        cta:   'בדיוק מה שחיפשתי, עדכנו אותי 📬',
       },
       streak_18: {
         icon:  '💼',
@@ -14854,7 +14909,7 @@ const AccessibilityMode = {
           <li>סימון פוקוס גלוי לניווט מקלדת בכל מצב, טבעת כחולה במצב רגיל, צהובה בולטת במצב נגישות</li>
           <li>תגיות ARIA ותיוג סמנטי לקוראי מסך (NVDA, JAWS, VoiceOver)</li>
           <li>ניווט מלא ממקלדת: Tab, Enter, Space, כולל כל כפתורי הניווט והמודלים</li>
-          <li>קישור "דלג לתוכן הראשי" בלחיצה ראשונה על Tab</li>
+          <li>קישור "מעבר לתוכן הראשי" בלחיצה ראשונה על Tab</li>
           <li>העדפת הנגישות נשמרת אוטומטית בין כניסות</li>
           <li>הודעות מערכת (toast) מוכרזות אוטומטית לקוראי מסך</li>
         </ul>
@@ -14877,9 +14932,9 @@ document.querySelectorAll('#sidebar .nav-item').forEach(el => {
   if (!el.getAttribute('href')) el.setAttribute('tabindex', '0');
 });
 
-// Modal close buttons: ensure aria-label="סגור" on all that lack one
+// Modal close buttons: ensure aria-label="סגירה" on all that lack one
 document.querySelectorAll('.modal-close:not([aria-label])').forEach(btn => {
-  btn.setAttribute('aria-label', 'סגור');
+  btn.setAttribute('aria-label', 'סגירה');
 });
 
 /* ═══════════════════════════════════════════
@@ -14974,7 +15029,7 @@ const App = {
     const email    = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value.trim();
     if (!email) { toast('נא להזין אימייל', 'error'); return; }
-    if (password.length < 8) { toast('סיסמה חייבת לפחות 8 תווים', 'error'); return; }
+    if (password.length < 8) { toast('הסיסמה צריכה להכיל לפחות 8 תווים', 'error'); return; }
     await this._authAndEnter(email, password, true);
   },
   async forgotPassword() {
@@ -14984,7 +15039,7 @@ const App = {
       redirectTo: 'https://realestate.plto.app/',
     });
     if (error) { toast('שגיאה: ' + error.message, 'error'); return; }
-    toast('📧 נשלח אימייל לאיפוס סיסמה, בדוק את תיבת הדואר שלך', 'success');
+    toast('📧 נשלח אימייל לאיפוס סיסמה, כדאי לבדוק את תיבת הדואר', 'success');
   },
   loginDemo() {
     State.isDemo = true;
@@ -15018,7 +15073,7 @@ const App = {
   },
   async _authAndEnter(email, password) {
     const loginBtn = document.getElementById('btn-login-email');
-    if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'מתחבר...'; }
+    if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'מתחברים...'; }
     try {
       // Try login first; if credentials unknown → auto-signup for new users
       let result = await DB.signIn(email, password);
@@ -15028,7 +15083,7 @@ const App = {
           toast('יש לאשר את האימייל שנשלח אליך ואז לנסות שוב', 'error'); return;
         }
         // Try signup - distinguishes new user from wrong password
-        if (loginBtn) loginBtn.textContent = 'יוצר חשבון...';
+        if (loginBtn) loginBtn.textContent = 'יוצרים חשבון...';
         result = await DB.signUp(email, password);
         if (result.error) {
           const sm = result.error.message || '';
@@ -15566,9 +15621,10 @@ const Today = {
     const withVal = open.filter(l => Number(l.budget_max) > 0);
     const sum = withVal.reduce((s, l) => s + Number(l.budget_max), 0);
     const need = g.overdue.length + g.today.length + g.fresh.length + g.attention.length + g.clients.length + g.oldOverdue.length;
-    const valPart = sum ? ` · שווי פתוח ${formatMoney(sum)}${withVal.length < open.length ? ` (ל-${withVal.length} מתוך ${open.length} לידים)` : ''}` : '';
+    // כל חלק בבידוד כיווניות: אחרת "₪3.3M · 4" נקרא כרצף משמאל לימין והמספרים מתחלפים
+    const valPart = sum ? ` · <span class="ts-part">שווי פתוח ${escapeHtml(formatMoney(sum))}${withVal.length < open.length ? ` (ל-${withVal.length} מתוך ${open.length} לידים)` : ''}</span>` : '';
     let html = `<div class="today-wrap">
-      <div class="today-status" aria-live="polite"><strong>${open.length}</strong> לידים פתוחים${valPart} · <strong>${need}</strong> דורשים טיפול</div>`;
+      <div class="today-status" aria-live="polite"><span class="ts-part"><strong>${open.length}</strong> לידים פתוחים</span>${valPart} · <span class="ts-part"><strong>${need}</strong> דורשים טיפול</span></div>`;
     for (const [key, title] of this.GROUPS) {
       const rows = g[key];
       if (!rows.length) continue;
@@ -15850,9 +15906,9 @@ const Dashboard = {
     };
     let html = shown.map(renderItem).join('');
     if (!this._activityExpanded && hidden > 0) {
-      html += `<button class="activity-toggle-btn" onclick="Dashboard._activityExpanded=true;Dashboard.renderActivity();">▼ הצג עוד ${hidden} פעילויות</button>`;
+      html += `<button class="activity-toggle-btn" onclick="Dashboard._activityExpanded=true;Dashboard.renderActivity();">▼ עוד ${hidden} פעילויות</button>`;
     } else if (this._activityExpanded && all.length > 3) {
-      html += `<button class="activity-toggle-btn" onclick="Dashboard._activityExpanded=false;Dashboard.renderActivity();">▲ הסתר</button>`;
+      html += `<button class="activity-toggle-btn" onclick="Dashboard._activityExpanded=false;Dashboard.renderActivity();">▲ הסתרה</button>`;
     }
     el.innerHTML = html;
   },
@@ -18471,7 +18527,7 @@ const Settings = {
         <div class="settings-section-title">תחום העסק</div>
         ${(() => {
           const IND_META = {
-            realestate:         { icon:'🏠', label:'סוכן נדל"ן' },
+            realestate:         { icon:'🏠', label:'נדל"ן' },
             realestate_lawyer:  { icon:'⚖️', label:'עו"ד' },
             interior:           { icon:'🎨', label:'עיצוב פנים ואדריכלות' },
             other:              { icon:'🎯', label:'אחר' },
@@ -18734,7 +18790,7 @@ const Settings = {
   },
 
   async confirmChangeIndustry(ind) {
-    const IND_NAMES = { realestate: 'סוכן נדל"ן', realestate_lawyer: 'עו"ד', interior: 'עיצוב פנים ואדריכלות', other: 'שירותים ועסקים' };
+    const IND_NAMES = { realestate: 'נדל"ן', realestate_lawyer: 'עו"ד', interior: 'עיצוב פנים ואדריכלות', other: 'שירותים ועסקים' };
     if (!confirm(`לשנות את תחום העסק ל${IND_NAMES[ind] || ind}? התוויות המותאמות אישית יתאפסו לברירת המחדל של התחום החדש.`)) return;
     await this.setIndustry(ind);
   },
@@ -19479,7 +19535,7 @@ ${AI.ENABLED ? `
                 <div style="color:var(--gray-400);font-size:0.75rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${this._rows[0]?.[i] ? escapeHtml(this._rows[0][i]) : '~~'}</div>
               </div>
               <select class="form-input" style="width:auto;flex-shrink:0;" onchange="LeadImport.setMapping(${i}, this.value)">
-                <option value="">דלג</option>
+                <option value="">בלי שיוך</option>
                 ${this.FIELDS.map(f => `<option value="${f.key}" ${this._mapping[i] === f.key ? 'selected' : ''}>${f.label}${f.required ? ' *' : ''}</option>`).join('')}
               </select>
             </div>
@@ -19487,7 +19543,7 @@ ${AI.ENABLED ? `
         </div>`;
       footer.innerHTML = `
         <button class="btn btn-ghost" onclick="LeadImport.back()">חזרה</button>
-        <button class="btn btn-primary" style="flex:1;" onclick="LeadImport.toPreview()">המשך לתצוגה מקדימה</button>`;
+        <button class="btn btn-primary" style="flex:1;" onclick="LeadImport.toPreview()">מעבר לתצוגה מקדימה</button>`;
       return;
     }
 
@@ -20502,7 +20558,7 @@ const AgentPortfolio = {
     if (!this._link) return;
     navigator.clipboard?.writeText(this._link)
       .then(() => toast('📋 הקישור הועתק', 'success'))
-      .catch(() => toast('לא ניתן להעתיק, בחר ידנית', 'warning'));
+      .catch(() => toast('לא ניתן להעתיק, אפשר לסמן ולהעתיק ידנית', 'warning'));
   },
 
   shareLinkWA() {
@@ -20652,7 +20708,7 @@ const LeadTracker = {
     if (!this._link) return;
     navigator.clipboard?.writeText(this._link)
       .then(() => toast('📋 הקישור הועתק', 'success'))
-      .catch(() => toast('לא ניתן להעתיק, בחר ידנית', 'warning'));
+      .catch(() => toast('לא ניתן להעתיק, אפשר לסמן ולהעתיק ידנית', 'warning'));
   },
 
   shareLinkWA() {
@@ -20690,7 +20746,7 @@ const LeadTracker = {
       const { data, error } = await sbClient.rpc('list_lead_tracker_updates', { p_lead_id: this._leadId });
       if (error) throw error;
       const updates = data || [];
-      list.innerHTML = updates.length ? '' : '<div style="font-size:12px;color:var(--gray-400);text-align:center;padding:8px 0;">אין עדיין עדכונים, הראשון שתוסיף יופיע כאן וגם ללקוח</div>';
+      list.innerHTML = updates.length ? '' : '<div style="font-size:12px;color:var(--gray-400);text-align:center;padding:8px 0;">אין עדיין עדכונים, העדכון הראשון יופיע כאן וגם אצל הלקוח</div>';
       updates.forEach(u => {
         const isClient = u.sender === 'client';
         const row = document.createElement('div');
@@ -20921,7 +20977,7 @@ sbClient.auth.onAuthStateChange((event, session) => {
       // time this macrotask runs the whole script has already finished parsing.
       // Don't remove it without keeping that guarantee some other way.
       setTimeout(async () => {
-        LoadingOverlay.show('מתחבר...');
+        LoadingOverlay.show('מתחברים...');
         try {
           const { isNew, joinedViaToken, joinedTenantName } = await DB.ensureAgent(session.user.email, session.user.user_metadata?.full_name || session.user.email.split('@')[0]);
           if (isNew) FunnelTracker.track('signup_completed', { method: 'google' });
@@ -21260,7 +21316,7 @@ const ProHub = {
         const fc = Math.round(d.value * d.prob);
         totalForecast += fc;
         return `<div class="pro-forecast-row">
-          <span class="pro-forecast-label">${stageNames[sid] || sid} <span style="color:var(--gray-400)">(${d.count})</span></span>
+          <span class="pro-forecast-label">${escapeHtml(stageNames[sid] || sid)} <span style="color:var(--gray-400)">(${d.count})</span></span>
           <span class="pro-forecast-val">₪${fc.toLocaleString('he-IL')}</span>
         </div>`;
       }).join('');
@@ -21286,7 +21342,7 @@ const ProHub = {
   _openBroadcast() {
     const stageNames = this._stageNames();
     const opts = (State.stages || []).filter(s => !isWonStage(s.id))
-      .map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+      .map(s => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.name)}</option>`).join('');
 
     document.getElementById('pro-bc-body').innerHTML = `
       <div class="form-group">
@@ -21323,8 +21379,8 @@ const ProHub = {
         <div class="pro-bc-lead">
           <span style="font-size:15px;">💬</span>
           <span style="flex:1;font-size:13px;font-weight:600;">${escapeHtml(l.name)}</span>
-          <span style="font-size:11px;color:var(--gray-400);margin-left:4px;">${stageNames[l.stage] || ''}</span>
-          <button onclick="ProHub._sendWa('${l.id}')" style="background:#25d366;color:white;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;">שלח</button>
+          <span style="font-size:11px;color:var(--gray-400);margin-left:4px;">${escapeHtml(stageNames[l.stage] || '')}</span>
+          <button onclick="ProHub._sendWa('${l.id}')" style="background:#25d366;color:white;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;">שליחה</button>
         </div>`).join('');
   },
 
@@ -22040,7 +22096,7 @@ const QuickLog = {
 
       const name = (this._parsed.lead_name || '').toLowerCase().trim();
       if (!name || name.length < 2) {
-        toast('לא זוהה שם לקוח בטקסט, כתוב שם ברור', 'warning');
+        toast('לא זוהה שם לקוח בטקסט, יש לכתוב שם ברור', 'warning');
         this._setState('input'); return;
       }
 
@@ -22050,7 +22106,7 @@ const QuickLog = {
       });
 
       if (matches.length === 0) {
-        toast(`לא נמצא ליד בשם "${this._parsed.lead_name}", בדוק את השם`, 'warning');
+        toast(`לא נמצא ליד בשם "${this._parsed.lead_name}", כדאי לבדוק את השם`, 'warning');
         this._setState('input'); return;
       }
       if (matches.length === 1) {
@@ -22325,7 +22381,7 @@ const MotivationAgent = {
   _STORAGE_KEY: 'plto_motive_v2',
   _countdownInterval: null,
   _quotes: [
-    'כל ליד הוא הזדמנות. כל שיחה היא צעד קדימה. המשך כך! 💪',
+    'כל ליד הוא הזדמנות. כל שיחה היא צעד קדימה. ככה ממשיכים! 💪',
     'עסקאות לא נסגרות בישיבה, הן נסגרות בפעולה. קדימה! 🚀',
     'המנהלים המצליחים ביותר שמעו "לא" פעמים רבות, ועדיין המשיכו.',
     'כל יום שבונים את הפייפליין, בונים את העתיד.',
@@ -22400,7 +22456,7 @@ const MotivationAgent = {
       if (isCool) {
         usageEl.textContent = '';
       } else if (rem === 0) {
-        usageEl.textContent = 'הגעת למגבלת היום, חזור מחר 🌅';
+        usageEl.textContent = 'הגעת למגבלת היום, נתראה מחר 🌅';
       } else {
         const nextWaitMin = this._COOLDOWNS_MIN[Math.min(state.uses, this._COOLDOWNS_MIN.length - 1)];
         const waitStr = nextWaitMin >= 60 ? `${nextWaitMin/60} שעות` : `${nextWaitMin} דק'`;
@@ -22451,7 +22507,7 @@ const MotivationAgent = {
       toast(`⏳ הסוכן יחזור בעוד ${this._fmtTime(this._remaining())}, כדאי לקבוע שגרת בוקר ולילה!`, 'info', 3000); return;
     }
     if (!AiLimits.canUse('motivation')) {
-      toast('הגעת למגבלת המוטיבציה היומית, חזור מחר! 🌅', 'info'); return;
+      toast('הגעת למגבלת המוטיבציה היומית, נתראה מחר 🌅', 'info'); return;
     }
     const textEl = document.getElementById('motivation-text');
     const btn = document.getElementById('motivation-btn');
@@ -22636,7 +22692,7 @@ const GuidedTour = {
       <div style="display:flex;align-items:center;justify-content:space-between;">
         <div class="tour-step-dots">${dots}</div>
         <div style="display:flex;gap:8px;align-items:center;">
-          <button class="tour-skip-btn" onclick="GuidedTour.done(false)">דלג</button>
+          <button class="tour-skip-btn" onclick="GuidedTour.done(false)">דילוג</button>
           <button class="tour-next-btn" onclick="GuidedTour._next()">
             ${step.isLast ? '🚀 נתחיל!' : 'הבא'}
           </button>
@@ -22657,7 +22713,7 @@ const GuidedTour = {
     document.getElementById('tour-overlay')?.remove();
     document.getElementById('tour-tooltip')?.remove();
     document.querySelectorAll('.tour-highlight-pulse').forEach(el => el.classList.remove('tour-highlight-pulse'));
-    if (completed) toast('🎉 אפשר להתחיל! הוסף את הליד הראשון שלך', 'success');
+    if (completed) toast('🎉 אפשר להתחיל! מוסיפים את הליד הראשון', 'success');
   },
 };
 
@@ -22772,7 +22828,7 @@ const IdeaBox = {
 
   async submit() {
     const text = (document.getElementById('idea-text')?.value || '').trim();
-    if (text.length < 15) { toast('נא כתוב לפחות משפט אחד המתאר את הרעיון', 'warning'); return; }
+    if (text.length < 15) { toast('נא לכתוב לפחות משפט אחד שמתאר את הרעיון', 'warning'); return; }
     const category = document.getElementById('idea-category')?.value || 'other';
     const agentName  = State.agent?.name  || '';
     const agentEmail = State.agent?.email || '';
@@ -22813,7 +22869,7 @@ const IdeaBox = {
     } catch(e) {
       toast('שגיאה בשליחה: ' + e.message, 'error');
     } finally {
-      if (btn) { btn.disabled = false; btn.textContent = '💡 שלח רעיון'; }
+      if (btn) { btn.disabled = false; btn.textContent = '💡 שליחת רעיון'; }
     }
   },
 };
@@ -22925,7 +22981,7 @@ const Team = {
     if (!d) {
       el.innerHTML = `<div style="text-align:center;padding:12px;color:var(--gray-400);font-size:12.5px;">
         שגיאה בטעינת נתוני הצוות
-        <button class="btn btn-ghost btn-sm" onclick="Team.open()" style="display:block;margin:8px auto 0;">🔄 נסה שוב</button>
+        <button class="btn btn-ghost btn-sm" onclick="Team.open()" style="display:block;margin:8px auto 0;">🔄 ניסיון נוסף</button>
       </div>`;
       return;
     }
@@ -23013,7 +23069,7 @@ const Team = {
       if (error) throw error;
       document.getElementById('team-invite-email').value = '';
       toast(data?.is_overage
-        ? `✅ הזמנה נשלחה! שים לב: זה מושב מעבר למכסה הכלולה, תוספת ₪${data.monthly_overage_charge}/חודש`
+        ? `✅ הזמנה נשלחה! לתשומת לבך: זה מושב מעבר למכסה הכלולה, תוספת ₪${data.monthly_overage_charge}/חודש`
         : '✅ הזמנה נשלחה בהצלחה', data?.is_overage ? 'info' : 'success', 6000);
       await this.fetch();
       this.renderSummary();
@@ -23028,7 +23084,7 @@ const Team = {
           Support.open();
           setTimeout(() => {
             const inp = document.getElementById('support-msg-input');
-            if (inp) inp.value = `מעוניין בהצעת PLTO Enterprise, הגעתי למקסימום המושבים הזמינים (25) בחבילת הסוכנות ויש צורך בעוד מושבים.`;
+            if (inp) inp.value = `בקשה להצעת PLTO Enterprise: הגעתי למקסימום המושבים הזמינים (25) בחבילת הסוכנות ויש צורך בעוד מושבים.`;
           }, 50);
           toast('הגעת למקסימום המושבים הזמינים, יצרנו לך פנייה לצוות התמיכה להצעה מותאמת אישית 🚀', 'info', 6000);
         }
@@ -23038,7 +23094,7 @@ const Team = {
         toast('שגיאה: ' + msg, 'error');
       }
     } finally {
-      if (btn) { btn.disabled = false; btn.textContent = '📨 שלח הזמנה'; }
+      if (btn) { btn.disabled = false; btn.textContent = '📨 שליחת הזמנה'; }
     }
   },
 
@@ -23086,7 +23142,7 @@ const Team = {
     if (!this._currentInviteLink) return;
     navigator.clipboard?.writeText(this._currentInviteLink)
       .then(() => toast('📋 הקישור הועתק', 'success'))
-      .catch(() => toast('לא ניתן להעתיק, בחר ידנית', 'warning'));
+      .catch(() => toast('לא ניתן להעתיק, אפשר לסמן ולהעתיק ידנית', 'warning'));
   },
 
   shareInviteLinkWA() {
@@ -23364,7 +23420,7 @@ const PrivacyShield = {
       <div style="position:relative;z-index:1;text-align:center;direction:rtl;">
         <div style="font-size:60px;margin-bottom:12px;">🔒</div>
         <div style="color:white;font-size:19px;font-weight:800;margin-bottom:8px;">מסך מוגן</div>
-        <div style="color:rgba(255,255,255,0.65);font-size:13px;">חזור לחלון כדי להמשיך</div>
+        <div style="color:rgba(255,255,255,0.65);font-size:13px;">יש לחזור לחלון כדי להמשיך</div>
       </div>`;
 
     document.body.appendChild(overlay);

@@ -188,7 +188,7 @@ const o = await page.evaluate(async () => {
 });
 check(!/AI עונה|סוכן התמיכה שלך|התשובה יכולה לפעמים/.test(o.supportText) && /הפנייה מגיעה ישירות לצוות/.test(o.supportText), 'צ\'אט התמיכה לא מבטיח מענה AI ומציג שהפנייה מגיעה לצוות');
 check(o.supportToast && o.supportInvokes.filter(f => f === 'ai-proxy').length === 0 && o.supportInvokes.includes('notify-owner'), 'שליחת פנייה: אישור ברור למשתמש, בלי AI, והצוות מקבל התראה');
-check(!/AI/.test(o.qlText) && /המשך לבחירת הליד/.test(o.qlText), 'היומן המהיר לא מציג AI ומציג את הצעד המקומי');
+check(!/AI/.test(o.qlText) && /מעבר לבחירת הליד/.test(o.qlText), 'היומן המהיר לא מציג AI ומציג את הצעד המקומי');
 check(o.qlOne.confirm && o.qlOne.lead === 'c' && /מיכל ברק/.test(o.qlOne.preview), 'יומן מהיר: ליד אחד מזוהה לפי שם ומוצג לאישור');
 check(o.qlSaved.type === 'note' && /^שוחחתי עם מיכל ברק/.test(o.qlSaved.content || '') && o.qlSaved.limitsUntouched, 'יומן מהיר: הטקסט נשמר כפי שנכתב כהערה, בלי לצרוך מכסת AI');
 check(o.qlMany.pick && o.qlMany.rows === 2, 'יומן מהיר: כמה לידים תואמים מציגים בחירה ידנית');
