@@ -63,6 +63,11 @@ check(imgs.every(i => /alt="[^"]{12,}"/.test(i) && /width="\d+"/.test(i) && /hei
 check(imgs.every(i => { const s = /src="([^"]+)"/.exec(i)?.[1]; return s && existsSync(join(root, s)); }), 'כל קבצי התמונות קיימים בריפו');
 check(/נתוני דוגמה/.test(text), 'צילומי המסך מסומנים כנתוני דוגמה');
 check(!/[א-ת]\/[א-ת]|\([א-ת]+\/[א-ת]+\)/.test(text), 'אין ניסוח עם לוכסן מגדרי');
+// ניסוח ניטרלי מגדרית: בלי פנייה בגוף שני ביחיד או ברבים מוטה ובלי שמות תפקיד בלשון זכר רבים
+const gendered = text.match(/בעצמכ[םן]|\bשלו\b|\bשלה\b|\bאתה\b|\bהזן\b|\bבחר\b|\bשלח\b|סוכני נדל|עורכי דין|בעלי עסקים|יועצים|ללקוח שסוגר/g);
+check(!gendered, 'הטקסט ניטרלי מגדרית' + (gendered ? ': ' + [...new Set(gendered)].join(', ') : ''));
+const meta = head.match(/(?:content|alt)="[^"]*"/g)?.join(' ') || '';
+check(!/בעצמכ[םן]|\bשלו\b|סוכני נדל|עורכי דין/.test(meta), 'תיאורי ה-SEO וה-alt ניטרליים מגדרית');
 check(!/[→←]/.test(text), 'אין חצים דקורטיביים בטקסט');
 check(/privacy-policy\.html/.test(body) && /info@plto\.app/.test(body), 'קישור למדיניות פרטיות והצהרת נגישות בדף');
 const aiTier = readFileSync(join(root, '.github/workflows/deploy.yml'), 'utf-8');
