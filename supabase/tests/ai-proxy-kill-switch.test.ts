@@ -75,6 +75,14 @@ test('OPTIONS preflight still works while blocked', async () => {
   untouched();
 });
 
+test('the new sales.plto.app domain is an allowed origin', async () => {
+  delete env.AI_ENABLED;
+  const res = await handler(new Request('https://example.invalid/ai-proxy', { method: 'OPTIONS', headers: { origin: 'https://sales.plto.app' } }));
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get('access-control-allow-origin'), 'https://sales.plto.app');
+  untouched();
+});
+
 test('with AI_ENABLED=true the normal flow resumes (a request with no token is rejected as 401, still no provider call)', async () => {
   env.AI_ENABLED = 'true';
   const res = await post();

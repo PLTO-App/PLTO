@@ -11,6 +11,7 @@ import { renderEmail } from './render.ts';
 
 const ALLOWED_ORIGINS = [
   'https://realestate.plto.app',
+  'https://sales.plto.app',
   'https://plto.app',
   'https://www.plto.app',
   'http://localhost:8080',
