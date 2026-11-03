@@ -136,7 +136,7 @@ r = await step(async () => { await LeadDocs.createExternal(); await new Promise(
 l = await log();
 const cr = l.find(x => x.kind === 'rpc' && x.fn === 'create_document_share');
 check(cr && cr.args.p_document_id === 'doc-1', 'יצירת קישור קוראת ל-create_document_share עם המסמך');
-check(r.val === `${'https://scyfywvzoogfrlalgftv.supabase.co'}/functions/v1/document-share?t=${TOKEN}`, 'הקישור ללקוח מפנה לפונקציה עם הטוקן, בלי נתיב הקובץ');
+check(r.val === `${new URL(page.url()).origin}/doc.html?t=${TOKEN}`, 'הקישור ללקוח מפנה לדף doc.html באתר עם הטוקן, בלי נתיב הקובץ');
 check(/בתוקף עד/.test(r.text) && /מוצג רק עכשיו/.test(r.text), 'מוצג תוקף, ושהקישור מוצג פעם אחת');
 await step(() => LeadDocs.copyShareLink());
 r = await step(() => window.__copied.slice(-1)[0]);

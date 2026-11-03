@@ -13293,7 +13293,7 @@ const PropertyShown = {
 const LeadDocs = {
   // מסמכי לקוח: הבאקט lead-documents פרטי, ובמסד נשמר רק נתיב הקובץ (מיגרציה 133).
   // פתיחה פנימית: קישור חתום של 60 שניות, רק למשתמש מחובר באותו עסק (מדיניות storage).
-  // שיתוף חיצוני: קישור לפונקציית document-share עם טוקן אקראי, בתוקף 7 ימים, שאפשר לבטל.
+  // שיתוף חיצוני: קישור ל-doc.html עם טוקן אקראי, בתוקף 7 ימים, שאפשר לבטל. הדף פונה לפונקציה document-share.
   _cache: {},
   _share: null,
   BUCKET: 'lead-documents',
@@ -13496,7 +13496,7 @@ const LeadDocs = {
       const { data, error } = await sbClient.rpc('create_document_share', { p_document_id: s.docId });
       if (error) throw error;
       if (!data?.token || !/^[0-9a-f]{64}$/.test(data.token)) throw new Error('bad_response');
-      s.link = { url: `${SUPABASE_URL}/functions/v1/document-share?t=${data.token}`, expires_at: data.expires_at };
+      s.link = { url: `${location.origin}/doc.html?t=${data.token}`, expires_at: data.expires_at };
       this._renderShare();
       this._loadShares();
       const doc = this._doc(s.docId, s.leadId);

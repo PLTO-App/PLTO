@@ -55,5 +55,7 @@ jobs:
         run: node scripts/test-upsell-off.mjs
       - name: Lead documents (private files, external and internal sharing)
         run: node scripts/test-lead-docs.mjs
+      - name: Client document page (doc.html)
+        run: node scripts/test-doc-page.mjs
       - name: Landing page claims and layout
         run: node scripts/test-landing.mjs
