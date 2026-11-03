@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { isPltoAdmin } from '../_shared/plto-admins.ts';
 
 const ALLOWED_ORIGINS = [
   'https://realestate.plto.app',
@@ -9,9 +10,8 @@ const ALLOWED_ORIGINS = [
   'http://127.0.0.1:8080',
 ];
 
-// תיבת המייל המחוברת משותפת לכל החברה — גישה מוגבלת לאדמינים בלבד,
-// לא per-tenant כמו שאר ה-RPCs/functions.
-const ADMIN_EMAILS = ['liders.crm@gmail.com', 'elgrablidudu@gmail.com'];
+// תיבת המייל המחוברת משותפת לכל החברה, ולכן הגישה רק לבעלי PLTO (לפי uid, ראו _shared/plto-admins.ts)
+// ולא per-tenant כמו שאר ה-RPCs וה-functions.
 
 function corsHeaders(origin: string | null) {
   const allowed =
@@ -158,7 +158,7 @@ Deno.serve(async (req: Request) => {
   }
 
   // ── 2. תיבת המייל היא משאב משותף של החברה — לא per-tenant — רק אדמין ────
-  if (!ADMIN_EMAILS.includes((user.email ?? '').toLowerCase())) {
+  if (!isPltoAdmin(user.id)) {
     return new Response(
       JSON.stringify({ error: 'Forbidden' }),
       { status: 403, headers: { ...cors, 'Content-Type': 'application/json' } },

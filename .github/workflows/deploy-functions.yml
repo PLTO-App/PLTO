@@ -27,3 +27,21 @@ jobs:
         run: supabase functions deploy notify-owner --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --no-verify-jwt --yes
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      # gmail-proxy בודק בעצמו משתמש מאומת ובעלים (לפי uid), ולכן בלי אימות JWT בשער.
+      - name: Deploy gmail-proxy
+        run: supabase functions deploy gmail-proxy --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --no-verify-jwt --yes
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      # twilio-whatsapp נפרס עם אימות JWT בשער (כמו בפריסה החיה), ובודק גם בעצמו.
+      - name: Deploy twilio-whatsapp
+        run: supabase functions deploy twilio-whatsapp --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --yes
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      # gmail-oauth-callback מושבת (מחזיר 410). נפרס כדי שהגרסה החיה תהיה הגרסה המושבתת.
+      - name: Deploy gmail-oauth-callback
+        run: supabase functions deploy gmail-oauth-callback --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --no-verify-jwt --yes
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}

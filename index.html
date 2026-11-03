@@ -4615,9 +4615,7 @@
       <a class="nav-item" id="nav-referral" data-screen="referral" onclick="App.go('referral');document.querySelector('.nav-new-badge')?.remove();" style="background:linear-gradient(135deg,rgba(22,163,74,0.12),rgba(16,185,129,0.06));border:1px solid rgba(22,163,74,0.22);border-radius:8px;margin-top:4px;">
         <span class="nav-icon">🎁</span> <span style="background:linear-gradient(135deg,#15803d,#16a34a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;">הזמנת חבר</span><span class="nav-new-badge" id="nav-ref-badge">חדש</span>
       </a>
-      <a class="nav-item" data-screen="email" onclick="App.go('email')" style="background:linear-gradient(135deg,rgba(37,99,235,0.10),rgba(30,58,95,0.06));border:1px solid rgba(37,99,235,0.18);border-radius:8px;margin-top:4px;">
-        <span class="nav-icon">📧</span> <span style="background:linear-gradient(135deg,#1E40AF,#2563EB);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;">תיבת דואר</span>
-      </a>
+      <!-- "תיבת דואר" הוסר מהתפריט ב-3.11.2026: התיבה המשותפת יוצאת משימוש, והמסך עבד רק לבעלים. הקוד של המסך נשאר -->
     </div>
     <div class="sidebar-footer">
       <div class="agent-info">
@@ -15182,7 +15180,8 @@ const App = {
     this._applyIndustryLabels();
     // Restore the screen the user was on before the refresh, instead of always
     // dropping them back onto the dashboard (?s=<screen>&lead=<id> written by go()).
-    const NOT_RESTORABLE = new Set(['login', 'lock', 'paywall', 'setup']);
+    // 'email': מסך תיבת הדואר הוסר מהתפריט (3.11.2026), ולכן גם קישור ישיר לא פותח אותו
+    const NOT_RESTORABLE = new Set(['login', 'lock', 'paywall', 'setup', 'email']);
     const urlParams   = new URLSearchParams(location.search);
     const savedScreen = urlParams.get('s');
     const savedLeadId = urlParams.get('lead');
@@ -15402,7 +15401,6 @@ const App = {
       { icon: '📈', label: 'אנליטיקס', run: go('analytics') },
       { icon: '🛠️', label: 'מרכז כלים', run: go('tools') },
       { icon: '📣', label: 'שירותי שיווק', run: go('marketing') },
-      { icon: '📧', label: 'תיבת דואר', run: go('email') },
       { sep: true }, { header: 'עוד' },
       { icon: '✨', label: 'פיצ\'רים PRO', run: go('pro') },
       { icon: '🏆', label: 'חנות XP', run: go('xp-store') },
