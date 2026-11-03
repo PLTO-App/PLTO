@@ -40,6 +40,12 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
+      # document-share: קישור ציבורי ללקוח (בלי התחברות). הטוקן נבדק ב-resolve_document_share (מיגרציה 133).
+      - name: Deploy document-share
+        run: supabase functions deploy document-share --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --no-verify-jwt --yes
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
       # gmail-oauth-callback מושבת (מחזיר 410). נפרס כדי שהגרסה החיה תהיה הגרסה המושבתת.
       - name: Deploy gmail-oauth-callback
         run: supabase functions deploy gmail-oauth-callback --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --no-verify-jwt --yes

@@ -4336,7 +4336,12 @@
     }
   }
 
-  </style>
+    /* שיתוף מסמך לקוח (LeadDocs) */
+    .doc-share-option { border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:10px; background:var(--bg-app); }
+    .doc-share-option .btn, #doc-share-list .btn { min-height:44px; }
+    .doc-share-created { margin-top:12px; padding-top:12px; border-top:1px dashed var(--border); }
+    #doc-share-link { direction:ltr; text-align:left; }
+</style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.js"
           integrity="sha384-nD3dwv4+ZqdYnmZKe/249ImlV04om7xTCcsoSeQYI+RO+XlKPoqAWaJR1M5SJH9p"
           crossorigin="anonymous"></script>
@@ -7484,6 +7489,17 @@
 </div>
 
 <!-- PIN Setup Modal -->
+<!-- שיתוף מסמך לקוח: קישור מאובטח חיצוני (7 ימים, ניתן לביטול) או פנימי בלבד -->
+<div class="modal-overlay hidden" id="modal-doc-share" onclick="closeModalOnBg(event,'modal-doc-share')">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title">שיתוף מסמך</div>
+      <button class="modal-close" aria-label="סגירה" onclick="closeModal('modal-doc-share')">×</button>
+    </div>
+    <div class="modal-body" id="doc-share-body" style="padding:16px 18px;"></div>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="modal-pin-setup">
   <div class="modal" style="max-width:340px;">
     <div class="modal-header">
@@ -13275,7 +13291,13 @@ const PropertyShown = {
    LEAD DOCUMENTS MODULE
 ═══════════════════════════════════════════ */
 const LeadDocs = {
+  // מסמכי לקוח: הבאקט lead-documents פרטי, ובמסד נשמר רק נתיב הקובץ (מיגרציה 133).
+  // פתיחה פנימית: קישור חתום של 60 שניות, רק למשתמש מחובר באותו עסק (מדיניות storage).
+  // שיתוף חיצוני: קישור לפונקציית document-share עם טוקן אקראי, בתוקף 7 ימים, שאפשר לבטל.
   _cache: {},
+  _share: null,
+  BUCKET: 'lead-documents',
+  _cols: 'id, lead_id, tenant_id, file_name, file_path, file_size, sent_at, sent_to_email, created_at',
 
   async load(leadId) {
     const container = document.getElementById('docs-list');
@@ -13288,7 +13310,7 @@ const LeadDocs = {
     try {
       const { data, error } = await sbClient
         .from('lead_documents')
-        .select('*')
+        .select(this._cols)
         .eq('lead_id', leadId)
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -13301,23 +13323,29 @@ const LeadDocs = {
     }
   },
 
+  _doc(docId, leadId) {
+    return this._cache[leadId]?.find(d => d.id === docId) || null;
+  },
+
   _renderDocRow(doc) {
+    const id = escapeHtml(doc.id), leadId = escapeHtml(doc.lead_id);
     const sent = doc.sent_at
       ? `<span style="color:var(--green-600);font-size:11px;">✅ נשלח ${doc.sent_to_email ? 'ל-' + escapeHtml(doc.sent_to_email) : ''}</span>`
-      : `<button class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:12px;"
-           onclick="LeadDocs.sendEmail('${doc.id}','${doc.lead_id}')">📧 שליחה למייל הליד</button>`;
+      : '';
     return `
       <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg-app);border-radius:8px;border:1px solid var(--border);">
         <div style="font-size:22px;">📄</div>
         <div style="flex:1;min-width:0;">
           <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(doc.file_name)}</div>
-          <div style="font-size:11px;color:var(--gray-400);">${formatRelDate(doc.created_at)}</div>
+          <div style="font-size:11px;color:var(--gray-400);">${formatRelDate(doc.created_at)} ${sent}</div>
         </div>
         <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
-          ${sent}
-          <a href="${escapeHtml(safeUrl(doc.file_url))}" target="_blank" class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:12px;">⬇️</a>
-          <button class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:12px;color:var(--red-500);"
-                  onclick="LeadDocs.delete('${doc.id}','${doc.lead_id}')">🗑</button>
+          <button class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:12px;" aria-label="פתיחת המסמך"
+                  onclick="LeadDocs.open('${id}','${leadId}')">⬇️</button>
+          <button class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:12px;" aria-label="שיתוף המסמך"
+                  onclick="LeadDocs.openShare('${id}','${leadId}')">🔗 שיתוף</button>
+          <button class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:12px;color:var(--red-500);" aria-label="מחיקת המסמך"
+                  onclick="LeadDocs.delete('${id}','${leadId}')">🗑</button>
         </div>
       </div>`;
   },
@@ -13333,24 +13361,25 @@ const LeadDocs = {
     input.value = '';
     if (file.size > 10 * 1024 * 1024) { toast('הקובץ גדול מדי (מקס׳ 10MB)', 'error'); return; }
     toast('מעלה מסמך...', '');
+    const path = `${DB.tenantId}/${leadId}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
     try {
-      const ext   = file.name.split('.').pop() || 'bin';
-      const path  = `${DB.tenantId}/${leadId}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-      const { error: upErr } = await sbClient.storage.from('lead-documents').upload(path, file, { contentType: file.type });
+      const { error: upErr } = await sbClient.storage.from(this.BUCKET).upload(path, file, { contentType: file.type });
       if (upErr) throw upErr;
-      const { data: urlData } = sbClient.storage.from('lead-documents').getPublicUrl(path);
-      const lead = State.leads.find(l => l.id === leadId);
-      const { data: doc, error: dbErr } = await sbClient.from('lead_documents').insert({
+      const { error: dbErr } = await sbClient.from('lead_documents').insert({
         tenant_id: DB.tenantId,
         lead_id:   leadId,
         agent_id:  DB.agentId || null,
         file_name: file.name,
-        file_url:  urlData.publicUrl,
+        file_path: path,
         file_size: file.size,
-      }).select().single();
-      if (dbErr) throw dbErr;
+      }).select('id').single();
+      if (dbErr) {
+        // בלי שורה במסד לא יהיה דרך למחוק את הקובץ, ולכן מוחקים אותו מיד
+        await sbClient.storage.from(this.BUCKET).remove([path]).catch(() => {});
+        throw dbErr;
+      }
       toast('✅ המסמך הועלה בהצלחה', 'success');
-      await DB.addActivity({ lead_id: leadId, type: 'note', content: `📄 מסמך הועלה: ${file.name}` });
+      DB.addActivity({ lead_id: leadId, type: 'note', content: `📄 מסמך הועלה: ${file.name}` }).catch(() => {});
       this.load(leadId);
     } catch(e) {
       if (e?.message === 'Failed to fetch') {
@@ -13361,40 +13390,194 @@ const LeadDocs = {
     }
   },
 
-  async sendEmail(docId, leadId) {
+  // פתיחה פנימית: הקישור נוצר רק בלחיצה ותקף 60 שניות
+  async open(docId, leadId) {
     if (demoGuard()) return;
-    const doc  = this._cache[leadId]?.find(d => d.id === docId);
-    const lead = State.leads.find(l => l.id === leadId);
-    if (!doc || !lead) return;
-    if (!lead.email) { toast('לליד אין כתובת מייל, ניתן להוסיף מייל בעריכה', 'error'); return; }
-    toast('שולח מייל...', '');
+    const doc = this._doc(docId, leadId);
+    if (!doc) return;
+    // החלון נפתח מיד בלחיצה, כדי שחוסם חלונות קופצים לא יחסום אותו אחרי ההמתנה לשרת
+    const win = window.open('', '_blank');
     try {
-      await Make.trigger('document.sent', {
-        lead_name:  lead.name,
-        lead_email: lead.email,
-        lead_phone: lead.phone || '',
-        doc_name:   doc.file_name,
-        doc_url:    doc.file_url,
-        message:    `היי ${lead.name.split(' ')[0]}, מצורף המסמך ${doc.file_name} לעיונך. לשאלות אני כאן 🙂`,
-      });
-      await sbClient.from('lead_documents').update({ sent_at: new Date().toISOString(), sent_to_email: lead.email }).eq('id', docId);
-      await DB.addActivity({ lead_id: leadId, type: 'email', content: `📧 מסמך "${doc.file_name}" נשלח למייל ${lead.email}` });
-      toast(`✅ המסמך נשלח ל-${lead.email}`, 'success');
-      this.load(leadId);
+      const { data, error } = await sbClient.storage.from(this.BUCKET).createSignedUrl(doc.file_path, 60);
+      if (error || !data?.signedUrl) throw error || new Error('no_url');
+      if (win) win.location.href = data.signedUrl;
+      else location.assign(data.signedUrl);
     } catch(e) {
-      toast('שגיאה בשליחה: ' + e.message, 'error');
+      if (win) win.close();
+      toast('לא הצלחנו לפתוח את המסמך, אפשר לנסות שוב', 'error');
     }
   },
 
+  openShare(docId, leadId) {
+    if (demoGuard()) return;
+    const doc = this._doc(docId, leadId);
+    if (!doc) return;
+    this._share = { docId, leadId, link: null };
+    this._renderShare();
+    openModal('modal-doc-share');
+    this._loadShares();
+  },
+
+  _internalLink(leadId) {
+    return `${location.origin}${location.pathname}?s=lead-detail&lead=${encodeURIComponent(leadId)}`;
+  },
+
+  _renderShare() {
+    const body = document.getElementById('doc-share-body');
+    const s = this._share;
+    if (!body || !s) return;
+    const doc = this._doc(s.docId, s.leadId);
+    const created = s.link ? `
+      <div class="doc-share-created">
+        <label class="form-label" for="doc-share-link">הקישור ללקוח</label>
+        <input id="doc-share-link" class="form-input" readonly dir="ltr" value="${escapeHtml(s.link.url)}">
+        <div style="font-size:12px;color:var(--gray-500);margin:6px 0 10px;">בתוקף עד ${escapeHtml(this._date(s.link.expires_at))}. הקישור מוצג רק עכשיו, ואפשר ליצור חדש בכל רגע.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="LeadDocs.copyShareLink()">העתקה</button>
+          <button class="btn btn-ghost btn-sm" onclick="LeadDocs.sendShareLink()">שליחה</button>
+          <button class="btn btn-ghost btn-sm" onclick="LeadDocs.emailShareLink()">שליחה במייל</button>
+        </div>
+      </div>` : '';
+    body.innerHTML = `
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📄 ${escapeHtml(doc?.file_name || '')}</div>
+      <div class="doc-share-option">
+        <div style="font-weight:700;font-size:14px;">🔒 קישור מאובטח ללקוח</div>
+        <div style="font-size:13px;color:var(--gray-600);margin:4px 0 10px;line-height:1.6;">נפתח בלי התחברות, בתוקף 7 ימים, ואפשר לבטל אותו בכל רגע.</div>
+        <button class="btn btn-primary btn-sm" id="doc-share-create" onclick="LeadDocs.createExternal()">יצירת קישור ללקוח</button>
+        ${created}
+      </div>
+      <div class="doc-share-option">
+        <div style="font-weight:700;font-size:14px;">👥 פנימי בלבד</div>
+        <div style="font-size:13px;color:var(--gray-600);margin:4px 0 10px;line-height:1.6;">רק משתמשים מחוברים בעסק שלך יוכלו לפתוח, מתוך כרטיס הליד. לא נוצר קישור ציבורי.</div>
+        <button class="btn btn-ghost btn-sm" onclick="LeadDocs.copyInternal()">העתקת קישור פנימי</button>
+      </div>
+      <div style="font-weight:700;font-size:13px;margin:14px 0 6px;">קישורים חיצוניים למסמך</div>
+      <div id="doc-share-list" style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--gray-500);">טוען...</div>`;
+  },
+
+  _date(iso) {
+    try { return new Date(iso).toLocaleString('he-IL', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+    catch { return ''; }
+  },
+
+  async _loadShares() {
+    const s = this._share;
+    const el = document.getElementById('doc-share-list');
+    if (!s || !el) return;
+    try {
+      const { data, error } = await sbClient
+        .from('lead_document_shares')
+        .select('id, created_at, expires_at, revoked_at, access_count')
+        .eq('document_id', s.docId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      const now = Date.now();
+      const rows = (data || []).map(r => {
+        const active = !r.revoked_at && new Date(r.expires_at).getTime() > now;
+        const state = r.revoked_at ? 'בוטל' : active ? `פעיל עד ${escapeHtml(this._date(r.expires_at))}` : 'פג תוקף';
+        const opens = r.access_count ? `, נפתח ${Number(r.access_count)} פעמים` : '';
+        return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;">
+          <span>${state}${opens}</span>
+          ${active ? `<button class="btn btn-ghost btn-sm" style="color:var(--red-500);" onclick="LeadDocs.revoke('${escapeHtml(r.id)}')">ביטול קישור</button>` : ''}
+        </div>`;
+      });
+      el.innerHTML = rows.length ? rows.join('') : 'אין קישורים חיצוניים';
+    } catch(e) {
+      el.textContent = 'לא הצלחנו לטעון את הקישורים';
+    }
+  },
+
+  async createExternal() {
+    const s = this._share;
+    if (!s) return;
+    const btn = document.getElementById('doc-share-create');
+    if (btn) btn.disabled = true;
+    try {
+      const { data, error } = await sbClient.rpc('create_document_share', { p_document_id: s.docId });
+      if (error) throw error;
+      if (!data?.token || !/^[0-9a-f]{64}$/.test(data.token)) throw new Error('bad_response');
+      s.link = { url: `${SUPABASE_URL}/functions/v1/document-share?t=${data.token}`, expires_at: data.expires_at };
+      this._renderShare();
+      this._loadShares();
+      const doc = this._doc(s.docId, s.leadId);
+      // תיעוד בלבד: כישלון ברישום הפעילות לא מבטל את הקישור שכבר נוצר
+      DB.addActivity({ lead_id: s.leadId, type: 'note', content: `🔗 נוצר קישור ללקוח למסמך: ${doc?.file_name || ''}` }).catch(() => {});
+    } catch(e) {
+      const m = String(e?.message || '');
+      toast(m.includes('rate_limited') ? 'נוצרו יותר מדי קישורים היום, אפשר לנסות שוב מחר' : 'לא הצלחנו ליצור קישור, אפשר לנסות שוב', 'error');
+      if (btn) btn.disabled = false;
+    }
+  },
+
+  async revoke(shareId) {
+    if (!confirm('לבטל את הקישור? הלקוח לא יוכל לפתוח אותו יותר. המסמך עצמו נשאר.')) return;
+    try {
+      const { error } = await sbClient.rpc('revoke_document_share', { p_share_id: shareId });
+      if (error) throw error;
+      toast('הקישור בוטל', 'success');
+      this._loadShares();
+    } catch(e) {
+      toast('לא הצלחנו לבטל את הקישור, אפשר לנסות שוב', 'error');
+    }
+  },
+
+  async _copy(text, msg) {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast(msg, 'success');
+    } catch(_e) {
+      window.prompt('אפשר להעתיק את הקישור:', text);
+    }
+  },
+
+  copyShareLink() {
+    if (this._share?.link) this._copy(this._share.link.url, 'הקישור הועתק');
+  },
+
+  copyInternal() {
+    if (this._share) this._copy(this._internalLink(this._share.leadId), 'הקישור הפנימי הועתק. נפתח רק למשתמשים מחוברים בעסק שלך');
+  },
+
+  // שליחה דרך שיתוף המכשיר (WhatsApp, הודעה וכו'). השליחה עצמה נעשית בידי המשתמש.
+  sendShareLink() {
+    const s = this._share;
+    if (!s?.link) return;
+    const doc = this._doc(s.docId, s.leadId);
+    const text = `מצורף קישור למסמך ${doc?.file_name || ''}. הקישור בתוקף 7 ימים.\n${s.link.url}`;
+    if (navigator.share) {
+      navigator.share({ text }).catch(err => { if (err && err.name !== 'AbortError') this._copy(s.link.url, 'הקישור הועתק'); });
+    } else {
+      this._copy(s.link.url, 'הקישור הועתק');
+    }
+  },
+
+  // נפתח בתוכנת המייל של המשתמש. שום דבר לא נשלח בלי שהמשתמש שולח בעצמו.
+  emailShareLink() {
+    const s = this._share;
+    if (!s?.link) return;
+    const doc = this._doc(s.docId, s.leadId);
+    const lead = State.leads.find(l => l.id === s.leadId);
+    const to = lead?.email && /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(lead.email) ? lead.email : '';
+    const subject = `מסמך: ${doc?.file_name || ''}`;
+    const body = `שלום${lead?.name ? ' ' + lead.name.split(' ')[0] : ''},\n\nמצורף קישור למסמך ${doc?.file_name || ''}:\n${s.link.url}\n\nהקישור בתוקף 7 ימים.`;
+    location.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  },
+
+  // מחיקת מסמך מוחקת קודם את הקובץ מהאחסון ואז את השורה. קישורי השיתוף נמחקים איתה (cascade).
   async delete(docId, leadId) {
     if (demoGuard()) return;
-    if (!confirm('למחוק את המסמך?')) return;
+    const doc = this._doc(docId, leadId);
+    if (!doc) return;
+    if (!confirm('למחוק את המסמך? הקובץ יימחק לצמיתות, וכל הקישורים ששותפו ממנו יפסיקו לעבוד.')) return;
     try {
-      await sbClient.from('lead_documents').delete().eq('id', docId);
-      toast('מסמך נמחק', 'success');
+      const { error: stErr } = await sbClient.storage.from(this.BUCKET).remove([doc.file_path]);
+      if (stErr) throw stErr;
+      const { error: dbErr } = await sbClient.from('lead_documents').delete().eq('id', docId);
+      if (dbErr) throw dbErr;
+      toast('המסמך נמחק', 'success');
       this.load(leadId);
     } catch(e) {
-      toast('שגיאה במחיקה: ' + e.message, 'error');
+      toast('שגיאה במחיקה, אפשר לנסות שוב', 'error');
     }
   },
 };
