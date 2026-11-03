@@ -55,7 +55,7 @@ serve(async (req) => {
     let body: unknown;
     try { body = JSON.parse(raw); } catch { return json({ error: 'invalid_json' }, 400); }
 
-    const result = buildPayload(body, { email: user.email });
+    const result = buildPayload(body, { id: user.id, email: user.email });
     if (!result.ok) return json({ error: result.error }, result.status);
 
     if (!allow(user.id)) return json({ error: 'rate_limited' }, 429);

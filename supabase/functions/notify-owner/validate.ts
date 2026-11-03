@@ -1,7 +1,8 @@
 // Pure validation for notify-owner. No Deno or network APIs here, so it can be
 // unit-tested with plain Node (see supabase/tests/notify-owner-validate.test.ts).
 
-export const ADMIN_EMAILS = ['info@plto.app', 'elgrablidudu@gmail.com'];
+import { isPltoAdmin } from '../_shared/plto-admins.ts';
+
 export const MAX_BODY_BYTES = 8 * 1024;
 
 type Field = { max: number; required?: boolean };
@@ -45,7 +46,7 @@ export type Result =
 
 export function buildPayload(
   input: unknown,
-  user: { email?: string | null },
+  user: { id?: string | null; email?: string | null },
 ): Result {
   if (!input || typeof input !== 'object') return { ok: false, status: 400, error: 'invalid_body' };
   const { event, data } = input as { event?: unknown; data?: unknown };
@@ -54,7 +55,8 @@ export function buildPayload(
   }
   const spec = EVENTS[event];
   const email = (user.email || '').toLowerCase();
-  if (spec.adminOnly && !ADMIN_EMAILS.includes(email)) {
+  // Admin-only events are decided by the verified user id, not by the address.
+  if (spec.adminOnly && !isPltoAdmin(user.id)) {
     return { ok: false, status: 403, error: 'forbidden' };
   }
   const src = (data && typeof data === 'object' ? data : {}) as Record<string, unknown>;

@@ -5,13 +5,18 @@
 // Run: node --experimental-strip-types --test supabase/tests/notify-owner-handler.test.ts
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const src = new URL('../functions/notify-owner/', import.meta.url);
-const dir = mkdtempSync(join(tmpdir(), 'notify-owner-'));
+// Same layout as supabase/functions: notify-owner/ next to _shared/, so the relative import resolves.
+const base = mkdtempSync(join(tmpdir(), 'notify-owner-'));
+const dir = join(base, 'notify-owner');
+mkdirSync(dir);
+mkdirSync(join(base, '_shared'));
+writeFileSync(join(base, '_shared', 'plto-admins.ts'), readFileSync(new URL('../functions/_shared/plto-admins.ts', import.meta.url), 'utf8'));
 
 for (const f of ['validate.ts', 'render.ts']) writeFileSync(join(dir, f), readFileSync(new URL(f, src), 'utf8'));
 writeFileSync(
@@ -25,7 +30,7 @@ writeFileSync(join(dir, 'stub_supabase.ts'), `
 const USERS: Record<string, { id: string; email: string }> = {
   'fake-user-token': { id: 'u1', email: 'agent@example.com' },
   'fake-rate-token': { id: 'u-rate', email: 'rate@example.com' },
-  'fake-admin-token': { id: 'a1', email: 'info@plto.app' },
+  'fake-admin-token': { id: '0d2f3e72-c693-4ee9-9fbc-fa132c1c264a', email: 'info@plto.app' },
 };
 export function createClient(_url: string, key: string, opts?: { global?: { headers?: { Authorization?: string } } }) {
   const auth = opts?.global?.headers?.Authorization;

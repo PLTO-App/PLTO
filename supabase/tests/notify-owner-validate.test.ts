@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { buildPayload, makeLimiter, EVENTS, MAX_BODY_BYTES } from '../functions/notify-owner/validate.ts';
 
 const agent = { email: 'Agent@Example.com' };
-const admin = { email: 'info@plto.app' };
+const admin = { id: '0d2f3e72-c693-4ee9-9fbc-fa132c1c264a', email: 'info@plto.app' };
 
 test('rejects non-object and unknown events', () => {
   for (const bad of [null, 'x', 5, {}, { event: 5 }, { event: 'deal.closed' }, { event: '__proto__' }, { event: 'toString' }]) {
@@ -44,6 +44,8 @@ test('admin-only event: forbidden for a normal user, allowed for an admin, keeps
   assert.equal(ok.ok, true);
   assert.equal((ok as { payload: Record<string, string> }).payload.agent_email, 'owner@client.test');
   assert.equal(buildPayload({ event: 'support.admin_replied', data }, { email: null }).ok, false);
+  // An owner address on a different account (for example a second signup with the same email) is not an admin.
+  assert.equal(buildPayload({ event: 'support.admin_replied', data }, { id: 'someone-else', email: 'info@plto.app' }).ok, false);
 });
 
 test('values are trimmed and truncated to the field limit', () => {
