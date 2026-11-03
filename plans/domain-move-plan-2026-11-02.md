@@ -33,7 +33,10 @@
 ### שלב 1: הכנה בלי השבתה (קוד)
 - להוסיף את `https://NEW` לרשימות ה-CORS בארבע פונקציות Edge (`ai-proxy`, `gmail-proxy`, `notify-owner`, `twilio-whatsapp`), ולהשאיר בינתיים את הכתובת הישנה. לפרוס ולבדוק.
 
-**מצב שלב 1 (2.11, לילה):** PR #192 מוזג. `gmail-proxy` ו-`twilio-whatsapp` נפרסו ידנית ומחזירות CORS לכתובת החדשה (נבדק). הפריסה האוטומטית של `ai-proxy` ו-`notify-owner` נכשלה, כי גרסת ה-CLI העדכנית דורשת `--yes` בסביבה בלי טרמינל ("Confirmation required... Nothing was changed"). אותו כשל קרה גם ב-22.10. לא נפרס שום דבר, ולכן אין נזק. כרגע שתי הפונקציות האלה עונות CORS רק לכתובת הישנה. התיקון (הוספת `--yes` ו-`workflow_dispatch`) מחכה ל-PR נפרד. לפני שלב 3 צריך שהן יהיו מעודכנות.
+**מצב שלב 1 (3.11.2026): הושלם.** PR #192 ו-#193 מוזגו. ארבע פונקציות Edge (`ai-proxy`, `gmail-proxy`, `notify-owner`, `twilio-whatsapp`) פרוסות ועונות CORS ל-`sales.plto.app` ול-`realestate.plto.app`, ולמקור זר הן עונות את הכתובת הישנה. נבדק בחי ב-OPTIONS. בקשה בלי אימות עדיין מחזירה 401, ו-`ai-proxy` עדיין חוסם עם 503 (מתג הכיבוי). הפריסה בוצעה ידנית דרך חיבור Supabase, כי הפריסה האוטומטית נכשלת:
+- 2.11: גרסת ה-CLI העדכנית דורשת `--yes` בסביבה בלי טרמינל. תוקן ב-#193 (`--yes` ו-`workflow_dispatch`).
+- 3.11: אחרי התיקון הפריסה עוברת את האישור ונכשלת ב-403 מ-Supabase ("Your account does not have the necessary privileges"). כלומר הטוקן `SUPABASE_ACCESS_TOKEN` שב-GitHub Secrets לא תקף או חסר הרשאות. **פתוח לדוד:** ליצור Access Token חדש בחשבון Supabase ולעדכן את ה-Secret. עד אז כל שינוי בפונקציות דורש פריסה ידנית, וכל מיזוג שנוגע בהן יתריע בכשל.
+- לפני הפריסה ידנית הושוו `ai-proxy` ו-`notify-owner` החיים לריפו, והיה הבדל אחד בלבד: שורת ה-CORS. ב-`gmail-proxy` וב-`twilio-whatsapp` החיים חסרה גם `realestate.plto.app`, וזה תוקן.
 
 ### שלב 2: הגדרות אצל דוד (לפני ההחלפה)
 - **Cloudflare, DNS:** רשומת CNAME בשם `sales` (או השם שנבחר) אל `plto-app.github.io`, במצב DNS only (ענן אפור).
