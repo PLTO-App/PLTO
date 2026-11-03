@@ -28,6 +28,9 @@ check(r.eligible === false, 'משתמש עם רצף של 20 יום לא זכאי
 check(!/חסוך|שיווק AI|1,858/.test(r.card), 'כרטיס הבית לא מציע מנוי שנתי עם שיווק AI');
 check(r.modal === false, 'חלון ההצעה לא נפתח');
 
+const tour = await page.evaluate(() => { GuidedTour._cachedSteps = null; return GuidedTour._getSteps().map(x => x.title + ' ' + x.text).join(' | '); });
+check(!/סוכן השיווק|כותב בשבילך/.test(tour), 'סיור ההיכרות לא מבטיח "סוכן שיווק" שכותב תוכן כשה-AI כבוי');
+
 const src = readFileSync(new URL('../index.html', import.meta.url), 'utf-8');
 check(!/14 יום ניסיון/.test(src), 'אין עוד אזכור של 14 יום ניסיון (הניסיון הוא 30 יום)');
 check(!/בתוכן AI שימושי/.test(src), 'חנות ה-XP והסיור לא מבטיחים תוכן AI (הפרסים הם ערכות מכירה כתובות)');

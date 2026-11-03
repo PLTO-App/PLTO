@@ -22629,7 +22629,10 @@ const GuidedTour = {
     ];
     // Gamification (XP widget) is hidden for the lawyer vertical, so its tour
     // step would point at a hidden element - skip the step entirely.
-    return ind === 'realestate_lawyer' ? steps.filter(s => s.target !== '#gamify-widget') : steps;
+    // The marketing step promises an AI writer ("כותב בשבילך..."). While AI is off the tools are
+    // disabled, so the step is skipped rather than promising something that does not run.
+    return steps.filter(s => !(ind === 'realestate_lawyer' && s.target === '#gamify-widget')
+                          && !(!AI.ENABLED && s.target === '[data-screen="marketing"]'));
   },
 
   shouldShow() {
