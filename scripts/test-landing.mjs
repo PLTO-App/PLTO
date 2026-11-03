@@ -175,6 +175,37 @@ for (const [w, h, label] of [[390, 844, 'נייד 390px'], [1280, 800, 'דסקט
   }
 }
 
+// ניקיון הטקסט: בלי נקודות אמצעיות ובלי נקודה בסוף כותרת. הצהרת הנגישות סגורה עד שלוחצים עליה
+{
+  const { page, ctx } = await open(390, 844);
+  const r = await page.evaluate(() => {
+    const txt = document.body.innerText;
+    const heads = [...document.querySelectorAll('h1, h2, h3')].map(h => h.textContent.trim());
+    const det = document.getElementById('a11y-statement');
+    const body = det.querySelector('.a11y-body');
+    const vis = () => body.checkVisibility ? body.checkVisibility() : body.getBoundingClientRect().height > 0;
+    const closed = det.tagName === 'DETAILS' && !det.open && !vis();
+    det.querySelector('summary').click();
+    const openedBySummary = det.open && vis();
+    det.querySelector('summary').click();
+    const closedAgain = !det.open;
+    const footerLink = [...document.querySelectorAll('footer a')].find(a => /הצהרת נגישות/.test(a.textContent));
+    footerLink.click();
+    const openedByFooter = det.open && vis();
+    const btn = getComputedStyle(document.querySelector('.closing .btn-primary')).backgroundColor;
+    return { dots: /[·•]/.test(txt), dotted: heads.filter(h => /\.$/.test(h)), closed, openedBySummary, closedAgain, openedByFooter, btn, h: det.querySelector('summary').getBoundingClientRect().height };
+  });
+  check(!r.dots, 'אין נקודות אמצעיות בטקסט הנראה (יורדים שורה במקום)');
+  check(r.dotted.length === 0, 'אין נקודה בסוף כותרת' + (r.dotted.length ? ': ' + r.dotted.join(' | ') : ''));
+  check(r.closed, 'הצהרת הנגישות סגורה כברירת מחדל ולא מוצג הטקסט שלה');
+  check(r.openedBySummary && r.closedAgain, 'לחיצה על כותרת ההצהרה פותחת וסוגרת אותה');
+  check(r.openedByFooter, 'הקישור בפוטר פותח את ההצהרה');
+  check(r.h >= 44, 'כותרת ההצהרה היא יעד לחיצה של 44px לפחות');
+  const m = r.btn.match(/rgba?\(([^)]+)\)/)[1].split(',').map(Number);
+  check(m[0] >= 150 && m[3] >= 0.9, 'כפתור הסגירה האדום בהיר ובולט מספיק על הרקע השחור (' + r.btn + ')');
+  await ctx.close();
+}
+
 // הקלקה על כפתור ההרשמה נשלחת למעקב ההמרות עם שם הסקשן, בלי p_tenant_id
 {
   const { page, ctx } = await open(390, 844);
