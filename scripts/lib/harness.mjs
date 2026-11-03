@@ -15,7 +15,7 @@ async function loadChromium() {
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.json': 'application/json', '.png': 'image/png', '.txt': 'text/plain' };
 
-const SUPABASE_MOCK = `
+export const SUPABASE_MOCK = `
 (function(){
   var noop = function(){};
   var chain = function(){
@@ -53,7 +53,10 @@ const SUPABASE_MOCK = `
 const CHART_MOCK = `window.Chart=function(){this.destroy=function(){};this.data={datasets:[]};this.update=function(){};};window.Chart.register=function(){};`;
 
 
-export async function startHarness({ touch = false, root = defaultRoot, scale = 1, viewport = { width: 390, height: 844 }, chartJs = null, fonts = false } = {}) {
+// supabaseMock: להחלפת ה-mock (למשל לדמות חזרה מ-Google). urlPath: נתיב/fragment לטעינה.
+// demo: false משאיר את מסך הכניסה, בלי כניסה אוטומטית לדמו.
+// scale: צפיפות פיקסלים לצילומים חדים. viewport, chartJs ו-fonts: לצילומי המסך של דף הנחיתה.
+export async function startHarness({ touch = false, root = defaultRoot, scale = 1, viewport = { width: 390, height: 844 }, chartJs = null, fonts = false, supabaseMock = SUPABASE_MOCK, urlPath = '/', demo = true } = {}) {
   const chromium = await loadChromium();
   const server = http.createServer((req, res) => {
     const path = decodeURIComponent(req.url.split('?')[0]);
@@ -65,8 +68,11 @@ export async function startHarness({ touch = false, root = defaultRoot, scale = 
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const BASE = `http://127.0.0.1:${server.address().port}`;
   const browser = await chromium.launch({ args: ['--no-sandbox', '--disable-dev-shm-usage'] });
-  const ctx = await browser.newContext({ locale: 'he-IL', viewport, deviceScaleFactor: scale, hasTouch: touch, isMobile: touch });
-  await ctx.route('**cdn.jsdelivr.net**supabase**', r => r.fulfill({ contentType: 'application/javascript; charset=utf-8', body: SUPABASE_MOCK }));
+  // serviceWorkers: 'block': sw.js נרשם ב-load ומעביר כל בקשה דרך fetch משלו. אחרי reload הדף
+  // נשלט בידיו, ובקשות ממנו לא עוברות את ה-routes של הבדיקה בכל סביבה (ב-runner של GitHub נטענה
+  // supabase-js האמיתית במקום המוק). בדיקות לא רצות מתחת למטמון.
+  const ctx = await browser.newContext({ locale: 'he-IL', viewport, deviceScaleFactor: scale, hasTouch: touch, isMobile: touch, serviceWorkers: 'block' });
+  await ctx.route('**cdn.jsdelivr.net**supabase**', r => r.fulfill({ contentType: 'application/javascript; charset=utf-8', body: supabaseMock }));
   await ctx.route('**cdn.jsdelivr.net**chart.js**', r => r.fulfill({ contentType: 'application/javascript; charset=utf-8', body: chartJs ? readFileSync(chartJs, 'utf-8') : CHART_MOCK }));
   await ctx.route(url => !url.href.startsWith(BASE) && !/cdn\.jsdelivr\.net/.test(url.href) && !(fonts && /fonts\.(googleapis|gstatic)\.com/.test(url.href)), r => r.abort());
   await ctx.route(`${BASE}/`, async r => {
@@ -78,8 +84,9 @@ export async function startHarness({ touch = false, root = defaultRoot, scale = 
   const errors = [];
   page.on('pageerror', e => errors.push(`pageerror: ${e.message}`));
   page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push(`console: ${m.text().slice(0, 160)}`); });
-  await page.goto(BASE, { waitUntil: 'domcontentloaded' });
+  await page.goto(BASE + urlPath, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => typeof App !== 'undefined' && typeof App.loginDemo === 'function', null, { timeout: 15000 });
+  if (!demo) return { page, ctx, errors, browser, BASE, close: async () => { await browser.close(); server.close(); } };
   await page.evaluate(() => { App.loginDemo(); State.isDemo = false; });
   await page.waitForSelector('#app-shell:not(.hidden)', { timeout: 10000 });
   await page.evaluate(() => {
