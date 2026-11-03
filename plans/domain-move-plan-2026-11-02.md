@@ -33,6 +33,8 @@
 ### שלב 1: הכנה בלי השבתה (קוד)
 - להוסיף את `https://NEW` לרשימות ה-CORS בארבע פונקציות Edge (`ai-proxy`, `gmail-proxy`, `notify-owner`, `twilio-whatsapp`), ולהשאיר בינתיים את הכתובת הישנה. לפרוס ולבדוק.
 
+**מצב שלב 1 (2.11, לילה):** PR #192 מוזג. `gmail-proxy` ו-`twilio-whatsapp` נפרסו ידנית ומחזירות CORS לכתובת החדשה (נבדק). הפריסה האוטומטית של `ai-proxy` ו-`notify-owner` נכשלה, כי גרסת ה-CLI העדכנית דורשת `--yes` בסביבה בלי טרמינל ("Confirmation required... Nothing was changed"). אותו כשל קרה גם ב-22.10. לא נפרס שום דבר, ולכן אין נזק. כרגע שתי הפונקציות האלה עונות CORS רק לכתובת הישנה. התיקון (הוספת `--yes` ו-`workflow_dispatch`) מחכה ל-PR נפרד. לפני שלב 3 צריך שהן יהיו מעודכנות.
+
 ### שלב 2: הגדרות אצל דוד (לפני ההחלפה)
 - **Cloudflare, DNS:** רשומת CNAME בשם `sales` (או השם שנבחר) אל `plto-app.github.io`, במצב DNS only (ענן אפור).
 - **Supabase, Authentication, URL Configuration:** להוסיף את `https://NEW/` ו-`https://NEW/**` ל-Redirect URLs. את ה-Site URL מחליפים בשלב 4.
