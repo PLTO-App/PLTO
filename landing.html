@@ -233,9 +233,11 @@ body.theme-accessible nav {
       gap: 6px;
       background: rgba(37,99,235,0.20);
       border: 1px solid rgba(59,130,246,0.40);
-      border-radius: 99px;
-      padding: 6px 16px;
+      border-radius: 22px;
+      padding: 8px 18px;
       font-size: 13px;
+      line-height: 1.4;
+      text-align: center;
       color: #93C5FD;
       font-weight: 600;
       margin-bottom: 24px;
@@ -412,6 +414,34 @@ body.theme-accessible nav {
       position: relative;
       z-index: 1;
     }
+/* הצהרת נגישות: סגורה כברירת מחדל, נפתחת בלחיצה על הכותרת */
+.a11y-details {
+      margin: 24px auto 0;
+      max-width: 560px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 12px;
+      text-align: right;
+    }
+.a11y-details summary {
+      list-style: none;
+      cursor: pointer;
+      min-height: 44px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 800;
+      color: rgba(255,255,255,0.82);
+    }
+.a11y-details summary::-webkit-details-marker { display: none; }
+.a11y-details summary::after { content: '+'; font-size: 20px; font-weight: 400; line-height: 1; }
+.a11y-details[open] summary::after { content: '\2212'; }
+.a11y-details summary:focus-visible { outline: 2px solid #93C5FD; outline-offset: 2px; border-radius: 12px; }
+.a11y-body { padding: 0 16px 14px; font-size: 12px; line-height: 1.8; color: rgba(255,255,255,0.72); }
+.a11y-body strong { color: rgba(255,255,255,0.88); }
+.a11y-body a { color: rgba(255,255,255,0.7); }
 .closing-micro {
       font-size: 13px;
       color: rgba(255,255,255,0.35);
@@ -544,18 +574,18 @@ footer {
       100% { box-shadow: 0 0 0 0 rgba(170, 28, 50, 0); }
     }
 .closing .btn-primary {
-      background: rgba(100, 14, 28, 0.68);
-      border: 1.5px solid rgba(210, 65, 80, 0.36);
-      box-shadow: 0 6px 24px rgba(90, 12, 24, 0.38),
-                  inset 0 1px 0 rgba(255,255,255,0.10);
+      background: rgba(166, 32, 52, 0.94);
+      border: 1.5px solid rgba(240, 100, 115, 0.55);
+      box-shadow: 0 6px 26px rgba(190, 40, 62, 0.36),
+                  inset 0 1px 0 rgba(255,255,255,0.18);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
     }
 .closing .btn-primary:hover {
-      background: rgba(118, 18, 34, 0.82);
-      border-color: rgba(220, 75, 90, 0.50);
-      box-shadow: 0 10px 34px rgba(90, 12, 24, 0.52),
-                  inset 0 1px 0 rgba(255,255,255,0.14);
+      background: rgba(188, 40, 63, 0.98);
+      border-color: rgba(248, 120, 133, 0.70);
+      box-shadow: 0 10px 34px rgba(200, 48, 70, 0.46),
+                  inset 0 1px 0 rgba(255,255,255,0.22);
     }
 .btn-primary.has-rocket { position: relative; overflow: visible; }
 .wrecking-wrap {
@@ -643,7 +673,8 @@ footer {
       font-weight: 800 !important;
       color: rgba(255,255,255,0.88) !important;
       letter-spacing: 0.015em;
-      margin-top: 4px;
+      line-height: 1.55;
+      margin-top: 14px;
     }
 @keyframes wandRide {
       0%, 3%    { left: calc(100% + 14px); opacity: 0; transform: translateY(-50%) rotate(-35deg) scale(1.1); }
@@ -882,14 +913,14 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
     <div class="hero-text">
       <div class="hero-badge">
         <span class="badge-dot"></span>
-        PLTO Sales · מערכת המכירות לעסקים
+        <span class="badge-text">PLTO Sales<br>מערכת המכירות לעסקים</span>
       </div>
-      <h1>הלידים כבר אצלך.<br><span class="highlight">עכשיו הופכים אותם ללקוחות משלמים.</span></h1>
+      <h1>הלידים כבר אצלך<br><span class="highlight">עכשיו הופכים אותם ללקוחות משלמים</span></h1>
       <p class="hero-sub">PLTO מראה למי לחזור היום, נותנת הודעה מוכנה לשליחה, ודואגת <strong>שאף ליד לא ייפול בין הכיסאות.</strong></p>
       <div class="hero-actions">
         <a href="https://realestate.plto.app" id="hero-cta-btn" class="btn-primary pulse-cta" data-cta-section="hero">מתחילים בחינם</a>
       </div>
-      <p class="hero-micro hero-trust">30 יום חינם &bull; בלי כרטיס אשראי &bull; מוכן תוך דקה</p>
+      <p class="hero-micro hero-trust">30 יום חינם<br>בלי כרטיס אשראי<br>מוכן תוך דקה</p>
     </div>
     <figure class="phone-wrap hero-visual">
       <div class="phone">
@@ -972,16 +1003,17 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
       </div>
       <a href="https://realestate.plto.app" class="btn-primary shimmer-cta" data-cta-section="closing" style="font-size:18px;padding:18px 48px;">מתחילים עכשיו, בחינם</a>
     </div>
-    <p class="closing-micro">בלי כרטיס אשראי · בלי התחייבות</p>
-<div id="a11y-statement" style="margin:24px auto 0;max-width:560px;padding:14px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);border-radius:12px;text-align:right;">
-      <div style="font-size:12px;font-weight:800;color:rgba(255,255,255,0.82);margin-bottom:6px;">♿ הצהרת נגישות</div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.72);line-height:1.7;">
-        PLTO פועלת בהתאם לחוק שוויון זכויות לאנשים עם מוגבלות, תשנ"ח-1998, ולתקנות הנגישות לשירות באינטרנט.
-        רמת תאימות מוצהרת: <strong style="color:rgba(255,255,255,0.88);">WCAG 2.1 AA (חלקית)</strong> · תקן ת"י 5568.
-        המערכת כוללת מצב ניגודיות גבוהה, הגדלת טקסט, וניווט מקלדת ותמיכה בקוראי מסך, באופן חלקי.
-        לפניות בנושא נגישות: <a href="mailto:info@plto.app" style="color:rgba(255,255,255,0.6);">info@plto.app</a>
+    <p class="closing-micro">בלי כרטיס אשראי<br>בלי התחייבות</p>
+<details id="a11y-statement" class="a11y-details">
+      <summary>♿ הצהרת נגישות</summary>
+      <div class="a11y-body">
+        PLTO פועלת בהתאם לחוק שוויון זכויות לאנשים עם מוגבלות, תשנ"ח-1998, ולתקנות הנגישות לשירות באינטרנט.<br>
+        רמת תאימות מוצהרת: <strong>WCAG 2.1 AA (חלקית)</strong><br>
+        תקן ת"י 5568.<br>
+        המערכת כוללת מצב ניגודיות גבוהה, הגדלת טקסט, וניווט מקלדת ותמיכה בקוראי מסך, באופן חלקי.<br>
+        לפניות בנושא נגישות: <a href="mailto:info@plto.app">info@plto.app</a>
       </div>
-    </div>
+    </details>
   </div>
 
 </section>
@@ -994,9 +1026,9 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
   <div class="footer-links">
     <a href="https://realestate.plto.app">כניסה למערכת</a>
     <a href="https://realestate.plto.app/privacy-policy.html">מדיניות פרטיות</a>
-    <a href="https://realestate.plto.app/#a11y-statement" onclick="document.getElementById('a11y-statement')?.scrollIntoView({behavior:'smooth'});return false;">הצהרת נגישות</a>
+    <a href="#a11y-statement" onclick="var d=document.getElementById('a11y-statement');if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'center'});}return false;">הצהרת נגישות</a>
   </div>
-  <div class="footer-copy">© 2026 PLTO · כל הזכויות שמורות</div>
+  <div class="footer-copy">© 2026 PLTO<br>כל הזכויות שמורות</div>
 </footer>
 
 <script>
