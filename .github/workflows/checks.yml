@@ -53,5 +53,7 @@ jobs:
         run: node scripts/test-ai-off.mjs
       - name: Annual upsell stays off while AI is off
         run: node scripts/test-upsell-off.mjs
+      - name: Lead documents (private files, external and internal sharing)
+        run: node scripts/test-lead-docs.mjs
       - name: Landing page claims and layout
         run: node scripts/test-landing.mjs
