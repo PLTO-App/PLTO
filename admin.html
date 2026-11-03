@@ -1326,9 +1326,9 @@ function renderDashboard() {
   tbody.innerHTML = recent.map(a => `
     <tr>
       <td><strong>${esc(a.name||'?')}</strong></td>
-      <td style="color:var(--text-muted);font-size:.82rem;">${esc(a.billing_email||'~~')}</td>
+      <td style="color:var(--text-muted);font-size:.82rem;">${esc(a.billing_email||'-')}</td>
       <td><span class="badge ${planMap[a.plan]||'badge-dim'}">${esc(a.plan||'?')}</span></td>
-      <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${a.created_at ? new Date(a.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(a.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '~~'}</td>
+      <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${a.created_at ? new Date(a.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(a.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '-'}</td>
     </tr>
   `).join('');
 }
@@ -1358,9 +1358,9 @@ function renderAccountsTable(accounts) {
   tbody.innerHTML = accounts.map(a => `
     <tr>
       <td><strong>${esc(a.name||'?')}</strong></td>
-      <td style="font-size:.82rem;color:var(--text-muted)">${esc(a.billing_email||'~~')}</td>
+      <td style="font-size:.82rem;color:var(--text-muted)">${esc(a.billing_email||'-')}</td>
       <td><span class="badge ${planMap[a.plan]||'badge-dim'}">${esc(a.plan||'?')}</span></td>
-      <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${a.created_at ? new Date(a.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(a.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '~~'}</td>
+      <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${a.created_at ? new Date(a.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(a.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '-'}</td>
       <td>
         <div class="action-btns">
           <button class="btn-icon" title="עריכה" onclick="openEditAccount('${esc(a.id)}')">✏️</button>
@@ -1448,11 +1448,11 @@ function renderInvoicesTable(invoices) {
   const statusLabel = { paid:'שולם', pending:'ממתין', overdue:'באיחור', cancelled:'בוטל' };
   tbody.innerHTML = invoices.map(inv => `
     <tr>
-      <td style="font-size:.8rem;color:var(--text-muted)">${esc(inv.invoice_number||inv.id?.slice(0,8)||'~~')}</td>
-      <td><strong>${esc(inv.tenant_name||inv.customer_name||'~~')}</strong></td>
+      <td style="font-size:.8rem;color:var(--text-muted)">${esc(inv.invoice_number||inv.id?.slice(0,8)||'-')}</td>
+      <td><strong>${esc(inv.tenant_name||inv.customer_name||'-')}</strong></td>
       <td style="font-weight:700;color:var(--gold)">₪${(inv.amount||0).toLocaleString('he-IL')}</td>
       <td><span class="badge ${statusMap[inv.status]||'badge-dim'}">${esc(statusLabel[inv.status]||inv.status||'?')}</span></td>
-      <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${inv.created_at ? new Date(inv.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(inv.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '~~'}</td>
+      <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${inv.created_at ? new Date(inv.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(inv.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '-'}</td>
       <td>
         <div class="action-btns">
           <button class="btn-icon" title="עריכה" onclick="openEditInvoice('${esc(inv.id)}')">✏️</button>
@@ -1571,7 +1571,7 @@ function renderSaasTable(tenants) {
       : null;
     const daysCell = t.plan === 'trial' && daysLeft !== null
       ? `<span style="color:${daysLeft<=3?'var(--red)':daysLeft<=7?'var(--orange)':'var(--text-muted)'};font-weight:600">${daysLeft} ימים</span>`
-      : '<span style="color:var(--text-dim)">~~</span>';
+      : '<span style="color:var(--text-dim)">-</span>';
     const planMap = {trial:'badge-dim',basic:'badge-blue',pro:'badge-gold',premium:'badge-green'};
     const planBadgeHtml = `<span class="badge ${planMap[t.plan]||'badge-dim'}">${esc(t.plan||'?')}</span>`;
     const mktg = t.marketing_addon;
@@ -1581,15 +1581,15 @@ function renderSaasTable(tenants) {
     const seats = allTenantSeats[t.id];
     const seatsCell = seats
       ? `<span style="font-weight:600;">${seats.seats_active}/${seats.seats_max}</span>${seats.overage_seats > 0 ? `<div style="font-size:.72rem;color:var(--gold);font-weight:700;">+${seats.overage_seats} מעבר, ₪${seats.monthly_overage_charge}/חוד'</div>` : ''}`
-      : '<span style="color:var(--text-dim)">~~</span>';
+      : '<span style="color:var(--text-dim)">-</span>';
     const billingPeriodMap = {monthly:'חודשי', annual:'שנתי'};
     const billingPeriodCell = billingPeriodMap[t.billing_period]
       ? `<span style="font-size:.82rem;">${billingPeriodMap[t.billing_period]}</span>`
-      : '<span style="color:var(--text-dim)">~~</span>';
+      : '<span style="color:var(--text-dim)">-</span>';
     return `
       <tr>
         <td><strong>${esc(t.name||'?')}</strong>${t.notes ? `<div style="font-size:.72rem;color:var(--text-dim);margin-top:2px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(t.notes)}">📝 ${esc(t.notes)}</div>` : ''}</td>
-        <td style="font-size:.82rem;color:var(--text-muted)">${esc(t.billing_email||'~~')}</td>
+        <td style="font-size:.82rem;color:var(--text-muted)">${esc(t.billing_email||'-')}</td>
         <td>${planBadgeHtml}</td>
         <td>${daysCell}</td>
         <td style="font-weight:600;color:${(t.lead_count||0)>0?'var(--text)':'var(--red)'}">${t.lead_count||0}</td>
@@ -1597,7 +1597,7 @@ function renderSaasTable(tenants) {
         <td>${mktgCell}</td>
         <td>${seatsCell}</td>
         <td>${billingPeriodCell}</td>
-        <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${t.created_at ? new Date(t.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(t.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '~~'}</td>
+        <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${t.created_at ? new Date(t.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(t.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '-'}</td>
         <td>
           <div class="action-btns">
             <button class="btn-icon" title="פתיחת CRM" onclick="window.open('https://realestate.plto.app/','_blank')" style="font-size:.75rem;">⧉</button>
@@ -1633,9 +1633,9 @@ async function loadReferralRewards() {
       <td><strong>${esc(r.referrer_name || '?')}</strong></td>
       <td>${esc(r.converted_name || '?')}</td>
       <td>${statusMap[r.credit_status] || esc(r.credit_status)}</td>
-      <td>${r.monetary_value_ils ? '₪' + Number(r.monetary_value_ils).toLocaleString() : '~~'}</td>
-      <td style="font-size:.78rem;color:var(--text-dim);">${r.plan_expires_at_after ? new Date(r.plan_expires_at_after).toLocaleDateString('he-IL') : '~~'}</td>
-      <td style="font-size:.78rem;color:var(--text-dim);">${r.created_at ? new Date(r.created_at).toLocaleDateString('he-IL') : '~~'}</td>
+      <td>${r.monetary_value_ils ? '₪' + Number(r.monetary_value_ils).toLocaleString() : '-'}</td>
+      <td style="font-size:.78rem;color:var(--text-dim);">${r.plan_expires_at_after ? new Date(r.plan_expires_at_after).toLocaleDateString('he-IL') : '-'}</td>
+      <td style="font-size:.78rem;color:var(--text-dim);">${r.created_at ? new Date(r.created_at).toLocaleDateString('he-IL') : '-'}</td>
     </tr>`).join('');
 }
 
@@ -1659,7 +1659,7 @@ async function loadClientPages() {
       <td style="font-size:.78rem;color:var(--text-muted);direction:ltr;text-align:right;">${esc(p.slug)}</td>
       <td>${p.status === 'published' ? '<span class="badge badge-green">פורסם</span>' : '<span class="badge badge-dim">בארכיון</span>'}</td>
       <td>${p.view_count || 0}</td>
-      <td style="font-size:.78rem;color:var(--text-dim);">${p.created_at ? new Date(p.created_at).toLocaleDateString('he-IL') : '~~'}</td>
+      <td style="font-size:.78rem;color:var(--text-dim);">${p.created_at ? new Date(p.created_at).toLocaleDateString('he-IL') : '-'}</td>
       <td>
         ${p.status === 'published' ? `<button class="btn-icon" title="הסרת העמוד" onclick="archiveClientPage('${p.id}')" style="font-size:.75rem;color:var(--red);">🗑</button>` : ''}
         <button class="btn-icon" title="פתיחת העמוד" onclick="window.open('https://realestate.plto.app/page.html?p=${esc(p.slug)}','_blank')" style="font-size:.75rem;">⧉</button>
@@ -1829,13 +1829,13 @@ function renderSupportTable(tickets) {
   };
   tbody.innerHTML = tickets.map(t => `
     <tr${t.needs_human ? ' style="background:rgba(239,68,68,0.06);"' : ''}>
-      <td><strong>${esc(t.tenant_name||'~~')}</strong></td>
-      <td style="font-size:.82rem;color:var(--text-muted)">${esc(t.agent_name||'~~')}<br><span style="font-size:.75rem;color:var(--text-dim)">${esc(t.agent_email||'')}</span></td>
+      <td><strong>${esc(t.tenant_name||'-')}</strong></td>
+      <td style="font-size:.82rem;color:var(--text-muted)">${esc(t.agent_name||'-')}<br><span style="font-size:.75rem;color:var(--text-dim)">${esc(t.agent_email||'')}</span></td>
       <td style="max-width:180px;font-size:.82rem;">${esc((t.message||'').slice(0,100))}${(t.message||'').length>100?'…':''}</td>
-      <td style="max-width:160px;font-size:.8rem;color:var(--blue);font-style:italic;">${t.ai_response ? esc(t.ai_response.slice(0,80))+'…' : '<span style="color:var(--text-dim)">~~</span>'}</td>
-      <td style="max-width:160px;font-size:.82rem;color:var(--green);">${t.admin_response ? esc(t.admin_response.slice(0,80))+'…' : '<span style="color:var(--text-dim)">~~</span>'}</td>
+      <td style="max-width:160px;font-size:.8rem;color:var(--blue);font-style:italic;">${t.ai_response ? esc(t.ai_response.slice(0,80))+'…' : '<span style="color:var(--text-dim)">-</span>'}</td>
+      <td style="max-width:160px;font-size:.82rem;color:var(--green);">${t.admin_response ? esc(t.admin_response.slice(0,80))+'…' : '<span style="color:var(--text-dim)">-</span>'}</td>
       <td>${t.needs_human ? '<span class="badge badge-needs-human">🆘 דורש התערבות</span>' : (statusBadge[t.status]||esc(t.status))}</td>
-      <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${t.created_at ? new Date(t.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(t.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '~~'}</td>
+      <td style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${t.created_at ? new Date(t.created_at).toLocaleDateString('he-IL') + '<br>' + new Date(t.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '-'}</td>
       <td>
         <div class="action-btns">
           <button class="btn-icon" title="מענה" onclick="openSupportReply('${t.id}')" style="color:var(--blue);font-size:.8rem;">✉️ מענה</button>
@@ -2116,7 +2116,7 @@ const AdminCRO = {
       return `
         <div style="flex:1;min-width:120px;text-align:center;padding:12px 8px;border-right:${i<steps.length-1?'1px solid var(--border)':'none'};">
           <div style="font-size:1.4rem;">${s.icon}</div>
-          <div style="font-size:1.5rem;font-weight:800;color:var(--text);margin:4px 0;">${s.val ?? '~~'}</div>
+          <div style="font-size:1.5rem;font-weight:800;color:var(--text);margin:4px 0;">${s.val ?? '-'}</div>
           <div style="font-size:.75rem;color:var(--text-dim);line-height:1.3;">${esc(s.label)}</div>
           ${drop !== null ? `<div style="font-size:.7rem;color:${drop>50?'var(--red)':'var(--text-dim)'};margin-top:4px;">▼ ${drop}% נשירה</div>` : ''}
         </div>`;
@@ -2146,17 +2146,17 @@ const AdminCRO = {
       tbody.innerHTML = '<tr><td colspan="8" style="color:var(--text-dim);text-align:center;padding:20px;">אין ניסויים פעילים</td></tr>';
     } else {
       tbody.innerHTML = active.map(t => {
-        const crA = t.exposures_a > 0 ? ((t.conversions_a / t.exposures_a) * 100).toFixed(1) + '%' : '~~';
-        const crB = t.exposures_b > 0 ? ((t.conversions_b / t.exposures_b) * 100).toFixed(1) + '%' : '~~';
+        const crA = t.exposures_a > 0 ? ((t.conversions_a / t.exposures_a) * 100).toFixed(1) + '%' : '-';
+        const crB = t.exposures_b > 0 ? ((t.conversions_b / t.exposures_b) * 100).toFixed(1) + '%' : '-';
         const statusBadge = { active: '🟢 פעיל', concluded: '⚪ הסתיים' };
         return `<tr>
           <td style="font-weight:600;">${esc(t.name)}${t.test_key ? `<div style="font-size:.7rem;color:var(--text-dim);font-weight:400;">🔗 ${esc(t.test_key)}</div>` : '<div style="font-size:.7rem;color:var(--orange,#F59E0B);font-weight:400;">⚠️ ללא test_key, לא מוצג למבקרים</div>'}</td>
-          <td style="font-size:.82rem;">${esc(t.variant_a || '~~')}</td>
-          <td style="font-size:.82rem;">${esc(t.variant_b || '~~')}</td>
+          <td style="font-size:.82rem;">${esc(t.variant_a || '-')}</td>
+          <td style="font-size:.82rem;">${esc(t.variant_b || '-')}</td>
           <td style="font-size:.82rem;">${t.exposures_a ?? 0} / ${t.exposures_b ?? 0}</td>
           <td style="font-size:.82rem;">${crA} / ${crB}</td>
           <td>${statusBadge[t.status] || t.status}</td>
-          <td>${t.winner ? (t.winner === 'a' ? '🏆 A' : '🏆 B') : '~~'}</td>
+          <td>${t.winner ? (t.winner === 'a' ? '🏆 A' : '🏆 B') : '-'}</td>
           <td><button class="btn-outline btn-sm" onclick="AdminCRO.openAbModal(${JSON.stringify(t)})">עריכה</button></td>
         </tr>`;
       }).join('');
