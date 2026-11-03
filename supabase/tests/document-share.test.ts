@@ -1,4 +1,4 @@
-// Tests the public document link handler (supabase/functions/document-share/handler.ts) in plain Node,
+// Tests the public document link handler behind doc.html (supabase/functions/document-share/handler.ts) in plain Node,
 // with the database and storage replaced by stubs. The token rules themselves (hash, expiry, revoke,
 // tenant checks) are in migration 133 and were tested against a local Postgres replica.
 // Run: node --experimental-strip-types --test supabase/tests/document-share.test.ts
@@ -21,21 +21,37 @@ function deps(over: Partial<Deps> = {}) {
   return { d, calls };
 }
 
-test('a valid token redirects to a short signed URL, with no-store and no-referrer', async () => {
+test('a valid token returns a short signed URL as JSON, with no-store, no-referrer and CORS for the site', async () => {
   const { d, calls } = deps();
-  const res = await handle(req('?t=' + TOKEN), d);
-  assert.equal(res.status, 302);
-  assert.match(res.headers.get('location') || '', /\/object\/sign\/lead-documents\/tenant\/lead\/1_a\.pdf\?token=signed$/);
+  const res = await handle(req('?t=' + TOKEN, { headers: { origin: 'https://sales.plto.app' } }), d);
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get('content-type') || '', /^application\/json/);
+  const body = await res.json();
+  assert.match(body.url, /\/object\/sign\/lead-documents\/tenant\/lead\/1_a\.pdf\?token=signed$/);
   assert.equal(res.headers.get('cache-control'), 'no-store');
   assert.equal(res.headers.get('referrer-policy'), 'no-referrer');
+  assert.equal(res.headers.get('access-control-allow-origin'), 'https://sales.plto.app');
   assert.deepEqual(calls.sign, ['tenant/lead/1_a.pdf']);
 });
 
-test('unknown, revoked or expired token: the same 404 page, nothing is signed', async () => {
+test('the function never serves HTML (the supabase.co gateway would show it as raw text)', async () => {
+  for (const [q, d] of [['?t=' + TOKEN, deps().d], ['?t=' + 'b'.repeat(64), deps().d], ['?t=x', deps().d]] as const) {
+    const res = await handle(req(q), d);
+    assert.match(res.headers.get('content-type') || '', /^application\/json/, q);
+    assert.doesNotMatch(await res.text(), /<html|<!DOCTYPE/i, q);
+  }
+});
+
+test('an unknown origin gets the main site in CORS, not a wildcard', async () => {
+  const res = await handle(req('?t=' + TOKEN, { headers: { origin: 'https://evil.example' } }), deps().d);
+  assert.equal(res.headers.get('access-control-allow-origin'), 'https://realestate.plto.app');
+});
+
+test('unknown, revoked or expired token: the same 404 code, nothing is signed', async () => {
   const { d, calls } = deps();
   const res = await handle(req('?t=' + 'b'.repeat(64)), d);
   assert.equal(res.status, 404);
-  assert.match(await res.text(), /הקישור לא זמין/);
+  assert.deepEqual(await res.json(), { error: 'unavailable' });
   assert.equal(calls.sign.length, 0);
 });
 
@@ -48,19 +64,19 @@ test('malformed token is rejected before touching the database', async () => {
   }
 });
 
-test('the page never echoes request or file data (no XSS)', async () => {
+test('the response never echoes request or file data', async () => {
   const { d } = deps({ async resolve() { return null; } });
   const res = await handle(req('?t=<script>alert(1)</script>'), d);
-  const html = await res.text();
-  assert.doesNotMatch(html, /<script|alert/);
-  assert.match(res.headers.get('content-security-policy') || '', /default-src 'none'/);
+  assert.doesNotMatch(await res.text(), /<script|alert/);
 });
 
-test('only GET and HEAD', async () => {
-  const { d, calls } = deps();
-  const res = await handle(req('?t=' + TOKEN, { method: 'POST' }), d);
-  assert.equal(res.status, 405);
-  assert.equal(calls.resolve.length, 0);
+test('only GET', async () => {
+  for (const method of ['POST', 'HEAD', 'PUT']) {
+    const { d, calls } = deps();
+    const res = await handle(req('?t=' + TOKEN, { method }), d);
+    assert.equal(res.status, 405, method);
+    assert.equal(calls.resolve.length, 0, method);
+  }
 });
 
 test('rate limit by address returns 429 without resolving', async () => {
@@ -73,10 +89,10 @@ test('rate limit by address returns 429 without resolving', async () => {
   t = 1001; assert.equal(allow('ip'), true);
 });
 
-test('database or storage failure gives a generic 500, never a redirect', async () => {
+test('database or storage failure gives a generic 500, never a URL', async () => {
   const a = await handle(req('?t=' + TOKEN), deps({ async resolve() { throw new Error('db down: secret detail'); } }).d);
   assert.equal(a.status, 500);
-  assert.doesNotMatch(await a.text(), /secret detail/);
+  assert.deepEqual(await a.json(), { error: 'error' });
   const b = await handle(req('?t=' + TOKEN), deps({ async sign() { return null; } }).d);
   assert.equal(b.status, 500);
 });

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+  <title>מסמך, PLTO</title>
+  <!-- קישור חיצוני ללקוח (מיגרציה 133). הדף פונה לפונקציה document-share, שמחזירה JSON עם קישור חתום
+       של 60 שניות לקובץ הפרטי, או קוד שגיאה. שום דבר מהכתובת או מהשרת לא נכתב ל-HTML. -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self'; connect-src https://scyfywvzoogfrlalgftv.supabase.co; base-uri 'none'; form-action 'none'">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0F1F3D;
+      --blue: #2563EB;
+      --gray-100: #F1F5F9;
+      --gray-200: #E2E8F0;
+      --gray-500: #64748B;
+      --white: #FFFFFF;
+    }
+    body {
+      font-family: 'Heebo', system-ui, sans-serif;
+      background: var(--gray-100);
+      color: var(--navy);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 16px;
+      padding: 32px 24px;
+      text-align: center;
+      box-shadow: 0 4px 24px rgba(15, 31, 61, 0.08);
+    }
+    .icon { font-size: 40px; line-height: 1; margin-bottom: 16px; }
+    h1 { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+    p { font-size: 16px; line-height: 1.6; color: var(--gray-500); }
+    button {
+      margin-top: 24px;
+      min-height: 48px;
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      background: var(--blue);
+      color: var(--white);
+      font: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; }
+    button[hidden] { display: none; }
+    .brand { margin-top: 20px; font-size: 13px; color: var(--gray-500); }
+  </style>
+</head>
+<body>
+  <main class="card" aria-live="polite">
+    <div class="icon" id="doc-icon" aria-hidden="true">📄</div>
+    <h1 id="doc-title">פותחים את המסמך</h1>
+    <p id="doc-text">רק רגע...</p>
+    <button type="button" id="doc-action" hidden></button>
+  </main>
+  <div class="brand">נשלח דרך PLTO</div>
+
+  <script>
+    (function () {
+      var FN = 'https://scyfywvzoogfrlalgftv.supabase.co/functions/v1/document-share';
+      var token = new URLSearchParams(location.search).get('t') || '';
+      var icon = document.getElementById('doc-icon');
+      var title = document.getElementById('doc-title');
+      var text = document.getElementById('doc-text');
+      var action = document.getElementById('doc-action');
+
+      var STATES = {
+        loading:     ['📄', 'פותחים את המסמך', 'רק רגע...', ''],
+        ready:       ['✅', 'המסמך מוכן', 'ההורדה אמורה להתחיל עכשיו. אם היא לא התחילה, אפשר להוריד שוב.', 'הורדת המסמך'],
+        unavailable: ['🔒', 'הקישור לא זמין', 'ייתכן שתוקף הקישור פג או שהוא בוטל. אפשר לבקש קישור חדש ממי ששלח אותו.', ''],
+        rate:        ['⏳', 'יותר מדי ניסיונות', 'אפשר לנסות שוב בעוד כמה דקות.', 'ניסיון נוסף'],
+        error:       ['⚠️', 'משהו השתבש', 'לא הצלחנו לפתוח את המסמך. אפשר לנסות שוב בעוד רגע.', 'ניסיון נוסף'],
+      };
+
+      function show(name) {
+        var s = STATES[name];
+        icon.textContent = s[0];
+        title.textContent = s[1];
+        text.textContent = s[2];
+        action.textContent = s[3];
+        action.hidden = !s[3];
+        action.disabled = false;
+      }
+
+      function open() {
+        if (!/^[0-9a-f]{64}$/.test(token)) { show('unavailable'); return; }
+        show('loading');
+        fetch(FN + '?t=' + token, { cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' })
+          .then(function (res) {
+            return res.json().catch(function () { return {}; }).then(function (body) {
+              var url = body && typeof body.url === 'string' ? body.url : '';
+              if (res.ok && /^https:\/\/scyfywvzoogfrlalgftv\.supabase\.co\/storage\/v1\/object\/sign\//.test(url)) {
+                show('ready');
+                location.href = url;
+              } else if (res.status === 404) {
+                show('unavailable');
+              } else if (res.status === 429) {
+                show('rate');
+              } else {
+                show('error');
+              }
+            });
+          })
+          .catch(function () { show('error'); });
+      }
+
+      action.addEventListener('click', function () {
+        action.disabled = true;
+        open();
+      });
+      open();
+    })();
+  </script>
+</body>
+</html>

@@ -1,9 +1,21 @@
-// The public link a client gets for a shared document: GET ?t=<64 hex>. Pure request handling with the
-// database and storage calls injected, so it can be tested in plain Node (supabase/tests/document-share.test.ts).
-// The token is checked by resolve_document_share() (migration 133): valid only if not revoked and not expired.
-// On success the client is redirected to a 60-second signed URL of the private file.
+// The public link a client gets for a shared document is doc.html?t=<64 hex> on the PLTO site. That page
+// calls this function (GET ?t=...) and gets JSON back. The function never serves HTML: on the default
+// supabase.co domain the gateway rewrites HTML to text/plain with a sandbox CSP, so a page from here would
+// show raw source to the client.
+// Pure request handling with the database and storage calls injected, so it can be tested in plain Node
+// (supabase/tests/document-share.test.ts). The token is checked by resolve_document_share() (migration 133):
+// valid only if not revoked and not expired. On success the response holds a 60-second signed URL.
 
 export const TOKEN_RE = /^[0-9a-f]{64}$/;
+
+export const ALLOWED_ORIGINS = [
+  'https://realestate.plto.app',
+  'https://sales.plto.app',
+  'https://plto.app',
+  'https://www.plto.app',
+  'http://localhost:8080',
+  'http://127.0.0.1:8080',
+];
 
 export type SharedFile = { file_path: string; file_name: string };
 export type Deps = {
@@ -19,44 +31,33 @@ const SECURITY_HEADERS: Record<string, string> = {
   'X-Content-Type-Options': 'nosniff',
 };
 
-// Static text only: nothing from the request or the database is written into the page.
-export function page(status: number, title: string, text: string): Response {
-  const body = `<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1"><title>PLTO</title>
-<style>body{font-family:system-ui,sans-serif;margin:0;padding:48px 20px;text-align:center;direction:rtl;color:#0F1F3D;background:#F1F5F9}
-h1{font-size:22px;margin:0 0 12px}p{font-size:16px;color:#475569;line-height:1.6;margin:0}</style></head>
-<body><h1>${title}</h1><p>${text}</p></body></html>`;
-  return new Response(body, {
-    status,
-    headers: {
-      ...SECURITY_HEADERS,
-      'Content-Type': 'text/html; charset=utf-8',
-      'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'",
-    },
-  });
+// Only fixed values go into the body: an error code, or the signed URL from storage.
+export function json(status: number, body: { url?: string; error?: string }, origin: string | null = null): Response {
+  const headers: Record<string, string> = {
+    ...SECURITY_HEADERS,
+    'Content-Type': 'application/json; charset=utf-8',
+    'Access-Control-Allow-Origin': origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0],
+    'Access-Control-Allow-Methods': 'GET',
+    'Vary': 'Origin',
+  };
+  return new Response(JSON.stringify(body), { status, headers });
 }
 
-const unavailable = () =>
-  page(404, 'הקישור לא זמין', 'ייתכן שתוקף הקישור פג או שהוא בוטל. אפשר לבקש קישור חדש ממי ששלח אותו.');
-
 export async function handle(req: Request, deps: Deps): Promise<Response> {
-  if (req.method !== 'GET' && req.method !== 'HEAD') {
-    return page(405, 'הפעולה לא נתמכת', 'אפשר רק לפתוח את הקישור.');
-  }
+  const origin = req.headers.get('origin');
+  if (req.method !== 'GET') return json(405, { error: 'method' }, origin);
   const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'unknown';
-  if (!deps.allow(ip)) {
-    return page(429, 'יותר מדי ניסיונות', 'אפשר לנסות שוב בעוד כמה דקות.');
-  }
+  if (!deps.allow(ip)) return json(429, { error: 'rate_limited' }, origin);
   const token = new URL(req.url).searchParams.get('t') || '';
-  if (!TOKEN_RE.test(token)) return unavailable();
+  if (!TOKEN_RE.test(token)) return json(404, { error: 'unavailable' }, origin);
 
   let file: SharedFile | null;
   try {
     file = await deps.resolve(token);
   } catch (_e) {
-    return page(500, 'משהו השתבש', 'אפשר לנסות שוב בעוד רגע.');
+    return json(500, { error: 'error' }, origin);
   }
-  if (!file) return unavailable();
+  if (!file) return json(404, { error: 'unavailable' }, origin);
 
   let url: string | null;
   try {
@@ -64,8 +65,8 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   } catch (_e) {
     url = null;
   }
-  if (!url) return page(500, 'משהו השתבש', 'אפשר לנסות שוב בעוד רגע.');
-  return new Response(null, { status: 302, headers: { ...SECURITY_HEADERS, Location: url } });
+  if (!url) return json(500, { error: 'error' }, origin);
+  return json(200, { url }, origin);
 }
 
 // Best-effort per-instance limiter (the Edge runtime may run several instances).
