@@ -15180,7 +15180,8 @@ const App = {
     this._applyIndustryLabels();
     // Restore the screen the user was on before the refresh, instead of always
     // dropping them back onto the dashboard (?s=<screen>&lead=<id> written by go()).
-    const NOT_RESTORABLE = new Set(['login', 'lock', 'paywall', 'setup']);
+    // 'email': מסך תיבת הדואר הוסר מהתפריט (3.11.2026), ולכן גם קישור ישיר לא פותח אותו
+    const NOT_RESTORABLE = new Set(['login', 'lock', 'paywall', 'setup', 'email']);
     const urlParams   = new URLSearchParams(location.search);
     const savedScreen = urlParams.get('s');
     const savedLeadId = urlParams.get('lead');
@@ -15400,7 +15401,6 @@ const App = {
       { icon: '📈', label: 'אנליטיקס', run: go('analytics') },
       { icon: '🛠️', label: 'מרכז כלים', run: go('tools') },
       { icon: '📣', label: 'שירותי שיווק', run: go('marketing') },
-      { icon: '📧', label: 'תיבת דואר', run: go('email') },
       { sep: true }, { header: 'עוד' },
       { icon: '✨', label: 'פיצ\'רים PRO', run: go('pro') },
       { icon: '🏆', label: 'חנות XP', run: go('xp-store') },

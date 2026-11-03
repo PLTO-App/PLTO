@@ -34,6 +34,8 @@ check(!/סוכן השיווק|כותב בשבילך/.test(tour), 'סיור הה�
 const src = readFileSync(new URL('../index.html', import.meta.url), 'utf-8');
 check(!/14 יום ניסיון/.test(src), 'אין עוד אזכור של 14 יום ניסיון (הניסיון הוא 30 יום)');
 check(!/בתוכן AI שימושי/.test(src), 'חנות ה-XP והסיור לא מבטיחים תוכן AI (הפרסים הם ערכות מכירה כתובות)');
+check(!/label: 'תיבת דואר'/.test(src) && !/data-screen="email"/.test(src), 'תיבת הדואר לא מופיעה בתפריט הצד ובתפריט "עוד"');
+check(/NOT_RESTORABLE = new Set\([^)]*'email'/.test(src), 'קישור ישיר (?s=email) לא פותח את מסך תיבת הדואר');
 check(/💚 יש עניין\|💚 מעוניין/.test(src), 'קריאת תגובת הלקוח מקבלת גם את התווית הישנה השמורה במסד');
 
 check(errors.length === 0, 'אין שגיאות בקונסולה' + (errors.length ? ': ' + errors.join(' | ') : ''));
