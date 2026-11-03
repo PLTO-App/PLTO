@@ -5598,7 +5598,7 @@
         </div>
         <div class="xps-annual-teaser">
           <span style="font-weight:700;">📅 מנוי שנתי, בקרוב</span>
-          <span style="opacity:.75;font-size:12px;margin-right:6px;">חיסכון של עד 20% לעומת חיוב חודשי</span>
+          <span style="opacity:.75;font-size:12px;margin-right:6px;">חיסכון של 27% עד 30% לעומת חיוב חודשי</span>
         </div>
       </div>
       <div class="xps-grid" id="xps-grid"></div>
@@ -5609,7 +5609,7 @@
       <div style="margin:8px 16px 24px;background:linear-gradient(135deg,rgba(37,99,235,.07),rgba(124,58,237,.06));border:1px solid rgba(37,99,235,.18);border-radius:16px;padding:18px 20px;text-align:center;">
         <div style="font-size:22px;margin-bottom:8px;">💡</div>
         <div style="font-size:15px;font-weight:800;color:var(--navy-500);margin-bottom:4px;">יש לך רעיון לשיפור?</div>
-        <div style="font-size:13px;color:var(--gray-500);line-height:1.55;margin-bottom:14px;">רעיון טוב שיאושר = <strong>+300 XP</strong> אוטומטי ✨</div>
+        <div style="font-size:13px;color:var(--gray-500);line-height:1.55;margin-bottom:14px;">על כל רעיון שנשלח: <strong>+300 XP</strong> ✨</div>
         <button class="btn btn-primary btn-sm" onclick="IdeaBox.open()" style="font-size:14px;padding:10px 24px;">💡 הצעת רעיון</button>
       </div>
     </div>
@@ -6256,7 +6256,7 @@
     </div>
     <div style="padding:0 20px 16px;">
       <div style="background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(251,191,36,.04));border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--gray-700);line-height:1.6;">
-        🎁 <strong>רעיון שיאושר ויושם = +300 XP!</strong><br>
+        🎁 <strong>על כל רעיון שנשלח: +300 XP</strong><br>
         <span style="font-size:12px;color:var(--gray-500);">נשתדל לעדכן אם הרעיון שלך נבחר לפיתוח.</span>
       </div>
       <div style="margin-bottom:14px;">
@@ -14018,7 +14018,7 @@ const Referral = {
 
   _waMessage() {
     const code = this._code || this._data().code || '';
-    return `היי! PLTO הוא הכלי שניהל לי את כל הפייפליין ועזר לסגור יותר עסקאות 🚀\n\n30 יום ניסיון חינם עם קוד ההמלצה שלי:\n\n🔑 קוד: *${code}*\n🔗 כניסה: ${this._link()}`;
+    return `היי! רציתי לשתף את PLTO, מערכת לניהול לידים ולקוחות, עם תזכורות מתי לחזור לכל אחד. אפשר לנסות 30 יום בחינם:\n\n🔑 קוד: *${code}*\n🔗 כניסה: ${this._link()}`;
   },
 
   shareWhatsApp() {
@@ -18854,7 +18854,7 @@ const Settings = {
             <div style="font-size:11px;color:var(--gray-500);">₪124/חודש במקום ₪279 · חיסכון ₪1,858 בשנה</div>
           </div>` : `
           <div style="margin-top:10px;font-size:11px;color:var(--gray-500);text-align:center;">
-            📅 מנוי שנתי, בקרוב | חיסכון עד 20% לעומת חיוב חודשי
+            📅 מנוי שנתי, בקרוב, חיסכון של 27% עד 30% לעומת חיוב חודשי
           </div>`}
         </div>
         `}
@@ -18895,7 +18895,7 @@ const Settings = {
           <div class="settings-row-icon">💡</div>
           <div class="settings-row-body">
             <div class="settings-row-label">הצעת רעיון לשיפור</div>
-            <div class="settings-row-sub" style="color:var(--gold-500);">רעיון שיאושר = +300 XP אוטומטי ✨</div>
+            <div class="settings-row-sub" style="color:var(--gold-500);">על כל רעיון שנשלח: +300 XP ✨</div>
           </div>
           <div class="settings-arrow">›</div>
         </div>
@@ -23062,7 +23062,7 @@ const IdeaBox = {
       floatXP(300);
 
       closeModal('modal-idea-box');
-      toast('🎉 תודה! עובדים על הרעיון שלך, קיבלת 300 XP נוספים!', 'success', 5000);
+      toast('🎉 תודה! הרעיון הגיע אלינו, וקיבלת 300 XP', 'success', 5000);
     } catch(e) {
       toast('שגיאה בשליחה: ' + e.message, 'error');
     } finally {

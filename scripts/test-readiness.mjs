@@ -50,7 +50,15 @@ for (const [re, why] of [
   [/מה היה התוצאה/, '"מה היה התוצאה"'],
   [/השתמש בـ/, 'ציווי בלשון זכר ותו ערבי'],
   [/PLTO Sales · מערכת/, 'נקודה אמצעית בכותרת מסך הכניסה'],
+  [/רעיון (טוב )?שיאושר/, 'XP "על רעיון שיאושר", כשה-XP ניתן בשליחה'],
+  [/עד 20% לעומת חיוב חודשי/, 'חיסכון שנתי "עד 20%" שלא תואם למחירים'],
+  [/עזר לסגור יותר עסקאות|הכלי שניהל לי/, 'טענה בשם המשתמש בהודעת ההמלצה'],
 ]) check(!re.test(src), 'אין ' + why);
+
+// 4. אחוז החיסכון השנתי שמוצג תואם למחירי החבילות (חודשי מול שנתי)
+const pct = await page.evaluate(() => Billing.PLANS.map(p => Math.floor((p.price * 12 - p.annualTotal) / (p.price * 12) * 100)));
+const shown = src.match(/חיסכון של (\d+)% עד (\d+)% לעומת חיוב חודשי/);
+check(shown && pct.every(x => typeof x === 'number' && !Number.isNaN(x)) && +shown[1] === Math.min(...pct) && +shown[2] === Math.max(...pct), `החיסכון השנתי שמוצג (${shown ? shown[1] + '%-' + shown[2] + '%' : 'לא נמצא'}) תואם למחירים (${pct.join(', ')})`);
 
 check(errors.length === 0, 'אין שגיאות בקונסולה' + (errors.length ? ': ' + errors.join(' | ') : ''));
 await close();
