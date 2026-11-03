@@ -158,6 +158,23 @@ for (const [w, h, label] of [[390, 844, 'נייד 390px'], [1280, 800, 'דסקט
   await ctx.close();
 }
 
+// רקעי הסקשנים: תמונה לאורך בנייד ותמונה לרוחב בדסקטופ, כל הקבצים קיימים וקלים, ובמצב נגישות בלי תמונות
+{
+  const files = ['navy', 'light', 'black'].flatMap(c => [`icons/landing/bg-${c}-m.webp`, `icons/landing/bg-${c}-d.webp`]);
+  check(files.every(f => existsSync(join(root, f))), 'שישה קבצי הרקע קיימים (נייבי, בהיר ושחור, נייד ודסקטופ)');
+  check(files.every(f => existsSync(join(root, f)) && readFileSync(join(root, f)).length < 120 * 1024), 'כל קובץ רקע קטן מ-120KB');
+  for (const [w, h, suffix, label] of [[390, 844, 'm', 'נייד'], [1280, 800, 'd', 'דסקטופ']]) {
+    const { page, ctx } = await open(w, h);
+    const bg = await page.evaluate(() => Object.fromEntries(['.hero', '.feat-section', '.closing'].map(s => [s, getComputedStyle(document.querySelector(s)).backgroundImage])));
+    const want = { '.hero': 'navy', '.feat-section': 'light', '.closing': 'black' };
+    check(Object.entries(want).every(([sel, c]) => bg[sel].includes(`bg-${c}-${suffix}.webp`)), `${label}: שלושת הסקשנים מציגים את הרקע הנכון (${suffix === 'm' ? 'תמונה לאורך' : 'תמונה לרוחב'})`);
+    await page.evaluate(() => document.body.classList.add('theme-accessible'));
+    const acc = await page.evaluate(() => ['.hero', '.feat-section', '.closing'].map(s => getComputedStyle(document.querySelector(s)).backgroundImage));
+    check(acc.every(v => v === 'none'), `${label}: במצב נגישות הרקעים מוסרים, כדי לשמור על ניגודיות`);
+    await ctx.close();
+  }
+}
+
 // הקלקה על כפתור ההרשמה נשלחת למעקב ההמרות עם שם הסקשן, בלי p_tenant_id
 {
   const { page, ctx } = await open(390, 844);
