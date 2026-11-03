@@ -1,5 +1,5 @@
-// בדיקת דף הנחיתה: אין הבטחות AI מחוץ לרשימות החבילות ולתוסף השיווק (שנשארו להחלטה נפרדת),
-// הסעיף "מה עושים כל יום" מציג רק יכולות קיימות, והדף תקין ב-390px ובדסקטופ (גלישה, קישורים, ניווט, קונסולה).
+// בדיקת דף הנחיתה הממוקד (שלושה סקשנים): תוכן ואמיתות הטענות, תמונות, כפתורי הרשמה,
+// תקינות ב-390px, 768px ו-1280px (גלישה, גודל טקסט, כפתור הרשמה בלי גלילה) וקונסולה נקייה.
 import http from 'node:http';
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname, extname } from 'node:path';
@@ -11,7 +11,7 @@ async function loadChromium() {
     return (await import('/opt/node22/lib/node_modules/playwright/index.mjs')).chromium;
   }
 }
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.json': 'application/json', '.png': 'image/png', '.txt': 'text/plain' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.json': 'application/json', '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.txt': 'text/plain' };
 const server = http.createServer((req, res) => {
   const path = decodeURIComponent(req.url.split('?')[0]);
   const file = join(root, path === '/' ? 'landing.html' : path);
@@ -32,85 +32,145 @@ async function open(width, height) {
   const errors = [];
   page.on('pageerror', e => errors.push(`pageerror: ${e.message}`));
   page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource|ERR_FAILED|net::/.test(m.text())) errors.push(`console: ${m.text().slice(0, 160)}`); });
-  await page.goto(`${BASE}/landing.html`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${BASE}/landing.html`, { waitUntil: 'load' });
   await page.waitForTimeout(600);
   return { page, ctx, errors };
 }
 
-// תוכן
+// ── תוכן ──
 const html = readFileSync(join(root, 'landing.html'), 'utf-8');
-const body = html.slice(html.indexOf('<body'));
-const strip = t => t.replace(/<script[\s\S]*?<\/script>/g, m => m); // הסקריפט נשאר: שם נמצאים נתוני החלונית
-const agents = body.slice(body.indexOf('id="agents"'), body.indexOf('id="industries"'));
-check(!/AI|בינה מלאכותית|חכם/.test(agents.replace(/ההודעות והתסריטים/g, '')), 'סעיף "מה עושים כל יום" לא מבטיח AI או "חכם"');
-check((agents.match(/class="agent-card"/g) || []).length === 5, 'בסעיף חמישה כרטיסים, באותו מבנה');
-check(/מסך "היום"/.test(agents) && /הודעות WhatsApp מוכנות/.test(agents) && /אימיילים ותסריטי שיחה/.test(agents) && /יומן מהיר/.test(agents), 'הסעיף מתאר את מסך "היום", ההודעות, האימיילים והתסריטים והיומן המהיר');
-check(!/סוכן התמיכה|בכל שעה|סוכן המוטיבציה|סוכן השיווק|כותב הצעות/.test(body), 'אין עוד טענות על סוכן תמיכה, מוטיבציה או שיווק');
-const head = html.slice(0, html.indexOf('</head>'));
-check(!/עוזר AI|AI/.test(head.replace(/<style[\s\S]*?<\/style>/g, '').replace(/<script[\s\S]*?<\/script>/g, '')), 'תיאורי ה-SEO וה-OG לא מזכירים AI');
-const faq = body.slice(body.indexOf('id="faq"'), body.indexOf('id="trust-section"'));
-check(!/AI אמיתי/.test(faq) && /תבניות שנכתבו מראש/.test(faq), 'השאלה הנפוצה על AI הוחלפה בתשובה מדויקת');
-// רשימות החבילות: רק יכולות פעילות, ובלי שינוי במבנה (3 חבילות, 5, 5 ו-4 שורות)
-const plans = [...body.matchAll(/<ul class="plan-features">([\s\S]*?)<\/ul>/g)].map(m => [...m[1].matchAll(/<li>([^<]*)<\/li>/g)].map(x => x[1]));
-check(plans.length === 3 && plans.every(l => !l.some(x => /AI/.test(x))), 'רשימות החבילות לא מבטיחות AI');
-check(JSON.stringify(plans.map(l => l.length)) === JSON.stringify([5, 4, 3]), 'מבנה החבילות נשמר (5, 4 ו-3 שורות, אחרי הסרת תמיכה בעדיפות)');
-check(/הודעות, אימיילים ותסריטי שיחה מוכנים/.test(plans[0].join('|')) && /יומן מהיר/.test(plans[0].join('|')), 'חבילת Solo מציגה את היכולות הקיימות שהחליפו את שתי ההבטחות');
 const app = readFileSync(join(root, 'index.html'), 'utf-8');
-check(!/עדיפות/.test(body) && !/20% הנחה/.test(body + app), 'אין הבטחה לתמיכה בעדיפות או ל-20% הנחה בהפניות, בדף ובאפליקציה');
-check(/<title>PLTO Sales: /.test(html) && /<title>PLTO Sales: /.test(app) && /PLTO Sales · מערכת המכירות לעסקים/.test(app), 'המיתוג הגלוי PLTO Sales בכותרות הדף והאפליקציה ובמסך הכניסה');
-const aiLeft = [...body.replace(/<!--[\s\S]*?-->/g, '').matchAll(/AI|בינה מלאכותית/g)].length;
-check(aiLeft === 1 && /בינה מלאכותית/.test(faq), 'האזכור היחיד שנשאר בגוף הדף הוא השאלה הנפוצה שמסבירה שאין AI');
+const head = html.slice(0, html.indexOf('</head>'));
+const body = html.slice(html.indexOf('<body')).replace(/<script[\s\S]*?<\/script>/g, '').replace(/<!--[\s\S]*?-->/g, '');
+const text = body.replace(/<[^>]*>/g, ' ').replace(/&quot;/g, '"');
 
-for (const [w, h, label] of [[390, 844, 'נייד 390px'], [1280, 800, 'דסקטופ 1280px']]) {
+check(/<title>PLTO Sales: /.test(head), 'כותרת הדף עם המיתוג PLTO Sales');
+check(!/\bAI\b|בינה מלאכותית|חכם/.test(text + head.replace(/<style[\s\S]*?<\/style>/g, '').replace(/<script[\s\S]*?<\/script>/g, '')), 'אין הבטחות AI או "חכם" בדף ובתיאורי ה-SEO');
+check(!/עדיפות|20% הנחה|עמלה|₪|שקל/.test(text), 'אין טענות שאין להן מימוש (תמיכה בעדיפות, הנחת הפניה, עמלה) ואין מחירים בדף');
+check(!/מאסטר|סוכנים חכמים|סוכן תמיכה|סוכן מוטיבציה|תוסף השיווק/.test(text), 'אין עוד טענות על סוכנים, תוסף שיווק או יכולות שהוסרו');
+const sections = body.match(/<section\b/g) || [];
+check(sections.length === 3, `בדיוק שלושה סקשנים (${sections.length})`);
+check(/id="features"/.test(body) && /id="who"/.test(body) && /class="hero"/.test(body), 'שלושת הסקשנים: גיבור, מה עושים כל יום, למי זה מתאים');
+// כל יכולת שמוצגת בדף קיימת באפליקציה
+check(/const Today = \{/.test(app) && /\['overdue',\s+'באיחור'\]/.test(app) && /\['today',\s+'להיום'\]/.test(app) && /חדשים בלי מענה/.test(app), 'מסך "היום" באפליקציה כולל באיחור, להיום וחדשים בלי מענה');
+check(/const SmartWA = \{/.test(app) && /פנייה ראשונה/.test(app) && /אחרי הצעת מחיר/.test(app) && /openFree\('script'\)/.test(app) && /openFree\('email'\)/.test(app), 'הודעות WhatsApp, אימיילים ותסריטי שיחה קיימים באפליקציה, כולל המטרות שהדף מציין');
+check(/LeadImport\.open\(\)/.test(app) && /ייבוא לידים מקובץ/.test(app), 'ייבוא לידים מקובץ קיים באפליקציה');
+check(/לא נסגר/.test(app) && /NextStep/.test(app), '"לא נסגר" והצעד הבא קיימים באפליקציה');
+// תמונות: קיימות, עם alt ומידות
+const imgs = [...body.matchAll(/<img\b[^>]*>/g)].map(m => m[0]);
+check(imgs.length >= 2, `יש צילומי מסך בדף (${imgs.length})`);
+check(imgs.every(i => /alt="[^"]{12,}"/.test(i) && /width="\d+"/.test(i) && /height="\d+"/.test(i)), 'לכל תמונה יש alt תיאורי, רוחב וגובה (מונע קפיצות פריסה)');
+check(imgs.every(i => { const s = /src="([^"]+)"/.exec(i)?.[1]; return s && existsSync(join(root, s)); }), 'כל קבצי התמונות קיימים בריפו');
+check(/נתוני דוגמה/.test(text), 'צילומי המסך מסומנים כנתוני דוגמה');
+check(!/[א-ת]\/[א-ת]|\([א-ת]+\/[א-ת]+\)/.test(text), 'אין ניסוח עם לוכסן מגדרי');
+// ניסוח ניטרלי מגדרית: בלי פנייה בגוף שני ביחיד או ברבים מוטה ובלי שמות תפקיד בלשון זכר רבים
+const gendered = text.match(/בעצמכ[םן]|\bשלו\b|\bשלה\b|\bאתה\b|\bהזן\b|\bבחר\b|\bשלח\b|סוכני נדל|עורכי דין|בעלי עסקים|יועצים|ללקוח שסוגר/g);
+check(!gendered, 'הטקסט ניטרלי מגדרית' + (gendered ? ': ' + [...new Set(gendered)].join(', ') : ''));
+const meta = head.match(/(?:content|alt)="[^"]*"/g)?.join(' ') || '';
+check(!/בעצמכ[םן]|\bשלו\b|סוכני נדל|עורכי דין/.test(meta), 'תיאורי ה-SEO וה-alt ניטרליים מגדרית');
+check(!/[→←]/.test(text), 'אין חצים דקורטיביים בטקסט');
+check(/privacy-policy\.html/.test(body) && /info@plto\.app/.test(body), 'קישור למדיניות פרטיות והצהרת נגישות בדף');
+const aiTier = readFileSync(join(root, '.github/workflows/deploy.yml'), 'utf-8');
+check(/cp -r icons /.test(aiTier), 'תיקיית icons (ובה תמונות הדף) מועתקת בפריסה');
+
+for (const [w, h, label] of [[390, 844, 'נייד 390px'], [768, 1024, 'טאבלט 768px'], [1280, 800, 'דסקטופ 1280px']]) {
   const { page, ctx, errors } = await open(w, h);
   const r = await page.evaluate(() => {
     const doc = document.documentElement;
-    const cards = [...document.querySelectorAll('#agents .agent-card')];
-    const overflowing = cards.filter(c => c.scrollWidth > c.clientWidth + 1).length;
-    const ctas = [...document.querySelectorAll('a.btn-primary, a.nav-cta, a.plan-btn, a.btn-marketing')].map(a => a.getAttribute('href'));
-    const navLinks = [...document.querySelectorAll('#navMenuPanel a[href^="#"]')].map(a => ({ href: a.getAttribute('href'), ok: !!document.querySelector(a.getAttribute('href')), text: a.textContent.trim() }));
-    const small = [...document.querySelectorAll('#agents .agent-desc, #agents .agent-title')].filter(e => parseFloat(getComputedStyle(e).fontSize) < 13).length;
-    return { overflowX: doc.scrollWidth - innerWidth, overflowing, ctas, navLinks, small, dir: getComputedStyle(document.body).direction, cards: cards.length };
+    const ctas = [...document.querySelectorAll('a.btn-primary, a.nav-cta')].map(a => a.getAttribute('href'));
+    const hero = document.getElementById('hero-cta-btn').getBoundingClientRect();
+    const tiny = [...document.querySelectorAll('main p, main h1, main h2, main h3, main li, .phone-cap')].filter(e => parseFloat(getComputedStyle(e).fontSize) < 13).length;
+    const smallTargets = [...document.querySelectorAll('a.btn-primary, a.nav-cta, .nav-a11y-btn')].filter(e => { const b = e.getBoundingClientRect(); return b.height < 44; }).length;
+    const imgsOk = [...document.querySelectorAll('img')].every(i => i.complete && i.naturalWidth > 0);
+    const phones = [...document.querySelectorAll('.phone')].map(p => { const b = p.getBoundingClientRect(); return b.left >= 0 && b.right <= innerWidth; });
+    return { overflowX: doc.scrollWidth - innerWidth, ctas, heroBottom: hero.bottom, vh: innerHeight, tiny, smallTargets, imgsOk, phonesInside: phones.every(Boolean), dir: getComputedStyle(document.body).direction };
   });
   check(r.overflowX <= 0, `${label}: אין גלישה אופקית`);
-  check(r.cards === 5 && r.overflowing === 0 && r.small === 0, `${label}: חמשת הכרטיסים נקראים בלי חיתוך וגודל הטקסט תקין`);
   check(r.dir === 'rtl', `${label}: כיוון RTL`);
-  check(r.ctas.length >= 6 && r.ctas.every(h => h && h.startsWith('https://realestate.plto.app')), `${label}: כל כפתורי ההרשמה מצביעים למערכת (${r.ctas.length})`);
-  check(r.navLinks.length === 6 && r.navLinks.every(n => n.ok) && r.navLinks.some(n => n.text === 'מה עושים כל יום'), `${label}: קישורי התפריט מצביעים לסעיפים קיימים`);
-  const hero = await page.evaluate(() => {
-    const h = document.querySelector('.hero');
-    const cta = document.getElementById('hero-cta-btn');
-    const r = cta.getBoundingClientRect();
-    const ctas = h.querySelectorAll('a[href^="https://realestate.plto.app"]').length;
-    const vis = el => !!el && el.getClientRects().length > 0 && getComputedStyle(el).display !== 'none';
-    return {
-      ctaAboveFold: r.top >= 0 && r.bottom <= innerHeight, ctaText: cta.textContent.trim(), ctas,
-      h1: h.querySelector('h1').innerText.replace(/\s+/g, ' ').trim(),
-      points: h.querySelectorAll('.hero-points li').length,
-      pointsAboveFold: [...h.querySelectorAll('.hero-points li')].every(li => li.getBoundingClientRect().bottom <= innerHeight),
-      noPreviews: !h.querySelector('.vertical-previews, .vp-value'),
-      addonHidden: [...document.querySelectorAll('.plan-addon, .marketing-section')].every(el => !vis(el)),
-      plans: document.querySelectorAll('.plan-card').length,
-    };
-  });
-  check(hero.ctaAboveFold && hero.ctas === 1 && hero.ctaText === 'מתחילים בחינם', `${label}: במסך הראשון כפתור אחד, גלוי בלי גלילה`);
-  check(/הלידים כבר אצלך/.test(hero.h1) && hero.points === 3 && hero.pointsAboveFold && hero.noPreviews, `${label}: המסך הראשון קצר: כותרת, משפט, כפתור ושלוש נקודות`);
-  check(hero.addonHidden && hero.plans >= 3, `${label}: תוסף השיווק מוסתר והחבילות עצמן נשארו`);
-  if (w === 390) {
-    await page.click('.nav-menu-btn');
-    await page.click('#navMenuPanel a[href="#agents"]');
-    await page.waitForTimeout(900);
-    const y = await page.evaluate(() => Math.round(document.querySelector('#agents').getBoundingClientRect().top));
-    check(Math.abs(y - 76) < 60, `${label}: הקישור "מה עושים כל יום" גולל לסעיף (top=${y})`);
-    await page.locator('#agents').scrollIntoViewIfNeeded();
-    await page.screenshot({ path: (process.env.SHOT || '/dev/null').replace('.png', '-m.png') }).catch(() => {});
-  } else {
-    await page.locator('#agents').scrollIntoViewIfNeeded();
-    await page.screenshot({ path: (process.env.SHOT || '/dev/null').replace('.png', '-d.png') }).catch(() => {});
-  }
-  check(errors.length === 0, `${label}: אין שגיאות בקונסולה` + (errors.length ? ': ' + errors.join(' | ') : ''));
+  check(r.heroBottom <= r.vh, `${label}: כפתור ההרשמה הראשי נראה בלי גלילה`);
+  check(r.ctas.length >= 4 && r.ctas.every(h => h === 'https://realestate.plto.app'), `${label}: כל כפתורי ההרשמה מצביעים למערכת (${r.ctas.length})`);
+  check(r.smallTargets === 0, `${label}: כל כפתורי ההנעה בגובה 44px לפחות`);
+  check(r.tiny === 0, `${label}: אין טקסט קטן מ-13px`);
+  check(r.imgsOk && r.phonesInside, `${label}: צילומי המסך נטענו ונכנסים במסך`);
+  await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 400) { scrollTo(0, y); await new Promise(r => setTimeout(r, 150)); } });
+  await page.waitForTimeout(600);
+  const faded = await page.evaluate(() => [...document.querySelectorAll('.fade-up')].filter(e => !e.classList.contains('visible')).length);
+  check(faded === 0, `${label}: אנימציית הכניסה בגלילה מציגה את כל הרכיבים (${faded} נשארו מוסתרים)`);
+  check(errors.length === 0, `${label}: אין שגיאות בקונסולה${errors.length ? ' ' + errors.join(' | ') : ''}`);
   await ctx.close();
 }
-await browser.close(); server.close();
-if (failures) { console.log(`\n${failures} בדיקות נכשלו`); process.exit(1); }
-console.log('\nכל הבדיקות עברו');
+
+// ניגודיות טקסט (4.5:1, או 3:1 לטקסט גדול) במצב רגיל ובמצב נגישות, ובמובייל ובדסקטופ
+const CONTRAST = () => {
+  const parse = s => { const m = s.match(/rgba?\(([^)]+)\)/); if (!m) return null; const a = m[1].split(',').map(Number); return { r: a[0], g: a[1], b: a[2], a: a.length > 3 ? a[3] : 1 }; };
+  const lum = ({ r, g, b }) => { const f = v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }; return .2126 * f(r) + .7152 * f(g) + .0722 * f(b); };
+  const over = (t, b) => ({ r: t.r * t.a + b.r * (1 - t.a), g: t.g * t.a + b.g * (1 - t.a), b: t.b * t.a + b.b * (1 - t.a), a: 1 });
+  const grad = bi => { const m = [...bi.matchAll(/rgba?\([^)]+\)/g)].map(x => parse(x[0])); if (!m.length) return null; const n = m.length; return { r: m.reduce((a, c) => a + c.r, 0) / n, g: m.reduce((a, c) => a + c.g, 0) / n, b: m.reduce((a, c) => a + c.b, 0) / n, a: 1 }; };
+  const bgOf = el => {
+    const layers = [];
+    for (let e = el; e; e = e.parentElement) {
+      const cs = getComputedStyle(e); const c = parse(cs.backgroundColor);
+      if (c && c.a > 0) layers.push(c);
+      if (c && c.a === 1) break;
+      if (cs.backgroundImage.includes('gradient')) { const g = grad(cs.backgroundImage); if (g) { layers.push(g); break; } }
+    }
+    let acc = layers.length ? layers[layers.length - 1] : { r: 255, g: 255, b: 255, a: 1 };
+    if (acc.a < 1) acc = over(acc, { r: 255, g: 255, b: 255, a: 1 });
+    for (let i = layers.length - 2; i >= 0; i--) acc = over(layers[i], acc);
+    return acc;
+  };
+  const bad = [];
+  document.querySelectorAll('main *, footer *, nav *').forEach(el => {
+    if (![...el.childNodes].some(n => n.nodeType === 3 && /[A-Za-zא-ת0-9@]/.test(n.textContent))) return;
+    const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || cs.display === 'none' || +cs.opacity === 0) return;
+    const bg = bgOf(el); const fg = over(parse(cs.color), bg);
+    const l1 = lum(fg), l2 = lum(bg); const ratio = (Math.max(l1, l2) + .05) / (Math.min(l1, l2) + .05);
+    const size = parseFloat(cs.fontSize), bold = +cs.fontWeight >= 700; const need = (size >= 24 || (size >= 18.66 && bold)) ? 3 : 4.5;
+    if (ratio < need) bad.push(`${el.textContent.trim().slice(0, 24)} (${ratio.toFixed(2)})`);
+  });
+  return bad;
+};
+for (const [w, h, label] of [[390, 844, 'נייד 390px'], [1280, 800, 'דסקטופ 1280px']]) {
+  const { page, ctx } = await open(w, h);
+  await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 400) { scrollTo(0, y); await new Promise(r => setTimeout(r, 60)); } scrollTo(0, 0); });
+  await page.waitForTimeout(500);
+  let bad = await page.evaluate(CONTRAST);
+  check(!bad.length, `${label}: ניגודיות הטקסט תקינה במצב רגיל${bad.length ? ': ' + bad.join(' | ') : ''}`);
+  await page.evaluate(() => toggleA11y());
+  await page.waitForTimeout(300);
+  bad = await page.evaluate(CONTRAST);
+  check(!bad.length, `${label}: ניגודיות הטקסט תקינה במצב נגישות${bad.length ? ': ' + bad.join(' | ') : ''}`);
+  const ov = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+  check(ov <= 0, `${label}: אין גלישה אופקית במצב נגישות`);
+  const foot = await page.evaluate(() => [...document.querySelectorAll('.footer-links a')].filter(a => a.getBoundingClientRect().height < 44).length);
+  check(foot === 0, `${label}: קישורי הפוטר בגובה 44px לפחות`);
+  await ctx.close();
+}
+// reduced motion: אף אנימציה אינסופית לא רצה
+{
+  const ctx = await browser.newContext({ locale: 'he-IL', viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+  await ctx.route(url => !url.href.startsWith(BASE), r => r.abort());
+  const page = await ctx.newPage();
+  await page.goto(`${BASE}/landing.html`, { waitUntil: 'load' });
+  await page.waitForTimeout(800);
+  const running = await page.evaluate(() => document.getAnimations().filter(a => a.playState === 'running' && a.effect.getComputedTiming().iterations === Infinity).map(a => a.animationName || a.constructor.name));
+  check(running.length === 0, `במצב reduced motion אין אנימציה אינסופית שרצה${running.length ? ': ' + running.join(', ') : ''}`);
+  await ctx.close();
+}
+
+// הקלקה על כפתור ההרשמה נשלחת למעקב ההמרות עם שם הסקשן, בלי p_tenant_id
+{
+  const { page, ctx } = await open(390, 844);
+  const sent = [];
+  await ctx.route('**/rest/v1/rpc/track_funnel_event', r => { sent.push(JSON.parse(r.request().postData() || '{}')); r.fulfill({ status: 204, body: '' }); });
+  await ctx.route('https://realestate.plto.app/**', r => r.fulfill({ status: 200, contentType: 'text/html', body: '<html></html>' }));
+  await page.click('#hero-cta-btn');
+  await page.waitForTimeout(500);
+  check(sent.length === 1 && sent[0].p_event_name === 'landing_cta_click' && sent[0].p_event_data?.section === 'hero' && !('p_tenant_id' in sent[0]), `קליק על כפתור הגיבור נרשם כ-landing_cta_click עם section=hero (נשלחו: ${sent.length})`);
+  await ctx.close();
+}
+
+await browser.close();
+server.close();
+console.log(failures ? failures + ' נכשלו' : 'כל הבדיקות עברו');
+process.exit(failures ? 1 : 0);
