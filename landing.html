@@ -22,6 +22,8 @@
   <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+  <link rel="preload" as="image" href="icons/landing/bg-navy-m.webp" media="(max-width: 768px)">
+  <link rel="preload" as="image" href="icons/landing/bg-navy-d.webp" media="(min-width: 769px)">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&family=Heebo:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -187,7 +189,10 @@ body.theme-accessible nav {
       border-bottom: 1px solid #FFFF00;
     }
 .hero {
-      background: linear-gradient(145deg, var(--navy-900) 0%, var(--navy-700) 60%, var(--navy-600) 100%);
+      background-color: var(--navy-900);
+      background-image: url(icons/landing/bg-navy-m.webp);
+      background-size: cover;
+      background-position: center;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -367,7 +372,10 @@ body.theme-accessible nav {
     }
 .cps-btn:hover { background: var(--gold-400); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(196,154,42,0.40); }
 .closing {
-      background: linear-gradient(145deg, var(--navy-900) 0%, var(--navy-700) 100%);
+      background-color: #0B0C10;
+      background-image: url(icons/landing/bg-black-m.webp);
+      background-size: cover;
+      background-position: center;
       padding: 54px 24px;
       text-align: center;
       position: relative;
@@ -449,7 +457,7 @@ footer {
       box-shadow: 0 8px 28px rgba(245,158,11,0.35);
     }
 .btn-marketing:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(245,158,11,0.45); }
-#features { background: var(--gray-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+#features { background-color: var(--gray-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 .fade-up {
       opacity: 0;
       transform: translateY(24px);
@@ -776,10 +784,20 @@ footer {
     @media (min-width: 900px) { .phone { width: 300px; } }
 
     /* סקשן 2: מה עושים כל יום */
-    .feat-section { background: var(--gray-bg); }
+    .feat-section { background-color: var(--gray-bg); background-image: url(icons/landing/bg-light-m.webp); background-size: cover; background-position: center top; }
+
+    /* רקעים: גרסת נייד כברירת מחדל (תמונה לאורך), ודסקטופ מרוחב 769px. במצב נגישות בלי תמונות, כדי לשמור על ניגודיות */
+    @media (min-width: 769px) {
+      .hero { background-image: url(icons/landing/bg-navy-d.webp); }
+      .feat-section { background-image: url(icons/landing/bg-light-d.webp); }
+      .closing { background-image: url(icons/landing/bg-black-d.webp); }
+    }
+    body.theme-accessible .hero,
+    body.theme-accessible .feat-section,
+    body.theme-accessible .closing { background-image: none; }
     .feat-split { display: grid; grid-template-columns: 1fr; gap: 36px; align-items: center; }
     .feat-section .section-title { text-align: right; font-size: clamp(26px, 3.4vw, 38px); }
-    .feat-section .section-sub { text-align: right; margin: 0 0 24px; max-width: none; }
+    .feat-section .section-sub { text-align: right; margin: 0 0 24px; max-width: none; color: #475569; }
     .feat-list { list-style: none; display: grid; gap: 14px; padding: 0; }
     .feat-item {
       display: flex; gap: 14px; align-items: flex-start;

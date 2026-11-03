@@ -1106,6 +1106,8 @@ Never enable real payment collection without:
 
 Treat `PAYMENTS_LIVE` and the actual current payment configuration as source-of-truth values that must be verified before changing billing behavior.
 
+Owner decision (3.11.2026): value first, billing later. Users start free and no clearing provider is purchased or connected until the first user shows about two weeks of real business activity (not just a signup). Until then the missing provider is not a launch blocker: at the end of the trial the paywall collects interest, `notify-owner` alerts the owner, and the owner closes the subscription manually or extends the trial with `admin_extend_trial`. Do not open billing work, and do not put prices on the landing page, before that trigger.
+
 ---
 
 ## Integrations
