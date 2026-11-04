@@ -1531,6 +1531,7 @@ Do not assume every item above is currently active. Verify call sites and live D
 10. A feature must not be represented as live when it is not.
 11. Existing production data and external account identities must not be renamed casually.
 12. New features must follow the existing architecture unless there is a demonstrated reason to change architecture.
+13. Free trial for a new tenant: 45 calendar days from signup, counted even without logins (`ensure_agent_and_tenant`, migration 134; owner decision 4.11.2026). After the trial the data stays and access is blocked by the paywall; a paid plan continues with the same data. The trial bar counts each tenant's own length (signup to `trial_ends_at`), so older 30-day trials still read "מתוך 30". The 30 days of data retention after the trial is a separate rule and did not change.
 
 ---
 

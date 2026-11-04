@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://scyfywvzoogfrlalgftv.supabase.co https://www.google-analytics.com https://www.googletagmanager.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
   <title>PLTO Sales: הופכים לידים ללקוחות משלמים</title>
-  <meta name="description" content="PLTO Sales, מערכת המכירות לעסקים: נדל״ן, עיצוב ואדריכלות, עריכת דין ועוד. כל הלידים במקום אחד, מעקב אחרי כל ליד והודעות מוכנות לשליחה. 30 ימים חינם, ללא כרטיס אשראי.">
+  <meta name="description" content="PLTO Sales, מערכת המכירות לעסקים: נדל״ן, עיצוב ואדריכלות, עריכת דין ועוד. כל הלידים במקום אחד, מעקב אחרי כל ליד והודעות מוכנות לשליחה. 45 ימים חינם, ללא כרטיס אשראי.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://realestate.plto.app/landing.html">
   <meta property="og:title" content="PLTO Sales: הופכים לידים ללקוחות משלמים">
-  <meta property="og:description" content="PLTO Sales, מערכת המכירות לעסקים: נדל״ן, עיצוב ואדריכלות, עריכת דין ועוד. כל הלידים במקום אחד, מעקב אחרי כל ליד והודעות מוכנות לשליחה. 30 ימים חינם, ללא כרטיס אשראי.">
+  <meta property="og:description" content="PLTO Sales, מערכת המכירות לעסקים: נדל״ן, עיצוב ואדריכלות, עריכת דין ועוד. כל הלידים במקום אחד, מעקב אחרי כל ליד והודעות מוכנות לשליחה. 45 ימים חינם, ללא כרטיס אשראי.">
   <meta property="og:image" content="https://realestate.plto.app/icons/og-image.jpg">
   <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1200">
@@ -17,7 +17,7 @@
   <meta property="og:locale" content="he_IL">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="PLTO Sales: הופכים לידים ללקוחות משלמים">
-  <meta name="twitter:description" content="PLTO Sales, מערכת המכירות לעסקים: נדל״ן, עיצוב ואדריכלות, עריכת דין ועוד. כל הלידים במקום אחד, מעקב אחרי כל ליד והודעות מוכנות לשליחה. 30 ימים חינם, ללא כרטיס אשראי.">
+  <meta name="twitter:description" content="PLTO Sales, מערכת המכירות לעסקים: נדל״ן, עיצוב ואדריכלות, עריכת דין ועוד. כל הלידים במקום אחד, מעקב אחרי כל ליד והודעות מוכנות לשליחה. 45 ימים חינם, ללא כרטיס אשראי.">
   <meta name="twitter:image" content="https://realestate.plto.app/icons/og-image.jpg">
   <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -890,6 +890,65 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
 /* 4. קישורי פוטר: יעד לחיצה של 44px לפחות, וצבע עם ניגודיות מספקת */
 .footer-links a { display: inline-flex; align-items: center; min-height: 44px; color: rgba(255,255,255,0.74); }
 .footer-copy { color: rgba(255,255,255,0.62); }
+
+/* ══ סבב שיפורים (4.11.2026): בלי התגית מעל הכותרת (הלוגו כבר בסרגל העליון), כפתורים ארוכים יותר, מעברים רציפים בין הסקשנים ══ */
+/* שורות האמון: כל שורה ביחידה אחת, בלי שבירה באמצע */
+.hero-trust { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.hero-trust span, .closing-micro { white-space: nowrap; }
+@media (min-width: 900px) { .hero-trust { align-items: flex-start; } }
+.closing-micro { color: rgba(255,255,255,0.62); font-size: 14px; }
+/* כפתורי ההנעה: טקסט ארוך בשורה אחת, ובנייד בלי לצאת מהמסך */
+.btn-primary, .nav-cta { white-space: nowrap; max-width: 100%; text-align: center; }
+.closing-cta { font-size: 18px; padding: 18px 44px; }
+@media (max-width: 480px) {
+  .hero .btn-primary { padding: 16px 26px; font-size: 17px; }
+  .closing-cta { font-size: 17px; padding: 16px 28px; }
+  .btn-primary.btn-light { padding: 15px 28px; }
+}
+@media (max-width: 400px) {
+  nav { padding: 14px 16px; }
+  .nav-cta { padding: 10px 14px; font-size: 13.5px; }
+  .hero .btn-primary { padding: 15px 20px; font-size: 16px; }
+}
+/* מעברים רציפים: כל סקשן נגמר בצבע שבו הבא מתחיל, כך שאין קו חיתוך בין התמונות */
+#features { border-top: 0; border-bottom: 0; }
+.hero {
+  background-image: linear-gradient(to bottom, rgba(6,15,28,0) calc(100% - 80px), #060F1C 100%), url(icons/landing/bg-navy-m.webp);
+  padding-bottom: 64px;
+}
+.feat-section {
+  background-image:
+    linear-gradient(to bottom, #060F1C 0, rgba(6,15,28,0.55) 30px, rgba(6,15,28,0) 96px),
+    linear-gradient(to top, #0B0C10 0, rgba(11,12,16,0.55) 30px, rgba(11,12,16,0) 104px),
+    url(icons/landing/bg-light-m.webp);
+  padding-top: 92px;
+  padding-bottom: 108px;
+}
+.closing {
+  background-image:
+    linear-gradient(to bottom, #0B0C10 0, rgba(11,12,16,0) 110px),
+    linear-gradient(to top, #060D1A 0, rgba(6,13,26,0) 90px),
+    url(icons/landing/bg-black-m.webp);
+  padding-bottom: 72px;
+}
+@media (min-width: 769px) {
+  .hero { background-image: linear-gradient(to bottom, rgba(6,15,28,0) calc(100% - 96px), #060F1C 100%), url(icons/landing/bg-navy-d.webp); }
+  .feat-section {
+    background-image:
+      linear-gradient(to bottom, #060F1C 0, rgba(6,15,28,0.55) 36px, rgba(6,15,28,0) 120px),
+      linear-gradient(to top, #0B0C10 0, rgba(11,12,16,0.55) 36px, rgba(11,12,16,0) 128px),
+      url(icons/landing/bg-light-d.webp);
+    padding-top: 120px;
+    padding-bottom: 136px;
+  }
+  .closing {
+    background-image:
+      linear-gradient(to bottom, #0B0C10 0, rgba(11,12,16,0) 130px),
+      linear-gradient(to top, #060D1A 0, rgba(6,13,26,0) 110px),
+      url(icons/landing/bg-black-d.webp);
+  }
+}
+footer { background: #060D1A; }
 </style>
 </head>
 <body>
@@ -901,7 +960,7 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
     <button class="nav-a11y-btn" data-a11y-btn
             onclick="toggleA11y()" aria-pressed="false"
             aria-label="הפעלת מצב נגישות">♿</button>
-    <a href="https://realestate.plto.app" class="nav-cta" data-cta-section="nav">מתחילים בחינם</a>
+    <a href="https://realestate.plto.app" class="nav-cta" data-cta-section="nav">מתחילים לעשות סדר בעסק</a>
   </div>
 </nav>
 
@@ -911,16 +970,12 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
 <section class="hero">
   <div class="hero-grid">
     <div class="hero-text">
-      <div class="hero-badge">
-        <span class="badge-dot"></span>
-        <span class="badge-text">PLTO Sales<br>מערכת המכירות לעסקים</span>
-      </div>
-      <h1>הלידים כבר אצלך<br><span class="highlight">עכשיו הופכים אותם ללקוחות משלמים</span></h1>
-      <p class="hero-sub">PLTO מראה למי לחזור היום, נותנת הודעה מוכנה לשליחה, ודואגת <strong>שאף ליד לא ייפול בין הכיסאות.</strong></p>
+      <h1>הלידים כבר אצלך<br><span class="highlight">עכשיו צריך להפוך אותם ללקוחות</span></h1>
+      <p class="hero-sub">לידים, משימות ומעקב במקום אחד. כל בוקר רואים למי לחזור, שולחים הודעה מוכנה בלחיצה, <strong>ואף ליד לא נופל בין הכיסאות.</strong></p>
       <div class="hero-actions">
-        <a href="https://realestate.plto.app" id="hero-cta-btn" class="btn-primary pulse-cta" data-cta-section="hero">מתחילים בחינם</a>
+        <a href="https://realestate.plto.app" id="hero-cta-btn" class="btn-primary pulse-cta" data-cta-section="hero">הלידים שלך מחכים במסך הבא</a>
       </div>
-      <p class="hero-micro hero-trust">30 יום חינם<br>בלי כרטיס אשראי<br>מוכן תוך דקה</p>
+      <p class="hero-micro hero-trust"><span>45 יום חינם, מוכן תוך דקה</span><span>בלי כרטיס אשראי, בלי התחייבות</span></p>
     </div>
     <figure class="phone-wrap hero-visual">
       <div class="phone">
@@ -970,7 +1025,7 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
         </li>
       </ul>
       <div class="feat-cta fade-up">
-        <a href="https://realestate.plto.app" class="btn-primary btn-light" data-cta-section="features">מתחילים בחינם</a>
+        <a href="https://realestate.plto.app" class="btn-primary btn-light" data-cta-section="features">מתחילים לעשות סדר בעסק</a>
       </div>
     </div>
     <figure class="phone-wrap feat-visual fade-up">
@@ -994,16 +1049,16 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
     <li>💼 ייעוץ ושירותים</li>
     <li>🏢 עסקים מכל תחום</li>
   </ul>
-  <p>30 ימים על חשבוננו, <strong>בלי כרטיס אשראי ובלי התחייבות.</strong> נרשמים עם Google או אימייל, ותוך דקה אפשר להוסיף את הליד הראשון.</p>
+  <p><strong>45 ימים על חשבוננו.</strong> נרשמים עם Google או אימייל, ותוך דקה אפשר להוסיף את הליד הראשון.</p>
   <div class="closing-actions">
     <div class="wrecking-wrap">
       <div class="pendulum" aria-hidden="true">
         <div class="wrecking-chain"></div>
         <div class="wrecking-ball"></div>
       </div>
-      <a href="https://realestate.plto.app" class="btn-primary shimmer-cta" data-cta-section="closing" style="font-size:18px;padding:18px 48px;">מתחילים עכשיו, בחינם</a>
+      <a href="https://realestate.plto.app" class="btn-primary shimmer-cta closing-cta" data-cta-section="closing">מתחילים לעשות סדר בעסק</a>
     </div>
-    <p class="closing-micro">בלי כרטיס אשראי<br>בלי התחייבות</p>
+    <p class="closing-micro">בלי כרטיס אשראי, בלי התחייבות</p>
 <details id="a11y-statement" class="a11y-details">
       <summary>♿ הצהרת נגישות</summary>
       <div class="a11y-body">

@@ -32,7 +32,7 @@ const tour = await page.evaluate(() => { GuidedTour._cachedSteps = null; return 
 check(!/סוכן השיווק|כותב בשבילך/.test(tour), 'סיור ההיכרות לא מבטיח "סוכן שיווק" שכותב תוכן כשה-AI כבוי');
 
 const src = readFileSync(new URL('../index.html', import.meta.url), 'utf-8');
-check(!/14 יום ניסיון/.test(src), 'אין עוד אזכור של 14 יום ניסיון (הניסיון הוא 30 יום)');
+check(!/14 יום ניסיון/.test(src), 'אין עוד אזכור של 14 יום ניסיון (הניסיון הוא 45 יום)');
 check(!/בתוכן AI שימושי/.test(src), 'חנות ה-XP והסיור לא מבטיחים תוכן AI (הפרסים הם ערכות מכירה כתובות)');
 check(!/label: 'תיבת דואר'/.test(src) && !/data-screen="email"/.test(src), 'תיבת הדואר לא מופיעה בתפריט הצד ובתפריט "עוד"');
 check(/NOT_RESTORABLE = new Set\([^)]*'email'/.test(src), 'קישור ישיר (?s=email) לא פותח את מסך תיבת הדואר');
