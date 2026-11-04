@@ -9038,6 +9038,11 @@ const Billing = {
       this.showTrialNoCreditCardModal();
       return;
     }
+    // בקשה אחת מספיקה: לחיצה חוזרת במסך התשלום לא שולחת עוד התראה לבעלים
+    if (!this.PAYMENTS_LIVE && this._interestSentPlan && this.isExpired()) {
+      toast('הבקשה כבר אצלנו, ניצור איתך קשר תוך 24 שעות', 'info');
+      return;
+    }
     if (!this.PAYMENTS_LIVE) {
       // שלב ניסיון - שמירת עניין + התראה לאדמין
       const plan = this.PLANS.find(p => p.id === planId);
@@ -9053,6 +9058,8 @@ const Billing = {
       } } }).catch(() => {});
       toast('📬 קיבלנו! ניצור איתך קשר תוך 24 שעות לסגירת המנוי 🙂', 'success');
       document.getElementById('annual-upsell-modal')?.classList.remove('show');
+      // אחרי סוף הניסיון השרת חוסם את הנתונים והאפליקציה לא אותחלה, ולכן נשארים במסך התשלום עם אישור
+      if (this.isExpired()) { this._markInterestSent(plan?.name || planId); return; }
       document.getElementById('screen-paywall')?.classList.add('hidden');
       document.getElementById('app-shell')?.classList.remove('hidden');
       if (App?._cur) App.go(App._cur);
@@ -9087,6 +9094,16 @@ const Billing = {
     if (p === 'lifetime') return { text:'Lifetime ♾️', color:'var(--blue-500)', bg:'var(--blue-100)' };
     return { text:'לא פעיל', color:'var(--red-600)', bg:'var(--red-100)' };
   },
+  _markInterestSent(planName) {
+    this._interestSentPlan = planName;
+    document.querySelectorAll('#paywall-plans-container button').forEach(b => { b.disabled = true; b.style.opacity = '0.55'; b.style.cursor = 'default'; });
+    const note = document.getElementById('paywall-trial-note');
+    if (note) {
+      note.textContent = `✅ קיבלנו את הבקשה לחבילת ${planName}. ניצור איתך קשר תוך 24 שעות לסגירת המנוי, והנתונים שמורים`;
+      note.style.cssText += ';color:#fff;font-weight:700;font-size:15px;background:rgba(16,185,129,0.16);border:1px solid rgba(16,185,129,0.5);border-radius:12px;padding:12px 14px;';
+      note.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  },
   renderPlansHTML() {
     const savings = { basic: 658, pro: 1198, premium: 1798 };
     return this.PLANS.map(plan => {
@@ -9107,7 +9124,7 @@ const Billing = {
         </div>
         <div class="plan-annual-note">📅 שנתי, ₪${plan.annualMonthly}/חודש · חיסכון ₪${(savings[plan.id]||0).toLocaleString()}</div>
         <div class="plan-features">
-          ${plan.features.filter(f => AI.ENABLED || !/\bAI\b/.test(f)).map(f => `<div class="plan-feature-item">${f}</div>`).join('')}
+          ${plan.features.filter(f => (AI.ENABLED || !/\bAI\b/.test(f)) && !/ניסיון/.test(f)).map(f => `<div class="plan-feature-item">${f}</div>`).join('')}
         </div>
         <button class="btn ${isFeatured ? 'btn-primary' : ''} w-full"
                 style="${!isFeatured ? 'background:rgba(255,255,255,0.09);color:#fff;border:1.5px solid rgba(255,255,255,0.18);' : ''}"
