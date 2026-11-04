@@ -88,7 +88,7 @@ for (const [w, h, label] of [[390, 844, 'נייד 390px'], [768, 1024, 'טאבל
   check(r.overflowX <= 0, `${label}: אין גלישה אופקית`);
   check(r.dir === 'rtl', `${label}: כיוון RTL`);
   check(r.heroBottom <= r.vh, `${label}: כפתור ההרשמה הראשי נראה בלי גלילה`);
-  check(r.ctas.length >= 4 && r.ctas.every(h => h === 'https://realestate.plto.app'), `${label}: כל כפתורי ההרשמה מצביעים למערכת (${r.ctas.length})`);
+  check(r.ctas.length >= 3 && r.ctas.every(h => h === 'https://realestate.plto.app'), `${label}: כל כפתורי ההרשמה מצביעים למערכת (${r.ctas.length})`);
   check(r.smallTargets === 0, `${label}: כל כפתורי ההנעה בגובה 44px לפחות`);
   check(r.tiny === 0, `${label}: אין טקסט קטן מ-13px`);
   check(r.imgsOk && r.phonesInside, `${label}: צילומי המסך נטענו ונכנסים במסך`);
@@ -192,7 +192,8 @@ for (const [w, h, label] of [[390, 844, 'נייד 390px'], [1280, 800, 'דסקט
     link.click();
     const closedAgain = !vis() && link.getAttribute('aria-expanded') === 'false';
     const btn = getComputedStyle(document.querySelector('.closing .btn-primary')).backgroundColor;
-    return { dots: /[·•]/.test(txt), dotted: heads.filter(h => /\.$/.test(h)), closed, inFooter, opened, content, closedAgain, btn, h: link.getBoundingClientRect().height };
+    const ctaLooks = [...document.querySelectorAll('.btn-primary')].map(e => { const c = getComputedStyle(e); return c.backgroundColor + '|' + c.borderTopColor + '|' + c.borderTopLeftRadius; });
+    return { dots: /[·•]/.test(txt), dotted: heads.filter(h => /\.$/.test(h)), closed, inFooter, opened, content, closedAgain, btn, ctaLooks, h: link.getBoundingClientRect().height };
   });
   check(!r.dots, 'אין נקודות אמצעיות בטקסט הנראה (יורדים שורה במקום)');
   check(r.dotted.length === 0, 'אין נקודה בסוף כותרת' + (r.dotted.length ? ': ' + r.dotted.join(' | ') : ''));
@@ -200,8 +201,11 @@ for (const [w, h, label] of [[390, 844, 'נייד 390px'], [1280, 800, 'דסקט
   check(r.opened && r.content, 'הקישור בפוטר פותח את ההצהרה (ת"י 5568 וכתובת לפניות)');
   check(r.closedAgain, 'לחיצה נוספת על הקישור סוגרת אותה');
   check(r.h >= 44, 'קישור ההצהרה בפוטר הוא יעד לחיצה של 44px לפחות');
+  // החלטת דוד (4.11.2026): שלושת כפתורי ההמרה בבורדו אטום אחד, עם מסגרת לבנה דקה ופינות מעוגלות של מלבן
   const m = r.btn.match(/rgba?\(([^)]+)\)/)[1].split(',').map(Number);
-  check(m[0] >= 150 && m[3] >= 0.9, 'כפתור הסגירה האדום בהיר ובולט מספיק על הרקע השחור (' + r.btn + ')');
+  check(m.length === 3 || m[3] === 1, 'כפתור הסגירה בצבע אטום (' + r.btn + ')');
+  check(r.ctaLooks.length === 3 && new Set(r.ctaLooks).size === 1, 'שלושת כפתורי ההמרה באותו עיצוב (' + [...new Set(r.ctaLooks)].join(' ; ') + ')');
+  check(/rgba?\(255, 255, 255/.test(r.ctaLooks[0]) && r.ctaLooks[0].endsWith('|14px'), 'לכפתורים מסגרת לבנה ופינות של 14px');
   await ctx.close();
 }
 

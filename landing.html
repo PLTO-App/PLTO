@@ -122,21 +122,6 @@ nav {
       letter-spacing: -0.5px;
     }
 .nav-logo span { color: var(--white); }
-.nav-cta {
-      min-height: 44px;
-      background: var(--btn-navy-grad);
-      color: var(--white);
-      border: none;
-      padding: 10px 20px;
-      border-radius: 99px;
-      font-family: 'Rubik', 'Heebo', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
-    }
-.nav-cta:hover { background: var(--blue-light); transform: translateY(-1px); }
 .nav-a11y-btn {
       background: transparent;
       color: rgba(255,255,255,0.80);
@@ -852,17 +837,8 @@ footer {
     @media (max-width: 899px) { .feat-visual { order: 2; } }
 
     /* סקשן 3: למי זה מתאים וסגירה */
-    .who-chips {
-      list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
-      margin: 0 auto 24px; padding: 0; max-width: 760px; position: relative; z-index: 1;
-    }
-    .who-chips li {
-      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18);
-      border-radius: 99px; padding: 9px 16px; font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.92);
-    }
     @media (max-width: 480px) {
       .hero { padding: 88px 18px 36px; }
-      .who-chips li { font-size: 14px; padding: 8px 13px; }
       .feat-item { padding: 14px; }
     }
 
@@ -898,7 +874,7 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
 @media (min-width: 900px) { .hero-trust { align-items: flex-start; } }
 .closing-micro { color: rgba(255,255,255,0.62); font-size: 14px; }
 /* כפתורי ההנעה: טקסט ארוך בשורה אחת, ובנייד בלי לצאת מהמסך */
-.btn-primary, .nav-cta { white-space: nowrap; max-width: 100%; text-align: center; }
+.btn-primary { white-space: nowrap; max-width: 100%; text-align: center; }
 .closing-cta { font-size: 18px; padding: 18px 44px; }
 @media (max-width: 480px) {
   .hero .btn-primary { padding: 16px 26px; font-size: 17px; }
@@ -907,8 +883,83 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
 }
 @media (max-width: 400px) {
   nav { padding: 14px 16px; }
-  .nav-cta { padding: 10px 14px; font-size: 13.5px; }
   .hero .btn-primary { padding: 15px 20px; font-size: 16px; }
+}
+
+/* ══ סבב כפתורים (4.11.2026): שלושה כפתורי המרה בעיצוב אחיד, בורדו עם מסגרת לבנה דקה, ברק אור והרמה במעבר עכבר ══ */
+:root {
+  --cta-red: #5E1A2B;
+  --cta-red-hover: #6E2033;
+  --cta-red-glow: 40, 8, 16;
+}
+/* סקשן "מה עושים כל יום": כותרת, טקסט וכפתור במרכז. הכרטיסים נשארים מיושרים לימין */
+.feat-section .section-title { text-align: center; }
+.feat-section .section-sub { text-align: center; margin: 0 auto 24px; }
+.feat-cta { text-align: center; }
+
+.hero .btn-primary,
+.feat-section .btn-primary,
+.closing .btn-primary {
+  position: relative;
+  overflow: hidden;
+  background: var(--cta-red);
+  color: #FFFFFF;
+  border: 1.5px solid rgba(255,255,255,0.85);
+  box-shadow: 0 6px 22px rgba(var(--cta-red-glow), 0.35), inset 0 1px 0 rgba(255,255,255,0.22);
+  border-radius: 14px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition: transform 0.22s cubic-bezier(.2,.8,.3,1.2), box-shadow 0.22s ease, background-color 0.22s ease;
+}
+/* ברק אור שעובר על הכפתור */
+.hero .btn-primary::before,
+.feat-section .btn-primary::before,
+.closing .btn-primary::before {
+  content: '';
+  position: absolute;
+  top: -10%; left: -130%;
+  width: 55%; height: 120%;
+  background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.38) 50%, transparent 80%);
+  transform: skewX(-15deg);
+  animation: btnShimmer 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+/* בלי טבעת הפעימה וזוהר מסביב לכפתור הפתיחה, רק ברק האור */
+.hero .btn-primary.pulse-cta::after { content: none; animation: none !important; }
+.hero .btn-primary:hover,
+.feat-section .btn-primary:hover,
+.closing .btn-primary:hover {
+  background: var(--cta-red-hover);
+  border-color: #FFFFFF;
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(var(--cta-red-glow), 0.50), inset 0 1px 0 rgba(255,255,255,0.26);
+}
+.hero .btn-primary:active,
+.feat-section .btn-primary:active,
+.closing .btn-primary:active {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: 0 3px 10px rgba(var(--cta-red-glow), 0.40), inset 0 2px 6px rgba(0,0,0,0.18);
+  transition-duration: 0.08s;
+}
+.hero .btn-primary:focus-visible,
+.feat-section .btn-primary:focus-visible,
+.closing .btn-primary:focus-visible {
+  outline: 3px solid #FFFFFF;
+  outline-offset: 3px;
+}
+/* כפתור הסגירה ממשיך לקבל את מכת כדור ההריסה בדסקטופ */
+.closing .wrecking-wrap .btn-primary:hover { animation: none; }
+/* משפט "למי זה מתאים" במקום שבבי התחומים */
+.closing p.who-line { font-size: 18px; line-height: 1.6; color: rgba(255,255,255,0.86); max-width: 560px; margin: 0 auto 18px; }
+@media (max-width: 480px) { .closing p.who-line { font-size: 17px; } }
+/* כותרת הסגירה וזכויות היוצרים בשורה אחת, גם בטלפון צר */
+.closing h2 { white-space: nowrap; font-size: clamp(21px, 6.6vw, 52px); }
+.footer-copy { white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) {
+  .hero .btn-primary, .feat-section .btn-primary, .closing .btn-primary,
+  .closing .wrecking-wrap .btn-primary { animation: none !important; }
+  .hero .btn-primary::before, .feat-section .btn-primary::before, .closing .btn-primary::before { display: none; }
+  .hero .btn-primary:hover, .feat-section .btn-primary:hover, .closing .btn-primary:hover { transform: none; }
 }
 /* מעברים רציפים: כל סקשן נגמר בצבע שבו הבא מתחיל, כך שאין קו חיתוך בין התמונות */
 #features { border-top: 0; border-bottom: 0; }
@@ -984,9 +1035,6 @@ body.theme-accessible .hero h1 .hero-l1, body.theme-accessible .hero h1 .hero-l2
 <!-- ניווט -->
 <nav>
   <a class="nav-logo" href="#top" aria-label="PLTO">PLT<span>O</span></a>
-  <div class="nav-actions">
-    <a href="https://realestate.plto.app" class="nav-cta" data-cta-section="nav">כאן מתחילים</a>
-  </div>
 </nav>
 
 <main id="top">
@@ -1066,14 +1114,8 @@ body.theme-accessible .hero h1 .hero-l1, body.theme-accessible .hero h1 .hero-l2
 
 <!-- 3. למי זה מתאים + סגירה -->
 <section class="closing" id="who">
-  <h2>מתאים לכל עסק<br>שחי <span class="gold">מלידים</span></h2>
-  <ul class="who-chips" aria-label="תחומים שמתאימים">
-    <li>🏠 נדל״ן</li>
-    <li>⚖️ עריכת דין</li>
-    <li>🎨 עיצוב פנים ואדריכלות</li>
-    <li>💼 ייעוץ ושירותים</li>
-    <li>🏢 עסקים מכל תחום</li>
-  </ul>
+  <h2>מתאים לכל עסק שחי <span class="gold">מלידים</span></h2>
+  <p class="who-line">נדל״ן, עריכת דין, עיצוב ואדריכלות, ייעוץ ושירותים. כל עסק שמקבל פניות ורוצה שפחות מהן ילכו לאיבוד.</p>
   <p><strong>45 ימים על חשבוננו.</strong> נרשמים עם Google או אימייל, ותוך דקה אפשר להוסיף את הליד הראשון.</p>
   <div class="closing-actions">
     <div class="wrecking-wrap">
@@ -1108,7 +1150,7 @@ body.theme-accessible .hero h1 .hero-l1, body.theme-accessible .hero h1 .hero-l2
         לפניות בנושא נגישות: <a href="mailto:info@plto.app">info@plto.app</a>
       </div>
   </div>
-  <div class="footer-copy">© 2026 PLTO<br>כל הזכויות שמורות</div>
+  <div class="footer-copy">כל הזכויות שמורות <bdi dir="ltr">© 2026 PLTO</bdi></div>
 </footer>
 
 <script>
@@ -1239,7 +1281,6 @@ body.theme-accessible .hero h1 .hero-l1, body.theme-accessible .hero h1 .hero-l2
 
   // Map: CSS selector → section name
   var ctaMap = [
-    { sel: '.nav-cta',                                    section: 'nav' },
     { sel: '#hero-cta-btn',                               section: 'hero' },
     { sel: '.section-cta-wrap .btn-primary:not(.has-rocket)', section: 'referral_loop' },
     { sel: '.section-cta-wrap:last-child .btn-primary',   section: 'features' },
