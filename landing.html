@@ -949,6 +949,34 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
   }
 }
 footer { background: #060D1A; }
+
+/* ══ סבב ליטוש (4.11.2026, ערב): כותרת לבנה בשתי שורות, נגישות בתחתית, מיקרו-קופי גדול יותר ══ */
+/* הכותרת: שתי שורות בדיוק, לבנות. השורה העליונה מעט גדולה יותר, ושתיהן לא נשברות */
+.hero h1 { color: var(--white); }
+.hero h1 .hero-l1, .hero h1 .hero-l2 { display: block; white-space: nowrap; color: var(--white); }
+.hero h1 .hero-l1 { font-size: clamp(21px, 6.6vw, 50px); line-height: 1.2; }
+.hero h1 .hero-l2 { font-size: clamp(16px, 5.25vw, 40px); line-height: 1.3; margin-top: 4px; }
+@media (min-width: 900px) {
+  .hero h1 .hero-l1 { font-size: clamp(33px, 3.45vw, 45px); }
+  .hero h1 .hero-l2 { font-size: clamp(26px, 2.75vw, 36px); }
+}
+/* מיקרו-קופי: 2px יותר מקודם, ובהיר יותר כדי שיבלוט */
+.phone-cap { font-size: 15px; color: rgba(255,255,255,0.82); max-width: 320px; }
+.feat-visual .phone-cap { color: #475569; }
+.hero-trust { font-size: 18px !important; }
+.closing-micro { font-size: 16px; color: rgba(255,255,255,0.72); }
+.footer-links { gap: 2px 14px; margin-bottom: 8px; }
+.footer-links a { font-size: 15px; padding: 0 4px; min-height: 44px; }
+.footer-copy { font-size: 14px; }
+/* במצב נגישות הטקסט מוגדל (zoom), ולכן שורת הכותרת השנייה רשאית לרדת שורה במקום לצאת מהמסך */
+body.theme-accessible .hero h1 .hero-l1, body.theme-accessible .hero h1 .hero-l2 { white-space: normal; }
+.a11y-details summary { font-size: 15px; }
+.a11y-body { font-size: 14px; }
+/* בלי כפתור מצב נגישות בדף (הוא קיים באפליקציה). הצהרת הנגישות נפתחת מהקישור בפוטר, בלי תיבה גלויה מעל הפוטר */
+.a11y-statement { max-width: 560px; margin: 4px auto 18px; text-align: right; }
+.a11y-statement:focus { outline: none; }
+.a11y-statement-title { font-size: 16px; font-weight: 800; color: rgba(255,255,255,0.9); margin-bottom: 6px; }
+.a11y-statement .a11y-body { padding: 0; }
 </style>
 </head>
 <body>
@@ -957,10 +985,7 @@ footer { background: #060D1A; }
 <nav>
   <a class="nav-logo" href="#top" aria-label="PLTO">PLT<span>O</span></a>
   <div class="nav-actions">
-    <button class="nav-a11y-btn" data-a11y-btn
-            onclick="toggleA11y()" aria-pressed="false"
-            aria-label="הפעלת מצב נגישות">♿</button>
-    <a href="https://realestate.plto.app" class="nav-cta" data-cta-section="nav">מתחילים לעשות סדר בעסק</a>
+    <a href="https://realestate.plto.app" class="nav-cta" data-cta-section="nav">כאן מתחילים</a>
   </div>
 </nav>
 
@@ -970,7 +995,7 @@ footer { background: #060D1A; }
 <section class="hero">
   <div class="hero-grid">
     <div class="hero-text">
-      <h1>הלידים כבר אצלך<br><span class="highlight">עכשיו צריך להפוך אותם ללקוחות</span></h1>
+      <h1><span class="hero-l1">הלידים כבר אצלך</span> <span class="hero-l2">עכשיו הגיע הזמן להפוך אותם ללקוחות</span></h1>
       <p class="hero-sub">לידים, משימות ומעקב במקום אחד. כל בוקר רואים למי לחזור, שולחים הודעה מוכנה בלחיצה, <strong>ואף ליד לא נופל בין הכיסאות.</strong></p>
       <div class="hero-actions">
         <a href="https://realestate.plto.app" id="hero-cta-btn" class="btn-primary pulse-cta" data-cta-section="hero">הלידים שלך מחכים במסך הבא</a>
@@ -1059,16 +1084,6 @@ footer { background: #060D1A; }
       <a href="https://realestate.plto.app" class="btn-primary shimmer-cta closing-cta" data-cta-section="closing">מתחילים לעשות סדר בעסק</a>
     </div>
     <p class="closing-micro">בלי כרטיס אשראי, בלי התחייבות</p>
-<details id="a11y-statement" class="a11y-details">
-      <summary>♿ הצהרת נגישות</summary>
-      <div class="a11y-body">
-        PLTO פועלת בהתאם לחוק שוויון זכויות לאנשים עם מוגבלות, תשנ"ח-1998, ולתקנות הנגישות לשירות באינטרנט.<br>
-        רמת תאימות מוצהרת: <strong>WCAG 2.1 AA (חלקית)</strong><br>
-        תקן ת"י 5568.<br>
-        המערכת כוללת מצב ניגודיות גבוהה, הגדלת טקסט, וניווט מקלדת ותמיכה בקוראי מסך, באופן חלקי.<br>
-        לפניות בנושא נגישות: <a href="mailto:info@plto.app">info@plto.app</a>
-      </div>
-    </details>
   </div>
 
 </section>
@@ -1081,10 +1096,30 @@ footer { background: #060D1A; }
   <div class="footer-links">
     <a href="https://realestate.plto.app">כניסה למערכת</a>
     <a href="https://realestate.plto.app/privacy-policy.html">מדיניות פרטיות</a>
-    <a href="#a11y-statement" onclick="var d=document.getElementById('a11y-statement');if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'center'});}return false;">הצהרת נגישות</a>
+    <a href="#a11y-statement" aria-controls="a11y-statement" aria-expanded="false" onclick="var d=document.getElementById('a11y-statement');if(d){d.hidden=!d.hidden;this.setAttribute('aria-expanded',String(!d.hidden));if(!d.hidden){d.scrollIntoView({behavior:'smooth',block:'center'});d.focus({preventScroll:true});}}return false;">הצהרת נגישות</a>
+  </div>
+  <div id="a11y-statement" class="a11y-statement" role="region" aria-label="הצהרת נגישות" tabindex="-1" hidden>
+    <h2 class="a11y-statement-title">הצהרת נגישות</h2>
+    <div class="a11y-body">
+        PLTO פועלת בהתאם לחוק שוויון זכויות לאנשים עם מוגבלות, תשנ"ח-1998, ולתקנות הנגישות לשירות באינטרנט.<br>
+        רמת תאימות מוצהרת: <strong>WCAG 2.1 AA (חלקית)</strong><br>
+        תקן ת"י 5568.<br>
+        המערכת כוללת מצב ניגודיות גבוהה, הגדלת טקסט, וניווט מקלדת ותמיכה בקוראי מסך, באופן חלקי.<br>
+        לפניות בנושא נגישות: <a href="mailto:info@plto.app">info@plto.app</a>
+      </div>
   </div>
   <div class="footer-copy">© 2026 PLTO<br>כל הזכויות שמורות</div>
 </footer>
+
+<script>
+  // קישור ישיר להצהרת הנגישות (landing.html#a11y-statement) פותח אותה
+  (function () {
+    if (location.hash !== '#a11y-statement') return;
+    var d = document.getElementById('a11y-statement'), a = document.querySelector('a[aria-controls="a11y-statement"]');
+    if (d) d.hidden = false;
+    if (a) a.setAttribute('aria-expanded', 'true');
+  })();
+</script>
 
 <script>
   // אנימציית fade-up בגלילה

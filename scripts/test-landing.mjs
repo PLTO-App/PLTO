@@ -175,34 +175,44 @@ for (const [w, h, label] of [[390, 844, 'נייד 390px'], [1280, 800, 'דסקט
   }
 }
 
-// ניקיון הטקסט: בלי נקודות אמצעיות ובלי נקודה בסוף כותרת. הצהרת הנגישות סגורה עד שלוחצים עליה
+// ניקיון הטקסט: בלי נקודות אמצעיות ובלי נקודה בסוף כותרת. הצהרת הנגישות מוסתרת עד שלוחצים על הקישור בפוטר (4.11.2026: בלי תיבה גלויה)
 {
   const { page, ctx } = await open(390, 844);
   const r = await page.evaluate(() => {
     const txt = document.body.innerText;
     const heads = [...document.querySelectorAll('h1, h2, h3')].map(h => h.textContent.trim());
-    const det = document.getElementById('a11y-statement');
-    const body = det.querySelector('.a11y-body');
-    const vis = () => body.checkVisibility ? body.checkVisibility() : body.getBoundingClientRect().height > 0;
-    const closed = det.tagName === 'DETAILS' && !det.open && !vis();
-    det.querySelector('summary').click();
-    const openedBySummary = det.open && vis();
-    det.querySelector('summary').click();
-    const closedAgain = !det.open;
-    const footerLink = [...document.querySelectorAll('footer a')].find(a => /הצהרת נגישות/.test(a.textContent));
-    footerLink.click();
-    const openedByFooter = det.open && vis();
+    const st = document.getElementById('a11y-statement');
+    const vis = () => st.checkVisibility ? st.checkVisibility() : st.getBoundingClientRect().height > 0;
+    const link = [...document.querySelectorAll('footer a')].find(a => /הצהרת נגישות/.test(a.textContent));
+    const closed = !vis() && link.getAttribute('aria-expanded') === 'false';
+    const inFooter = !!st.closest('footer') && !document.querySelector('.closing .a11y-details, .closing #a11y-statement');
+    link.click();
+    const opened = vis() && link.getAttribute('aria-expanded') === 'true';
+    const content = /ת"י 5568/.test(st.textContent) && /info@plto\.app/.test(st.textContent);
+    link.click();
+    const closedAgain = !vis() && link.getAttribute('aria-expanded') === 'false';
     const btn = getComputedStyle(document.querySelector('.closing .btn-primary')).backgroundColor;
-    return { dots: /[·•]/.test(txt), dotted: heads.filter(h => /\.$/.test(h)), closed, openedBySummary, closedAgain, openedByFooter, btn, h: det.querySelector('summary').getBoundingClientRect().height };
+    return { dots: /[·•]/.test(txt), dotted: heads.filter(h => /\.$/.test(h)), closed, inFooter, opened, content, closedAgain, btn, h: link.getBoundingClientRect().height };
   });
   check(!r.dots, 'אין נקודות אמצעיות בטקסט הנראה (יורדים שורה במקום)');
   check(r.dotted.length === 0, 'אין נקודה בסוף כותרת' + (r.dotted.length ? ': ' + r.dotted.join(' | ') : ''));
-  check(r.closed, 'הצהרת הנגישות סגורה כברירת מחדל ולא מוצג הטקסט שלה');
-  check(r.openedBySummary && r.closedAgain, 'לחיצה על כותרת ההצהרה פותחת וסוגרת אותה');
-  check(r.openedByFooter, 'הקישור בפוטר פותח את ההצהרה');
-  check(r.h >= 44, 'כותרת ההצהרה היא יעד לחיצה של 44px לפחות');
+  check(r.closed && r.inFooter, 'הצהרת הנגישות בפוטר ומוסתרת כברירת מחדל, בלי תיבה גלויה מעל הפוטר');
+  check(r.opened && r.content, 'הקישור בפוטר פותח את ההצהרה (ת"י 5568 וכתובת לפניות)');
+  check(r.closedAgain, 'לחיצה נוספת על הקישור סוגרת אותה');
+  check(r.h >= 44, 'קישור ההצהרה בפוטר הוא יעד לחיצה של 44px לפחות');
   const m = r.btn.match(/rgba?\(([^)]+)\)/)[1].split(',').map(Number);
   check(m[0] >= 150 && m[3] >= 0.9, 'כפתור הסגירה האדום בהיר ובולט מספיק על הרקע השחור (' + r.btn + ')');
+  await ctx.close();
+}
+
+// קישור ישיר להצהרה (landing.html#a11y-statement) פותח אותה
+{
+  const ctx = await browser.newContext({ locale: 'he-IL', viewport: { width: 390, height: 844 } });
+  await ctx.route(url => !url.href.startsWith(BASE), r => r.abort());
+  const page = await ctx.newPage();
+  await page.goto(`${BASE}/landing.html#a11y-statement`, { waitUntil: 'load' });
+  const shown = await page.evaluate(() => !document.getElementById('a11y-statement').hidden);
+  check(shown, 'קישור ישיר ל-#a11y-statement פותח את ההצהרה');
   await ctx.close();
 }
 
