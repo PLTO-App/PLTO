@@ -895,11 +895,11 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
   .hero .btn-primary { padding: 15px 20px; font-size: 16px; }
 }
 
-/* ══ סבב כפתורים (4.11.2026): שלושה כפתורי המרה בעיצוב אחיד, אדום עם מסגרת לבנה דקה, ברק אור, זוהר נושם והרמה במעבר עכבר ══ */
+/* ══ סבב כפתורים (4.11.2026): שלושה כפתורי המרה בעיצוב אחיד, בורדו עם מסגרת לבנה דקה, ברק אור והרמה במעבר עכבר ══ */
 :root {
-  --cta-red: #DC2626;
-  --cta-red-hover: #B91C1C;
-  --cta-red-glow: 220, 38, 38;
+  --cta-red: #5E1A2B;
+  --cta-red-hover: #6E2033;
+  --cta-red-glow: 40, 8, 16;
 }
 /* סקשן "מה עושים כל יום": כותרת, טקסט וכפתור במרכז. הכרטיסים נשארים מיושרים לימין */
 .feat-section .section-title { text-align: center; }
@@ -918,7 +918,6 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   transition: transform 0.22s cubic-bezier(.2,.8,.3,1.2), box-shadow 0.22s ease, background-color 0.22s ease;
-  animation: ctaRedGlow 2.8s ease-in-out infinite;
 }
 /* ברק אור שעובר על הכפתור */
 .hero .btn-primary::before,
@@ -933,7 +932,7 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
   animation: btnShimmer 3.2s ease-in-out infinite;
   pointer-events: none;
 }
-/* טבעת הפעימה הקודמת של כפתור הפתיחה נחתכת בתוך הכפתור, והזוהר הנושם מחליף אותה */
+/* בלי טבעת הפעימה וזוהר מסביב לכפתור הפתיחה, רק ברק האור */
 .hero .btn-primary.pulse-cta::after { content: none; animation: none !important; }
 .hero .btn-primary:hover,
 .feat-section .btn-primary:hover,
@@ -941,8 +940,7 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
   background: var(--cta-red-hover);
   border-color: #FFFFFF;
   transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 14px 36px rgba(var(--cta-red-glow), 0.55), 0 0 0 4px rgba(var(--cta-red-glow), 0.18), inset 0 1px 0 rgba(255,255,255,0.26);
-  animation: none;
+  box-shadow: 0 12px 30px rgba(var(--cta-red-glow), 0.50), inset 0 1px 0 rgba(255,255,255,0.26);
 }
 .hero .btn-primary:active,
 .feat-section .btn-primary:active,
@@ -957,18 +955,8 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
   outline: 3px solid #FFFFFF;
   outline-offset: 3px;
 }
-@keyframes ctaRedGlow {
-  0%, 100% { box-shadow: 0 6px 22px rgba(var(--cta-red-glow), 0.32), inset 0 1px 0 rgba(255,255,255,0.22); }
-  50%      { box-shadow: 0 10px 36px rgba(var(--cta-red-glow), 0.62), 0 0 22px rgba(var(--cta-red-glow), 0.30), inset 0 1px 0 rgba(255,255,255,0.22); }
-}
-/* כפתור הסגירה ממשיך לקבל את מכת כדור ההריסה בדסקטופ, יחד עם הזוהר */
-.closing .wrecking-wrap .btn-primary {
-  animation: wreckImpact 2.6s ease-in-out infinite, ctaRedGlow 2.8s ease-in-out infinite;
-}
+/* כפתור הסגירה ממשיך לקבל את מכת כדור ההריסה בדסקטופ */
 .closing .wrecking-wrap .btn-primary:hover { animation: none; }
-@media (max-width: 480px) {
-  .closing .wrecking-wrap .btn-primary { animation: ctaRedGlow 2.8s ease-in-out infinite; }
-}
 @media (prefers-reduced-motion: reduce) {
   .hero .btn-primary, .feat-section .btn-primary, .closing .btn-primary,
   .closing .wrecking-wrap .btn-primary { animation: none !important; }
