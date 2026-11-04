@@ -949,6 +949,40 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
   }
 }
 footer { background: #060D1A; }
+
+/* ══ סבב ליטוש (4.11.2026, ערב): כותרת לבנה בשתי שורות, נגישות בתחתית, מיקרו-קופי גדול יותר ══ */
+/* הכותרת: שתי שורות בדיוק, לבנות. השורה העליונה מעט גדולה יותר, ושתיהן לא נשברות */
+.hero h1 { color: var(--white); }
+.hero h1 .hero-l1, .hero h1 .hero-l2 { display: block; white-space: nowrap; color: var(--white); }
+.hero h1 .hero-l1 { font-size: clamp(21px, 6.6vw, 50px); line-height: 1.2; }
+.hero h1 .hero-l2 { font-size: clamp(16px, 5.25vw, 40px); line-height: 1.3; margin-top: 4px; }
+@media (min-width: 900px) {
+  .hero h1 .hero-l1 { font-size: clamp(33px, 3.45vw, 45px); }
+  .hero h1 .hero-l2 { font-size: clamp(26px, 2.75vw, 36px); }
+}
+/* מיקרו-קופי: 2px יותר מקודם, ובהיר יותר כדי שיבלוט */
+.phone-cap { font-size: 15px; color: rgba(255,255,255,0.82); max-width: 320px; }
+.feat-visual .phone-cap { color: #475569; }
+.hero-trust { font-size: 18px !important; }
+.closing-micro { font-size: 16px; color: rgba(255,255,255,0.72); }
+.footer-links a { font-size: 15px; }
+.footer-copy { font-size: 14px; }
+/* במצב נגישות הטקסט מוגדל (zoom), ולכן שורת הכותרת השנייה רשאית לרדת שורה במקום לצאת מהמסך */
+body.theme-accessible .hero h1 .hero-l1, body.theme-accessible .hero h1 .hero-l2 { white-space: normal; }
+.a11y-details summary { font-size: 15px; }
+.a11y-body { font-size: 14px; }
+/* כפתור מצב הנגישות: עבר מהתפריט העליון לשורה של הצהרת הנגישות בתחתית הדף. עם טקסט, ויעד לחיצה של 44px */
+.a11y-row { display: flex; align-items: flex-start; justify-content: center; gap: 10px; max-width: 560px; margin: 24px auto 0; }
+.a11y-row .a11y-details { margin: 0; flex: 1 1 auto; min-width: 0; }
+.a11y-toggle-btn {
+  flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 46px; padding: 0 16px;
+  background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.86);
+  border: 1px solid rgba(255,255,255,0.18); border-radius: 12px;
+  font-family: 'Rubik', 'Heebo', sans-serif; font-size: 15px; font-weight: 800; cursor: pointer; white-space: nowrap;
+}
+.a11y-toggle-btn:hover { border-color: rgba(255,255,255,0.45); color: #fff; }
+.a11y-toggle-btn[aria-pressed="true"] { background: #FFFF00; color: #000; border-color: #FFFF00; }
 </style>
 </head>
 <body>
@@ -957,10 +991,7 @@ footer { background: #060D1A; }
 <nav>
   <a class="nav-logo" href="#top" aria-label="PLTO">PLT<span>O</span></a>
   <div class="nav-actions">
-    <button class="nav-a11y-btn" data-a11y-btn
-            onclick="toggleA11y()" aria-pressed="false"
-            aria-label="הפעלת מצב נגישות">♿</button>
-    <a href="https://realestate.plto.app" class="nav-cta" data-cta-section="nav">מתחילים לעשות סדר בעסק</a>
+    <a href="https://realestate.plto.app" class="nav-cta" data-cta-section="nav">כאן מתחילים</a>
   </div>
 </nav>
 
@@ -970,7 +1001,7 @@ footer { background: #060D1A; }
 <section class="hero">
   <div class="hero-grid">
     <div class="hero-text">
-      <h1>הלידים כבר אצלך<br><span class="highlight">עכשיו צריך להפוך אותם ללקוחות</span></h1>
+      <h1><span class="hero-l1">הלידים כבר אצלך</span> <span class="hero-l2">עכשיו הגיע הזמן להפוך אותם ללקוחות</span></h1>
       <p class="hero-sub">לידים, משימות ומעקב במקום אחד. כל בוקר רואים למי לחזור, שולחים הודעה מוכנה בלחיצה, <strong>ואף ליד לא נופל בין הכיסאות.</strong></p>
       <div class="hero-actions">
         <a href="https://realestate.plto.app" id="hero-cta-btn" class="btn-primary pulse-cta" data-cta-section="hero">הלידים שלך מחכים במסך הבא</a>
@@ -1059,6 +1090,7 @@ footer { background: #060D1A; }
       <a href="https://realestate.plto.app" class="btn-primary shimmer-cta closing-cta" data-cta-section="closing">מתחילים לעשות סדר בעסק</a>
     </div>
     <p class="closing-micro">בלי כרטיס אשראי, בלי התחייבות</p>
+<div class="a11y-row">
 <details id="a11y-statement" class="a11y-details">
       <summary>♿ הצהרת נגישות</summary>
       <div class="a11y-body">
@@ -1069,6 +1101,8 @@ footer { background: #060D1A; }
         לפניות בנושא נגישות: <a href="mailto:info@plto.app">info@plto.app</a>
       </div>
     </details>
+<button type="button" class="a11y-toggle-btn" data-a11y-btn onclick="toggleA11y()" aria-pressed="false"><span aria-hidden="true">♿</span> מצב נגישות</button>
+</div>
   </div>
 
 </section>
