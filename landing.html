@@ -122,21 +122,6 @@ nav {
       letter-spacing: -0.5px;
     }
 .nav-logo span { color: var(--white); }
-.nav-cta {
-      min-height: 44px;
-      background: var(--btn-navy-grad);
-      color: var(--white);
-      border: none;
-      padding: 10px 20px;
-      border-radius: 99px;
-      font-family: 'Rubik', 'Heebo', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
-    }
-.nav-cta:hover { background: var(--blue-light); transform: translateY(-1px); }
 .nav-a11y-btn {
       background: transparent;
       color: rgba(255,255,255,0.80);
@@ -898,7 +883,7 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
 @media (min-width: 900px) { .hero-trust { align-items: flex-start; } }
 .closing-micro { color: rgba(255,255,255,0.62); font-size: 14px; }
 /* כפתורי ההנעה: טקסט ארוך בשורה אחת, ובנייד בלי לצאת מהמסך */
-.btn-primary, .nav-cta { white-space: nowrap; max-width: 100%; text-align: center; }
+.btn-primary { white-space: nowrap; max-width: 100%; text-align: center; }
 .closing-cta { font-size: 18px; padding: 18px 44px; }
 @media (max-width: 480px) {
   .hero .btn-primary { padding: 16px 26px; font-size: 17px; }
@@ -907,8 +892,88 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
 }
 @media (max-width: 400px) {
   nav { padding: 14px 16px; }
-  .nav-cta { padding: 10px 14px; font-size: 13.5px; }
   .hero .btn-primary { padding: 15px 20px; font-size: 16px; }
+}
+
+/* ══ סבב כפתורים (4.11.2026): שלושה כפתורי המרה בעיצוב אחיד, אדום עם מסגרת לבנה דקה, ברק אור, זוהר נושם והרמה במעבר עכבר ══ */
+:root {
+  --cta-red: #DC2626;
+  --cta-red-hover: #B91C1C;
+  --cta-red-glow: 220, 38, 38;
+}
+/* סקשן "מה עושים כל יום": כותרת, טקסט וכפתור במרכז. הכרטיסים נשארים מיושרים לימין */
+.feat-section .section-title { text-align: center; }
+.feat-section .section-sub { text-align: center; margin: 0 auto 24px; }
+.feat-cta { text-align: center; }
+
+.hero .btn-primary,
+.feat-section .btn-primary,
+.closing .btn-primary {
+  position: relative;
+  overflow: hidden;
+  background: var(--cta-red);
+  color: #FFFFFF;
+  border: 1.5px solid rgba(255,255,255,0.85);
+  box-shadow: 0 6px 22px rgba(var(--cta-red-glow), 0.35), inset 0 1px 0 rgba(255,255,255,0.22);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition: transform 0.22s cubic-bezier(.2,.8,.3,1.2), box-shadow 0.22s ease, background-color 0.22s ease;
+  animation: ctaRedGlow 2.8s ease-in-out infinite;
+}
+/* ברק אור שעובר על הכפתור */
+.hero .btn-primary::before,
+.feat-section .btn-primary::before,
+.closing .btn-primary::before {
+  content: '';
+  position: absolute;
+  top: -10%; left: -130%;
+  width: 55%; height: 120%;
+  background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.38) 50%, transparent 80%);
+  transform: skewX(-15deg);
+  animation: btnShimmer 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+/* טבעת הפעימה הקודמת של כפתור הפתיחה נחתכת בתוך הכפתור, והזוהר הנושם מחליף אותה */
+.hero .btn-primary.pulse-cta::after { content: none; animation: none !important; }
+.hero .btn-primary:hover,
+.feat-section .btn-primary:hover,
+.closing .btn-primary:hover {
+  background: var(--cta-red-hover);
+  border-color: #FFFFFF;
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 14px 36px rgba(var(--cta-red-glow), 0.55), 0 0 0 4px rgba(var(--cta-red-glow), 0.18), inset 0 1px 0 rgba(255,255,255,0.26);
+  animation: none;
+}
+.hero .btn-primary:active,
+.feat-section .btn-primary:active,
+.closing .btn-primary:active {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: 0 3px 10px rgba(var(--cta-red-glow), 0.40), inset 0 2px 6px rgba(0,0,0,0.18);
+  transition-duration: 0.08s;
+}
+.hero .btn-primary:focus-visible,
+.feat-section .btn-primary:focus-visible,
+.closing .btn-primary:focus-visible {
+  outline: 3px solid #FFFFFF;
+  outline-offset: 3px;
+}
+@keyframes ctaRedGlow {
+  0%, 100% { box-shadow: 0 6px 22px rgba(var(--cta-red-glow), 0.32), inset 0 1px 0 rgba(255,255,255,0.22); }
+  50%      { box-shadow: 0 10px 36px rgba(var(--cta-red-glow), 0.62), 0 0 22px rgba(var(--cta-red-glow), 0.30), inset 0 1px 0 rgba(255,255,255,0.22); }
+}
+/* כפתור הסגירה ממשיך לקבל את מכת כדור ההריסה בדסקטופ, יחד עם הזוהר */
+.closing .wrecking-wrap .btn-primary {
+  animation: wreckImpact 2.6s ease-in-out infinite, ctaRedGlow 2.8s ease-in-out infinite;
+}
+.closing .wrecking-wrap .btn-primary:hover { animation: none; }
+@media (max-width: 480px) {
+  .closing .wrecking-wrap .btn-primary { animation: ctaRedGlow 2.8s ease-in-out infinite; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero .btn-primary, .feat-section .btn-primary, .closing .btn-primary,
+  .closing .wrecking-wrap .btn-primary { animation: none !important; }
+  .hero .btn-primary::before, .feat-section .btn-primary::before, .closing .btn-primary::before { display: none; }
+  .hero .btn-primary:hover, .feat-section .btn-primary:hover, .closing .btn-primary:hover { transform: none; }
 }
 /* מעברים רציפים: כל סקשן נגמר בצבע שבו הבא מתחיל, כך שאין קו חיתוך בין התמונות */
 #features { border-top: 0; border-bottom: 0; }
@@ -984,9 +1049,6 @@ body.theme-accessible .hero h1 .hero-l1, body.theme-accessible .hero h1 .hero-l2
 <!-- ניווט -->
 <nav>
   <a class="nav-logo" href="#top" aria-label="PLTO">PLT<span>O</span></a>
-  <div class="nav-actions">
-    <a href="https://realestate.plto.app" class="nav-cta" data-cta-section="nav">כאן מתחילים</a>
-  </div>
 </nav>
 
 <main id="top">
@@ -1239,7 +1301,6 @@ body.theme-accessible .hero h1 .hero-l1, body.theme-accessible .hero h1 .hero-l2
 
   // Map: CSS selector → section name
   var ctaMap = [
-    { sel: '.nav-cta',                                    section: 'nav' },
     { sel: '#hero-cta-btn',                               section: 'hero' },
     { sel: '.section-cta-wrap .btn-primary:not(.has-rocket)', section: 'referral_loop' },
     { sel: '.section-cta-wrap:last-child .btn-primary',   section: 'features' },
