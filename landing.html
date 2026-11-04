@@ -957,6 +957,9 @@ body.theme-accessible .feat-visual .phone-cap { color: #E6E6E6; }
 }
 /* כפתור הסגירה ממשיך לקבל את מכת כדור ההריסה בדסקטופ */
 .closing .wrecking-wrap .btn-primary:hover { animation: none; }
+/* כותרת הסגירה וזכויות היוצרים בשורה אחת, גם בטלפון צר */
+.closing h2 { white-space: nowrap; font-size: clamp(21px, 6.6vw, 52px); }
+.footer-copy { white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) {
   .hero .btn-primary, .feat-section .btn-primary, .closing .btn-primary,
   .closing .wrecking-wrap .btn-primary { animation: none !important; }
@@ -1116,7 +1119,7 @@ body.theme-accessible .hero h1 .hero-l1, body.theme-accessible .hero h1 .hero-l2
 
 <!-- 3. למי זה מתאים + סגירה -->
 <section class="closing" id="who">
-  <h2>מתאים לכל עסק<br>שחי <span class="gold">מלידים</span></h2>
+  <h2>מתאים לכל עסק שחי <span class="gold">מלידים</span></h2>
   <ul class="who-chips" aria-label="תחומים שמתאימים">
     <li>🏠 נדל״ן</li>
     <li>⚖️ עריכת דין</li>
@@ -1158,7 +1161,7 @@ body.theme-accessible .hero h1 .hero-l1, body.theme-accessible .hero h1 .hero-l2
         לפניות בנושא נגישות: <a href="mailto:info@plto.app">info@plto.app</a>
       </div>
   </div>
-  <div class="footer-copy">© 2026 PLTO<br>כל הזכויות שמורות</div>
+  <div class="footer-copy">כל הזכויות שמורות <bdi dir="ltr">© 2026 PLTO</bdi></div>
 </footer>
 
 <script>
