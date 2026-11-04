@@ -1,5 +1,5 @@
 // סבבי דף הנחיתה של 4.11.2026: הכותרת (לבנה, שתי שורות בדיוק, העליונה מעט גדולה יותר), בלי תגית ובלי לוגו כפול בפתיחה,
-// טקסטי הכפתורים (כולם להרשמה ובשורה אחת, בתפריט "כאן מתחילים"), כפתור מצב הנגישות בשורה של הצהרת הנגישות ולא בתפריט,
+// טקסטי הכפתורים (כולם להרשמה ובשורה אחת, בתפריט "כאן מתחילים"), בלי כפתור מצב נגישות בדף (הוא באפליקציה) והצהרת הנגישות רק מהפוטר,
 // מיקרו-קופי גדול יותר, שורות האמון בשורה אחת, ומעברי גרדיאנט בין הסקשנים בלי קווי גבול. 320, 360, 390, 768 ו-1280px.
 import http from 'node:http';
 import { readFileSync, existsSync } from 'node:fs';
@@ -53,9 +53,8 @@ for (const [w, h] of [[320, 640], [360, 740], [390, 844], [768, 1024], [1280, 80
       colors: [getComputedStyle(l1).color, getComputedStyle(l2).color], sizes: [parseFloat(getComputedStyle(l1).fontSize), parseFloat(getComputedStyle(l2).fontSize)],
       navA11y: !!document.querySelector('nav [data-a11y-btn], nav .nav-a11y-btn'),
       a11yBtns: document.querySelectorAll('[data-a11y-btn]').length,
-      a11yNextToStatement: !!a11yBtn && a11yBtn.parentElement === document.getElementById('a11y-statement')?.parentElement,
-      a11yBtnH: a11yBtn ? Math.round(a11yBtn.getBoundingClientRect().height) : 0,
-      a11yBtnSameRow: !!a11yBtn && Math.abs(a11yBtn.getBoundingClientRect().top - document.querySelector('#a11y-statement summary').getBoundingClientRect().top) < 6,
+      closingEndsWithTrust: document.querySelector('.closing-actions')?.lastElementChild?.classList.contains('closing-micro') === true,
+      statementHidden: document.getElementById('a11y-statement')?.hidden === true && !!document.getElementById('a11y-statement')?.closest('footer'),
       microPx: { cap: px('.phone-cap'), trust: px('.hero-trust'), closing: px('.closing-micro'), footLink: px('.footer-links a'), footCopy: px('.footer-copy') },
       sub: document.querySelector('.hero-sub').textContent.trim(),
       heroImgs: document.querySelectorAll('.hero-text img').length, badge: !!document.querySelector('.hero-badge'),
@@ -73,7 +72,8 @@ for (const [w, h] of [[320, 640], [360, 740], [390, 844], [768, 1024], [1280, 80
   check(r.h1Lines === 2 && r.l1Inside && r.l2Inside, `${L} הכותרת בשתי שורות בדיוק, ושתיהן בתוך המסך (${r.h1Lines})`);
   check(r.colors.every(c => c === 'rgb(255, 255, 255)') && r.highlight === null, `${L} הכותרת לבנה כולה, בלי הדגשה בצבע (${r.colors.join(' / ')})`);
   check(r.sizes[0] > r.sizes[1] && r.sizes[0] / r.sizes[1] <= 1.35, `${L} השורה העליונה מעט גדולה יותר (${r.sizes.map(n => n.toFixed(1)).join(' / ')})`);
-  check(!r.navA11y && r.a11yBtns === 1 && r.a11yNextToStatement && r.a11yBtnSameRow && r.a11yBtnH >= 44, `${L} כפתור מצב הנגישות לא בתפריט, אלא ליד הצהרת הנגישות באותה שורה (${r.a11yBtnH}px)`);
+  check(!r.navA11y && r.a11yBtns === 0, `${L} אין כפתור מצב נגישות בדף`);
+  check(r.closingEndsWithTrust && r.statementHidden, `${L} הסקשן האחרון נגמר בשורת האמון, והצהרת הנגישות מוסתרת בפוטר`);
   check(r.microPx.cap >= 15 && r.microPx.trust >= 18 && r.microPx.closing >= 16 && r.microPx.footLink >= 15 && r.microPx.footCopy >= 14, `${L} מיקרו-קופי גדול יותר (${JSON.stringify(r.microPx)})`);
   check(/לידים, משימות ומעקב במקום אחד/.test(r.sub) && /אף ליד לא נופל בין הכיסאות/.test(r.sub), `${L} הטקסט המשלים מדבר על לידים, משימות ומעקב`);
   check(r.heroImgs === 0 && !r.badge && r.navLogo, `${L} בפתיחה אין תגית ואין לוגו כפול, הלוגו רק בסרגל העליון`);

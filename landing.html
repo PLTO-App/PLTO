@@ -965,24 +965,18 @@ footer { background: #060D1A; }
 .feat-visual .phone-cap { color: #475569; }
 .hero-trust { font-size: 18px !important; }
 .closing-micro { font-size: 16px; color: rgba(255,255,255,0.72); }
-.footer-links a { font-size: 15px; }
+.footer-links { gap: 2px 14px; margin-bottom: 8px; }
+.footer-links a { font-size: 15px; padding: 0 4px; min-height: 44px; }
 .footer-copy { font-size: 14px; }
 /* במצב נגישות הטקסט מוגדל (zoom), ולכן שורת הכותרת השנייה רשאית לרדת שורה במקום לצאת מהמסך */
 body.theme-accessible .hero h1 .hero-l1, body.theme-accessible .hero h1 .hero-l2 { white-space: normal; }
 .a11y-details summary { font-size: 15px; }
 .a11y-body { font-size: 14px; }
-/* כפתור מצב הנגישות: עבר מהתפריט העליון לשורה של הצהרת הנגישות בתחתית הדף. עם טקסט, ויעד לחיצה של 44px */
-.a11y-row { display: flex; align-items: flex-start; justify-content: center; gap: 10px; max-width: 560px; margin: 24px auto 0; }
-.a11y-row .a11y-details { margin: 0; flex: 1 1 auto; min-width: 0; }
-.a11y-toggle-btn {
-  flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  min-height: 46px; padding: 0 16px;
-  background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.86);
-  border: 1px solid rgba(255,255,255,0.18); border-radius: 12px;
-  font-family: 'Rubik', 'Heebo', sans-serif; font-size: 15px; font-weight: 800; cursor: pointer; white-space: nowrap;
-}
-.a11y-toggle-btn:hover { border-color: rgba(255,255,255,0.45); color: #fff; }
-.a11y-toggle-btn[aria-pressed="true"] { background: #FFFF00; color: #000; border-color: #FFFF00; }
+/* בלי כפתור מצב נגישות בדף (הוא קיים באפליקציה). הצהרת הנגישות נפתחת מהקישור בפוטר, בלי תיבה גלויה מעל הפוטר */
+.a11y-statement { max-width: 560px; margin: 4px auto 18px; text-align: right; }
+.a11y-statement:focus { outline: none; }
+.a11y-statement-title { font-size: 16px; font-weight: 800; color: rgba(255,255,255,0.9); margin-bottom: 6px; }
+.a11y-statement .a11y-body { padding: 0; }
 </style>
 </head>
 <body>
@@ -1090,19 +1084,6 @@ body.theme-accessible .hero h1 .hero-l1, body.theme-accessible .hero h1 .hero-l2
       <a href="https://realestate.plto.app" class="btn-primary shimmer-cta closing-cta" data-cta-section="closing">מתחילים לעשות סדר בעסק</a>
     </div>
     <p class="closing-micro">בלי כרטיס אשראי, בלי התחייבות</p>
-<div class="a11y-row">
-<details id="a11y-statement" class="a11y-details">
-      <summary>♿ הצהרת נגישות</summary>
-      <div class="a11y-body">
-        PLTO פועלת בהתאם לחוק שוויון זכויות לאנשים עם מוגבלות, תשנ"ח-1998, ולתקנות הנגישות לשירות באינטרנט.<br>
-        רמת תאימות מוצהרת: <strong>WCAG 2.1 AA (חלקית)</strong><br>
-        תקן ת"י 5568.<br>
-        המערכת כוללת מצב ניגודיות גבוהה, הגדלת טקסט, וניווט מקלדת ותמיכה בקוראי מסך, באופן חלקי.<br>
-        לפניות בנושא נגישות: <a href="mailto:info@plto.app">info@plto.app</a>
-      </div>
-    </details>
-<button type="button" class="a11y-toggle-btn" data-a11y-btn onclick="toggleA11y()" aria-pressed="false"><span aria-hidden="true">♿</span> מצב נגישות</button>
-</div>
   </div>
 
 </section>
@@ -1115,10 +1096,30 @@ body.theme-accessible .hero h1 .hero-l1, body.theme-accessible .hero h1 .hero-l2
   <div class="footer-links">
     <a href="https://realestate.plto.app">כניסה למערכת</a>
     <a href="https://realestate.plto.app/privacy-policy.html">מדיניות פרטיות</a>
-    <a href="#a11y-statement" onclick="var d=document.getElementById('a11y-statement');if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'center'});}return false;">הצהרת נגישות</a>
+    <a href="#a11y-statement" aria-controls="a11y-statement" aria-expanded="false" onclick="var d=document.getElementById('a11y-statement');if(d){d.hidden=!d.hidden;this.setAttribute('aria-expanded',String(!d.hidden));if(!d.hidden){d.scrollIntoView({behavior:'smooth',block:'center'});d.focus({preventScroll:true});}}return false;">הצהרת נגישות</a>
+  </div>
+  <div id="a11y-statement" class="a11y-statement" role="region" aria-label="הצהרת נגישות" tabindex="-1" hidden>
+    <h2 class="a11y-statement-title">הצהרת נגישות</h2>
+    <div class="a11y-body">
+        PLTO פועלת בהתאם לחוק שוויון זכויות לאנשים עם מוגבלות, תשנ"ח-1998, ולתקנות הנגישות לשירות באינטרנט.<br>
+        רמת תאימות מוצהרת: <strong>WCAG 2.1 AA (חלקית)</strong><br>
+        תקן ת"י 5568.<br>
+        המערכת כוללת מצב ניגודיות גבוהה, הגדלת טקסט, וניווט מקלדת ותמיכה בקוראי מסך, באופן חלקי.<br>
+        לפניות בנושא נגישות: <a href="mailto:info@plto.app">info@plto.app</a>
+      </div>
   </div>
   <div class="footer-copy">© 2026 PLTO<br>כל הזכויות שמורות</div>
 </footer>
+
+<script>
+  // קישור ישיר להצהרת הנגישות (landing.html#a11y-statement) פותח אותה
+  (function () {
+    if (location.hash !== '#a11y-statement') return;
+    var d = document.getElementById('a11y-statement'), a = document.querySelector('a[aria-controls="a11y-statement"]');
+    if (d) d.hidden = false;
+    if (a) a.setAttribute('aria-expanded', 'true');
+  })();
+</script>
 
 <script>
   // אנימציית fade-up בגלילה
