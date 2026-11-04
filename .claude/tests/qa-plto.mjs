@@ -102,7 +102,7 @@ async function testLogin() {
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 20000 });
   await page.waitForTimeout(1200);
 
-  await checkVisible('text=30 ימי ניסיון חינמי', S, '30 ימי ניסיון מוצג');
+  await checkVisible('text=45 יום ניסיון בחינם', S, '45 יום ניסיון מוצג');
   await checkVisible('.btn-google, button:has-text("Google")', S, 'כפתור Google');
   await checkVisible('#email, input[type="email"]', S, 'שדה אימייל');
   await checkVisible('#password, input[type="password"]', S, 'שדה סיסמה');
