@@ -26,7 +26,6 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if (!ok)
 
 const HERO_CTA = 'הלידים שלך מחכים במסך הבא';
 const OTHER_CTA = 'מתחילים לעשות סדר בעסק';
-const NAV_CTA = 'כאן מתחילים';
 for (const [w, h] of [[320, 640], [360, 740], [390, 844], [768, 1024], [1280, 800]]) {
   const ctx = await browser.newContext({ locale: 'he-IL', viewport: { width: w, height: h } });
   await ctx.route(u => !u.href.startsWith(BASE), r => r.abort());
@@ -61,7 +60,7 @@ for (const [w, h] of [[320, 640], [360, 740], [390, 844], [768, 1024], [1280, 80
       navLogo: !!document.querySelector('nav .nav-logo'), ctas,
       trust: [...document.querySelectorAll('.hero-trust span')].map(s => ({ t: s.textContent, one: oneLine(s) })),
       micro: { t: document.querySelector('.closing-micro').textContent, one: oneLine(document.querySelector('.closing-micro')) },
-      closingP: document.querySelector('.closing > p').textContent.trim(),
+      closingP: document.querySelector('.closing > p:not(.who-line)').textContent.trim(),
       grads: ['.hero', '.feat-section', '.closing'].map(s => (bg(s).match(/linear-gradient/g) || []).length),
       featBorders: getComputedStyle(document.getElementById('features')).borderTopWidth + ' ' + getComputedStyle(document.getElementById('features')).borderBottomWidth,
       overflow: document.documentElement.scrollWidth - innerWidth,
@@ -79,7 +78,8 @@ for (const [w, h] of [[320, 640], [360, 740], [390, 844], [768, 1024], [1280, 80
   check(r.heroImgs === 0 && !r.badge && r.navLogo, `${L} בפתיחה אין תגית ואין לוגו כפול, הלוגו רק בסרגל העליון`);
   const hero = r.ctas.find(c => c.id === 'hero-cta-btn'), nav = r.ctas.find(c => c.nav), others = r.ctas.filter(c => c.id !== 'hero-cta-btn' && !c.nav);
   check(hero?.text === HERO_CTA, `${L} כפתור הפתיחה: "${hero?.text}"`);
-  check(nav?.text === NAV_CTA, `${L} כפתור התפריט העליון: "${nav?.text}"`);
+  // החלטת דוד (4.11.2026): אין כפתור בסרגל העליון, שלושה כפתורי המרה בדף מספיקים
+  check(!nav, `${L} אין כפתור המרה בסרגל העליון`);
   check(others.length === 2 && others.every(c => c.text === OTHER_CTA), `${L} כפתורי ההמרה באמצע ובתחתית: "${OTHER_CTA}" (${others.map(c => c.text).join(' | ')})`);
   check(r.ctas.every(c => c.href === 'https://realestate.plto.app'), `${L} כל הכפתורים מובילים להרשמה`);
   check(r.ctas.every(c => c.lines === 1 && c.inside), `${L} כל כפתור בשורה אחת ובתוך המסך (${r.ctas.map(c => c.lines).join(',')})`);

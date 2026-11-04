@@ -863,6 +863,7 @@
        TABS
     ═══════════════════════════════════════ */
     .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+    .tabs.has-more { -webkit-mask-image: linear-gradient(to right, transparent 0, #000 44px); mask-image: linear-gradient(to right, transparent 0, #000 44px); }
     .tabs::-webkit-scrollbar { display: none; }
     .tab-btn {
       flex-shrink: 0; white-space: nowrap; min-height: 44px;
@@ -2926,9 +2927,11 @@
     /* אזורי לחיצה של 44px במובייל בלי לשנות את המראה: שכבה שקופה סביב אלמנטים קטנים.
        רוחב max(100%,44px) לא מתפשט לשכנים שכבר רחבים מ-44px. */
     @media (max-width: 767px) {
-      .section-link, .back-btn, .filter-chip, .pipeline-stage-tab, .cal-today-btn, .lead-action-btn { position: relative; }
+      .section-link, .back-btn, .filter-chip, .pipeline-stage-tab, .cal-today-btn, .lead-action-btn,
+      .lr-tight, .task-lead-link { position: relative; }
       .section-link::after, .back-btn::after, .filter-chip::after, .pipeline-stage-tab::after,
-      .cal-today-btn::after, .lead-action-btn::after, .prop-share-btn::after {
+      .cal-today-btn::after, .lead-action-btn::after, .prop-share-btn::after,
+      .lr-tight::after, .task-lead-link::after {
         content: ''; position: absolute; left: 50%; top: 50%;
         width: max(100%, 44px); height: max(100%, 44px); transform: translate(-50%, -50%);
       }
@@ -6168,7 +6171,7 @@
     <!-- אותות אמון -->
     <div class="paywall-trust">
       <span class="paywall-trust-item">🛡️ ביטול בכל עת</span>
-      <span class="paywall-trust-item">🔒 תשלום מאובטח</span>
+      <span class="paywall-trust-item">🔒 הנתונים שלך מאובטחים</span>
       <span class="paywall-trust-item">📞 תמיכה בעברית</span>
     </div>
 
@@ -9038,6 +9041,11 @@ const Billing = {
       this.showTrialNoCreditCardModal();
       return;
     }
+    // בקשה אחת מספיקה: לחיצה חוזרת במסך התשלום לא שולחת עוד התראה לבעלים
+    if (!this.PAYMENTS_LIVE && this._interestSentPlan && this.isExpired()) {
+      toast('הבקשה כבר אצלנו, ניצור איתך קשר תוך 24 שעות', 'info');
+      return;
+    }
     if (!this.PAYMENTS_LIVE) {
       // שלב ניסיון - שמירת עניין + התראה לאדמין
       const plan = this.PLANS.find(p => p.id === planId);
@@ -9053,6 +9061,8 @@ const Billing = {
       } } }).catch(() => {});
       toast('📬 קיבלנו! ניצור איתך קשר תוך 24 שעות לסגירת המנוי 🙂', 'success');
       document.getElementById('annual-upsell-modal')?.classList.remove('show');
+      // אחרי סוף הניסיון השרת חוסם את הנתונים והאפליקציה לא אותחלה, ולכן נשארים במסך התשלום עם אישור
+      if (this.isExpired()) { this._markInterestSent(plan?.name || planId); return; }
       document.getElementById('screen-paywall')?.classList.add('hidden');
       document.getElementById('app-shell')?.classList.remove('hidden');
       if (App?._cur) App.go(App._cur);
@@ -9087,6 +9097,16 @@ const Billing = {
     if (p === 'lifetime') return { text:'Lifetime ♾️', color:'var(--blue-500)', bg:'var(--blue-100)' };
     return { text:'לא פעיל', color:'var(--red-600)', bg:'var(--red-100)' };
   },
+  _markInterestSent(planName) {
+    this._interestSentPlan = planName;
+    document.querySelectorAll('#paywall-plans-container button').forEach(b => { b.disabled = true; b.style.opacity = '0.55'; b.style.cursor = 'default'; });
+    const note = document.getElementById('paywall-trial-note');
+    if (note) {
+      note.textContent = `✅ קיבלנו את הבקשה לחבילת ${planName}. ניצור איתך קשר תוך 24 שעות לסגירת המנוי, והנתונים שמורים`;
+      note.style.cssText += ';color:#fff;font-weight:700;font-size:15px;background:rgba(16,185,129,0.16);border:1px solid rgba(16,185,129,0.5);border-radius:12px;padding:12px 14px;';
+      note.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  },
   renderPlansHTML() {
     const savings = { basic: 658, pro: 1198, premium: 1798 };
     return this.PLANS.map(plan => {
@@ -9107,7 +9127,7 @@ const Billing = {
         </div>
         <div class="plan-annual-note">📅 שנתי, ₪${plan.annualMonthly}/חודש · חיסכון ₪${(savings[plan.id]||0).toLocaleString()}</div>
         <div class="plan-features">
-          ${plan.features.filter(f => AI.ENABLED || !/\bAI\b/.test(f)).map(f => `<div class="plan-feature-item">${f}</div>`).join('')}
+          ${plan.features.filter(f => (AI.ENABLED || !/\bAI\b/.test(f)) && !/ניסיון/.test(f)).map(f => `<div class="plan-feature-item">${f}</div>`).join('')}
         </div>
         <button class="btn ${isFeatured ? 'btn-primary' : ''} w-full"
                 style="${!isFeatured ? 'background:rgba(255,255,255,0.09);color:#fff;border:1.5px solid rgba(255,255,255,0.18);' : ''}"
@@ -16003,9 +16023,9 @@ const Dashboard = {
             💡 ${_nextAction(l)}
           </div>
           <div style="display:flex;justify-content:space-between;margin-top:8px;">
-            <button onclick="event.stopPropagation();Dashboard._hotIdx=Math.max(0,Dashboard._hotIdx-1);Dashboard.renderHotLeads();" style="background:none;border:none;font-size:18px;cursor:pointer;color:#D97706;padding:0 6px;">‹</button>
+            <button class="hot-nav-btn" aria-label="הליד הקודם" onclick="event.stopPropagation();Dashboard._hotIdx=Math.max(0,Dashboard._hotIdx-1);Dashboard.renderHotLeads();" style="background:none;border:none;font-size:18px;cursor:pointer;color:#D97706;padding:0 6px;min-width:44px;min-height:44px;margin:-12px -6px;">‹</button>
             <div style="display:flex;gap:5px;align-items:center;">${hot.map((_,j)=>`<div style="width:${j===i?16:6}px;height:6px;border-radius:3px;background:${j===i?'#D97706':'#FED7AA'};transition:all .3s;"></div>`).join('')}</div>
-            <button onclick="event.stopPropagation();Dashboard._hotIdx=(Dashboard._hotIdx+1)%${hot.length};Dashboard.renderHotLeads();" style="background:none;border:none;font-size:18px;cursor:pointer;color:#D97706;padding:0 6px;">›</button>
+            <button class="hot-nav-btn" aria-label="הליד הבא" onclick="event.stopPropagation();Dashboard._hotIdx=(Dashboard._hotIdx+1)%${hot.length};Dashboard.renderHotLeads();" style="background:none;border:none;font-size:18px;cursor:pointer;color:#D97706;padding:0 6px;min-width:44px;min-height:44px;margin:-12px -6px;">›</button>
           </div>
         </div>`;
     };
@@ -17441,6 +17461,7 @@ const LeadDetail = {
 
       </div>
     `;
+    TabsHint.attach(document.querySelector('#lead-detail-content .tabs'));
   },
   // תפריט "עוד": כל פעולות הכרטיס שאינן ראשיות, מקובצות לפי נושא
   more(leadId, anchor) {
@@ -17737,6 +17758,18 @@ const LeadDetail = {
   },
 };
 
+// רמז לגלילה בשורת טאבים: דהייה בקצה השמאלי כל עוד יש טאבים מוסתרים, ונעלמת בסוף הגלילה (RTL)
+const TabsHint = {
+  attach(el) {
+    if (!el) return;
+    const update = () => {
+      const more = el.scrollWidth - el.clientWidth > 4 && Math.abs(el.scrollLeft) + el.clientWidth < el.scrollWidth - 4;
+      el.classList.toggle('has-more', more);
+    };
+    el.addEventListener('scroll', update, { passive: true });
+    requestAnimationFrame(update);
+  },
+};
 function switchTab(btn, tabId) {
   const container = btn.closest('.lead-detail-body, .screen-body');
   container.querySelectorAll('.tab-btn').forEach(b => {
@@ -17788,7 +17821,7 @@ const PropertiesScreen = {
             <div class="property-price">${p.price ? formatMoney(p.price) : '-'}</div>
             <div style="display:flex;gap:6px;align-items:center;">
               <span class="badge ${statusClass[p.status]||'badge-status-new'}">${escapeHtml(statusBadge[p.status]||p.status)}</span>
-              <button type="button" class="lr-btn lr-more" style="width:36px;height:36px;margin:-6px -6px -6px 0;" aria-haspopup="menu" aria-label="פעולות על ${escapeHtml(p.title)}" onclick="event.stopPropagation();PropertiesScreen.menu('${escapeHtml(p.id)}',this)">⋯</button>
+              <button type="button" class="lr-btn lr-more lr-tight" style="width:36px;height:36px;margin:-6px -6px -6px 0;" aria-haspopup="menu" aria-label="פעולות על ${escapeHtml(p.title)}" onclick="event.stopPropagation();PropertiesScreen.menu('${escapeHtml(p.id)}',this)">⋯</button>
             </div>
           </div>
           <div class="property-title">${escapeHtml(p.title)}</div>
@@ -17968,7 +18001,7 @@ const TaskRow = {
           <div class="task-body">
             <div class="task-title">${typeEmoji(task.type)} ${escapeHtml(task.title)}</div>
             <div class="task-meta">
-              ${lead ? `<span onclick="App.go('lead-detail',{currentLeadId:'${escapeHtml(lead.id)}'})" style="cursor:pointer;color:var(--navy-400);">${escapeHtml(lead.name)}</span>` : ''}
+              ${lead ? `<span class="task-lead-link" onclick="App.go('lead-detail',{currentLeadId:'${escapeHtml(lead.id)}'})" style="cursor:pointer;color:var(--navy-400);">${escapeHtml(lead.name)}</span>` : ''}
               <span class="${isOverdue?'task-due-overdue':isToday?'task-due-today':''}">${escapeHtml(formatRelDate(task.due))}</span>
               ${old ? '<span class="lr-stage" style="--c:#6B7280">ישנה</span>' : `<span style="opacity:0.6">${escapeHtml(priorityLabel(task.priority))}</span>`}
             </div>

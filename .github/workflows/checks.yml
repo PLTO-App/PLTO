@@ -61,3 +61,9 @@ jobs:
         run: node scripts/test-readiness.mjs
       - name: Landing page claims and layout
         run: node scripts/test-landing.mjs
+      - name: Landing page CTAs and copy
+        run: node scripts/test-landing-cta.mjs
+      - name: 45-day trial (migration 134, trial bar, copy)
+        run: node scripts/test-trial-45.mjs
+      - name: Paywall after trial end (stays on paywall, one owner alert)
+        run: node scripts/test-paywall-expired.mjs
